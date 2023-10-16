@@ -1,0 +1,942 @@
+{% extends "portal/base.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Wrapper -->
+<div class="wrapper">
+    <!--================================-->
+    <!-- Breadcrumb Start -->
+    <!--================================-->
+    <div class="pageheader pd-t-25 pd-b-35">
+        <div class="d-flex justify-content-between">
+            <div class="clearfix">
+                <div class="pd-t-5 pd-b-5">
+                    <h1 class="pd-0 mg-0 tx-20 tx-dark">{{page_title}}</h1>
+                </div>
+                <div class="breadcrumb pd-0 mg-0">
+                    {% for breadcrumb in breadcrumbs %}
+                    <a class="breadcrumb-item {% if forloop.counter == breadcrumbs|length %}active{% endif %}" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- <div class="d-flex align-items-center">
+                <button id="dashboardDate"
+                    class="btn btn-default dropdown-toggle mr-2 d-none d-md-block pd-y-8-force"></button>
+                <button type="button" class="btn btn-default mr-2 d-none d-none d-lg-block pd-t-6-force pd-b-5-force">
+                    <i data-feather="log-in" class="wd-16 mr-2"></i>Import</button>
+                <button type="button"
+                    class="btn btn-default mr-2 mb-2 mb-md-0 d-none d-lg-block pd-t-6-force pd-b-5-force">
+                    <i data-feather="printer" class="wd-16 mr-2"></i>Print</button>
+                <button type="button" class="btn btn-default mb-2 mb-md-0 d-none d-lg-block pd-t-6-force pd-b-5-force">
+                    <i data-feather="download" class="wd-16 mr-2"></i>Download Report</button>
+            </div> -->
+        </div>
+    </div>
+    <!--/ Breadcrumb End -->
+    <div class="card mg-b-30">
+        <div class="card-body">
+            <div class="row clearfix">
+                <div class="col-lg-9">
+                    <!--================================-->
+                    <!-- Tickets Status Chart Start -->
+                    <!--================================-->
+                    <div class="clearfix mg-b-30">
+                        <div id="flotChart1" style="height: 300px"></div>
+                    </div>
+                    <!--/ Tickets Status Chart End -->
+                </div>
+                <div class="col-lg-3">
+                    <!--================================-->
+                    <!-- Tickets Status Start -->
+                    <!--================================-->
+                    <div class="mg-b-30">
+                        <div class="mg-b-5 d-flex justify-content-between">
+                            <div>
+                                <h6 class="tx-uppercase tx-spacing-1 tx-semibold tx-10 mg-b-2">New
+                                    Tickets
+                                </h6>
+                                <p class="tx-10 tx-gray-500 mg-b-0"><span class="tx-medium tx-success">2.1%
+                                        <i class="ti-arrow-up tx-8 tx-8"></i></span> than yesterday</p>
+                            </div>
+                            <h5 class="tx-20 tx-normal tx-rubik mg-b-0">1,506</h5>
+                        </div>
+                        <div class="progress ht-3">
+                            <div class="progress-bar bg-primary wd-90p" role="progressbar" aria-valuenow="100"
+                                aria-valuemin="0" aria-valuemax="90"></div>
+                        </div>
+                    </div>
+                    <div class="mg-b-30">
+                        <div class="mg-b-5 d-flex justify-content-between">
+                            <div>
+                                <h6 class="tx-uppercase tx-spacing-1 tx-semibold tx-10 mg-b-2">Open
+                                    Tickets
+                                </h6>
+                                <p class="tx-10 tx-gray-500 mg-b-0"><span class="tx-medium tx-danger">1.1%
+                                        <i class="ti-arrow-down tx-8 tx-8"></i></span> than yesterday
+                                </p>
+                            </div>
+                            <h5 class="tx-20 tx-normal tx-rubik mg-b-0">1,056</h5>
+                        </div>
+                        <div class="progress ht-3">
+                            <div class="progress-bar bg-warning wd-70p" role="progressbar" aria-valuenow="100"
+                                aria-valuemin="0" aria-valuemax="70"></div>
+                        </div>
+                    </div>
+                    <div class="mg-b-30">
+                        <div class="mg-b-5 d-flex justify-content-between">
+                            <div>
+                                <h6 class="tx-uppercase tx-spacing-1 tx-semibold tx-10 mg-b-2">Unsolved
+                                    Tickets</h6>
+                                <p class="tx-10 tx-gray-500 mg-b-0"><span class="tx-medium tx-success">2.8%
+                                        <i class="ti-arrow-up tx-8 tx-8"></i></span> than yesterday</p>
+                            </div>
+                            <h5 class="tx-20 tx-normal tx-rubik mg-b-0">1,203</h5>
+                        </div>
+                        <div class="progress ht-3">
+                            <div class="progress-bar bg-teal wd-80p" role="progressbar" aria-valuenow="100"
+                                aria-valuemin="0" aria-valuemax="80"></div>
+                        </div>
+                    </div>
+                    <div class="mg-b-30">
+                        <div class="mg-b-5 d-flex justify-content-between">
+                            <div>
+                                <h6 class="tx-uppercase tx-spacing-1 tx-semibold tx-10 mg-b-2">Solved
+                                    Tickets</h6>
+                                <p class="tx-10 tx-gray-500 mg-b-0"><span class="tx-medium tx-danger">1.0%
+                                        <i class="ti-arrow-down tx-8 tx-8"></i></span> than yesterday
+                                </p>
+                            </div>
+                            <h5 class="tx-20 tx-normal tx-rubik mg-b-0">5,256</h5>
+                        </div>
+                        <div class="progress ht-3">
+                            <div class="progress-bar bg-success wd-75p" role="progressbar" aria-valuenow="100"
+                                aria-valuemin="0" aria-valuemax="75"></div>
+                        </div>
+                    </div>
+                    <div class="mg-b-0">
+                        <div class="mg-b-5 d-flex justify-content-between">
+                            <div>
+                                <h6 class="tx-uppercase tx-spacing-1 tx-semibold tx-10 mg-b-2">
+                                    Unassigned
+                                    Tickets</h6>
+                                <p class="tx-10 tx-gray-500 mg-b-0"><span class="tx-medium tx-success">3.4%
+                                        <i class="ti-arrow-up tx-8 tx-8"></i></span> than yesterday</p>
+                            </div>
+                            <h5 class="tx-20 tx-normal tx-rubik mg-b-0">2,102</h5>
+                        </div>
+                        <div class="progress ht-3">
+                            <div class="progress-bar bg-danger wd-85p" role="progressbar" aria-valuenow="100"
+                                aria-valuemin="0" aria-valuemax="85"></div>
+                        </div>
+                    </div>
+                    <!--/  Tickets Status End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <!--================================-->
+        <!-- New Customers Start -->
+        <!--================================-->
+        <div class="col-lg-6 col-xl-4">
+            <div class="card mg-b-30">
+                <div class="card-body pd-0">
+                    <div id="flotBarChart1" style="height: 100px"></div>
+                    <div class="pd-t-10 pd-x-20 d-flex align-items-baseline">
+                        <h1 class="mg-b-0 mg-r-5">4.7</h1>
+                        <div class="tx-16">
+                            <i class="fa fa-star tx-warning"></i>
+                            <i class="fa fa-star tx-warning"></i>
+                            <i class="fa fa-star tx-warning"></i>
+                            <i class="fa fa-star tx-warning"></i>
+                            <i class="fa fa-star-half-empty tx-warning"></i>
+                        </div>
+                    </div>
+                    <div class="pd-b-25 pd-x-20">
+                        <h6 class="lh-5 mg-b-5">Overall Rating</h6>
+                        <p class="tx-11 tx-sm-12 mg-b-0 tx-gray-500">Habi tasse labo rum purus, vesti
+                            bulum
+                            at<span class="d-none d-sm-inline"> vivamus tempor port titor
+                                vulpu</span>... <a href="">Learn More</a></p>
+                    </div>
+                    <div class="list-group list-group-flush tx-13">
+                        <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center">
+                            <strong class="tx-12 tx-rubik">5.0</strong>
+                            <div class="tx-16 mg-l-10">
+                                <i class="fa fa-star tx-warning"></i>
+                                <i class="fa fa-star tx-warning"></i>
+                                <i class="fa fa-star tx-warning"></i>
+                                <i class="fa fa-star tx-warning"></i>
+                                <i class="fa fa-star tx-warning"></i>
+                            </div>
+                            <div class="mg-l-auto tx-rubik">5,187</div>
+                            <div class="tx-medium tx-success tx-8 ml-2">3.4% <i class="ti-arrow-up tx-8 tx-8"></i></div>
+                        </div>
+                        <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center">
+                            <strong class="tx-12 tx-rubik">4.0</strong>
+                            <div class="tx-16 mg-l-10">
+                                <i class="fa fa-star tx-warning"></i>
+                                <i class="fa fa-star tx-warning"></i>
+                                <i class="fa fa-star tx-warning"></i>
+                                <i class="fa fa-star tx-warning"></i>
+                                <i class="fa fa-star-o tx-gray-300"></i>
+                            </div>
+                            <div class="mg-l-auto tx-rubik">4,741</div>
+                            <div class="tx-medium tx-success tx-8 ml-2">8.4% <i class="ti-arrow-up tx-8 tx-8"></i></div>
+                        </div>
+                        <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center">
+                            <strong class="tx-12 tx-rubik">3.0</strong>
+                            <div class="tx-16 mg-l-10">
+                                <i class="fa fa-star tx-warning"></i>
+                                <i class="fa fa-star tx-warning"></i>
+                                <i class="fa fa-star tx-warning"></i>
+                                <i class="fa fa-star-o tx-gray-300"></i>
+                                <i class="fa fa-star-o tx-gray-300"></i>
+                            </div>
+                            <div class="mg-l-auto tx-rubik">3,130</div>
+                            <div class="tx-medium tx-danger tx-8 ml-2">2.6% <i class="ti-arrow-down tx-8 tx-8"></i>
+                            </div>
+                        </div>
+                        <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center">
+                            <strong class="tx-12 tx-rubik">2.0</strong>
+                            <div class="tx-16 mg-l-10">
+                                <i class="fa fa-star tx-warning"></i>
+                                <i class="fa fa-star tx-warning"></i>
+                                <i class="fa fa-star-o tx-gray-300"></i>
+                                <i class="fa fa-star-o tx-gray-300"></i>
+                                <i class="fa fa-star-o tx-gray-300"></i>
+                            </div>
+                            <div class="mg-l-auto tx-rubik">2,147</div>
+                            <div class="tx-medium tx-success tx-8 ml-2">4.4% <i class="ti-arrow-up tx-8 tx-8"></i></div>
+                        </div>
+                        <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center bg-transparent">
+                            <strong class="tx-12 tx-rubik">1.0</strong>
+                            <div class="tx-16 mg-l-10">
+                                <i class="fa fa-star tx-warning"></i>
+                                <i class="fa fa-star-o tx-gray-300"></i>
+                                <i class="fa fa-star-o tx-gray-300"></i>
+                                <i class="fa fa-star-o tx-gray-300"></i>
+                                <i class="fa fa-star-o tx-gray-300"></i>
+                            </div>
+                            <div class="mg-l-auto tx-rubik">1,154</div>
+                            <div class="tx-medium tx-danger tx-8 ml-2">5.1% <i class="ti-arrow-down tx-8 tx-8"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--/ New Customers End -->
+        <!--================================-->
+        <!-- Transaction History Start -->
+        <!--================================-->
+        <div class="col-lg-6 col-xl-4">
+            <div class="card mg-b-30">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h6 class="tx-13 mb-0">Transaction History</h6>
+                    <div class="card-header-btn">
+                        <div class="dropdown">
+                            <a href="" class="" data-toggle="dropdown"><i class="ti-more"></i></a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a href="" class="dropdown-item"><i data-feather="info" class="wd-16 mr-2"></i>View
+                                    Details</a>
+                                <a href="" class="dropdown-item"><i data-feather="share"
+                                        class="wd-16 mr-2"></i>Share</a>
+                                <a href="" class="dropdown-item"><i data-feather="download"
+                                        class="wd-16 mr-2"></i>Download</a>
+                                <a href="" class="dropdown-item"><i data-feather="copy" class="wd-16 mr-2"></i>Copy
+                                    to</a>
+                                <a href="" class="dropdown-item"><i data-feather="folder" class="wd-16 mr-2"></i>Move
+                                    to</a>
+                                <a href="" class="dropdown-item"><i data-feather="edit"
+                                        class="wd-16 mr-2"></i>Rename</a>
+                                <a href="" class="dropdown-item"><i data-feather="trash"
+                                        class="wd-16 mr-2"></i>Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body pd-0 pd-y-15">
+                    <ul class="list-group list-group-flush tx-13">
+                        <li class="list-group-item d-flex pd-y-9 pd-sm-x-20">
+                            <div class="d-none d-sm-block"><span
+                                    class="wd-40 ht-40 mg-r-10 d-flex align-items-center justify-content-center rounded bg-primary tx-white"><i
+                                        class="ti-check"></i></span></div>
+                            <div class="pd-sm-l-10">
+                                <p class="mg-b-0">Lorem Ipsum is simply <a href=""
+                                        class="tx-dark mg-b-0 tx-semibold">#985632</a></p>
+                                <span class="tx-12 mg-b-0 tx-gray-500">Transaction ID: #857423</span>
+                            </div>
+                            <div class="mg-l-auto text-right">
+                                <p class="mg-b-0 tx-rubik">$4,550<small class="tx-8">.50</small></p>
+                                <span class="tx-success tx-12">Completed</span>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex pd-y-9 pd-sm-x-20">
+                            <div class="d-none d-sm-block"><span
+                                    class="wd-40 ht-40 mg-r-10 d-flex align-items-center justify-content-center rounded bg-warning tx-dark"><i
+                                        class="ti-anchor"></i></span></div>
+                            <div class="pd-sm-l-10">
+                                <p class="mg-b-0">Lorem Ipsum is simply <a href=""
+                                        class="tx-dark mg-b-0 tx-semibold">#698524</a></p>
+                                <span class="tx-12 mg-b-0 tx-gray-500">Transaction ID: #452356</span>
+                            </div>
+                            <div class="mg-l-auto text-right">
+                                <p class="mg-b-0 tx-rubik">$2,645<small class="tx-8">.40</small></p>
+                                <span class="tx-warning tx-12">Pending</span>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex pd-y-9 pd-sm-x-20">
+                            <div class="d-none d-sm-block"><span
+                                    class="wd-40 ht-40 mg-r-10 d-flex align-items-center justify-content-center rounded bg-primary tx-white"><i
+                                        class="ti-check"></i></span></div>
+                            <div class="pd-sm-l-10">
+                                <p class="mg-b-0">Lorem Ipsum is simply <a href=""
+                                        class="tx-dark mg-b-0 tx-semibold">#458762</a></p>
+                                <span class="tx-12 mg-b-0 tx-gray-500">Transaction ID: #354155</span>
+                            </div>
+                            <div class="mg-l-auto text-right">
+                                <p class="mg-b-0 tx-rubik">$3,248<small class="tx-8">.80</small></p>
+                                <span class="tx-success tx-12">Completed</span>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex pd-y-9 pd-sm-x-20">
+                            <div class="d-none d-sm-block"><span
+                                    class="wd-40 ht-40 mg-r-10 d-flex align-items-center justify-content-center rounded bg-warning tx-dark"><i
+                                        class="ti-anchor"></i></span></div>
+                            <div class="pd-sm-l-10">
+                                <p class="mg-b-0">Lorem Ipsum is simply <a href=""
+                                        class="tx-dark mg-b-0 tx-semibold">#698524</a></p>
+                                <span class="tx-12 mg-b-0 tx-gray-500">Transaction ID: #452356</span>
+                            </div>
+                            <div class="mg-l-auto text-right">
+                                <p class="mg-b-0 tx-rubik">$1,243<small class="tx-8">.60</small></p>
+                                <p class="mg-b-0 tx-12 tx-warning">Pending</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex pd-y-9 pd-sm-x-20">
+                            <div class="d-none d-sm-block"><span
+                                    class="wd-40 ht-40 mg-r-10 d-flex align-items-center justify-content-center rounded bg-primary tx-white"><i
+                                        class="ti-check"></i></span></div>
+                            <div class="pd-sm-l-10">
+                                <p class="mg-b-0">Lorem Ipsum is simply <a href=""
+                                        class="tx-dark mg-b-0 tx-semibold">#365845</a></p>
+                                <span class="tx-12 mg-b-0 tx-gray-500">Transaction ID: #748562</span>
+                            </div>
+                            <div class="mg-l-auto text-right">
+                                <p class="mg-b-0 tx-rubik">$5,319<small class="tx-10">.10</small></p>
+                                <span class="tx-success tx-12">Completed</span>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex pd-y-9 pd-sm-x-20">
+                            <div class="d-none d-sm-block"><span
+                                    class="wd-40 ht-40 mg-r-10 d-flex align-items-center justify-content-center rounded bg-danger tx-white"><i
+                                        class="ti-close"></i></span></div>
+                            <div class="pd-sm-l-10">
+                                <p class="mg-b-0">Lorem Ipsum is simply <a href=""
+                                        class="tx-dark mg-b-0 tx-semibold">#475821</a></p>
+                                <span class="tx-12 mg-b-0 tx-gray-500">Transaction ID: #457771</span>
+                            </div>
+                            <div class="mg-l-auto text-right">
+                                <p class="mg-b-0 tx-rubik">$4,347<small class="tx-8">.90</small></p>
+                                <span class="tx-danger tx-12">Canceled</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!--/ Transaction History End -->
+        <!--================================-->
+        <!-- Customer Satisfaction Start -->
+        <!--================================-->
+        <div class="col-xl-4">
+            <div class="card mg-b-30">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h6 class="tx-13 mb-0">Customer Satisfaction</h6>
+                    <div class="card-header-btn">
+                        <div class="dropdown">
+                            <a href="" class="" data-toggle="dropdown"><i class="ti-more"></i></a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a href="" class="dropdown-item"><i data-feather="info" class="wd-16 mr-2"></i>View
+                                    Details</a>
+                                <a href="" class="dropdown-item"><i data-feather="share"
+                                        class="wd-16 mr-2"></i>Share</a>
+                                <a href="" class="dropdown-item"><i data-feather="download"
+                                        class="wd-16 mr-2"></i>Download</a>
+                                <a href="" class="dropdown-item"><i data-feather="copy" class="wd-16 mr-2"></i>Copy
+                                    to</a>
+                                <a href="" class="dropdown-item"><i data-feather="folder" class="wd-16 mr-2"></i>Move
+                                    to</a>
+                                <a href="" class="dropdown-item"><i data-feather="edit"
+                                        class="wd-16 mr-2"></i>Rename</a>
+                                <a href="" class="dropdown-item"><i data-feather="trash"
+                                        class="wd-16 mr-2"></i>Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-baseline">
+                        <h1 class="mg-b-0 mg-r-5">9.5<span class="tx-10 tx-success">(<i
+                                    class="ti-arrow-up tx-8 tx-success tx-8 mr-1"></i>8.60%)</span></h1>
+                        <div class="tx-16">
+                            <i class="fa fa-star tx-warning"></i>
+                            <i class="fa fa-star tx-warning"></i>
+                            <i class="fa fa-star tx-warning"></i>
+                            <i class="fa fa-star tx-warning"></i>
+                            <i class="fa fa-star-half-empty tx-warning"></i>
+                        </div>
+                    </div>
+                    <p class="tx-11 tx-sm-12 mg-b-20 tx-gray-500">Habi tasse labo rum purus, vesti bulum
+                        at<span class="d-none d-sm-inline"> vivamus tempor port titor vulpu</span>... <a href="">Learn
+                            More</a></p>
+                    <div class="card-progressbar">
+                        <label class="tx-10 tx-uppercase tx-gray-500 mg-b-0">Score</label>
+                        <div class="progress" style="height: 3px">
+                            <div class="progress-bar" role="progressbar" style="width: 15%" aria-valuenow="15"
+                                aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: 30%" aria-valuenow="30"
+                                aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: 20%"
+                                aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="progress-bar bg-info" role="progressbar" style="width: 10%" aria-valuenow="20"
+                                aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 25%"
+                                aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <label class="tx-10 tx-uppercase tx-gray-500 mg-b-0">85%<i
+                                class="ti-arrow-up tx-8 tx-success tx-8 ml-1"></i></label>
+                    </div>
+                    <div class="list-group list-group-flush m-t-10 tx-13">
+                        <div class="list-group-item pd-0 pd-y-10 d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="wd-12 ht-12 bd bd-3 rounded-circle bd-primary mr-2"></div>
+                                <span class="tx-semibold">Excellent</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="mg-r-5">3,345</div>
+                                <div class="tx-10 tx-gray-500">(<i
+                                        class="ti-arrow-up tx-8 tx-success tx-8 mr-1"></i>4.7%)
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item pd-0 pd-y-10 d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="wd-12 ht-12 bd bd-3 rounded-circle bd-danger mr-2"></div>
+                                <span class="tx-semibold">Very Good</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="mg-r-5">2,854</div>
+                                <div class="tx-10 tx-gray-500">(<i
+                                        class="ti-arrow-down tx-8 tx-danger tx-8 mr-1"></i>5.8%)
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item pd-0 pd-y-10 d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="wd-12 ht-12 bd bd-3 rounded-circle bd-warning mr-2"></div>
+                                <span class="tx-semibold">Good</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="mg-r-5">2,145</div>
+                                <div class="tx-10 tx-gray-500">(<i
+                                        class="ti-arrow-up tx-8 tx-success tx-8 mr-1"></i>2.8%)
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item pd-0 pd-y-10 d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="wd-12 ht-12 bd bd-3 rounded-circle bd-info mr-2"></div>
+                                <span class="tx-semibold">Fair</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="mg-r-5">1,574</div>
+                                <div class="tx-10 tx-gray-500">(<i
+                                        class="ti-arrow-down tx-8 tx-danger tx-8 mr-1"></i>3.7%)
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item pd-0 pd-y-10 d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="wd-12 ht-12 bd bd-3 rounded-circle bd-success mr-2"></div>
+                                <span class="tx-semibold">Poor</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="mg-r-5">1,540</div>
+                                <div class="tx-10 tx-gray-500">(<i
+                                        class="ti-arrow-up tx-8 tx-success tx-8 mr-1"></i>5.5%)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--/ Customer Satisfaction End -->
+    </div>
+    <div class="row clearfix">
+        <div class="col-lg-12 col-xl-4">
+            <div class="row clearfix">
+                <div class="col-lg-6 col-xl-12">
+                    <div class="row clearfix">
+                        <div class="col-12 col-md-6 col-lg-12">
+                            <div class="card card-body mg-b-30">
+                                <div class="media d-block d-sm-flex align-items-center">
+                                    <div class="media-body mg-t-20 mg-sm-t-0">
+                                        <h6 class="mg-b-5">Time to Resolved Complaint</h6>
+                                        <p class="lh-4 tx-12 tx-gray-500 mg-b-15">Measure how quickly
+                                            support staff answer incoming calls.</p>
+                                        <h3 class="mg-b-0">8m:45s <small class="tx-13 tx-gray-500">/
+                                                Goal:
+                                                7m:10s</small></h3>
+                                        <div class="progress ht-3 mg-b-10">
+                                            <div class="progress-bar bg-primary wd-90p" role="progressbar"
+                                                aria-valuenow="90" aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-12">
+                            <div class="card card-body">
+                                <div class="media d-block d-sm-flex align-items-center">
+                                    <div class="media-body mg-t-20 mg-sm-t-0">
+                                        <h6 class="mg-b-5">Average Speed of Answer</h6>
+                                        <p class="lh-4 tx-12 tx-gray-500 mg-b-15">Measure how quickly
+                                            support staff answer incoming calls.</p>
+                                        <h3 class="mg-b-0">0m:35s <small class="tx-13 tx-gray-500">/
+                                                Goal:
+                                                0m:15s</small></h3>
+                                        <div class="progress ht-3 mg-b-10">
+                                            <div class="progress-bar bg-danger wd-90p" role="progressbar"
+                                                aria-valuenow="90" aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-xl-12 mg-t-30 mg-md-t-0 mg-xl-t-30">
+                    <!--================================-->
+                    <!-- Clients Feedback Start -->
+                    <!--================================-->
+                    <div class="card mg-b-30">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <h6 class="tx-13 mb-0">Clients Feedback</h6>
+                            <div class="card-header-btn">
+                                <div class="dropdown">
+                                    <a href="" class="" data-toggle="dropdown"><i class="ti-more"></i></a>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        <a href="" class="dropdown-item"><i data-feather="info"
+                                                class="wd-16 mr-2"></i>View
+                                            Details</a>
+                                        <a href="" class="dropdown-item"><i data-feather="share"
+                                                class="wd-16 mr-2"></i>Share</a>
+                                        <a href="" class="dropdown-item"><i data-feather="download"
+                                                class="wd-16 mr-2"></i>Download</a>
+                                        <a href="" class="dropdown-item"><i data-feather="copy"
+                                                class="wd-16 mr-2"></i>Copy
+                                            to</a>
+                                        <a href="" class="dropdown-item"><i data-feather="folder"
+                                                class="wd-16 mr-2"></i>Move to</a>
+                                        <a href="" class="dropdown-item"><i data-feather="edit"
+                                                class="wd-16 mr-2"></i>Rename</a>
+                                        <a href="" class="dropdown-item"><i data-feather="trash"
+                                                class="wd-16 mr-2"></i>Delete</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body pd-0 collapse show" id="clientsFeedback">
+                            <ul class="list-group list-group-flush pd-y-5 tx-13">
+                                <li class="list-group-item d-flex pd-x-20">
+                                    <div class="avatar"><span class="avatar-initial rounded-circle bg-primary">C</span>
+                                    </div>
+                                    <div class="pd-l-10">
+                                        <p class="tx-semibold mg-b-0"><a href="">Stanley C. Owens</a>
+                                        </p>
+                                        <span class="tx-12 mg-b-0 tx-gray-500">Clients ID:
+                                            #251362</span>
+                                    </div>
+                                    <div class="mg-l-auto d-flex align-self-center">
+                                        <nav class="nav nav-icon-only">
+                                            <div class="tx-right">
+                                                <div class="tx-15 mg-l-10">
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star-half-o tx-orange"></i>
+                                                </div>
+                                                <span class="mb-0 tx-12 tx-gray-500">02:31PM, 19 May
+                                                    2019</span>
+                                            </div>
+                                        </nav>
+                                    </div>
+                                </li>
+                                <li class="list-group-item d-flex pd-x-20">
+                                    <div class="avatar"><span class="avatar-initial rounded-circle bg-success">B</span>
+                                    </div>
+                                    <div class="pd-l-10">
+                                        <p class="tx-semibold mg-b-0"><a href="">Bongcaras Owen</a></p>
+                                        <span class="tx-12 mg-b-0 tx-gray-500">Clients ID:
+                                            #251362</span>
+                                    </div>
+                                    <div class="mg-l-auto d-flex align-self-center">
+                                        <nav class="nav nav-icon-only">
+                                            <div class="tx-right">
+                                                <div class="tx-15 mg-l-10">
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star-half-o tx-orange"></i>
+                                                </div>
+                                                <span class="mb-0 tx-12 tx-gray-500">08:12PM, 15 May
+                                                    2019</span>
+                                            </div>
+                                        </nav>
+                                    </div>
+                                </li>
+                                <li class="list-group-item d-flex pd-x-20">
+                                    <div class="avatar"><span class="avatar-initial rounded-circle bg-indigo">E</span>
+                                    </div>
+                                    <div class="pd-l-10">
+                                        <p class="tx-semibold mg-b-0"><a href="">Effery M. Jensen</a>
+                                        </p>
+                                        <span class="tx-12 mg-b-0 tx-gray-500">Clients ID:
+                                            #369521</span>
+                                    </div>
+                                    <div class="mg-l-auto d-flex align-self-center">
+                                        <nav class="nav nav-icon-only">
+                                            <div class="tx-right">
+                                                <div class="tx-15 mg-l-10">
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star-half-o tx-orange"></i>
+                                                </div>
+                                                <span class="mb-0 tx-12 tx-gray-500">10:26AM, 10 May
+                                                    2019</span>
+                                            </div>
+                                        </nav>
+                                    </div>
+                                </li>
+                                <li class="list-group-item d-flex pd-x-20">
+                                    <div class="avatar"><span class="avatar-initial rounded-circle bg-danger">J</span>
+                                    </div>
+                                    <div class="pd-l-10">
+                                        <p class="tx-semibold mg-b-0"><a href="">John Doe</a></p>
+                                        <span class="tx-12 mg-b-0 tx-gray-500">Clients ID:
+                                            #541236</span>
+                                    </div>
+                                    <div class="mg-l-auto d-flex align-self-center">
+                                        <nav class="nav nav-icon-only">
+                                            <div class="tx-right">
+                                                <div class="tx-15 mg-l-10">
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star-half-o tx-orange"></i>
+                                                </div>
+                                                <span class="mb-0 tx-12 tx-gray-500">01:15PM, 07 May
+                                                    2019</span>
+                                            </div>
+                                        </nav>
+                                    </div>
+                                </li>
+                                <li class="list-group-item d-flex pd-x-20">
+                                    <div class="avatar"><span class="avatar-initial rounded-circle bg-warning">S</span>
+                                    </div>
+                                    <div class="pd-l-10">
+                                        <p class="tx-semibold mg-b-0"><a href="">Stanley Owens</a></p>
+                                        <span class="tx-12 mg-b-0 tx-gray-500">Clients ID:
+                                            #258463</span>
+                                    </div>
+                                    <div class="mg-l-auto d-flex align-self-center">
+                                        <nav class="nav nav-icon-only">
+                                            <div class="tx-right">
+                                                <div class="tx-15 mg-l-10">
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star tx-warning"></i>
+                                                    <i class="fa fa-star-half-o tx-orange"></i>
+                                                </div>
+                                                <span class="mb-0 tx-12 tx-gray-500">03:41PM, 05 May
+                                                    2019</span>
+                                            </div>
+                                        </nav>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!--/ Clients Feedback End -->
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12 col-xl-8">
+            <!--================================-->
+            <!-- Support Status Start -->
+            <!--================================-->
+            <div class="card mg-b-30">
+                <div class="card-body pd-0">
+                    <div class="clearfix mg-b-30">
+                        <div id="flotChartSupport" style="height: 300px"></div>
+                    </div>
+                    <div class="row pd-x-30 clearfix">
+                        <div class="col-lg-4 col-md-4 col-sm-12 pd-y-20">
+                            <span class="tx-uppercase tx-spacing-1 tx-semibold tx-10 mg-b-2">Customer
+                                Satisfaction</span>
+                            <h3 class="tx-medium tx-20 mg-b-0 tx-rubik">9.7
+                                <span class="tx-15 mg-l-10">
+                                    <i class="fa fa-star tx-warning"></i>
+                                    <i class="fa fa-star tx-warning"></i>
+                                    <i class="fa fa-star tx-warning"></i>
+                                    <i class="fa fa-star tx-warning"></i>
+                                    <i class="fa fa-star-half-o tx-orange"></i>
+                                </span>
+                            </h3>
+                            <div class="tx-11 d-flex tx-gray-500"><span
+                                    class="text-success mr-2 d-flex align-items-center"><i
+                                        class="ti-arrow-up tx-8 mr-1 tx-10"></i>+5.35%</span>avg. per
+                                month
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-12 pd-y-20">
+                            <span class="tx-uppercase tx-spacing-1 tx-semibold tx-10 mg-b-2">Overall
+                                Rating</span>
+                            <h3 class="tx-medium tx-20 mg-b-0 tx-rubik">9.9
+                                <span class="tx-15 mg-l-10">
+                                    <i class="fa fa-star tx-warning"></i>
+                                    <i class="fa fa-star tx-warning"></i>
+                                    <i class="fa fa-star tx-warning"></i>
+                                    <i class="fa fa-star tx-warning"></i>
+                                    <i class="fa fa-star-half-o tx-orange"></i>
+                                </span>
+                            </h3>
+                            <div class="tx-11 d-flex tx-gray-500"><span
+                                    class="text-success mr-2 d-flex align-items-center"><i
+                                        class="ti-arrow-up tx-8 mr-1 tx-10"></i>+1.28%</span>avg. per
+                                month
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-12 pd-y-20">
+                            <span class="tx-uppercase tx-spacing-1 tx-semibold tx-10 mg-b-2">Agent
+                                Performance</span>
+                            <h3 class="tx-medium tx-20 mg-b-0 tx-rubik">9.3
+                                <span class="tx-15 mg-l-10">
+                                    <i class="fa fa-star tx-warning"></i>
+                                    <i class="fa fa-star tx-warning"></i>
+                                    <i class="fa fa-star tx-warning"></i>
+                                    <i class="fa fa-star tx-warning"></i>
+                                    <i class="fa fa-star-half-o tx-orange"></i>
+                                </span>
+                            </h3>
+                            <div class="tx-11 d-flex tx-gray-500"><span
+                                    class="text-danger mr-2 d-flex align-items-center"><i
+                                        class="ti-arrow-down tx-8 mr-1 tx-10"></i>-1.43%</span>avg. per
+                                month</div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mg-0">
+                            <thead class="tx-10 tx-uppercase bd-t">
+                                <tr>
+                                    <th>Customer Name</th>
+                                    <th>Location</th>
+                                    <th>Tickets</th>
+                                    <th>Tickets Status</th>
+                                    <th>Customer Satisfaction</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar mr-2">
+                                                <img src="assets/images/users-face/1.png"
+                                                    class="img-fluid wd-40 ht-40 rounded-circle" alt="">
+                                            </div>
+                                            <span class="tx-semibold d-none d-xl-inline-block">John
+                                                Mayers</span>
+                                        </div>
+                                    </td>
+                                    <td><i class="flag-icon flag-icon-es tx-16"></i></td>
+                                    <td>120+</td>
+                                    <td><span class="badge badge-outline-primary">Open</span></td>
+                                    <td>
+                                        <div class="clearfix"> <span class="tx-dark tx-uppercase">4.8</span><small><span
+                                                    class="mg-b-0">/120</span></small>
+                                        </div>
+                                        <div class="progress ht-3 mg-b-10">
+                                            <div class="progress-bar bg-primary wd-90p" role="progressbar"
+                                                aria-valuenow="90" aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar mr-2">
+                                                <img src="assets/images/users-face/2.png"
+                                                    class="img-fluid wd-40 ht-40 rounded-circle" alt="">
+                                            </div>
+                                            <span class="tx-semibold d-none d-xl-inline-block">Kelly
+                                                Brans</span>
+                                        </div>
+                                    </td>
+                                    <td><i class="flag-icon flag-icon-us tx-16"></i></td>
+                                    <td>352+</td>
+                                    <td><span class="badge badge-outline-success">Completed</span></td>
+                                    <td>
+                                        <div class="clearfix"> <span class="tx-dark tx-uppercase">5.0</span><small><span
+                                                    class="mg-b-0">/352</span></small>
+                                        </div>
+                                        <div class="progress ht-3 mg-b-10">
+                                            <div class="progress-bar bg-success wd-100p" role="progressbar"
+                                                aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar mr-2">
+                                                <img src="assets/images/users-face/3.png"
+                                                    class="img-fluid wd-40 ht-40 rounded-circle" alt="">
+                                            </div>
+                                            <span class="tx-semibold d-none d-xl-inline-block">Tim
+                                                Howard</span>
+                                        </div>
+                                    </td>
+                                    <td><i class="flag-icon flag-icon-de tx-16"></i></td>
+                                    <td>65+</td>
+                                    <td><span class="badge badge-outline-warning">Pending</span></td>
+                                    <td>
+                                        <div class="clearfix"> <span class="tx-dark tx-uppercase">4.5</span><small><span
+                                                    class="mg-b-0">/65</span></small>
+                                        </div>
+                                        <div class="progress ht-3 mg-b-10">
+                                            <div class="progress-bar bg-primary wd-75p" role="progressbar"
+                                                aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar mr-2">
+                                                <img src="assets/images/users-face/4.png"
+                                                    class="img-fluid wd-40 ht-40 rounded-circle" alt="">
+                                            </div>
+                                            <span class="tx-semibold d-none d-xl-inline-block">Brans
+                                                Tim</span>
+                                        </div>
+                                    </td>
+                                    <td><i class="flag-icon flag-icon-gb tx-16"></i></td>
+                                    <td>113+</td>
+                                    <td><span class="badge badge-outline-primary">Open</span></td>
+                                    <td>
+                                        <div class="clearfix"> <span class="tx-dark tx-uppercase">4.2</span><small><span
+                                                    class="mg-b-0">/113</span></small>
+                                        </div>
+                                        <div class="progress ht-3 mg-b-10">
+                                            <div class="progress-bar bg-primary wd-90p" role="progressbar"
+                                                aria-valuenow="90" aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar mr-2">
+                                                <img src="assets/images/users-face/5.png"
+                                                    class="img-fluid wd-40 ht-40 rounded-circle" alt="">
+                                            </div>
+                                            <span class="tx-semibold d-none d-xl-inline-block">Tim
+                                                Brans</span>
+                                        </div>
+                                    </td>
+                                    <td><i class="flag-icon flag-icon-fr tx-16"></i></td>
+                                    <td>60+</td>
+                                    <td><span class="badge badge-outline-danger">closed</span></td>
+                                    <td>
+                                        <div class="clearfix"> <span class="tx-dark tx-uppercase">3.8</span><small><span
+                                                    class="mg-b-0">/60</span></small>
+                                        </div>
+                                        <div class="progress ht-3 mg-b-10">
+                                            <div class="progress-bar bg-danger wd-60p" role="progressbar"
+                                                aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!--/ Support Status End -->
+        </div>
+    </div>
+    <!--/ Wrapper End -->
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    $(function () {
+        var isRtl = $('body').attr('dir') === 'rtl' || $('html').attr('dir') === 'rtl';
+
+        // Button         
+        var start = moment().subtract(29, 'days');
+        var end = moment();
+
+        function cb(start, end) {
+            $('#dashboardDate').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+        }
+        $('#dashboardDate').daterangepicker({
+            startDate: start,
+            endDate: end,
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            },
+            opens: (isRtl ? 'left' : 'right')
+        }, cb);
+        cb(start, end);
+
+        // Replace icons         
+        $('#dashboardDate').each(function () {
+            var obj = $(this).data('daterangepicker');
+            var _updateCalendars = obj.updateCalendars;
+            obj.updateCalendars = function () {
+                // Call original function
+                _updateCalendars.call(obj)
+                // Replace icons
+                obj.container.find('.prev > i').each(function () { this.className = 'ion ion-ios-arrow-back' });
+                obj.container.find('.next > i').each(function () { this.className = 'ion ion-ios-arrow-forward' });
+                obj.container.find('.daterangepicker_input > i').each(function () { this.className = 'ion ion-md-calendar' });
+                obj.container.find('.calendar-time > i').each(function () { this.className = 'ion ion-md-time' });
+            };
+        });
+    });
+</script>
+<!-- / Javascript -->
+{% endblock %}

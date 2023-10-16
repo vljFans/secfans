@@ -1,0 +1,204 @@
+{% extends 'portal/base.html' %}
+{% load template_func %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<div class="wrapper">
+    <!--================================-->
+    <!-- Breadcrumb Start -->
+    <!--================================-->
+    <div class="pageheader pd-t-25 pd-b-35">
+        <div class="d-flex justify-content-between">
+            <div class="clearfix">
+                <div class="pd-t-5 pd-b-5">
+                    <h1 class="pd-0 mg-0 tx-20 tx-dark">{{parent_page_title}} {{page_title}}</h1>
+                </div>
+                <div class="breadcrumb pd-0 mg-0">
+                    {% for breadcrumb in breadcrumbs %}
+                    {% if forloop.counter != breadcrumbs|length %}
+                    <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                    {% else %}
+                    <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Breadcrumb End -->
+    <!--================================-->
+    <!-- Form Element Start -->
+    <!--================================-->
+    <div class="row row-xs clearfix">
+        <div class="col-md-12 col-lg-12">
+            {% if messages %}
+            {% for message in messages %}
+            {% if forloop.counter == messages|length %}
+            <div class="{{ message.tags }} success-msg-txt" style="height: 30px; text-align: center;">{{ message }}</div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            <div class="error-msg-txt" style="height: 30px; text-align: center;"></div>
+            <div class="card mg-b-30">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-header-title tx-13 mb-0">{{parent_page_title}} {{page_title}}</h6>
+                        </div>
+                        <div class="text-right">
+                            <div class="d-flex">
+                                <a href="{% url 'superuser:roleList' %}" class="mr-3"><i class="fa fa-step-backward"></i></a>
+                                <a href="" class="mr-3"><i class="ti-reload"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form id="edit_form" class="needs-validation" novalidate>
+                        <input type="hidden" id="id" name="id" value="{{role.id}}">
+                        <div class="form-row">
+                            <div class="col-md-12 mb-3">
+                                <label>Role Name</label>
+                                <input type="text" value="{{role.name}}" name="name" class="form-control" placeholder="Role name" required>
+                            </div>
+                        </div>
+                        <p>Permissions</p>
+                        <div class="form-row ml-3 mb-3">
+                            <div class="col-md-12">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="select_all"
+                                        name="select_all" value="all">
+                                    <label class="custom-control-label" for="select_all">
+                                        Select All
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            {% for each in content_types %}
+                            <div class="col-md-6 col-lg-6 edit-role">
+                                <div class="card mg-b-30">
+                                    <div class="card-header">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="card-header-title tx-13 mb-0">
+                                                    {{each.model|quote_replace|title}}</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            {% for permissionDetail in each.permission_set.all %}
+                                            <div class="col-md-3">
+                                                <div class="custom-control custom-checkbox">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="{{permissionDetail.codename}}" name="permission"
+                                                        value="{{permissionDetail.id}}" {% if permissionDetail.id in selected_permissions %}checked{% endif %}>
+                                                    <label class="custom-control-label"
+                                                        for="{{permissionDetail.codename}}">
+                                                        {{permissionDetail.codename|permission_text|title}}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if request.user.is_superuser == 1 or 'add_role'|get_session_permission:request is not None %}
+                        <button class="btn btn-primary" type="submit">Submit</button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Form Element End -->
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+<script>
+    $(document).ready(function () {
+        let allChecked = true;
+        // Loop through the checkboxes
+        $('.edit-role').find('input[type=checkbox]').each(function() {
+            if (!$(this).is(':checked')) {
+                allChecked = false;
+            }
+        });
+
+        if (allChecked) {
+            $('#select_all').prop('checked', true);
+        } else {
+            $('#select_all').prop('checked', false);
+        }
+    });
+
+    $(document).on('click touchstart', '#select_all', function () {
+        if ($(this).prop('checked') == true) {
+            $('.edit-role').find('input[type=checkbox]').each(function () {
+                this.checked = true;
+            });
+        } else {
+            $('.edit-role').find('input[type=checkbox]').each(function () {
+                this.checked = false;
+            });
+        }
+    });
+
+    $(document).on('submit', '#edit_form', function (e) {
+        e.preventDefault();
+        var formData = new FormData(edit_form);
+        $.ajax({
+            type: "POST",
+            evalScripts: true,
+            contentType: false,
+            processData: false,
+            url: "{% url 'api:roleEdit' %}",
+            data: formData,
+            headers: {
+                'Authorization': sessionStorage.getItem("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:roleList' %}");
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                // locationAfterMessageStore(error.responseJSON.detail, 'error');
+                $('.success-msg-txt').text("");
+                $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
+                $('.error-msg-txt').addClass('text-danger');
+                $('.error-msg-txt').text(error.responseJSON.detail);
+            }
+        });
+    });
+</script>
+{% endblock %}
