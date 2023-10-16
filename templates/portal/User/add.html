@@ -3,7 +3,6 @@
 {% load template_func %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'select2/select2.min.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -63,14 +62,14 @@
                     <form id="create_form" class="needs-validation" novalidate>
                         <div class="form-row">
                             <div class="col-md-6 mb-3">
-                                <label>Name</label>
+                                <label>Name <span class="required-indicator">*</span></label>
                                 <input type="text" name="name" class="form-control" placeholder="Name" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label>Role</label>
+                                <label>Role <span class="required-indicator">*</span></label>
                                 <div class="input-group">
                                     <select class="custom-select selectpicker" name="role_id" required>
-                                        <option selected="">Choose...</option>
+                                        <option value="">Choose...</option>
                                         {% for role in roles %}
                                         <option value="{{role.id}}">{{role.name}}</option>
                                         {% endfor %}
@@ -78,25 +77,25 @@
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label>Email</label>
+                                <label>Email <span class="required-indicator">*</span></label>
                                 <input type="email" name="email" class="form-control" placeholder="Email" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label>Phone</label>
+                                <label>Phone <span class="required-indicator">*</span></label>
                                 <input type="text" onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                     maxlength="10" name="phone" class="form-control" placeholder="Phone" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label>Password</label>
+                                <label>Password <span class="required-indicator">*</span></label>
                                 <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label>Confirm Password</label>
+                                <label>Confirm Password <span class="required-indicator">*</span></label>
                                 <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="Confirm Password" required>
                             </div>
                         </div>
                         {% if request.user.is_superuser == 1 or 'add_user'|get_session_permission:request is not None %}
-                        <button class="btn btn-primary" type="submit">Submit</button>
+                        <button class="btn btn-success submit-btn" type="submit">Submit</button>
                         {% endif %}
                     </form>
                 </div>
@@ -108,12 +107,6 @@
 {% endblock %}
 
 {% block js %}
-<script src="{% static 'select2/select2.min.js' %}"></script>
-<script>
-    $('.selectpicker').select2({
-        placeholder: ''
-    });
-</script>
 <script>
     // Example starter JavaScript for disabling form submissions if there are invalid fields
     (function () {
@@ -135,28 +128,22 @@
     })();
 </script>
 <script>
-    $(document).on('click touchstart', '#select_all', function () {
-        if ($(this).prop('checked') == true) {
-            $('.edit-user').find('input[type=checkbox]').each(function () {
-                this.checked = true;
-            });
-        } else {
-            $('.edit-user').find('input[type=checkbox]').each(function () {
-                this.checked = false;
-            });
-        }
+    $('.selectpicker').select2({
+        placeholder: ''
     });
 
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
         password = $("#password").val();
         confirm_password = $("#confirm_password").val();
-        if (password == confirm_password) {
+        if (password != confirm_password) {
             $('.success-msg-txt').text("");
             $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
             $('.error-msg-txt').addClass('text-danger');
             $('.error-msg-txt').text("Passwords do not match");
         } else {
+            $('.submit-btn').text('Submitting...');
+            $('.submit-btn').prop('disabled', true);
             var formData = new FormData(create_form);
             $.ajax({
                 type: "POST",
@@ -169,6 +156,8 @@
                     'Authorization': sessionStorage.getItem("accessToken")
                 },
                 success: function (response) {
+                    $('.submit-btn').text('Submitting...');
+                    $('.submit-btn').prop('disabled', false);
                     if (response.status == 200) {
                         locationAfterMessageStore(response.message, 'success', "{% url 'superuser:userList' %}");
                     } else {
@@ -176,6 +165,8 @@
                     }
                 },
                 error: function (error) {
+                    $('.submit-btn').text('Submitting...');
+                    $('.submit-btn').prop('disabled', false);
                     // locationAfterMessageStore(error.responseJSON.detail, 'error');
                     $('.success-msg-txt').text("");
                     $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');

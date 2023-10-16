@@ -29,4 +29,8 @@ urlpatterns = [
     path('user-list', views.userList, name='userList'),
     path('user-add', views.userAdd, name='userAdd'),
     path('user-edit/<int:id>', views.userEdit, name='userEdit'),
+
+    path('vendor-list', views.vendorList, name='vendorList'),
+    path('vendor-add', views.vendorAdd, name='vendorAdd'),
+    path('vendor-edit/<int:id>', views.vendorEdit, name='vendorEdit'),
 ]

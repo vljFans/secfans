@@ -60,7 +60,7 @@
                     <form id="create_form" class="needs-validation" novalidate>
                         <div class="form-row">
                             <div class="col-md-12 mb-3">
-                                <label>Role Name</label>
+                                <label>Role Name <span class="required-indicator">*</span></label>
                                 <input type="text" name="name" class="form-control" placeholder="Role name" required>
                             </div>
                         </div>
@@ -110,7 +110,7 @@
                             {% endfor %}
                         </div>
                         {% if request.user.is_superuser == 1 or 'add_role'|get_session_permission:request is not None %}
-                        <button class="btn btn-primary" type="submit">Submit</button>
+                        <button class="btn btn-success submit-btn" type="submit">Submit</button>
                         {% endif %}
                     </form>
                 </div>
@@ -157,6 +157,8 @@
 
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
+        $('.submit-btn').text('Submitting...');
+        $('.submit-btn').prop('disabled', true);
         var formData = new FormData(create_form);
         $.ajax({
             type: "POST",
@@ -169,6 +171,8 @@
                 'Authorization': sessionStorage.getItem("accessToken")
             },
             success: function (response) {
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', false);
                 if (response.status == 200) {
                     locationAfterMessageStore(response.message, 'success', "{% url 'superuser:roleList' %}");
                 } else {
@@ -176,6 +180,8 @@
                 }
             },
             error: function (error) {
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', false);
                 // locationAfterMessageStore(error.responseJSON.detail, 'error');
                 $('.success-msg-txt').text("");
                 $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');

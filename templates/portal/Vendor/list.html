@@ -50,8 +50,8 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                {% if request.user.is_superuser == 1 or 'add_role'|get_session_permission:request is not None %}
-                                <a href="{% url 'superuser:roleAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
+                                {% if request.user.is_superuser == 1 or 'add_vendor'|get_session_permission:request is not None %}
+                                <a href="{% url 'superuser:vendorAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
                                 {% endif %}
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                                 <!-- <div class="dropdown" data-toggle="dropdown">
@@ -83,7 +83,16 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Role Name</th>
+                                    <th>Name</th>
+                                    <th>Address</th>
+                                    <th>Contact Name</th>
+                                    <th>Contact Number</th>
+                                    <th>Contact Email</th>
+                                    <th>Country</th>
+                                    <th>State</th>
+                                    <th>City</th>
+                                    <th>Pin</th>
+                                    <th>GST Number</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -108,14 +117,14 @@
     $(document).ready(function () {
         $.ajax({
             type: "GET",
-            url: "{% url 'api:roleList' %}",
+            url: "{% url 'api:vendorList' %}",
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
                 'Authorization': sessionStorage.getItem("accessToken")
             },
             success: function (response) {
                 if (response.status == 200) {
-                    edit_url = "{% url 'superuser:roleEdit' 1 %}";
+                    edit_url = "{% url 'superuser:vendorEdit' 1 %}";
                     page_items = JSON.parse(response.page_items);
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
@@ -123,11 +132,20 @@
                         tbody_text += `<tr>
                                 <th scope="row">${index + 1}</th>
                                 <td>${element.name}</td>
+                                <td>${element.address}</td>
+                                <td>${element.contact_name}</td>
+                                <td>${element.contact_no}</td>
+                                <td>${element.contact_email}</td>
+                                <td>${element.country}</td>
+                                <td>${element.state}</td>
+                                <td>${element.city}</td>
+                                <td>${element.pin}</td>
+                                <td>${element.gst_no}</td>
                                 <td>
-                                {% if request.user.is_superuser == 1 or 'change_role'|get_session_permission:request is not None %}
+                                {% if request.user.is_superuser == 1 or 'change_vendor'|get_session_permission:request is not None %}
                                 <a href="${edit_url.replace('1', page_items[index].pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
                                 {% endif %}
-                                {% if request.user.is_superuser == 1 or 'delete_role'|get_session_permission:request is not None %}
+                                {% if request.user.is_superuser == 1 or 'delete_vendor'|get_session_permission:request is not None %}
                                 <a id="delete-btn" data-id="${page_items[index].pk}" data-name="${element.name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
                                 {% endif %}
                                 </td>
@@ -160,14 +178,14 @@
         if (window.confirm('Are you sure to delete ' + name + '?')) {
             $.ajax({
                 type: "POST",
-                url: "{% url 'api:roleDelete' %}",
+                url: "{% url 'api:vendorDelete' %}",
                 data: ({ id: id }),
                 headers: {
                     'Authorization': sessionStorage.getItem("accessToken"),
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:roleList' %}");
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:vendorList' %}");
                     } else {
                         alert(response.message);
                     }

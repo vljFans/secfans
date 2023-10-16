@@ -87,19 +87,49 @@ def userAdd(request):
 
 @login_required
 def userEdit(request, id):
-    content_types = ContentType.objects.prefetch_related('permission_set').filter(
-        app_label='api').exclude(model__in=['role_permission'])
-    role = models.Role.objects.prefetch_related(
-        'role_permission_set').get(pk=id)
-    selected_permissions = []
-    for permissionDetail in role.role_permission_set.all():
-        if permissionDetail.permitted == 1:
-            selected_permissions.append(permissionDetail.permission_id)
+    user = models.User.objects.get(pk=id)
+    roles = models.Role.objects.filter(status=1, deleted=0)
     context.update({
-        'role': role,
-        'content_types': content_types,
-        'selected_permissions': selected_permissions,
-        'page_title': "Role Edit",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Role", 'url': reverse('superuser:roleList')}, {'name': "Edit"}]
+        'user': user,
+        'roles': roles,
+        'page_title': "User Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "User", 'url': reverse('superuser:userList')}, {'name': "Edit"}]
     })
-    return render(request, 'portal/Role/edit.html', context)
+    return render(request, 'portal/User/edit.html', context)
+
+
+@login_required
+def vendorList(request):
+    context.update({
+        'page_title': "Vendor List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Vendor", 'url': reverse('superuser:vendorList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Vendor/list.html', context)
+
+
+@login_required
+def vendorAdd(request):
+    countries = models.Country.objects.all()
+    context.update({
+        'countries': countries,
+        'page_title': "Vendor Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Vendor", 'url': reverse('superuser:vendorList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Vendor/add.html', context)
+
+
+@login_required
+def vendorEdit(request, id):
+    vendor = models.Vendor.objects.get(pk=id)
+    countries = models.Country.objects.all()
+    states = models.State.objects.filter(country_id=vendor.country_id)
+    cities = models.City.objects.filter(state_id=vendor.state_id)
+    context.update({
+        'vendor': vendor,
+        'countries': countries,
+        'states': states,
+        'cities': cities,
+        'page_title': "Vendor Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Vendor", 'url': reverse('superuser:vendorList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Vendor/edit.html', context)

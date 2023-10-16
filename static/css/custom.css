@@ -1,3 +1,7 @@
 .selectpicker {
     height: 100px;
 }
+
+.required-indicator {
+    color: red;
+}

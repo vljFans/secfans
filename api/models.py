@@ -5,7 +5,7 @@ from django.utils.timezone import now
 
 
 class Role(models.Model):
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=30)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -21,8 +21,10 @@ class Role(models.Model):
 
 
 class Role_Permission(models.Model):
-    role = models.ForeignKey(Role, on_delete=models.CASCADE, blank=True, null=True)
-    permission = models.ForeignKey(Permission, on_delete=models.CASCADE, blank=True, null=True)
+    role = models.ForeignKey(
+        Role, on_delete=models.CASCADE, blank=True, null=True)
+    permission = models.ForeignKey(
+        Permission, on_delete=models.CASCADE, blank=True, null=True)
     permitted = models.SmallIntegerField(default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
@@ -48,7 +50,8 @@ class User(AbstractBaseUser):
     pswd_token = models.CharField(max_length=255, blank=True, null=True)
     username = models.CharField(max_length=100, blank=True, null=True)
     phone = models.CharField(max_length=15, blank=True, null=True)
-    role = models.ForeignKey(Role, on_delete=models.CASCADE, blank=True, null=True)
+    role = models.ForeignKey(
+        Role, on_delete=models.CASCADE, blank=True, null=True)
     is_superuser = models.BooleanField(default=False)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
@@ -63,7 +66,7 @@ class User(AbstractBaseUser):
 
     def __str__(self):
         return self.full_name
-    
+
     class Meta:
         managed = True
         db_table = 'users'
@@ -84,3 +87,73 @@ class User(AbstractBaseUser):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_superuser
+
+
+class Country(models.Model):
+    name = models.CharField(max_length=30)
+    sortname = models.CharField(max_length=3)
+    phonecode = models.CharField(max_length=5, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'countries'
+        verbose_name_plural = 'countries'
+
+
+class State(models.Model):
+    name = models.CharField(max_length=30)
+    country = models.ForeignKey(
+        Country, on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'states'
+        verbose_name_plural = 'states'
+
+
+class City(models.Model):
+    name = models.CharField(max_length=30)
+    state = models.ForeignKey(
+        State, on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'cities'
+        verbose_name_plural = 'cities'
+
+
+class Vendor(models.Model):
+    name = models.CharField(max_length=30, blank=True, null=True)
+    address = models.CharField(max_length=100, blank=True, null=True)
+    country = models.ForeignKey(
+        Country, on_delete=models.CASCADE, blank=True, null=True)
+    state = models.ForeignKey(
+        State, on_delete=models.CASCADE, blank=True, null=True)
+    city = models.ForeignKey(
+        City, on_delete=models.CASCADE, blank=True, null=True)
+    pin = models.CharField(max_length=6, blank=True, null=True)
+    gst_no = models.CharField(max_length=16, blank=True, null=True)
+    contact_no = models.CharField(max_length=15, blank=True, null=True)
+    contact_name = models.CharField(max_length=30, blank=True, null=True)
+    contact_email = models.CharField(max_length=100, blank=True, null=True)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'vendors'
+        verbose_name_plural = 'vendors'

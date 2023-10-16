@@ -11,6 +11,9 @@ urlpatterns = [
     path('get-user-details', views.getUserDetails, name ='get_user_details'),
     path('logout-user', views.logoutUser, name ='logout_user'),
 
+    path('get-country-states', views.getCountryStates, name='getCountryStates'),
+    path('get-state-cities', views.getStateCities, name='getStateCities'),
+
     path('role-list', views.roleList, name ='roleList'),
     path('role-add', views.roleAdd, name ='roleAdd'),
     path('role-edit', views.roleEdit, name ='roleEdit'),
@@ -20,4 +23,9 @@ urlpatterns = [
     path('user-add', views.userAdd, name ='userAdd'),
     path('user-edit', views.userEdit, name ='userEdit'),
     path('user-delete', views.userDelete, name ='userDelete'),
+
+    path('vendor-list', views.vendorList, name ='vendorList'),
+    path('vendor-add', views.vendorAdd, name ='vendorAdd'),
+    path('vendor-edit', views.vendorEdit, name ='vendorEdit'),
+    path('vendor-delete', views.vendorDelete, name ='vendorDelete'),
 ]
