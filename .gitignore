@@ -2,4 +2,4 @@ env/
 .idea/
 sec/.env
 */__pycache__/
-# */migrations/
+*/migrations/
