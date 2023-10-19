@@ -34,9 +34,8 @@ def roleList(request):
 
 @login_required
 def roleAdd(request):
-    # content_types = ContentType.objects.prefetch_related('permission_set').filter(app_label='api').exclude(model__in=['user', 'role', 'role_permission'])
     content_types = ContentType.objects.prefetch_related('permission_set').filter(
-        app_label='api').exclude(model__in=['role_permission'])
+        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city'])
     context.update({
         'content_types': content_types,
         'page_title': "Role Add",
@@ -48,7 +47,7 @@ def roleAdd(request):
 @login_required
 def roleEdit(request, id):
     content_types = ContentType.objects.prefetch_related('permission_set').filter(
-        app_label='api').exclude(model__in=['role_permission'])
+        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city'])
     role = models.Role.objects.prefetch_related(
         'role_permission_set').get(pk=id)
     selected_permissions = []

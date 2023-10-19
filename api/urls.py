@@ -11,6 +11,8 @@ urlpatterns = [
     path('get-user-details', views.getUserDetails, name ='get_user_details'),
     path('logout-user', views.logoutUser, name ='logout_user'),
 
+    path('get-content-types', views.getContentTypes, name='getContentTypes'),
+
     path('get-country-states', views.getCountryStates, name='getCountryStates'),
     path('get-state-cities', views.getStateCities, name='getStateCities'),
 

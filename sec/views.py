@@ -27,6 +27,9 @@ def messageStore(request):
 
 
 def signin(request):
+    context.update({
+        'page_title': "Signin"
+    })
     return render(request, 'auth/signin.html', context)
 
 
@@ -35,11 +38,13 @@ def signup(request):
 
 
 def custom_page_not_found_view(request, exception):
-    return render(request, "errors/404.html", {})
+    context.update({'page_title': "404"})
+    return render(request, "errors/404.html", context)
 
 
 def custom_error_view(request, exception=None):
-    return render(request, "errors/500.html", {})
+    context.update({'page_title': "500"})
+    return render(request, "errors/500.html", context)
 
 
 def custom_permission_denied_view(request, exception=None):

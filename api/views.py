@@ -11,6 +11,7 @@ from django.contrib.messages import get_messages
 from django.contrib.auth import authenticate, login, logout
 from django.core import serializers
 from django.http import JsonResponse
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.hashers import make_password, check_password
 from datetime import datetime
 from django.db import transaction
@@ -78,6 +79,15 @@ def getUserDetails(request):
     context.update({'status': 200, 'message': "User Details Fetched Successfully.",
                    'userDetails': serializers.serialize('json', [request.user])})
     return JsonResponse(context, safe=False)
+
+
+@api_view(['GET'])
+def getContentTypes(request):
+    context = {}
+    page_items = ContentType.objects.prefetch_related('permission_set').filter(app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city'])
+    context.update(
+        {'status': 200, 'message': "Content Types Fetched Successfully", 'page_items': serializers.serialize('json', page_items)})
+    return JsonResponse(context)
 
 
 @api_view(['GET'])

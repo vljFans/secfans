@@ -12,7 +12,7 @@
   <meta name="keyword" content="" />
   <meta name="author" content="" />
   <!-- Page Title -->
-  <title>Signin | {{ project_name }}</title>
+  <title>{{page_title}} | {{ project_name }}</title>
   <!-- Main CSS -->
   <link type="text/css" rel="stylesheet" href="{% static 'css/style.css' %}" />
   <!-- Favicon -->
@@ -103,7 +103,6 @@
   <!-- Custom JS -->
   <script src="{% static 'js/custom.js' %}"></script>
 
-  {% block js %}
   <script>
     $(document).on('submit', '#login_form', function (e) {
       e.preventDefault();
@@ -156,7 +155,6 @@
       });
     }
   </script>
-  {% endblock %}
 </body>
 
 </html>
