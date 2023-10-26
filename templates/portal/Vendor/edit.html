@@ -62,9 +62,14 @@
                         <input type="hidden" id="id" name="id" value="{{vendor.id}}">
                         <div class="form-row">
                             <div class="col-md-4 mb-3">
-                                <label>Name <span class="required-indicator">*</span></label>
+                                <label>Trade Name <span class="required-indicator">*</span></label>
                                 <input type="text" name="name" value="{{vendor.name}}" class="form-control"
                                     placeholder="Name" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Contact Name <span class="required-indicator">*</span></label>
+                                <input type="text" name="contact_name" value="{{vendor.contact_name}}"
+                                    class="form-control" placeholder="Contact Name" required>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>Contact Email <span class="required-indicator">*</span></label>
@@ -75,12 +80,7 @@
                                 <label>Contact Number <span class="required-indicator">*</span></label>
                                 <input type="text" onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                     maxlength="10" name="contact_no" class="form-control" placeholder="Contact Number"
-                                    required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label>Contact Name <span class="required-indicator">*</span></label>
-                                <input type="text" name="contact_name" value="{{vendor.contact_name}}"
-                                    class="form-control" placeholder="Contact Name" required>
+                                    value="{{vendor.contact_no}}" required>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>GST Number</label>

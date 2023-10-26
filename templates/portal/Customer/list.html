@@ -1,7 +1,9 @@
 {% extends 'portal/base.html' %}
+{% load static %}
 {% load template_func %}
 
 {% block css %}
+<link type="text/css" rel="stylesheet" href="{% static 'plugins/footable/footable.core.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -50,8 +52,8 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                {% if request.user.is_superuser == 1 or 'add_user'|get_session_permission:request is not None %}
-                                <a href="{% url 'superuser:userAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
+                                {% if request.user.is_superuser == 1 or 'add_customer'|get_session_permission:request is not None %}
+                                <a href="{% url 'superuser:customerAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
                                 {% endif %}
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                                 <!-- <div class="dropdown" data-toggle="dropdown">
@@ -79,14 +81,21 @@
                 </div>
                 <div class="card-body pd-0">
                     <div class="table-responsive">
-                        <table class="table">
+                        <table id="foo-row-toggler" class="table toggle-circle-filled">
                             <thead>
                                 <tr>
-                                    <th>#</th>
-                                    <th>Name</th>
-                                    <th>Role</th>
-                                    <th>Phone</th>
-                                    <th>Email</th>
+                                    <th data-toggle="true">#</th>
+                                    <th>Trade Name</th>
+                                    <th>Contact Name</th>
+                                    <th>Contact Number</th>
+                                    <th>Contact Email</th>
+                                    <th>Address</th>
+                                    <th>Landmark</th>
+                                    <th data-hide="all">Pin</th>
+                                    <th data-hide="all">City</th>
+                                    <th data-hide="all">State</th>
+                                    <th data-hide="all">Country</th>
+                                    <th>Customer Type</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -107,34 +116,45 @@
 {% endblock %}
 
 {% block js %}
+<script src="{% static 'plugins/footable/footable.all.min.js' %}"></script>
+<script>
+    // Row Toggler
+    $('#foo-row-toggler').footable();
+</script>
 <script>
     $(document).ready(function () {
         $.ajax({
             type: "GET",
-            url: "{% url 'api:userList' %}",
+            url: "{% url 'api:customerList' %}",
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
                 'Authorization': sessionStorage.getItem("accessToken")
             },
             success: function (response) {
                 if (response.status == 200) {
-                    edit_url = "{% url 'superuser:userEdit' 1 %}";
-                    page_items = response.page_items;
+                    edit_url = "{% url 'superuser:customerEdit' 1 %}";
+                    page_items = JSON.parse(response.page_items);
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
-                        const element = page_items[index];
+                        const element = page_items[index].fields;
                         tbody_text += `<tr>
                                 <th scope="row">${index + 1}</th>
                                 <td>${element.name}</td>
-                                <td>${element.role__name}</td>
-                                <td>${element.phone}</td>
-                                <td>${element.email}</td>
+                                <td>${element.address}</td>
+                                <td>${element.contact_name}</td>
+                                <td>${element.contact_no}</td>
+                                <td>${element.contact_email}</td>
+                                <td>${element.country}</td>
+                                <td>${element.state}</td>
+                                <td>${element.city}</td>
+                                <td>${element.pin}</td>
+                                <td>${element.gst_no}</td>
                                 <td>
-                                {% if request.user.is_superuser == 1 or 'change_user'|get_session_permission:request is not None %}
-                                <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
+                                {% if request.user.is_superuser == 1 or 'change_customer'|get_session_permission:request is not None %}
+                                <a href="${edit_url.replace('1', page_items[index].pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
                                 {% endif %}
-                                {% if request.user.is_superuser == 1 or 'delete_user'|get_session_permission:request is not None %}
-                                <a id="delete-btn" data-id="${element.pk}" data-name="${element.name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
+                                {% if request.user.is_superuser == 1 or 'delete_customer'|get_session_permission:request is not None %}
+                                <a id="delete-btn" data-id="${page_items[index].pk}" data-name="${element.name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
                                 {% endif %}
                                 </td>
                             </tr>`;
@@ -166,14 +186,14 @@
         if (window.confirm('Are you sure to delete ' + name + '?')) {
             $.ajax({
                 type: "POST",
-                url: "{% url 'api:userDelete' %}",
+                url: "{% url 'api:customerDelete' %}",
                 data: ({ id: id }),
                 headers: {
                     'Authorization': sessionStorage.getItem("accessToken"),
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:userList' %}");
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:customerList' %}");
                     } else {
                         alert(response.message);
                     }

@@ -35,7 +35,7 @@ def roleList(request):
 @login_required
 def roleAdd(request):
     content_types = ContentType.objects.prefetch_related('permission_set').filter(
-        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city'])
+        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type'])
     context.update({
         'content_types': content_types,
         'page_title': "Role Add",
@@ -47,7 +47,7 @@ def roleAdd(request):
 @login_required
 def roleEdit(request, id):
     content_types = ContentType.objects.prefetch_related('permission_set').filter(
-        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city'])
+        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type'])
     role = models.Role.objects.prefetch_related(
         'role_permission_set').get(pk=id)
     selected_permissions = []
@@ -132,3 +132,40 @@ def vendorEdit(request, id):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Vendor", 'url': reverse('superuser:vendorList')}, {'name': "Edit"}]
     })
     return render(request, 'portal/Vendor/edit.html', context)
+
+
+@login_required
+def customerList(request):
+    context.update({
+        'page_title': "Customer List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Customer", 'url': reverse('superuser:customerList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Customer/list.html', context)
+
+
+@login_required
+def customerAdd(request):
+    countries = models.Country.objects.all()
+    context.update({
+        'countries': countries,
+        'page_title': "Customer Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Customer", 'url': reverse('superuser:customerList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Customer/add.html', context)
+
+
+@login_required
+def customerEdit(request, id):
+    customer = models.Customer.objects.get(pk=id)
+    countries = models.Country.objects.all()
+    states = models.State.objects.filter(country_id=customer.country_id)
+    cities = models.City.objects.filter(state_id=customer.state_id)
+    context.update({
+        'customer': customer,
+        'countries': countries,
+        'states': states,
+        'cities': cities,
+        'page_title': "Customer Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Customer", 'url': reverse('superuser:customerList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Customer/edit.html', context)

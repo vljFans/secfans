@@ -40,3 +40,16 @@ function generatePaginationLinks(currentPage, totalPages, buttonsToShow) {
 
     return paginationLinks.join('');
 }
+
+function transformToTitleCase(inputString) {
+    // Split the input string into words using underscores as the delimiter
+    const words = inputString.split('_');
+  
+    // Capitalize the first letter of each word
+    for (let i = 0; i < words.length; i++) {
+      words[i] = words[i][0].toUpperCase() + words[i].slice(1);
+    }
+  
+    // Join the words with a space in between
+    return words.join(' ');
+  }

@@ -21,12 +21,12 @@
           </a>
         </li>
         <li class="mg-l-20-force mg-t-25-force menu-navigation">Navigation</li>
-        {% if request.user.is_superuser == 1 or 'view_role,view_user,view_vendor'|get_session_permission:request is not None %}
-        <li class="{% if request.path == '/role-list' or request.path == '/user-list' or request.path == '/vendor-list' %}open active{% endif %}">
+        {% if request.user.is_superuser == 1 or 'view_role,view_user,view_vendor,view_customer'|get_session_permission:request is not None %}
+        <li class="{% if request.path == '/role-list' or request.path == '/user-list' or request.path == '/vendor-list' or request.path == '/customer-list' %}open active{% endif %}">
           <a href="javascript:void(0)"><i data-feather="mail"></i>
             <span>Masters</span><i class="accordion-icon fa fa-angle-left"></i>
           </a>
-          <ul class="sub-menu" style="display: {% if request.path == '/role-list' or request.path == '/user-list' or request.path == '/vendor-list' %}block{% else %}none{% endif %};">
+          <ul class="sub-menu" style="display: {% if request.path == '/role-list' or request.path == '/user-list' or request.path == '/vendor-list' or request.path == '/customer-list' %}block{% else %}none{% endif %};">
             {% if request.user.is_superuser == 1 or 'view_role'|get_session_permission:request is not None %}
             <li class="{% if request.path == '/role-list' %}active{% endif %}">
               <a href="{% url 'superuser:roleList' %}">Role</a>
@@ -40,6 +40,11 @@
             {% if request.user.is_superuser == 1 or 'view_vendor'|get_session_permission:request is not None %}
             <li class="{% if request.path == '/vendor-list' %}active{% endif %}">
               <a href="{% url 'superuser:vendorList' %}">Vendor</a>
+            </li>
+            {% endif %}
+            {% if request.user.is_superuser == 1 or 'view_customer'|get_session_permission:request is not None %}
+            <li class="{% if request.path == '/customer-list' %}active{% endif %}">
+              <a href="{% url 'superuser:customerList' %}">Customer</a>
             </li>
             {% endif %}
           </ul>

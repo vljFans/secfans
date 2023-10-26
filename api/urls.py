@@ -13,6 +13,10 @@ urlpatterns = [
 
     path('get-content-types', views.getContentTypes, name='getContentTypes'),
 
+    path('get-customer-types', views.getCustomerTypes, name='getCustomerTypes'),
+    path('get-kyc-types', views.getKycTypes, name='getKycTypes'),
+
+    path('get-countries', views.getCountries, name='getCountries'),
     path('get-country-states', views.getCountryStates, name='getCountryStates'),
     path('get-state-cities', views.getStateCities, name='getStateCities'),
 
@@ -30,4 +34,9 @@ urlpatterns = [
     path('vendor-add', views.vendorAdd, name ='vendorAdd'),
     path('vendor-edit', views.vendorEdit, name ='vendorEdit'),
     path('vendor-delete', views.vendorDelete, name ='vendorDelete'),
+
+    path('customer-list', views.customerList, name ='customerList'),
+    path('customer-add', views.customerAdd, name ='customerAdd'),
+    path('customer-edit', views.customerEdit, name ='customerEdit'),
+    path('customer-delete', views.customerDelete, name ='customerDelete'),
 ]

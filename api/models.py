@@ -65,7 +65,7 @@ class User(AbstractBaseUser):
     objects = UserManager()
 
     def __str__(self):
-        return self.full_name
+        return self.name
 
     class Meta:
         managed = True
@@ -157,3 +157,70 @@ class Vendor(models.Model):
         managed = True
         db_table = 'vendors'
         verbose_name_plural = 'vendors'
+
+
+class Customer_Type(models.Model):
+    name = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'customer_types'
+        verbose_name_plural = 'customer_types'
+
+
+class KYC_Type(models.Model):
+    name = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'kyc_types'
+        verbose_name_plural = 'kyc_types'
+
+
+class Customer(models.Model):
+    name = models.CharField(max_length=30, blank=True, null=True)
+    customer_type = models.ForeignKey(
+        Customer_Type, on_delete=models.CASCADE, blank=True, null=True)
+    landmark = models.CharField(max_length=30, blank=True, null=True)
+    address = models.CharField(max_length=100, blank=True, null=True)
+    country = models.ForeignKey(
+        Country, on_delete=models.CASCADE, blank=True, null=True)
+    state = models.ForeignKey(
+        State, on_delete=models.CASCADE, blank=True, null=True)
+    city = models.ForeignKey(
+        City, on_delete=models.CASCADE, blank=True, null=True)
+    pin = models.CharField(max_length=6, blank=True, null=True)
+    gst_no = models.CharField(max_length=16, blank=True, null=True)
+    contact_no = models.CharField(max_length=15, blank=True, null=True)
+    contact_no_std = models.CharField(max_length=15, blank=True, null=True)
+    contact_name = models.CharField(max_length=30, blank=True, null=True)
+    contact_email = models.CharField(max_length=100, blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+    date_of_anniversary = models.DateField(blank=True, null=True)
+    photo = models.CharField(max_length=250, blank=True, null=True)
+    kyc_type = models.ForeignKey(KYC_Type, on_delete=models.CASCADE, blank=True, null=True)
+    kyc_detail = models.CharField(max_length=25, blank=True, null=True)
+    kyc_image = models.CharField(max_length=250, blank=True, null=True)
+    weekly_closing_day = models.CharField(max_length=250, blank=True, null=True)
+    morning_from_time = models.TimeField(blank=True, null=True)
+    morning_to_time = models.TimeField(blank=True, null=True)
+    evening_from_time = models.TimeField(blank=True, null=True)
+    evening_to_time = models.TimeField(blank=True, null=True)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'customers'
+        verbose_name_plural = 'customers'

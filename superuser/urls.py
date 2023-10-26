@@ -33,4 +33,8 @@ urlpatterns = [
     path('vendor-list', views.vendorList, name='vendorList'),
     path('vendor-add', views.vendorAdd, name='vendorAdd'),
     path('vendor-edit/<int:id>', views.vendorEdit, name='vendorEdit'),
+
+    path('customer-list', views.customerList, name='customerList'),
+    path('customer-add', views.customerAdd, name='customerAdd'),
+    path('customer-edit/<int:id>', views.customerEdit, name='customerEdit'),
 ]

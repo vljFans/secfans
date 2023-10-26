@@ -99,11 +99,11 @@
                             <tbody id="table-body">
                             </tbody>
                         </table>
-                        <nav>
-                            <ul id="pagination" class="pagination justify-content-center">
-                            </ul>
-                        </nav>
                     </div>
+                    <nav>
+                        <ul id="pagination" class="pagination justify-content-center">
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>
@@ -125,10 +125,10 @@
             success: function (response) {
                 if (response.status == 200) {
                     edit_url = "{% url 'superuser:vendorEdit' 1 %}";
-                    page_items = JSON.parse(response.page_items);
+                    page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
-                        const element = page_items[index].fields;
+                        const element = page_items[index];
                         tbody_text += `<tr>
                                 <th scope="row">${index + 1}</th>
                                 <td>${element.name}</td>
@@ -136,17 +136,17 @@
                                 <td>${element.contact_name}</td>
                                 <td>${element.contact_no}</td>
                                 <td>${element.contact_email}</td>
-                                <td>${element.country}</td>
-                                <td>${element.state}</td>
-                                <td>${element.city}</td>
+                                <td>${element.country__name}</td>
+                                <td>${element.state__name}</td>
+                                <td>${element.city__name}</td>
                                 <td>${element.pin}</td>
                                 <td>${element.gst_no}</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'change_vendor'|get_session_permission:request is not None %}
-                                <a href="${edit_url.replace('1', page_items[index].pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
+                                <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
                                 {% endif %}
                                 {% if request.user.is_superuser == 1 or 'delete_vendor'|get_session_permission:request is not None %}
-                                <a id="delete-btn" data-id="${page_items[index].pk}" data-name="${element.name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
+                                <a id="delete-btn" data-id="${element.pk}" data-name="${element.name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
                                 {% endif %}
                                 </td>
                             </tr>`;

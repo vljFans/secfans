@@ -84,9 +84,28 @@ def getUserDetails(request):
 @api_view(['GET'])
 def getContentTypes(request):
     context = {}
-    page_items = ContentType.objects.prefetch_related('permission_set').filter(app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city'])
+    page_items = ContentType.objects.prefetch_related('permission_set').filter(app_label='api').exclude(
+        model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type'])
     context.update(
         {'status': 200, 'message': "Content Types Fetched Successfully", 'page_items': serializers.serialize('json', page_items)})
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+def getCustomerTypes(request):
+    context = {}
+    page_items = models.Customer_Type.objects.all()
+    context.update(
+        {'status': 200, 'message': "Customer Types Fetched Successfully", 'page_items': serializers.serialize('json', page_items)})
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+def getKycTypes(request):
+    context = {}
+    page_items = models.KYC_Type.objects.all()
+    context.update(
+        {'status': 200, 'message': "KYC Types Fetched Successfully", 'page_items': serializers.serialize('json', page_items)})
     return JsonResponse(context)
 
 
@@ -125,14 +144,14 @@ def roleList(request):
     context = {}
     id = request.GET.get('id', None)
     if id != None:
-        role = models.Role.objects.get(pk=id)
+        role = list(models.Role.objects.get(pk=id).values('pk', 'name'))
         context.update({
             'status': 200,
             'message': "Role Fetched Successfully.",
-            'detail': serializers.serialize('json', [role]),
+            'detail': role,
         })
     else:
-        roles = models.Role.objects.filter(status=1, deleted=0)
+        roles = list(models.Role.objects.filter(status=1, deleted=0).values('pk', 'name'))
 
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
@@ -145,7 +164,7 @@ def roleList(request):
         context.update({
             'status': 200,
             'message': "Roles Fetched Successfully.",
-            'page_items': serializers.serialize('json', page_items),
+            'page_items': page_items,
             'total_pages': total_pages,
             'current_page': int(current_page),
             'button_to_show': int(button_to_show),
@@ -263,15 +282,15 @@ def userList(request):
     context = {}
     id = request.GET.get('id', None)
     if id != None:
-        user = models.User.objects.get(pk=id)
+        user = list(models.User.objects.get(pk=id).values('pk', 'name', 'email', 'phone', 'role__name'))
         context.update({
             'status': 200,
             'message': "User Fetched Successfully.",
-            'detail': serializers.serialize('json', [user]),
+            'detail': user,
         })
     else:
-        users = models.User.objects.filter(
-            status=1, deleted=0).exclude(is_superuser=1)
+        users = list(models.User.objects.filter(
+            status=1, deleted=0).exclude(is_superuser=1).values('pk', 'name', 'email', 'phone', 'role__name'))
 
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
@@ -284,7 +303,7 @@ def userList(request):
         context.update({
             'status': 200,
             'message': "Users Fetched Successfully.",
-            'page_items': serializers.serialize('json', page_items),
+            'page_items': page_items,
             'total_pages': total_pages,
             'current_page': int(current_page),
             'button_to_show': int(button_to_show),
@@ -411,14 +430,14 @@ def vendorList(request):
     context = {}
     id = request.GET.get('id', None)
     if id != None:
-        vendor = models.Vendor.objects.get(pk=id)
+        vendor = list(models.Vendor.objects.get(pk=id).values('pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
         context.update({
             'status': 200,
             'message': "Vendor Fetched Successfully.",
-            'detail': serializers.serialize('json', [vendor]),
+            'detail': vendor,
         })
     else:
-        vendors = models.Vendor.objects.filter(status=1, deleted=0)
+        vendors = list(models.Vendor.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
 
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
@@ -431,7 +450,7 @@ def vendorList(request):
         context.update({
             'status': 200,
             'message': "Vendors Fetched Successfully.",
-            'page_items': serializers.serialize('json', page_items),
+            'page_items': page_items,
             'total_pages': total_pages,
             'current_page': int(current_page),
             'button_to_show': int(button_to_show),
@@ -507,6 +526,129 @@ def vendorEdit(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def vendorDelete(request):
+    context = {}
+    vendor = models.Vendor.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            vendor.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Vendor Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 517,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def customerList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    if id != None:
+        customer = list(models.Customer.objects.get(pk=id).values('pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
+        context.update({
+            'status': 200,
+            'message': "Customer Fetched Successfully.",
+            'detail': customer,
+        })
+    else:
+        customers = list(models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(customers, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Customers Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def customerAdd(request):
+    context = {}
+    print(request.POST)
+    exit()
+    try:
+        with transaction.atomic():
+            vendor = models.Vendor()
+            vendor.name = request.POST['name']
+            vendor.contact_name = request.POST['contact_name']
+            vendor.contact_email = request.POST['contact_email']
+            vendor.contact_no = request.POST['contact_no']
+            vendor.gst_no = request.POST['gst_no']
+            vendor.pin = request.POST['pin']
+            vendor.address = request.POST['address']
+            vendor.country_id = request.POST['country_id']
+            vendor.state_id = request.POST['state_id']
+            vendor.city_id = request.POST['city_id']
+            vendor.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Vendor Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 515,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def customerEdit(request):
+    context = {}
+    try:
+        with transaction.atomic():
+            vendor = models.Vendor.objects.get(pk=request.POST['id'])
+            vendor.name = request.POST['name']
+            vendor.contact_name = request.POST['contact_name']
+            vendor.contact_email = request.POST['contact_email']
+            vendor.contact_no = request.POST['contact_no']
+            vendor.gst_no = request.POST['gst_no']
+            vendor.pin = request.POST['pin']
+            vendor.address = request.POST['address']
+            vendor.country_id = request.POST['country_id']
+            vendor.state_id = request.POST['state_id']
+            vendor.city_id = request.POST['city_id']
+            vendor.updated_at = datetime.now()
+            vendor.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Vendor Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 516,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def customerDelete(request):
     context = {}
     vendor = models.Vendor.objects.get(pk=request.POST['id'])
     try:
