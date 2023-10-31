@@ -3,3 +3,4 @@ env/
 sec/.env
 */__pycache__/
 */migrations/
+*/media/
