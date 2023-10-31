@@ -51,7 +51,7 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                <a href="{% url 'superuser:vendorList' %}" class="mr-3"><i
+                                <a href="{% url 'superuser:customerList' %}" class="mr-3"><i
                                         class="fa fa-step-backward"></i></a>
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                             </div>
@@ -59,7 +59,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <form id="create_form" class="needs-validation" novalidate>
+                    <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
                         <div class="form-row">
                             <div class="col-md-4 mb-3">
                                 <label>Trade Name <span class="required-indicator">*</span></label>
@@ -82,16 +82,12 @@
                                     required>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label>Customer Type <span class="required-indicator">*</span></label>
-                                <div class="input-group">
-                                    <select class="custom-select selectpicker" id="customer_type" name="customer_type"
-                                        required>
-                                        <option value="">Choose...</option>
-                                        {% for country in countries %}
-                                        <option value="{{country.id}}">{{country.name}}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
+                                <label>STD Number</label>
+                                <input type="text" onkeypress="return event.charCode >= 48 && event.charCode <= 57" name="contact_no_std" class="form-control" placeholder="STD Number" >
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Landmark<span class="required-indicator">*</span></label>
+                                <input type="text" name="landmark" class="form-control" placeholder="Landmark" required>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>Pin <span class="required-indicator">*</span></label>
@@ -100,6 +96,82 @@
                                         onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                         placeholder="Pin Number">
                                 </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Customer Photo<span class="required-indicator">*</span></label>
+                                <input type="file" name="photo" class="form-control" placeholder="photo" required accept="image/*">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Customer Type <span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="customer_type" name="customer_type_id"
+                                        required>
+                                        <option value="">Choose...</option>
+                                        {% for customer_type in customer_types %}
+                                        <option value="{{customer_type.id}}">{{customer_type.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>KYC Type <span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="kyc_type" name="kyc_type_id"
+                                        required>
+                                        <option value="">Choose...</option>
+                                        {% for kyc_type in kyc_types %}
+                                        <option value="{{kyc_type.id}}">{{kyc_type.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>KYC Detail<span class="required-indicator">*</span></label>
+                                <input type="text" name="kyc_detail" id="kyc_detail" class="form-control" placeholder="KYC Detail" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>KYC Document<span class="required-indicator">*</span></label>
+                                <input type="file" name="kyc_image" class="form-control" placeholder="KYC Document" required accept="application/pdf">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Date of Birth</label>
+                                <input type="date" name="date_of_birth" class="form-control" placeholder="Date of Birth">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Anniversary Date</label>
+                                <input type="text" name="date_of_anniversary" class="form-control dateMonth" placeholder="MM-DD" >
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Weekly Closing Day <span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="weekly_closing_day" name="weekly_closing_day"
+                                        required multiple>
+                                        <option value="">Choose...</option>
+                                        <option value="sunday">Sunday</option>
+                                        <option value="monday">Monday</option>
+                                        <option value="tuesday">Tuesday</option>
+                                        <option value="wednesday">Wednesday</option>
+                                        <option value="thursday">Thursday</option>
+                                        <option value="friday">Friday</option>
+                                        <option value="saturday">Saturday</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label>Morning (From)</label>
+                                <input type="time" min="00:01" max="15:00" name="morning_from_time" class="form-control" placeholder="Morning From">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label>Morning (To)</label>
+                                <input type="time" min="00:01" max="15:00" name="morning_to_time" class="form-control" placeholder="Morning To">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label>Evening (From)</label>
+                                <input type="time" min="12:01" max="24:00" name="evening_from_time" class="form-control" placeholder="Evening From">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label>Evening (To)</label>
+                                <input type="time" min="12:01" max="24:00" name="evening_to_time" class="form-control" placeholder="Evening To">
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>Country <span class="required-indicator">*</span></label>
@@ -135,7 +207,7 @@
                                     placeholder="Address"></textarea>
                             </div>
                         </div>
-                        {% if request.user.is_superuser == 1 or 'add_vendor'|get_session_permission:request is not None %}
+                        {% if request.user.is_superuser == 1 or 'add_customer'|get_session_permission:request is not None %}
                         <button class="btn btn-success submit-btn" type="submit">Submit</button>
                         {% endif %}
                     </form>
@@ -161,6 +233,7 @@
                     if (form.checkValidity() === false) {
                         event.preventDefault();
                         event.stopPropagation();
+                        console.log(form);
                     }
                     form.classList.add('was-validated');
                 }, false);
@@ -171,6 +244,10 @@
 <script>
     $('.selectpicker').select2({
         placeholder: ''
+    });
+
+    $(document).on('change', '.dateMonth', function () {
+        formatDate($(this).val())
     });
 
     $(document).on('change', '#country_id', function () {
@@ -227,7 +304,7 @@
             evalScripts: true,
             contentType: false,
             processData: false,
-            url: "{% url 'api:vendorAdd' %}",
+            url: "{% url 'api:customerAdd' %}",
             data: formData,
             headers: {
                 'Authorization': sessionStorage.getItem("accessToken")
@@ -236,7 +313,7 @@
                 $('.submit-btn').text('Submitting...');
                 $('.submit-btn').prop('disabled', false);
                 if (response.status == 200) {
-                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:vendorList' %}");
+                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:customerList' %}");
                 } else {
                     alert(response.message);
                 }

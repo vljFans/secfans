@@ -121,7 +121,7 @@
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index];
                         tbody_text += `<tr>
-                                <th scope="row">${index + 1}</th>
+                                <td scope="row">${index + 1}</td>
                                 <td>${element.name}</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'change_role'|get_session_permission:request is not None %}

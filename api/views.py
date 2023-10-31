@@ -16,6 +16,9 @@ from django.contrib.auth.hashers import make_password, check_password
 from datetime import datetime
 from django.db import transaction
 from django.db.models import Q
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from pathlib import Path
 import math
 import environ
 
@@ -462,6 +465,13 @@ def vendorList(request):
 @permission_classes([IsAuthenticated])
 def vendorAdd(request):
     context = {}
+    exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(contact_no__iexact=request.POST['contact_no']))
+    if len(exist_data) > 0:
+        context.update({
+            'status': 515,
+            'message': "Vendor with this email or phone number already exists."
+        })
+        return JsonResponse(context)
     try:
         with transaction.atomic():
             vendor = models.Vendor()
@@ -483,7 +493,7 @@ def vendorAdd(request):
         })
     except Exception:
         context.update({
-            'status': 515,
+            'status': 516,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -494,6 +504,13 @@ def vendorAdd(request):
 @permission_classes([IsAuthenticated])
 def vendorEdit(request):
     context = {}
+    exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(contact_no__iexact=request.POST['contact_no'])).exclude(id=request.POST['id'])
+    if len(exist_data) > 0:
+        context.update({
+            'status': 517,
+            'message': "Vendor with this email or phone number already exists."
+        })
+        return JsonResponse(context)
     try:
         with transaction.atomic():
             vendor = models.Vendor.objects.get(pk=request.POST['id'])
@@ -516,7 +533,7 @@ def vendorEdit(request):
         })
     except Exception:
         context.update({
-            'status': 516,
+            'status': 518,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -538,7 +555,7 @@ def vendorDelete(request):
         })
     except Exception:
         context.update({
-            'status': 517,
+            'status': 519,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -551,14 +568,14 @@ def customerList(request):
     context = {}
     id = request.GET.get('id', None)
     if id != None:
-        customer = list(models.Customer.objects.get(pk=id).values('pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
+        customer = list(models.Customer.objects.get(pk=id).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name'))
         context.update({
             'status': 200,
             'message': "Customer Fetched Successfully.",
             'detail': customer,
         })
     else:
-        customers = list(models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
+        customers = list(models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name'))
 
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
@@ -583,30 +600,67 @@ def customerList(request):
 @permission_classes([IsAuthenticated])
 def customerAdd(request):
     context = {}
-    print(request.POST)
-    exit()
+    exist_data = models.Customer.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(contact_no__iexact=request.POST['contact_no']))
+    if len(exist_data) > 0:
+        context.update({
+            'status': 520,
+            'message': "Customer with this email or phone number already exists."
+        })
+        return JsonResponse(context)
     try:
         with transaction.atomic():
-            vendor = models.Vendor()
-            vendor.name = request.POST['name']
-            vendor.contact_name = request.POST['contact_name']
-            vendor.contact_email = request.POST['contact_email']
-            vendor.contact_no = request.POST['contact_no']
-            vendor.gst_no = request.POST['gst_no']
-            vendor.pin = request.POST['pin']
-            vendor.address = request.POST['address']
-            vendor.country_id = request.POST['country_id']
-            vendor.state_id = request.POST['state_id']
-            vendor.city_id = request.POST['city_id']
-            vendor.save()
+            customer = models.Customer()
+            customer.name = request.POST['name']
+            customer.contact_name = request.POST['contact_name']
+            customer.contact_email = request.POST['contact_email']
+            customer.contact_no = request.POST['contact_no']
+            customer.contact_no_std = request.POST['contact_no_std']
+            customer.landmark = request.POST['landmark']
+            customer.pin = request.POST['pin']
+            customer.customer_type_id = request.POST['customer_type_id']
+            customer.kyc_type_id = request.POST['kyc_type_id']
+            customer.kyc_detail = request.POST['kyc_detail']
+            customer.date_of_birth = request.POST['date_of_birth'] if request.POST['date_of_birth'] != "" else None
+            customer.date_of_anniversary = request.POST['date_of_anniversary']
+            customer.weekly_closing_day = ", ".join(request.POST.getlist('weekly_closing_day'))
+            customer.morning_from_time = request.POST['morning_from_time']
+            customer.morning_to_time = request.POST['morning_to_time']
+            customer.evening_from_time = request.POST['evening_from_time']
+            customer.evening_to_time = request.POST['evening_to_time']
+            customer.address = request.POST['address']
+            customer.country_id = request.POST['country_id']
+            customer.state_id = request.POST['state_id']
+            customer.city_id = request.POST['city_id']
+            customer.save()
+
+            if 'photo' in request.FILES.keys():
+                photo = request.FILES['photo']
+                directory_path = settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/"
+                path = Path(directory_path)
+                path.mkdir(parents=True, exist_ok=True)
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/")
+                saved_file = fs.save(photo.name, photo)
+                photo_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/" + saved_file
+                customer.photo = photo_path
+                customer.save()
+            if 'kyc_image' in request.FILES.keys():
+                kyc_image = request.FILES['kyc_image']
+                directory_path = settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/"
+                path = Path(directory_path)
+                path.mkdir(parents=True, exist_ok=True)
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/")
+                saved_file = fs.save(kyc_image.name, kyc_image)
+                kyc_image_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/" + saved_file
+                customer.kyc_image = kyc_image_path
+                customer.save()
         transaction.commit()
         context.update({
             'status': 200,
-            'message': "Vendor Created Successfully."
+            'message': "Customer Created Successfully."
         })
     except Exception:
         context.update({
-            'status': 515,
+            'status': 521,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -617,29 +671,67 @@ def customerAdd(request):
 @permission_classes([IsAuthenticated])
 def customerEdit(request):
     context = {}
+    exist_data = models.Customer.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(contact_no__iexact=request.POST['contact_no'])).exclude(id=request.POST['id'])
+    if len(exist_data) > 0:
+        context.update({
+            'status': 522,
+            'message': "Customer with this email or phone number already exists."
+        })
+        return JsonResponse(context)
     try:
         with transaction.atomic():
-            vendor = models.Vendor.objects.get(pk=request.POST['id'])
-            vendor.name = request.POST['name']
-            vendor.contact_name = request.POST['contact_name']
-            vendor.contact_email = request.POST['contact_email']
-            vendor.contact_no = request.POST['contact_no']
-            vendor.gst_no = request.POST['gst_no']
-            vendor.pin = request.POST['pin']
-            vendor.address = request.POST['address']
-            vendor.country_id = request.POST['country_id']
-            vendor.state_id = request.POST['state_id']
-            vendor.city_id = request.POST['city_id']
-            vendor.updated_at = datetime.now()
-            vendor.save()
+            customer = models.Customer.objects.get(pk=request.POST['id'])
+            customer.name = request.POST['name']
+            customer.contact_name = request.POST['contact_name']
+            customer.contact_email = request.POST['contact_email']
+            customer.contact_no = request.POST['contact_no']
+            customer.contact_no_std = request.POST['contact_no_std']
+            customer.landmark = request.POST['landmark']
+            customer.pin = request.POST['pin']
+            customer.customer_type_id = request.POST['customer_type_id']
+            customer.kyc_type_id = request.POST['kyc_type_id']
+            customer.kyc_detail = request.POST['kyc_detail']
+            customer.date_of_birth = request.POST['date_of_birth'] if request.POST['date_of_birth'] != "" else None
+            customer.date_of_anniversary = request.POST['date_of_anniversary']
+            customer.weekly_closing_day = ", ".join(request.POST.getlist('weekly_closing_day'))
+            customer.morning_from_time = request.POST['morning_from_time']
+            customer.morning_to_time = request.POST['morning_to_time']
+            customer.evening_from_time = request.POST['evening_from_time']
+            customer.evening_to_time = request.POST['evening_to_time']
+            customer.address = request.POST['address']
+            customer.country_id = request.POST['country_id']
+            customer.state_id = request.POST['state_id']
+            customer.city_id = request.POST['city_id']
+            customer.save()
+
+            if 'photo' in request.FILES.keys():
+                photo = request.FILES['photo']
+                directory_path = settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/"
+                path = Path(directory_path)
+                path.mkdir(parents=True, exist_ok=True)
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/")
+                saved_file = fs.save(photo.name, photo)
+                photo_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/" + saved_file
+                customer.photo = photo_path
+                customer.save()
+            if 'kyc_image' in request.FILES.keys():
+                kyc_image = request.FILES['kyc_image']
+                directory_path = settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/"
+                path = Path(directory_path)
+                path.mkdir(parents=True, exist_ok=True)
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/")
+                saved_file = fs.save(kyc_image.name, kyc_image)
+                kyc_image_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/" + saved_file
+                customer.kyc_image = kyc_image_path
+                customer.save()
         transaction.commit()
         context.update({
             'status': 200,
-            'message': "Vendor Updated Successfully."
+            'message': "Customer Updated Successfully."
         })
     except Exception:
         context.update({
-            'status': 516,
+            'status': 523,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -650,18 +742,18 @@ def customerEdit(request):
 @permission_classes([IsAuthenticated])
 def customerDelete(request):
     context = {}
-    vendor = models.Vendor.objects.get(pk=request.POST['id'])
+    customer = models.Customer.objects.get(pk=request.POST['id'])
     try:
         with transaction.atomic():
-            vendor.delete()
+            customer.delete()
         transaction.commit()
         context.update({
             'status': 200,
-            'message': "Vendor Deleted Successfully."
+            'message': "Customer Deleted Successfully."
         })
     except Exception:
         context.update({
-            'status': 517,
+            'status': 524,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()

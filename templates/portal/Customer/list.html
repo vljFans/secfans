@@ -81,20 +81,20 @@
                 </div>
                 <div class="card-body pd-0">
                     <div class="table-responsive">
-                        <table id="foo-row-toggler" class="table toggle-circle-filled">
+                        <table class="table">
                             <thead>
                                 <tr>
-                                    <th data-toggle="true">#</th>
+                                    <th>#</th>
                                     <th>Trade Name</th>
                                     <th>Contact Name</th>
                                     <th>Contact Number</th>
                                     <th>Contact Email</th>
                                     <th>Address</th>
                                     <th>Landmark</th>
-                                    <th data-hide="all">Pin</th>
-                                    <th data-hide="all">City</th>
-                                    <th data-hide="all">State</th>
-                                    <th data-hide="all">Country</th>
+                                    <th>Pin</th>
+                                    <th>City</th>
+                                    <th>State</th>
+                                    <th>Country</th>
                                     <th>Customer Type</th>
                                     <th>Action</th>
                                 </tr>
@@ -133,22 +133,23 @@
             success: function (response) {
                 if (response.status == 200) {
                     edit_url = "{% url 'superuser:customerEdit' 1 %}";
-                    page_items = JSON.parse(response.page_items);
+                    page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
-                        const element = page_items[index].fields;
+                        const element = page_items[index];
                         tbody_text += `<tr>
-                                <th scope="row">${index + 1}</th>
+                                <td>${index + 1}</td>
                                 <td>${element.name}</td>
-                                <td>${element.address}</td>
                                 <td>${element.contact_name}</td>
                                 <td>${element.contact_no}</td>
                                 <td>${element.contact_email}</td>
-                                <td>${element.country}</td>
-                                <td>${element.state}</td>
-                                <td>${element.city}</td>
+                                <td>${element.address}</td>
+                                <td>${element.landmark}</td>
                                 <td>${element.pin}</td>
-                                <td>${element.gst_no}</td>
+                                <td>${element.city__name}</td>
+                                <td>${element.state__name}</td>
+                                <td>${element.country__name}</td>
+                                <td>${element.customer_type__name}</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'change_customer'|get_session_permission:request is not None %}
                                 <a href="${edit_url.replace('1', page_items[index].pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    

@@ -44,12 +44,24 @@ function generatePaginationLinks(currentPage, totalPages, buttonsToShow) {
 function transformToTitleCase(inputString) {
     // Split the input string into words using underscores as the delimiter
     const words = inputString.split('_');
-  
+
     // Capitalize the first letter of each word
     for (let i = 0; i < words.length; i++) {
-      words[i] = words[i][0].toUpperCase() + words[i].slice(1);
+        words[i] = words[i][0].toUpperCase() + words[i].slice(1);
     }
-  
+
     // Join the words with a space in between
     return words.join(' ');
-  }
+}
+
+function formatDate(inputDate) {
+    var datePattern = /^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+
+    if (datePattern.test(inputDate)) {
+        $('.submit-btn').prop('disabled', false);
+        return true;
+    } else {
+        alert('Please enter a valid value in the MM-DD format.');
+        $('.submit-btn').prop('disabled', true);
+    }
+}

@@ -145,9 +145,13 @@ def customerList(request):
 
 @login_required
 def customerAdd(request):
+    customer_types = models.Customer_Type.objects.all()
+    kyc_types = models.KYC_Type.objects.all()
     countries = models.Country.objects.all()
     context.update({
         'countries': countries,
+        'customer_types': customer_types,
+        'kyc_types': kyc_types,
         'page_title': "Customer Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Customer", 'url': reverse('superuser:customerList')}, {'name': "Add"}]
     })
@@ -157,11 +161,15 @@ def customerAdd(request):
 @login_required
 def customerEdit(request, id):
     customer = models.Customer.objects.get(pk=id)
+    customer_types = models.Customer_Type.objects.all()
+    kyc_types = models.KYC_Type.objects.all()
     countries = models.Country.objects.all()
     states = models.State.objects.filter(country_id=customer.country_id)
     cities = models.City.objects.filter(state_id=customer.state_id)
     context.update({
         'customer': customer,
+        'customer_types': customer_types,
+        'kyc_types': kyc_types,
         'countries': countries,
         'states': states,
         'cities': cities,
