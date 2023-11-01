@@ -90,12 +90,6 @@
                                     <th>Contact Name</th>
                                     <th>Contact Number</th>
                                     <th>Contact Email</th>
-                                    <th>Address</th>
-                                    <th>Landmark</th>
-                                    <th>Pin</th>
-                                    <th>City</th>
-                                    <th>State</th>
-                                    <th>Country</th>
                                     <th>Customer Type</th>
                                     <th>Action</th>
                                 </tr>
@@ -145,12 +139,6 @@
                                 <td>${element.contact_name}</td>
                                 <td>${element.contact_no}</td>
                                 <td>${element.contact_email}</td>
-                                <td>${element.address}</td>
-                                <td>${element.landmark}</td>
-                                <td>${element.pin}</td>
-                                <td>${element.city__name}</td>
-                                <td>${element.state__name}</td>
-                                <td>${element.country__name}</td>
                                 <td>${element.customer_type__name}</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'change_customer'|get_session_permission:request is not None %}
