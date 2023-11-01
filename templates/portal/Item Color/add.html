@@ -134,7 +134,7 @@
             url: "{% url 'api:itemColorAdd' %}",
             data: formData,
             headers: {
-                'Authorization': sessionStorage.getItem("accessToken")
+                'Authorization': getCookieValue("accessToken")
             },
             success: function (response) {
                 $('.submit-btn').text('Submitting...');

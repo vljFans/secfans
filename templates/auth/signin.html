@@ -139,7 +139,8 @@
         },
         success: function (response) {
           if (response.status == 200) {
-            sessionStorage.setItem("accessToken", "Bearer " + tokenDetails.access);
+            // sessionStorage.setItem("accessToken", "Bearer " + tokenDetails.access);
+            setCookie("accessToken", "Bearer " + tokenDetails.access)
             locationAfterMessageStore(response.message, 'success', "{% url 'superuser:dashboard' %}");
           } else {
             alert(response.message);

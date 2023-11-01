@@ -1,3 +1,42 @@
+function setCookie(cookieName) {
+    // Set the cookie's expiration date to a date in the past
+    document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+}
+
+function setCookie(cookieName, cookieValue) {
+    // expirationDays = 180;
+    // const d = new Date();
+    // d.setTime(d.getTime() + (expirationDays * 24 * 60 * 60 * 1000)); // Calculate expiration date
+
+    // const expires = "expires=" + d.toUTCString();
+    // document.cookie = cookieName + "=" + cookieValue + "; " + expires;
+    document.cookie = cookieName + "=" + cookieValue + ";";
+}
+
+// Usage
+setCookie('myCookie', 'cookieValue', 7); // 'myCookie' is the name, 'cookieValue' is the value, and 7 is the number of days until expiration
+
+function getCookieValue(cookieName) {
+    const name = cookieName + '=';
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const cookieArray = decodedCookie.split(';');
+
+    for (let i = 0; i < cookieArray.length; i++) {
+        let cookie = cookieArray[i].trim();
+
+        if (cookie.indexOf(name) === 0) {
+            return cookie.substring(name.length, cookie.length);
+        }
+    }
+
+    return null; // Return null if the cookie is not found
+}
+
+function deleteCookie(cookieName) {
+    // Set the cookie's expiration date to a date in the past
+    document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+}
+
 function locationAfterMessageStore(message, message_type = null, redirect_path = null) {
     $.ajax({
         type: "POST",

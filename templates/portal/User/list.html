@@ -114,7 +114,7 @@
             url: "{% url 'api:userList' %}",
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
-                'Authorization': sessionStorage.getItem("accessToken")
+                'Authorization': getCookieValue("accessToken")
             },
             success: function (response) {
                 if (response.status == 200) {
@@ -169,7 +169,7 @@
                 url: "{% url 'api:userDelete' %}",
                 data: ({ id: id }),
                 headers: {
-                    'Authorization': sessionStorage.getItem("accessToken"),
+                    'Authorization': getCookieValue("accessToken"),
                 },
                 success: function (response) {
                     if (response.status == 200) {

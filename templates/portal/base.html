@@ -203,7 +203,8 @@
 
     <script>
         $(document).ready(function () {
-            accessToken = sessionStorage.getItem("accessToken");
+            // accessToken = sessionStorage.getItem("accessToken");
+            accessToken = getCookieValue("accessToken");
             if (accessToken == undefined || accessToken == null) {
                 locationAfterMessageStore("", "", "{% url 'signin' %}")
             }
@@ -215,11 +216,11 @@
                 url: "{% url 'api:logout_user' %}",
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': sessionStorage.getItem("accessToken"),
+                    'Authorization': getCookieValue("accessToken"),
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        sessionStorage.removeItem("accessToken");
+                        deleteCookie("accessToken")
                         locationAfterMessageStore(response.message, 'success', "{% url 'signin' %}");
                     } else {
                         alert(response.message);
