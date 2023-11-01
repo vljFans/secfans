@@ -3,6 +3,11 @@
 {% load template_func %}
 
 {% block css %}
+<style>
+    .input-group-addon {
+        border-left: none;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -67,12 +72,15 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Color <span class="required-indicator">*</span></label>
-                                <input type="text" name="color_code" class="form-control" placeholder="Choose color" required>
+                                <div id="cp-component" class="input-group">
+                                    <input type="text" value="#269faf" name="color_code" class="form-control"
+                                        placeholder="Choose color" required>
+                                    <span class="input-group-addon"><i></i></span>
+                                </div>
                             </div>
-                        </div>
-                        {% if request.user.is_superuser == 1 or 'add_item_color'|get_session_permission:request is not None %}
-                        <button class="btn btn-success submit-btn" type="submit">Submit</button>
-                        {% endif %}
+                            {% if request.user.is_superuser == 1 or 'add_item_color'|get_session_permission:request is not None %}
+                            <button class="btn btn-success submit-btn" type="submit">Submit</button>
+                            {% endif %}
                     </form>
                 </div>
             </div>
@@ -106,6 +114,10 @@
 <script>
     $('.selectpicker').select2({
         placeholder: ''
+    });
+
+    $(function () {
+        $('#cp-component').colorpicker();
     });
 
     $(document).on('submit', '#create_form', function (e) {

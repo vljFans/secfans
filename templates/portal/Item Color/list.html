@@ -124,7 +124,7 @@
                         tbody_text += `<tr>
                                 <td>${index + 1}</td>
                                 <td>${element.name}</td>
-                                <td>color display here</td>
+                                <td><div id="cp-component" class="input-group colorpicker-element"><span class="input-group-addon"><i style="background-color: ${element.color_code};"></i></span></div></td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'change_item_color'|get_session_permission:request is not None %}
                                 <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    

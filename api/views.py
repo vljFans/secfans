@@ -1069,7 +1069,7 @@ def itemCategoryList(request):
 def itemCategoryAdd(request):
     context = {}
     exist_data = models.Item_Category.objects.filter(
-        name=request.POST['name']).exclude(pk=request.POST['id'])
+        name=request.POST['name'])
     if len(exist_data) > 0:
         context.update({
             'status': 535,
@@ -1312,11 +1312,10 @@ def itemColorList(request):
 @permission_classes([IsAuthenticated])
 def itemColorAdd(request):
     context = {}
-    exist_data = models.Item_Color.objects.filter(
-        name=request.POST['name']).exclude(pk=request.POST['id'])
+    exist_data = models.Item_Color.objects.filter(name=request.POST['name'])
     if len(exist_data) > 0:
         context.update({
-            'status': 535,
+            'status': 545,
             'message': "Item Color with this name already exists.",
         })
         return JsonResponse(context)
@@ -1333,7 +1332,7 @@ def itemColorAdd(request):
         })
     except Exception:
         context.update({
-            'status': 536,
+            'status': 546,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1348,7 +1347,7 @@ def itemColorEdit(request):
         name=request.POST['name']).exclude(pk=request.POST['id'])
     if len(exist_data) > 0:
         context.update({
-            'status': 537,
+            'status': 547,
             'message': "Item Color with this name already exists.",
         })
         return JsonResponse(context)
@@ -1366,7 +1365,7 @@ def itemColorEdit(request):
         })
     except Exception:
         context.update({
-            'status': 538,
+            'status': 548,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1388,7 +1387,7 @@ def itemColorDelete(request):
         })
     except Exception:
         context.update({
-            'status': 539,
+            'status': 549,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
