@@ -583,8 +583,6 @@ def customerList(request):
 @permission_classes([IsAuthenticated])
 def customerAdd(request):
     context = {}
-    print(request.POST)
-    exit()
     try:
         with transaction.atomic():
             vendor = models.Vendor()
@@ -658,6 +656,443 @@ def customerDelete(request):
         context.update({
             'status': 200,
             'message': "Vendor Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 517,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def uomList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    if id != None:
+        uom = list(models.Uom.objects.get(pk=id).values('pk', 'name'))
+        context.update({
+            'status': 200,
+            'message': "UOM Fetched Successfully.",
+            'detail': uom,
+        })
+    else:
+        uoms = list(models.Uom.objects.filter(status=1, deleted=0).values('pk', 'name'))
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(uoms, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "UOMs Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def uomAdd(request):
+    context = {}
+    exist_data = models.Uom.objects.filter(name=request.POST['name'])
+    if len(exist_data) > 0:
+        context.update({
+            'status': 518,
+            'message': "Uom already exists with this name.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            uom = models.Uom()
+            uom.name = request.POST['name']
+            uom.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "UOM Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 515,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def uomEdit(request):
+    context = {}
+    exist_data = models.Uom.objects.filter(name=request.POST['name']).exclude(pk=request.POST['id'])
+    if len(exist_data) > 0:
+        context.update({
+            'status': 519,
+            'message': "Another uom already exists with this name.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            uom = models.Uom.objects.get(pk=request.POST['id'])
+            uom.name = request.POST['name']
+            uom.updated_at = datetime.now()
+            uom.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "UOM Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 516,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def uomDelete(request):
+    context = {}
+    uom = models.Uom.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            uom.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "UOM Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 517,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def childUomList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    if id != None:
+        childUom = list(models.Child_Uom.objects.get(pk=id).values('pk', 'name', 'uom__name', 'conversion_rate'))
+        context.update({
+            'status': 200,
+            'message': "UOM Fetched Successfully.",
+            'detail': childUom,
+        })
+    else:
+        childUoms = list(models.Child_Uom.objects.filter(status=1, deleted=0).values('pk', 'name', 'uom__name', 'conversion_rate'))
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(childUoms, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "UOMs Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def childUomAdd(request):
+    context = {}
+    try:
+        with transaction.atomic():
+            childUom = models.Child_Uom()
+            childUom.name = request.POST['name']
+            childUom.uom_id = request.POST['uom_id']
+            childUom.conversion_rate = request.POST['conversion_rate']
+            childUom.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Child UOM Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 515,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def childUomEdit(request):
+    context = {}
+    try:
+        with transaction.atomic():
+            childUom = models.Child_Uom.objects.get(pk=request.POST['id'])
+            childUom.name = request.POST['name']
+            childUom.uom_id = request.POST['uom_id']
+            childUom.conversion_rate = request.POST['conversion_rate']
+            childUom.updated_at = datetime.now()
+            childUom.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Child UOM Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 516,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def childUomDelete(request):
+    context = {}
+    childUom = models.Child_Uom.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            childUom.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Child UOM Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 517,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def itemCategoryList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    if id != None:
+        itemCategory = list(models.Item_Category.objects.get(pk=id).values('pk', 'name'))
+        context.update({
+            'status': 200,
+            'message': "Item Category Fetched Successfully.",
+            'detail': itemCategory,
+        })
+    else:
+        itemCategories = list(models.Item_Category.objects.filter(status=1, deleted=0).values('pk', 'name'))
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(itemCategories, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Item Categories Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemCategoryAdd(request):
+    context = {}
+    try:
+        with transaction.atomic():
+            itemCategory = models.Item_Category()
+            itemCategory.name = request.POST['name']
+            itemCategory.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Category Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 515,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemCategoryEdit(request):
+    context = {}
+    try:
+        with transaction.atomic():
+            itemCategory = models.Item_Category.objects.get(pk=request.POST['id'])
+            itemCategory.name = request.POST['name']
+            itemCategory.updated_at = datetime.now()
+            itemCategory.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Category Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 516,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemCategoryDelete(request):
+    context = {}
+    itemCategory = models.Item_Category.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            itemCategory.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Category Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 517,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def itemTypeList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    if id != None:
+        itemType = list(models.Item_Type.objects.get(pk=id).values('pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
+        context.update({
+            'status': 200,
+            'message': "Item Type Fetched Successfully.",
+            'detail': itemType,
+        })
+    else:
+        itemTypes = list(models.Item_Type.objects.filter(status=1, deleted=0).values('pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(itemTypes, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Item Types Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemTypeAdd(request):
+    context = {}
+    try:
+        with transaction.atomic():
+            itemType = models.Item_Type()
+            itemType.name = request.POST['name']
+            itemType.item_category_id = request.POST['itemCategory_id']
+            itemType.hsn_code = request.POST['hsn_code']
+            itemType.gst_percentage = request.POST['gst_percentage']
+            itemType.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Type Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 515,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemTypeEdit(request):
+    context = {}
+    print(request.POST)
+    try:
+        with transaction.atomic():
+            itemType = models.Item_Type.objects.get(pk=request.POST['id'])
+            itemType.name = request.POST['name']
+            itemType.item_category_id = request.POST['itemCategory_id']
+            itemType.hsn_code = request.POST['hsn_code']
+            itemType.gst_percentage = request.POST['gst_percentage']
+            itemType.updated_at = datetime.now()
+            itemType.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Type Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 516,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemTypeDelete(request):
+    context = {}
+    itemType = models.Item_Type.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            itemType.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Type Deleted Successfully."
         })
     except Exception:
         context.update({

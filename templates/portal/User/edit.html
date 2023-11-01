@@ -77,11 +77,13 @@
                             <div class="col-md-6 mb-3">
                                 <label>Email <span class="required-indicator">*</span></label>
                                 <input type="email" name="email" value="{{user.email}}" class="form-control" placeholder="Email" required>
+                                <div class="invalid-feedback"> Please provide a valid email.</div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Phone <span class="required-indicator">*</span></label>
                                 <input type="text" onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                                    maxlength="10" name="phone" value="{{user.phone}}" class="form-control" placeholder="Phone" required>
+                                    minlength="10" maxlength="10" name="phone" value="{{user.phone}}" class="form-control" placeholder="Phone" required>
+                                <div class="invalid-feedback"> Please provide a phone number with 10 digit.</div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Password</label>
