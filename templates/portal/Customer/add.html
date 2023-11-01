@@ -74,12 +74,14 @@
                                 <label>Contact Email <span class="required-indicator">*</span></label>
                                 <input type="email" name="contact_email" class="form-control"
                                     placeholder="Contact Email" required>
+                                <div class="invalid-feedback">Enter a valid email.</div>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>Contact Number <span class="required-indicator">*</span></label>
                                 <input type="text" onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                     maxlength="10" name="contact_no" class="form-control" placeholder="Contact Number"
                                     required>
+                                <div class="invalid-feedback">Enter a 10 digit number.</div>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>STD Number</label>
@@ -95,6 +97,7 @@
                                     <input type="text" name="pin" class="form-control" required maxlength="6"
                                         onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                         placeholder="Pin Number">
+                                    <div class="invalid-feedback">Enter a valid Pin Code.</div>
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">

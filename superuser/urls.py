@@ -37,4 +37,20 @@ urlpatterns = [
     path('customer-list', views.customerList, name='customerList'),
     path('customer-add', views.customerAdd, name='customerAdd'),
     path('customer-edit/<int:id>', views.customerEdit, name='customerEdit'),
+
+    path('uom-list', views.uomList, name='uomList'),
+    path('uom-add', views.uomAdd, name='uomAdd'),
+    path('uom-edit/<int:id>', views.uomEdit, name='uomEdit'),
+
+    path('child-uom-list', views.childUomList, name='childUomList'),
+    path('child-uom-add', views.childUomAdd, name='childUomAdd'),
+    path('child-uom-edit/<int:id>', views.childUomEdit, name='childUomEdit'),
+
+    path('item-category-list', views.itemCategoryList, name='itemCategoryList'),
+    path('item-category-add', views.itemCategoryAdd, name='itemCategoryAdd'),
+    path('item-category-edit/<int:id>', views.itemCategoryEdit, name='itemCategoryEdit'),
+
+    path('item-type-list', views.itemTypeList, name='itemTypeList'),
+    path('item-type-add', views.itemTypeAdd, name='itemTypeAdd'),
+    path('item-type-edit/<int:id>', views.itemTypeEdit, name='itemTypeEdit'),
 ]

@@ -177,3 +177,127 @@ def customerEdit(request, id):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Customer", 'url': reverse('superuser:customerList')}, {'name': "Edit"}]
     })
     return render(request, 'portal/Customer/edit.html', context)
+
+
+@login_required
+def uomList(request):
+    context.update({
+        'page_title': "Uom List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Uom", 'url': reverse('superuser:uomList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Uom/list.html', context)
+
+
+@login_required
+def uomAdd(request):
+    context.update({
+        'page_title': "Uom Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Uom", 'url': reverse('superuser:uomList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Uom/add.html', context)
+
+
+@login_required
+def uomEdit(request, id):
+    uom = models.Uom.objects.get(pk=id)
+    context.update({
+        'uom': uom,
+        'page_title': "Uom Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Uom", 'url': reverse('superuser:uomList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Uom/edit.html', context)
+
+
+@login_required
+def childUomList(request):
+    context.update({
+        'page_title': "Child Uom List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Child Uom", 'url': reverse('superuser:childUomList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Child Uom/list.html', context)
+
+
+@login_required
+def childUomAdd(request):
+    uoms = models.Uom.objects.filter(status=1, deleted=0)
+    context.update({
+        'uoms': uoms,
+        'page_title': "Child Uom Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Child Uom", 'url': reverse('superuser:childUomList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Child Uom/add.html', context)
+
+
+@login_required
+def childUomEdit(request, id):
+    childUom = models.Child_Uom.objects.get(pk=id)
+    uoms = models.Uom.objects.filter(status=1, deleted=0)
+    context.update({
+        'childUom': childUom,
+        'uoms': uoms,
+        'page_title': "Child Uom Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Child Uom", 'url': reverse('superuser:childUomList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Child Uom/edit.html', context)
+
+
+@login_required
+def itemCategoryList(request):
+    context.update({
+        'page_title': "Item Category List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item Category", 'url': reverse('superuser:itemCategoryList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Item Category/list.html', context)
+
+
+@login_required
+def itemCategoryAdd(request):
+    context.update({
+        'page_title': "Item Category Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item Category", 'url': reverse('superuser:itemCategoryList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Item Category/add.html', context)
+
+
+@login_required
+def itemCategoryEdit(request, id):
+    itemCategory = models.Item_Category.objects.get(pk=id)
+    context.update({
+        'itemCategory': itemCategory,
+        'page_title': "Item Category Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item Category", 'url': reverse('superuser:itemCategoryList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Item Category/edit.html', context)
+
+
+@login_required
+def itemTypeList(request):
+    context.update({
+        'page_title': "Item Type List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item Type", 'url': reverse('superuser:itemTypeList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Item Type/list.html', context)
+
+
+@login_required
+def itemTypeAdd(request):
+    itemCategories = models.Item_Category.objects.filter(status=1, deleted=0)
+    context.update({
+        'itemCategories': itemCategories,
+        'page_title': "Item Type Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item Type", 'url': reverse('superuser:itemTypeList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Item Type/add.html', context)
+
+
+@login_required
+def itemTypeEdit(request, id):
+    itemType = models.Item_Type.objects.get(pk=id)
+    itemCategories = models.Item_Category.objects.filter(status=1, deleted=0)
+    context.update({
+        'itemType': itemType,
+        'itemCategories': itemCategories,
+        'page_title': "Item Type Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item Type", 'url': reverse('superuser:itemTypeList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Item Type/edit.html', context)

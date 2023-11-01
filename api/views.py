@@ -154,7 +154,8 @@ def roleList(request):
             'detail': role,
         })
     else:
-        roles = list(models.Role.objects.filter(status=1, deleted=0).values('pk', 'name'))
+        roles = list(models.Role.objects.filter(
+            status=1, deleted=0).values('pk', 'name'))
 
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
@@ -285,7 +286,8 @@ def userList(request):
     context = {}
     id = request.GET.get('id', None)
     if id != None:
-        user = list(models.User.objects.get(pk=id).values('pk', 'name', 'email', 'phone', 'role__name'))
+        user = list(models.User.objects.get(pk=id).values(
+            'pk', 'name', 'email', 'phone', 'role__name'))
         context.update({
             'status': 200,
             'message': "User Fetched Successfully.",
@@ -433,14 +435,16 @@ def vendorList(request):
     context = {}
     id = request.GET.get('id', None)
     if id != None:
-        vendor = list(models.Vendor.objects.get(pk=id).values('pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
+        vendor = list(models.Vendor.objects.get(pk=id).values('pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk',
+                      'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
         context.update({
             'status': 200,
             'message': "Vendor Fetched Successfully.",
             'detail': vendor,
         })
     else:
-        vendors = list(models.Vendor.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
+        vendors = list(models.Vendor.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'country__pk', 'state__pk',
+                       'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
 
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
@@ -465,7 +469,8 @@ def vendorList(request):
 @permission_classes([IsAuthenticated])
 def vendorAdd(request):
     context = {}
-    exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(contact_no__iexact=request.POST['contact_no']))
+    exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
+        contact_no__iexact=request.POST['contact_no']))
     if len(exist_data) > 0:
         context.update({
             'status': 515,
@@ -504,7 +509,8 @@ def vendorAdd(request):
 @permission_classes([IsAuthenticated])
 def vendorEdit(request):
     context = {}
-    exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(contact_no__iexact=request.POST['contact_no'])).exclude(id=request.POST['id'])
+    exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
+        contact_no__iexact=request.POST['contact_no'])).exclude(id=request.POST['id'])
     if len(exist_data) > 0:
         context.update({
             'status': 517,
@@ -568,14 +574,16 @@ def customerList(request):
     context = {}
     id = request.GET.get('id', None)
     if id != None:
-        customer = list(models.Customer.objects.get(pk=id).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
+        customer = list(models.Customer.objects.get(pk=id).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk',
+                        'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
         context.update({
             'status': 200,
             'message': "Customer Fetched Successfully.",
             'detail': customer,
         })
     else:
-        customers = list(models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
+        customers = list(models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk',
+                         'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
 
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
@@ -600,7 +608,8 @@ def customerList(request):
 @permission_classes([IsAuthenticated])
 def customerAdd(request):
     context = {}
-    exist_data = models.Customer.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(contact_no__iexact=request.POST['contact_no']))
+    exist_data = models.Customer.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
+        contact_no__iexact=request.POST['contact_no']))
     if len(exist_data) > 0:
         context.update({
             'status': 520,
@@ -622,7 +631,8 @@ def customerAdd(request):
             customer.kyc_detail = request.POST['kyc_detail']
             customer.date_of_birth = request.POST['date_of_birth'] if request.POST['date_of_birth'] != "" else None
             customer.date_of_anniversary = request.POST['date_of_anniversary']
-            customer.weekly_closing_day = ", ".join(request.POST.getlist('weekly_closing_day'))
+            customer.weekly_closing_day = ", ".join(
+                request.POST.getlist('weekly_closing_day'))
             customer.morning_from_time = request.POST['morning_from_time']
             customer.morning_to_time = request.POST['morning_to_time']
             customer.evening_from_time = request.POST['evening_from_time']
@@ -635,22 +645,28 @@ def customerAdd(request):
 
             if 'photo' in request.FILES.keys():
                 photo = request.FILES['photo']
-                directory_path = settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/"
+                directory_path = settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace(
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/"
                 path = Path(directory_path)
                 path.mkdir(parents=True, exist_ok=True)
-                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/")
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace(
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/")
                 saved_file = fs.save(photo.name, photo)
-                photo_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/" + saved_file
+                photo_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace(
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/" + saved_file
                 customer.photo = photo_path
                 customer.save()
             if 'kyc_image' in request.FILES.keys():
                 kyc_image = request.FILES['kyc_image']
-                directory_path = settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/"
+                directory_path = settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace(
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/"
                 path = Path(directory_path)
                 path.mkdir(parents=True, exist_ok=True)
-                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/")
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace(
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/")
                 saved_file = fs.save(kyc_image.name, kyc_image)
-                kyc_image_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/" + saved_file
+                kyc_image_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace(
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/" + saved_file
                 customer.kyc_image = kyc_image_path
                 customer.save()
         transaction.commit()
@@ -671,7 +687,8 @@ def customerAdd(request):
 @permission_classes([IsAuthenticated])
 def customerEdit(request):
     context = {}
-    exist_data = models.Customer.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(contact_no__iexact=request.POST['contact_no'])).exclude(id=request.POST['id'])
+    exist_data = models.Customer.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
+        contact_no__iexact=request.POST['contact_no'])).exclude(id=request.POST['id'])
     if len(exist_data) > 0:
         context.update({
             'status': 522,
@@ -693,7 +710,8 @@ def customerEdit(request):
             customer.kyc_detail = request.POST['kyc_detail']
             customer.date_of_birth = request.POST['date_of_birth'] if request.POST['date_of_birth'] != "" else None
             customer.date_of_anniversary = request.POST['date_of_anniversary']
-            customer.weekly_closing_day = ", ".join(request.POST.getlist('weekly_closing_day'))
+            customer.weekly_closing_day = ", ".join(
+                request.POST.getlist('weekly_closing_day'))
             customer.morning_from_time = request.POST['morning_from_time']
             customer.morning_to_time = request.POST['morning_to_time']
             customer.evening_from_time = request.POST['evening_from_time']
@@ -706,22 +724,28 @@ def customerEdit(request):
 
             if 'photo' in request.FILES.keys():
                 photo = request.FILES['photo']
-                directory_path = settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/"
+                directory_path = settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace(
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/"
                 path = Path(directory_path)
                 path.mkdir(parents=True, exist_ok=True)
-                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/")
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace(
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/")
                 saved_file = fs.save(photo.name, photo)
-                photo_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/" + saved_file
+                photo_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace(
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/" + saved_file
                 customer.photo = photo_path
                 customer.save()
             if 'kyc_image' in request.FILES.keys():
                 kyc_image = request.FILES['kyc_image']
-                directory_path = settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/"
+                directory_path = settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace(
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/"
                 path = Path(directory_path)
                 path.mkdir(parents=True, exist_ok=True)
-                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/")
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace(
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/")
                 saved_file = fs.save(kyc_image.name, kyc_image)
-                kyc_image_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace("${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/" + saved_file
+                kyc_image_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace(
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/" + saved_file
                 customer.kyc_image = kyc_image_path
                 customer.save()
         transaction.commit()
@@ -754,6 +778,497 @@ def customerDelete(request):
     except Exception:
         context.update({
             'status': 524,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def uomList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    if id != None:
+        uom = list(models.Uom.objects.get(pk=id).values('pk', 'name'))
+        context.update({
+            'status': 200,
+            'message': "UOM Fetched Successfully.",
+            'detail': uom,
+        })
+    else:
+        uoms = list(models.Uom.objects.filter(
+            status=1, deleted=0).values('pk', 'name'))
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(uoms, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "UOMs Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def uomAdd(request):
+    context = {}
+    exist_data = models.Uom.objects.filter(name=request.POST['name'])
+    if len(exist_data) > 0:
+        context.update({
+            'status': 525,
+            'message': "Uom with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            uom = models.Uom()
+            uom.name = request.POST['name']
+            uom.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "UOM Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 526,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def uomEdit(request):
+    context = {}
+    exist_data = models.Uom.objects.filter(
+        name=request.POST['name']).exclude(pk=request.POST['id'])
+    if len(exist_data) > 0:
+        context.update({
+            'status': 527,
+            'message': "Uom with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            uom = models.Uom.objects.get(pk=request.POST['id'])
+            uom.name = request.POST['name']
+            uom.updated_at = datetime.now()
+            uom.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "UOM Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 528,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def uomDelete(request):
+    context = {}
+    uom = models.Uom.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            uom.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "UOM Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 529,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def childUomList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    if id != None:
+        childUom = list(models.Child_Uom.objects.get(pk=id).values(
+            'pk', 'name', 'uom__name', 'conversion_rate'))
+        context.update({
+            'status': 200,
+            'message': "UOM Fetched Successfully.",
+            'detail': childUom,
+        })
+    else:
+        childUoms = list(models.Child_Uom.objects.filter(status=1, deleted=0).values(
+            'pk', 'name', 'uom__name', 'conversion_rate'))
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(childUoms, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "UOMs Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def childUomAdd(request):
+    context = {}
+    exist_data = models.Child_Uom.objects.filter(
+        name=request.POST['name'], uom_id=request.POST['uom_id'])
+    if len(exist_data) > 0:
+        context.update({
+            'status': 530,
+            'message': "Child Uom with this name and Uom already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            childUom = models.Child_Uom()
+            childUom.name = request.POST['name']
+            childUom.uom_id = request.POST['uom_id']
+            childUom.conversion_rate = request.POST['conversion_rate']
+            childUom.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Child UOM Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 531,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def childUomEdit(request):
+    context = {}
+    exist_data = models.Child_Uom.objects.filter(
+        name=request.POST['name'], uom_id=request.POST['uom_id']).exclude(pk=request.POST['id'])
+    if len(exist_data) > 0:
+        context.update({
+            'status': 532,
+            'message': "Child Uom with this name and Uom already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            childUom = models.Child_Uom.objects.get(pk=request.POST['id'])
+            childUom.name = request.POST['name']
+            childUom.uom_id = request.POST['uom_id']
+            childUom.conversion_rate = request.POST['conversion_rate']
+            childUom.updated_at = datetime.now()
+            childUom.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Child UOM Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 533,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def childUomDelete(request):
+    context = {}
+    childUom = models.Child_Uom.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            childUom.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Child UOM Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 534,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def itemCategoryList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    if id != None:
+        itemCategory = list(models.Item_Category.objects.get(
+            pk=id).values('pk', 'name'))
+        context.update({
+            'status': 200,
+            'message': "Item Category Fetched Successfully.",
+            'detail': itemCategory,
+        })
+    else:
+        itemCategories = list(models.Item_Category.objects.filter(
+            status=1, deleted=0).values('pk', 'name'))
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(itemCategories, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Item Categories Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemCategoryAdd(request):
+    context = {}
+    exist_data = models.Item_Category.objects.filter(
+        name=request.POST['name']).exclude(pk=request.POST['id'])
+    if len(exist_data) > 0:
+        context.update({
+            'status': 535,
+            'message': "Item Category with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            itemCategory = models.Item_Category()
+            itemCategory.name = request.POST['name']
+            itemCategory.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Category Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 536,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemCategoryEdit(request):
+    context = {}
+    exist_data = models.Item_Category.objects.filter(
+        name=request.POST['name']).exclude(pk=request.POST['id'])
+    if len(exist_data) > 0:
+        context.update({
+            'status': 537,
+            'message': "Item Category with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            itemCategory = models.Item_Category.objects.get(
+                pk=request.POST['id'])
+            itemCategory.name = request.POST['name']
+            itemCategory.updated_at = datetime.now()
+            itemCategory.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Category Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 538,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemCategoryDelete(request):
+    context = {}
+    itemCategory = models.Item_Category.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            itemCategory.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Category Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 539,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def itemTypeList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    if id != None:
+        itemType = list(models.Item_Type.objects.get(pk=id).values(
+            'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
+        context.update({
+            'status': 200,
+            'message': "Item Type Fetched Successfully.",
+            'detail': itemType,
+        })
+    else:
+        itemTypes = list(models.Item_Type.objects.filter(status=1, deleted=0).values(
+            'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(itemTypes, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Item Types Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemTypeAdd(request):
+    context = {}
+    exist_data = models.Item_Type.objects.filter(name=request.POST['name'], item_category_id=request.POST['itemCategory_id'])
+    if len(exist_data) > 0:
+        context.update({
+            'status': 540,
+            'message': "Item Type with this name and item cateogory already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            itemType = models.Item_Type()
+            itemType.name = request.POST['name']
+            itemType.item_category_id = request.POST['itemCategory_id']
+            itemType.hsn_code = request.POST['hsn_code']
+            itemType.gst_percentage = request.POST['gst_percentage']
+            itemType.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Type Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 541,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemTypeEdit(request):
+    context = {}
+    exist_data = models.Item_Type.objects.filter(name=request.POST['name'], item_category_id=request.POST['itemCategory_id']).exclude(pk=request.POST['id'])
+    if len(exist_data) > 0:
+        context.update({
+            'status': 542,
+            'message': "Item Type with this name and item cateogory already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            itemType = models.Item_Type.objects.get(pk=request.POST['id'])
+            itemType.name = request.POST['name']
+            itemType.item_category_id = request.POST['itemCategory_id']
+            itemType.hsn_code = request.POST['hsn_code']
+            itemType.gst_percentage = request.POST['gst_percentage']
+            itemType.updated_at = datetime.now()
+            itemType.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Type Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 543,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemTypeDelete(request):
+    context = {}
+    itemType = models.Item_Type.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            itemType.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Type Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 544,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()

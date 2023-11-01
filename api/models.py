@@ -223,3 +223,72 @@ class Customer(models.Model):
         managed = True
         db_table = 'customers'
         verbose_name_plural = 'customers'
+
+
+class Uom(models.Model):
+    name = models.CharField(max_length=30)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'uoms'
+        verbose_name_plural = 'uoms'
+
+
+class Child_Uom(models.Model):
+    name = models.CharField(max_length=30)
+    uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True)
+    conversion_rate = models.DecimalField(default=1, max_digits=30, decimal_places=10)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'child_uoms'
+        verbose_name_plural = 'child_uoms'
+
+
+class Item_Category(models.Model):
+    name = models.CharField(max_length=30)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'item_categories'
+        verbose_name_plural = 'item_categories'
+
+
+class Item_Type(models.Model):
+    name = models.CharField(max_length=30)
+    item_category = models.ForeignKey(Item_Category, on_delete=models.CASCADE, blank=True, null=True)
+    hsn_code = models.CharField(max_length=40)
+    gst_percentage = models.DecimalField(default=1, max_digits=10, decimal_places=2)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'item_types'
+        verbose_name_plural = 'item_types'
