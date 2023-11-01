@@ -85,7 +85,7 @@ function transformToTitleCase(inputString) {
     return words.join(' ');
 }
 
-function formatDate(inputDate) {
+function formatMonthDate(inputDate) {
     var datePattern = /^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
 
     if (datePattern.test(inputDate)) {
