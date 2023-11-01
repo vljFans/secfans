@@ -75,8 +75,7 @@
                                 </div>
                             </div>
                         </div>
-                        {% if request.user.is_superuser == 1 or 'change_item_color'|get_session_permission:request is
-                        not None %}
+                        {% if request.user.is_superuser == 1 or 'change_item_color'|get_session_permission:request is not None %}
                         <button class="btn btn-success submit-btn" type="submit">Submit</button>
                         {% endif %}
                     </form>
