@@ -226,7 +226,7 @@ class Customer(models.Model):
 
 
 class Uom(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30, blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -242,9 +242,9 @@ class Uom(models.Model):
 
 
 class Child_Uom(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30, blank=True, null=True)
     uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True)
-    conversion_rate = models.DecimalField(default=1, max_digits=30, decimal_places=10)
+    conversion_rate = models.DecimalField(default=1, max_digits=30, decimal_places=10, blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -260,7 +260,7 @@ class Child_Uom(models.Model):
 
 
 class Item_Category(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30, blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -276,9 +276,9 @@ class Item_Category(models.Model):
 
 
 class Item_Type(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30, blank=True, null=True)
     item_category = models.ForeignKey(Item_Category, on_delete=models.CASCADE, blank=True, null=True)
-    hsn_code = models.CharField(max_length=40)
+    hsn_code = models.CharField(max_length=40, blank=True, null=True)
     gst_percentage = models.DecimalField(default=1, max_digits=10, decimal_places=2)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
@@ -292,3 +292,20 @@ class Item_Type(models.Model):
         managed = True
         db_table = 'item_types'
         verbose_name_plural = 'item_types'
+
+
+class Item_Color(models.Model):
+    name = models.CharField(max_length=30, blank=True, null=True)
+    color_code = models.CharField(max_length=7, blank=True, null=True)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'item_colors'
+        verbose_name_plural = 'item_colors'
