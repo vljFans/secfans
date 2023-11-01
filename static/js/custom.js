@@ -1,8 +1,3 @@
-function setCookie(cookieName) {
-    // Set the cookie's expiration date to a date in the past
-    document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-}
-
 function setCookie(cookieName, cookieValue) {
     // expirationDays = 180;
     // const d = new Date();
@@ -12,9 +7,6 @@ function setCookie(cookieName, cookieValue) {
     // document.cookie = cookieName + "=" + cookieValue + "; " + expires;
     document.cookie = cookieName + "=" + cookieValue + ";";
 }
-
-// Usage
-setCookie('myCookie', 'cookieValue', 7); // 'myCookie' is the name, 'cookieValue' is the value, and 7 is the number of days until expiration
 
 function getCookieValue(cookieName) {
     const name = cookieName + '=';
