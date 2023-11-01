@@ -301,3 +301,32 @@ def itemTypeEdit(request, id):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item Type", 'url': reverse('superuser:itemTypeList')}, {'name': "Edit"}]
     })
     return render(request, 'portal/Item Type/edit.html', context)
+
+
+@login_required
+def itemColorList(request):
+    context.update({
+        'page_title': "Item Color List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item Color", 'url': reverse('superuser:itemColorList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Item Color/list.html', context)
+
+
+@login_required
+def itemColorAdd(request):
+    context.update({
+        'page_title': "Item Color Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item Color", 'url': reverse('superuser:itemColorList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Item Color/add.html', context)
+
+
+@login_required
+def itemColorEdit(request, id):
+    itemColor = models.Item_Color.objects.get(pk=id)
+    context.update({
+        'itemColor': itemColor,
+        'page_title': "Item Color Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item Color", 'url': reverse('superuser:itemColorList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Item Color/edit.html', context)

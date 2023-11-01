@@ -1273,3 +1273,123 @@ def itemTypeDelete(request):
         })
         transaction.rollback()
     return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def itemColorList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    if id != None:
+        itemColor = list(models.Item_Color.objects.get(pk=id).values('pk', 'name', 'color_code'))
+        context.update({
+            'status': 200,
+            'message': "Item Color Fetched Successfully.",
+            'detail': itemColor,
+        })
+    else:
+        itemColor = list(models.Item_Color.objects.filter(status=1, deleted=0).values('pk', 'name', 'color_code'))
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(itemColor, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Item Colors Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemColorAdd(request):
+    context = {}
+    exist_data = models.Item_Color.objects.filter(
+        name=request.POST['name']).exclude(pk=request.POST['id'])
+    if len(exist_data) > 0:
+        context.update({
+            'status': 535,
+            'message': "Item Color with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            itemColor = models.Item_Color()
+            itemColor.name = request.POST['name']
+            itemColor.color_code = request.POST['color_code']
+            itemColor.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Color Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 536,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemColorEdit(request):
+    context = {}
+    exist_data = models.Item_Color.objects.filter(
+        name=request.POST['name']).exclude(pk=request.POST['id'])
+    if len(exist_data) > 0:
+        context.update({
+            'status': 537,
+            'message': "Item Color with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            itemColor = models.Item_Color.objects.get(pk=request.POST['id'])
+            itemColor.name = request.POST['name']
+            itemColor.color_code = request.POST['color_code']
+            itemColor.updated_at = datetime.now()
+            itemColor.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Color Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 538,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemColorDelete(request):
+    context = {}
+    itemColor = models.Item_Color.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            itemColor.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Color Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 539,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
