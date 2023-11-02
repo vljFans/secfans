@@ -96,3 +96,26 @@ function formatMonthDate(inputDate) {
         $('.submit-btn').prop('disabled', true);
     }
 }
+
+function rgbaToHex(rgba) {
+    // Parse the RGBA components
+    const components = rgba
+        .substring(rgba.indexOf('(') + 1, rgba.lastIndexOf(')'))
+        .split(',');
+
+    // Convert the components to hexadecimal
+    const r = parseInt(components[0], 10).toString(16).padStart(2, '0');
+    const g = parseInt(components[1], 10).toString(16).padStart(2, '0');
+    const b = parseInt(components[2], 10).toString(16).padStart(2, '0');
+
+    // Optionally, you can also convert the alpha component
+    let a = 'FF'; // Default to fully opaque
+    if (components.length === 4) {
+        a = Math.round(parseFloat(components[3]) * 255)
+            .toString(16)
+            .padStart(2, '0');
+    }
+
+    // Combine the components and return the hexadecimal color
+    return `#${r}${g}${b}${a}`;
+}

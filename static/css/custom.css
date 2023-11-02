@@ -9,5 +9,8 @@
 .input-group-addon {
     border: 1px solid #e7e7e7;
     background: #f7f7f7;
-    /* border-left: none; */
+}
+
+.colorpicker-alpha {
+    display: none !important;
 }
