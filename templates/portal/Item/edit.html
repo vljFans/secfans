@@ -50,7 +50,7 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                <a href="{% url 'superuser:itemTypeList' %}" class="mr-3"><i
+                                <a href="{% url 'superuser:itemList' %}" class="mr-3"><i
                                         class="fa fa-step-backward"></i></a>
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                             </div>
@@ -58,41 +58,90 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <form id="edit_form" class="needs-validation" novalidate>
-                        <input type="hidden" id="id" name="id" value="{{itemType.id}}">
+                    <form id="edit_form" class="needs-validation" novalidate enctype="multipart/form-data">
+                        <input type="hidden" id="id" name="id" value="{{item.id}}">
                         <div class="form-row">
                             <div class="col-md-6 mb-3">
                                 <label>Name <span class="required-indicator">*</span></label>
-                                <input type="text" name="name" class="form-control" value="{{itemType.name}}"
-                                    placeholder="Name" required>
+                                <input type="text" name="name" class="form-control" placeholder="Name" value="{{item.name}}" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label>Item Category <span class="required-indicator">*</span></label>
+                                <label>Model No. <span class="required-indicator">*</span></label>
+                                <input type="text" name="model_no" class="form-control" placeholder="Model no." value="{{item.model_no}}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Item Photo<span class="required-indicator">*</span></label>
+                                <input type="file" name="photo" class="form-control" placeholder="photo" accept="image/*">
+                                <a href="{{item.photo}}" target="_blank" rel="noopener noreferrer">Preview</a>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Item Type <span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker" id="item_category_id"
-                                        name="item_category_id" required>
+                                    <select class="custom-select selectpicker" id="item_type_id" name="item_type_id"
+                                        required>
                                         <option value="">Choose...</option>
-                                        {% for item_category in item_categories %}
-                                        <option {% if itemType.item_category_id == item_category.id %}selected{% endif %}
-                                            value="{{item_category.id}}">{{item_category.name}}</option>
+                                        {% for item_type in item_types %}
+                                        <option {% if item.item_type_id == item_type.id %}selected{% endif %}
+                                            value="{{item_type.id}}">{{item_type.name}}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label>HSN Code<span class="required-indicator">*</span></label>
-                                <input type="text" name="hsn_code" class="form-control" placeholder="HSN Code"
-                                    value="{{itemType.hsn_code}}" required>
+                                <label>Item Color <span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="item_color_id" name="item_color_id"
+                                        required>
+                                        <option value="">Choose...</option>
+                                        {% for item_color in item_colors %}
+                                        <option {% if item.item_color_id == item_color.id %}selected{% endif %}
+                                            value="{{item_color.id}}">{{item_color.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label>GST Percentage<span class="required-indicator">*</span></label>
-                                <input type="number" name="gst_percentage" class="form-control" placeholder="0.0"
-                                    max="100" min="0.0" step="0.01" value="{{itemType.gst_percentage.normalize}}"
-                                    required>
-                                <div class="invalid-feedback">Please provide a percentage less than 100.</div>
+                                <label>UOM Standard<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="uom_standard_id" name="uom_standard_id"
+                                        required>
+                                        <option value="">Choose...</option>
+                                        {% for uom in uoms %}
+                                        <option {% if item.uom_standard_id == uom.id %}selected{% endif %}
+                                            value="{{uom.id}}">{{uom.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>UOM SKU<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="uom_sku_id" name="uom_sku_id"
+                                        required>
+                                        <option value="">Choose...</option>
+                                        {% for uom in uoms %}
+                                        <option {% if item.uom_sku_id == uom.id %}selected{% endif %}
+                                            value="{{uom.id}}">{{uom.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Conversion Factor <span class="required-indicator">*</span></label>
+                                <input type="number" name="conversion_factor" class="form-control" placeholder="0.0" min="0.0" step="0.00001" value="{{item.conversion_factor}}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Purchase Price<span class="required-indicator">*</span></label>
+                                <input type="number" name="price_purchase" class="form-control" placeholder="₹0.00" min="0" step="0.01" value="{{item.price_purchase.normalize}}" required>
+                                <div class="invalid-feedback">Please provide a valid purchase price</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Sale Price<span class="required-indicator">*</span></label>
+                                <input type="number" name="price_sale" class="form-control" placeholder="₹0.00" min="0" step="0.01" value="{{item.price_sale.normalize}}" required>
+                                <div class="invalid-feedback">Please provide a valid sale price</div>
                             </div>
                         </div>
-                        {% if request.user.is_superuser == 1 or 'change_item_type'|get_session_permission:request is not None%}
+                        {% if request.user.is_superuser == 1 or 'change_item'|get_session_permission:request is not None%}
                         <button class="btn btn-success submit-btn" type="submit">Submit</button>
                         {% endif %}
                     </form>
@@ -140,16 +189,16 @@
             evalScripts: true,
             contentType: false,
             processData: false,
-            url: "{% url 'api:itemTypeEdit' %}",
+            url: "{% url 'api:itemEdit' %}",
             data: formData,
             headers: {
-                'Authorization': getCookieValue("accessToken")
+                'Authorization': sessionStorage.getItem("accessToken")
             },
             success: function (response) {
                 $('.submit-btn').text('Submitting...');
                 $('.submit-btn').prop('disabled', false);
                 if (response.status == 200) {
-                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:itemTypeList' %}");
+                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:itemList' %}");
                 } else {
                     alert(response.message);
                 }

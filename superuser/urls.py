@@ -57,4 +57,8 @@ urlpatterns = [
     path('item-color-list', views.itemColorList, name='itemColorList'),
     path('item-color-add', views.itemColorAdd, name='itemColorAdd'),
     path('item-color-edit/<int:id>', views.itemColorEdit, name='itemColorEdit'),
+
+    path('item-list', views.itemList, name='itemList'),
+    path('item-add', views.itemAdd, name='itemAdd'),
+    path('item-edit/<int:id>', views.itemEdit, name='itemEdit'),
 ]

@@ -79,7 +79,7 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>Conversion Rate <span class="required-indicator">*</span></label>
-                                <input type="number" name="conversion_rate" class="form-control" placeholder="0.0" min="0.0" step="0.0001" required>
+                                <input type="number" name="conversion_rate" class="form-control" placeholder="0.0" min="0.0" step="0.00001" required>
                             </div>
                         </div>
                         {% if request.user.is_superuser == 1 or 'add_child_uom'|get_session_permission:request is not None %}

@@ -1190,18 +1190,18 @@ def itemTypeList(request):
 @permission_classes([IsAuthenticated])
 def itemTypeAdd(request):
     context = {}
-    exist_data = models.Item_Type.objects.filter(name=request.POST['name'], item_category_id=request.POST['itemCategory_id'])
+    exist_data = models.Item_Type.objects.filter(name=request.POST['name'], item_category_id=request.POST['item_category_id'])
     if len(exist_data) > 0:
         context.update({
             'status': 540,
-            'message': "Item Type with this name and item cateogory already exists.",
+            'message': "Item Type with this name and item category already exists.",
         })
         return JsonResponse(context)
     try:
         with transaction.atomic():
             itemType = models.Item_Type()
             itemType.name = request.POST['name']
-            itemType.item_category_id = request.POST['itemCategory_id']
+            itemType.item_category_id = request.POST['item_category_id']
             itemType.hsn_code = request.POST['hsn_code']
             itemType.gst_percentage = request.POST['gst_percentage']
             itemType.save()
@@ -1223,18 +1223,19 @@ def itemTypeAdd(request):
 @permission_classes([IsAuthenticated])
 def itemTypeEdit(request):
     context = {}
-    exist_data = models.Item_Type.objects.filter(name=request.POST['name'], item_category_id=request.POST['itemCategory_id']).exclude(pk=request.POST['id'])
+    exist_data = models.Item_Type.objects.filter(
+        name=request.POST['name'], item_category_id=request.POST['item_category_id']).exclude(pk=request.POST['id'])
     if len(exist_data) > 0:
         context.update({
             'status': 542,
-            'message': "Item Type with this name and item cateogory already exists.",
+            'message': "Item Type with this name and item category already exists.",
         })
         return JsonResponse(context)
     try:
         with transaction.atomic():
             itemType = models.Item_Type.objects.get(pk=request.POST['id'])
             itemType.name = request.POST['name']
-            itemType.item_category_id = request.POST['itemCategory_id']
+            itemType.item_category_id = request.POST['item_category_id']
             itemType.hsn_code = request.POST['hsn_code']
             itemType.gst_percentage = request.POST['gst_percentage']
             itemType.updated_at = datetime.now()
@@ -1388,6 +1389,165 @@ def itemColorDelete(request):
     except Exception:
         context.update({
             'status': 549,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def itemList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    if id != None:
+        item = list(models.Item.objects.get(pk=id).values(
+            'pk', 'name', 'model_no', 'item_type__name', 'item_color__name', 'uom_standard__name', 'uom_sku__name',
+            'conversion_factor', 'price_purchase', 'price_sale', 'photo'))
+        context.update({
+            'status': 200,
+            'message': "Item Fetched Successfully.",
+            'detail': item,
+        })
+    else:
+        items = list(models.Item.objects.filter(status=1, deleted=0).values(
+            'pk', 'name', 'model_no', 'item_type__name', 'item_color__name', 'uom_standard__name', 'uom_sku__name',
+            'conversion_factor', 'price_purchase', 'price_sale', 'photo'))
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(items, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Items Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemAdd(request):
+    context = {}
+    exist_data = models.Item.objects.filter(Q(name__iexact=request.POST['name']) & Q(
+        model_no__iexact=request.POST['model_no']))
+    if len(exist_data) > 0:
+        context.update({
+            'status': 550,
+            'message': "Item with this name and model number already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            item = models.Item()
+            item.name = request.POST['name']
+            item.model_no = request.POST['model_no']
+            item.item_type_id = request.POST['item_type_id']
+            item.item_color_id = request.POST['item_color_id']
+            item.uom_standard_id = request.POST['uom_standard_id']
+            item.uom_sku_id = request.POST['uom_sku_id']
+            item.conversion_factor = request.POST['conversion_factor']
+            item.price_purchase = request.POST['price_purchase']
+            item.price_sale = request.POST['price_sale']
+            item.save()
+            if 'photo' in request.FILES.keys():
+                photo = request.FILES['photo']
+                directory_path = settings.MEDIA_ROOT + env("ITEM_MEDIA_PROFILE") + "/"
+                path = Path(directory_path)
+                path.mkdir(parents=True, exist_ok=True)
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("ITEM_MEDIA_PROFILE") + "/")
+                saved_file = fs.save(photo.name, photo)
+                photo_path = settings.MEDIA_URL + env("ITEM_MEDIA_PROFILE") + "/" + saved_file
+                item.photo = photo_path
+                item.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 551,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemEdit(request):
+    context = {}
+    exist_data = models.Item.objects.filter(Q(name__iexact=request.POST['name']) & Q(
+        model_no__iexact=request.POST['model_no'])).exclude(pk=request.POST['id'])
+    if len(exist_data) > 0:
+        context.update({
+            'status': 552,
+            'message': "Item with this name and model number already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            item = models.Item.objects.get(pk=request.POST['id'])
+            item.name = request.POST['name']
+            item.model_no = request.POST['model_no']
+            item.item_type_id = request.POST['item_type_id']
+            item.item_color_id = request.POST['item_color_id']
+            item.uom_standard_id = request.POST['uom_standard_id']
+            item.uom_sku_id = request.POST['uom_sku_id']
+            item.conversion_factor = request.POST['conversion_factor']
+            item.price_purchase = request.POST['price_purchase']
+            item.price_sale = request.POST['price_sale']
+            item.save()
+            if 'photo' in request.FILES.keys():
+                photo = request.FILES['photo']
+                directory_path = settings.MEDIA_ROOT + env("ITEM_MEDIA_PROFILE") + "/"
+                path = Path(directory_path)
+                path.mkdir(parents=True, exist_ok=True)
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("ITEM_MEDIA_PROFILE") + "/")
+                saved_file = fs.save(photo.name, photo)
+                photo_path = settings.MEDIA_URL + env("ITEM_MEDIA_PROFILE") + "/" + saved_file
+                item.photo = photo_path
+                item.save()
+
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 553,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemDelete(request):
+    context = {}
+    item = models.Item.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            item.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Item Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 554,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
