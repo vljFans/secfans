@@ -90,7 +90,7 @@ class User(AbstractBaseUser):
 
 
 class Country(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=50)
     sortname = models.CharField(max_length=3)
     phonecode = models.CharField(max_length=5, blank=True, null=True)
 
@@ -104,7 +104,7 @@ class Country(models.Model):
 
 
 class State(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=50)
     country = models.ForeignKey(
         Country, on_delete=models.CASCADE, blank=True, null=True)
 
@@ -118,7 +118,7 @@ class State(models.Model):
 
 
 class City(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=50)
     state = models.ForeignKey(
         State, on_delete=models.CASCADE, blank=True, null=True)
 
