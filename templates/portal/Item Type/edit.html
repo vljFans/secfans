@@ -69,12 +69,12 @@
                             <div class="col-md-6 mb-3">
                                 <label>Item Category <span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker" id="itemCategory_id"
-                                        name="itemCategory_id" required>
+                                    <select class="custom-select selectpicker" id="item_category_id"
+                                        name="item_category_id" required>
                                         <option value="">Choose...</option>
-                                        {% for itemCategory in itemCategories %}
-                                        <option {% if itemType.item_category_id == itemCategory.id %}selected{% endif %}
-                                            value="{{itemCategory.id}}">{{itemCategory.name}}</option>
+                                        {% for item_category in item_categories %}
+                                        <option {% if itemType.item_category_id == item_category.id %}selected{% endif %}
+                                            value="{{item_category.id}}">{{item_category.name}}</option>
                                         {% endfor %}
                                     </select>
                                 </div>

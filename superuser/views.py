@@ -281,9 +281,9 @@ def itemTypeList(request):
 
 @login_required
 def itemTypeAdd(request):
-    itemCategories = models.Item_Category.objects.filter(status=1, deleted=0)
+    item_categories = models.Item_Category.objects.filter(status=1, deleted=0)
     context.update({
-        'itemCategories': itemCategories,
+        'item_categories': item_categories,
         'page_title': "Item Type Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item Type", 'url': reverse('superuser:itemTypeList')}, {'name': "Add"}]
     })
@@ -293,10 +293,10 @@ def itemTypeAdd(request):
 @login_required
 def itemTypeEdit(request, id):
     itemType = models.Item_Type.objects.get(pk=id)
-    itemCategories = models.Item_Category.objects.filter(status=1, deleted=0)
+    item_categories = models.Item_Category.objects.filter(status=1, deleted=0)
     context.update({
         'itemType': itemType,
-        'itemCategories': itemCategories,
+        'item_categories': item_categories,
         'page_title': "Item Type Edit",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item Type", 'url': reverse('superuser:itemTypeList')}, {'name': "Edit"}]
     })
@@ -330,3 +330,44 @@ def itemColorEdit(request, id):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item Color", 'url': reverse('superuser:itemColorList')}, {'name': "Edit"}]
     })
     return render(request, 'portal/Item Color/edit.html', context)
+
+
+@login_required
+def itemList(request):
+    context.update({
+        'page_title': "Item List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item", 'url': reverse('superuser:itemList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Item/list.html', context)
+
+
+@login_required
+def itemAdd(request):
+    item_types = models.Item_Type.objects.filter(status=1, deleted=0)
+    item_colors = models.Item_Color.objects.filter(status=1, deleted=0)
+    uoms = models.Uom.objects.filter(status=1, deleted=0)
+    context.update({
+        'item_types': item_types,
+        'item_colors': item_colors,
+        'uoms': uoms,
+        'page_title': "Item Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item", 'url': reverse('superuser:itemList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Item/add.html', context)
+
+
+@login_required
+def itemEdit(request, id):
+    item = models.Item.objects.get(pk=id)
+    item_types = models.Item_Type.objects.filter(status=1, deleted=0)
+    item_colors = models.Item_Color.objects.filter(status=1, deleted=0)
+    uoms = models.Uom.objects.filter(status=1, deleted=0)
+    context.update({
+        'item': item,
+        'item_types': item_types,
+        'item_colors': item_colors,
+        'uoms': uoms,
+        'page_title': "Item Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item", 'url': reverse('superuser:itemList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Item/edit.html', context)
