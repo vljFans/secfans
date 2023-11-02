@@ -192,7 +192,7 @@
             url: "{% url 'api:itemEdit' %}",
             data: formData,
             headers: {
-                'Authorization': sessionStorage.getItem("accessToken")
+                'Authorization': getCookieValue("accessToken")
             },
             success: function (response) {
                 $('.submit-btn').text('Submitting...');

@@ -188,7 +188,7 @@
             url: "{% url 'api:itemAdd' %}",
             data: formData,
             headers: {
-                'Authorization': sessionStorage.getItem("accessToken")
+                'Authorization': getCookieValue("accessToken")
             },
             success: function (response) {
                 $('.submit-btn').text('Submitting...');
