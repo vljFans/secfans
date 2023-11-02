@@ -77,6 +77,12 @@
                                             value="{{item_category.id}}">{{item_category.name}}</option>
                                         {% endfor %}
                                     </select>
+                                    {% if request.user.is_superuser == 1 or 'add_item_category'|get_session_permission:request is not None %}
+                                    <div class="btn float-end addForm" data-text="Add New Item Category"
+                                        data-form="addItemCategory" id="addItemCategoryModal" data-toggle="modal" data-target="#addFormModal">
+                                        <i class="fa fa-plus"></i>
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -101,6 +107,31 @@
         </div>
     </div>
     <!--/ Form Element End -->
+</div>
+
+<!-- The Modal -->
+<div class="modal" id="addFormModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body addFormBody">
+                
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger modal-close-btn" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
 </div>
 {% endblock %}
 

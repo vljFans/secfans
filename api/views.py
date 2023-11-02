@@ -146,6 +146,7 @@ def getStateCities(request):
 def roleList(request):
     context = {}
     id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
     if id != None:
         role = list(models.Role.objects.get(pk=id).values('pk', 'name'))
         context.update({
@@ -156,7 +157,13 @@ def roleList(request):
     else:
         roles = list(models.Role.objects.filter(
             status=1, deleted=0).values('pk', 'name'))
-
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Roles Fetched Successfully.",
+                'page_items': roles,
+            })
+            return JsonResponse(context)
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
         current_page = request.GET.get('current_page', 1)
@@ -285,6 +292,7 @@ def roleDelete(request):
 def userList(request):
     context = {}
     id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
     if id != None:
         user = list(models.User.objects.get(pk=id).values(
             'pk', 'name', 'email', 'phone', 'role__name'))
@@ -296,7 +304,13 @@ def userList(request):
     else:
         users = list(models.User.objects.filter(
             status=1, deleted=0).exclude(is_superuser=1).values('pk', 'name', 'email', 'phone', 'role__name'))
-
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Users Fetched Successfully.",
+                'page_items': users,
+            })
+            return JsonResponse(context)
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
         current_page = request.GET.get('current_page', 1)
@@ -434,6 +448,7 @@ def userDelete(request):
 def vendorList(request):
     context = {}
     id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
     if id != None:
         vendor = list(models.Vendor.objects.get(pk=id).values('pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk',
                       'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
@@ -445,7 +460,13 @@ def vendorList(request):
     else:
         vendors = list(models.Vendor.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'country__pk', 'state__pk',
                        'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
-
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Vendors Fetched Successfully.",
+                'page_items': vendors,
+            })
+            return JsonResponse(context)
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
         current_page = request.GET.get('current_page', 1)
@@ -573,6 +594,7 @@ def vendorDelete(request):
 def customerList(request):
     context = {}
     id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
     if id != None:
         customer = list(models.Customer.objects.get(pk=id).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk',
                         'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
@@ -584,7 +606,13 @@ def customerList(request):
     else:
         customers = list(models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk',
                          'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
-
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Customers Fetched Successfully.",
+                'page_items': customers,
+            })
+            return JsonResponse(context)
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
         current_page = request.GET.get('current_page', 1)
@@ -789,6 +817,7 @@ def customerDelete(request):
 def uomList(request):
     context = {}
     id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
     if id != None:
         uom = list(models.Uom.objects.get(pk=id).values('pk', 'name'))
         context.update({
@@ -799,7 +828,13 @@ def uomList(request):
     else:
         uoms = list(models.Uom.objects.filter(
             status=1, deleted=0).values('pk', 'name'))
-
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Uoms Fetched Successfully.",
+                'page_items': uoms,
+            })
+            return JsonResponse(context)
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
         current_page = request.GET.get('current_page', 1)
@@ -908,6 +943,7 @@ def uomDelete(request):
 def childUomList(request):
     context = {}
     id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
     if id != None:
         childUom = list(models.Child_Uom.objects.get(pk=id).values(
             'pk', 'name', 'uom__name', 'conversion_rate'))
@@ -919,6 +955,13 @@ def childUomList(request):
     else:
         childUoms = list(models.Child_Uom.objects.filter(status=1, deleted=0).values(
             'pk', 'name', 'uom__name', 'conversion_rate'))
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Child Uoms Fetched Successfully.",
+                'page_items': childUoms,
+            })
+            return JsonResponse(context)
 
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
@@ -1033,6 +1076,7 @@ def childUomDelete(request):
 def itemCategoryList(request):
     context = {}
     id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
     if id != None:
         itemCategory = list(models.Item_Category.objects.get(
             pk=id).values('pk', 'name'))
@@ -1044,7 +1088,13 @@ def itemCategoryList(request):
     else:
         itemCategories = list(models.Item_Category.objects.filter(
             status=1, deleted=0).values('pk', 'name'))
-
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Item Categories Fetched Successfully.",
+                'page_items': itemCategories,
+            })
+            return JsonResponse(context)
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
         current_page = request.GET.get('current_page', 1)
@@ -1155,6 +1205,7 @@ def itemCategoryDelete(request):
 def itemTypeList(request):
     context = {}
     id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
     if id != None:
         itemType = list(models.Item_Type.objects.get(pk=id).values(
             'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
@@ -1166,7 +1217,13 @@ def itemTypeList(request):
     else:
         itemTypes = list(models.Item_Type.objects.filter(status=1, deleted=0).values(
             'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
-
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Item Types Fetched Successfully.",
+                'page_items': itemTypes,
+            })
+            return JsonResponse(context)
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
         current_page = request.GET.get('current_page', 1)
@@ -1190,7 +1247,8 @@ def itemTypeList(request):
 @permission_classes([IsAuthenticated])
 def itemTypeAdd(request):
     context = {}
-    exist_data = models.Item_Type.objects.filter(name=request.POST['name'], item_category_id=request.POST['item_category_id'])
+    exist_data = models.Item_Type.objects.filter(
+        name=request.POST['name'], item_category_id=request.POST['item_category_id'])
     if len(exist_data) > 0:
         context.update({
             'status': 540,
@@ -1281,20 +1339,30 @@ def itemTypeDelete(request):
 def itemColorList(request):
     context = {}
     id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
     if id != None:
-        itemColor = list(models.Item_Color.objects.get(pk=id).values('pk', 'name', 'color_code'))
+        itemColor = list(models.Item_Color.objects.get(
+            pk=id).values('pk', 'name', 'color_code'))
         context.update({
             'status': 200,
             'message': "Item Color Fetched Successfully.",
             'detail': itemColor,
         })
     else:
-        itemColor = list(models.Item_Color.objects.filter(status=1, deleted=0).values('pk', 'name', 'color_code'))
+        itemColors = list(models.Item_Color.objects.filter(
+            status=1, deleted=0).values('pk', 'name', 'color_code'))
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Item Colors Fetched Successfully.",
+                'page_items': itemColors,
+            })
+            return JsonResponse(context)
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
         current_page = request.GET.get('current_page', 1)
 
-        paginator = CustomPaginator(itemColor, per_page)
+        paginator = CustomPaginator(itemColors, per_page)
         page_items = paginator.get_page(current_page)
         total_pages = paginator.get_total_pages()
 
@@ -1400,6 +1468,7 @@ def itemColorDelete(request):
 def itemList(request):
     context = {}
     id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
     if id != None:
         item = list(models.Item.objects.get(pk=id).values(
             'pk', 'name', 'model_no', 'item_type__name', 'item_color__name', 'uom_standard__name', 'uom_sku__name',
@@ -1413,6 +1482,13 @@ def itemList(request):
         items = list(models.Item.objects.filter(status=1, deleted=0).values(
             'pk', 'name', 'model_no', 'item_type__name', 'item_color__name', 'uom_standard__name', 'uom_sku__name',
             'conversion_factor', 'price_purchase', 'price_sale', 'photo'))
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Items Fetched Successfully.",
+                'page_items': items,
+            })
+            return JsonResponse(context)
 
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
@@ -1460,12 +1536,15 @@ def itemAdd(request):
             item.save()
             if 'photo' in request.FILES.keys():
                 photo = request.FILES['photo']
-                directory_path = settings.MEDIA_ROOT + env("ITEM_MEDIA_PROFILE") + "/"
+                directory_path = settings.MEDIA_ROOT + \
+                    env("ITEM_MEDIA_PROFILE") + "/"
                 path = Path(directory_path)
                 path.mkdir(parents=True, exist_ok=True)
-                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("ITEM_MEDIA_PROFILE") + "/")
+                fs = FileSystemStorage(
+                    location=settings.MEDIA_ROOT + env("ITEM_MEDIA_PROFILE") + "/")
                 saved_file = fs.save(photo.name, photo)
-                photo_path = settings.MEDIA_URL + env("ITEM_MEDIA_PROFILE") + "/" + saved_file
+                photo_path = settings.MEDIA_URL + \
+                    env("ITEM_MEDIA_PROFILE") + "/" + saved_file
                 item.photo = photo_path
                 item.save()
         transaction.commit()
@@ -1509,12 +1588,15 @@ def itemEdit(request):
             item.save()
             if 'photo' in request.FILES.keys():
                 photo = request.FILES['photo']
-                directory_path = settings.MEDIA_ROOT + env("ITEM_MEDIA_PROFILE") + "/"
+                directory_path = settings.MEDIA_ROOT + \
+                    env("ITEM_MEDIA_PROFILE") + "/"
                 path = Path(directory_path)
                 path.mkdir(parents=True, exist_ok=True)
-                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("ITEM_MEDIA_PROFILE") + "/")
+                fs = FileSystemStorage(
+                    location=settings.MEDIA_ROOT + env("ITEM_MEDIA_PROFILE") + "/")
                 saved_file = fs.save(photo.name, photo)
-                photo_path = settings.MEDIA_URL + env("ITEM_MEDIA_PROFILE") + "/" + saved_file
+                photo_path = settings.MEDIA_URL + \
+                    env("ITEM_MEDIA_PROFILE") + "/" + saved_file
                 item.photo = photo_path
                 item.save()
 

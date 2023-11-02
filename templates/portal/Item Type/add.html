@@ -68,13 +68,19 @@
                             <div class="col-md-6 mb-3">
                                 <label>Item Category <span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker" id="item_category_id" name="item_category_id"
-                                        required>
+                                    <select class="custom-select selectpicker" id="item_category_id"
+                                        name="item_category_id" required>
                                         <option value="">Choose...</option>
                                         {% for item_category in item_categories %}
                                         <option value="{{item_category.id}}">{{item_category.name}}</option>
                                         {% endfor %}
                                     </select>
+                                    {% if request.user.is_superuser == 1 or 'add_item_category'|get_session_permission:request is not None %}
+                                    <div class="btn float-end addForm" data-text="Add New Item Category"
+                                        data-form="addItemCategory" id="addItemCategoryModal" data-toggle="modal" data-target="#addFormModal">
+                                        <i class="fa fa-plus"></i>
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -83,7 +89,8 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>GST Percentage<span class="required-indicator">*</span></label>
-                                <input type="number" name="gst_percentage" class="form-control" placeholder="0.00%" min="0.0" max=100 step="0.01" required>
+                                <input type="number" name="gst_percentage" class="form-control" placeholder="0.00%"
+                                    min="0.0" max=100 step="0.01" required>
                                 <div class="invalid-feedback">Please provide a percentage less than 100.</div>
                             </div>
                         </div>
@@ -96,6 +103,31 @@
         </div>
     </div>
     <!--/ Form Element End -->
+</div>
+
+<!-- The Modal -->
+<div class="modal" id="addFormModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title"></h4>
+                <button type="button" class="close modal-close-btn" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body addFormBody">
+
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger modal-close-btn" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -127,7 +159,6 @@
 
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
-        console.log("AAA")
         $('.submit-btn').text('Submitting...');
         $('.submit-btn').prop('disabled', true);
         var formData = new FormData(create_form);

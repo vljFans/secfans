@@ -78,9 +78,10 @@
                                     <span class="input-group-addon"><i></i></span>
                                 </div>
                             </div>
-                            {% if request.user.is_superuser == 1 or 'add_item_color'|get_session_permission:request is not None %}
-                            <button class="btn btn-success submit-btn" type="submit">Submit</button>
-                            {% endif %}
+                        </div>
+                        {% if request.user.is_superuser == 1 or 'add_item_color'|get_session_permission:request is not None %}
+                        <button class="btn btn-success submit-btn" type="submit">Submit</button>
+                        {% endif %}
                     </form>
                 </div>
             </div>
@@ -122,7 +123,6 @@
 
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
-        console.log("AAA")
         $('.submit-btn').text('Submitting...');
         $('.submit-btn').prop('disabled', true);
         var formData = new FormData(create_form);

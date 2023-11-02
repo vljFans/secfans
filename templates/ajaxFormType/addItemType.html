@@ -1,0 +1,97 @@
+{% load template_func %}
+<form id="addItemTypeForm">
+    <div class="form-row">
+        <div class="col-md-6 mb-3">
+            <label>Name <span class="required-indicator">*</span></label>
+            <input type="text" name="name" class="form-control" placeholder="Name" required>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label>Item Category <span class="required-indicator">*</span></label>
+            <div class="input-group">
+                <select class="custom-select selectpicker" id="item_category_id"
+                    name="item_category_id" required>
+                    <option value="">Choose...</option>
+                    {% for item_category in item_categories %}
+                    <option value="{{item_category.id}}">{{item_category.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label>HSN Code<span class="required-indicator">*</span></label>
+            <input type="text" name="hsn_code" class="form-control" placeholder="HSN Code" required>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label>GST Percentage<span class="required-indicator">*</span></label>
+            <input type="number" name="gst_percentage" class="form-control" placeholder="0.00%"
+                min="0.0" max=100 step="0.01" required>
+        </div>
+    </div>
+    {% if request.user.is_superuser == 1 or 'add_item_type'|get_session_permission:request is not None %}
+    <button class="btn btn-success submit-modal-btn" type="submit">Submit</button>
+    {% endif %}
+</form>
+
+<script>
+    $('.selectpicker').select2({
+        dropdownParent: $('#addFormModal')
+    });
+
+    $('#addItemTypeForm').on('submit', function (e) {
+        e.preventDefault();
+        $('.submit-modal-btn').text('Submitting...');
+        $('.submit-modal-btn').prop('disabled', true);
+        var formData = new FormData(addItemTypeForm);
+        $.ajax({
+            type: "POST",
+            evalScripts: true,
+            contentType: false,
+            processData: false,
+            url: "{% url 'api:itemTypeAdd' %}",
+            data: formData,
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                $('.submit-modal-btn').text('Submit');
+                $('.submit-modal-btn').prop('disabled', false);
+                if (response.status == 200) {
+                    getItemType();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.submit-modal-btn').text('Submit');
+                $('.submit-modal-btn').prop('disabled', false);
+                alert(error.responseJSON.detail);
+            }
+        });
+    });
+
+    function getItemType() {
+        $.ajax({
+            url: "{% url 'api:itemTypeList' %}?&find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    var options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $("#{{selector}}").parents('.input-group').find('select').html(options_text);
+                    $('#addFormModal').modal('hide');
+                    $('.selectpicker').select2({
+                        placeholder: ''
+                    });
+                } else {
+                    alert(response.message);
+                }
+            },
+        });
+    }
+</script>

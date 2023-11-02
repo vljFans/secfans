@@ -234,6 +234,33 @@
                 }
             });
         });
+
+        $(document).on('click', '.modal-close-btn', function () {
+            setTimeout(function () {
+                $('.selectpicker').select2({
+                    dropdownParent: null
+                });
+            } , 100);
+        });
+
+        $(document).on("click", ".addForm", function () {
+            form_type = $(this).attr('data-form');
+            selector = $(this).attr('id');
+            data_text = $(this).attr('data-text');
+            $('.modal-title').text(data_text);
+            $.ajax({
+                url: "{% url 'superuser:getAjaxFormType' %}",
+                type: 'post',
+                data: ({ form_type: form_type, selector: selector, csrfmiddlewaretoken: '{{csrf_token}}' }),
+                success: function (response) {
+                    if (response.status == 200) {
+                        $(".addFormBody").html(response.formType);
+                    } else {
+                        alert(response.message);
+                    }
+                },
+            });
+        });
     </script>
 
     {% block js %}

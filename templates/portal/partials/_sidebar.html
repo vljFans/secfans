@@ -49,19 +49,19 @@
             {% endif %}
             {% if request.user.is_superuser == 1 or 'view_uom'|get_session_permission:request is not None %}
             <li class="{% if request.path == '/uom-list' %}active{% endif %}">
-              <a href="{% url 'superuser:uomList' %}">Parent UOM</a>
+              <a href="{% url 'superuser:uomList' %}">UOM</a>
             </li>
             {% endif %}
-            {% if request.user.is_superuser == 1 or 'view_child_uom'|get_session_permission:request is not None %}
+            <!-- {% if request.user.is_superuser == 1 or 'view_child_uom'|get_session_permission:request is not None %}
             <li class="{% if request.path == '/child-uom-list' %}active{% endif %}">
               <a href="{% url 'superuser:childUomList' %}">Child UOM</a>
             </li>
-            {% endif %}
-            {% if request.user.is_superuser == 1 or 'view_item_category'|get_session_permission:request is not None %}
+            {% endif %} -->
+            <!-- {% if request.user.is_superuser == 1 or 'view_item_category'|get_session_permission:request is not None %}
             <li class="{% if request.path == '/item-category-list' %}active{% endif %}">
               <a href="{% url 'superuser:itemCategoryList' %}">Item Category</a>
             </li>
-            {% endif %}
+            {% endif %} -->
             {% if request.user.is_superuser == 1 or 'view_item_type'|get_session_permission:request is not None %}
             <li class="{% if request.path == '/item-type-list' %}active{% endif %}">
               <a href="{% url 'superuser:itemTypeList' %}">Item Type</a>

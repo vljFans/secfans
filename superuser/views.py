@@ -2,6 +2,8 @@ from django.shortcuts import render
 from sec.decorators import login_required
 from django.urls import reverse
 from django.contrib.contenttypes.models import ContentType
+from django.http import JsonResponse
+from django.template.loader import render_to_string
 from api import models
 import environ
 env = environ.Env()
@@ -12,6 +14,42 @@ context['project_name'] = env("PROJECT_NAME")
 context['client_name'] = env("CLIENT_NAME")
 
 # Create your views here.
+
+
+def getAjaxFormType(request):
+    if request.method == "POST":
+        form_type = request.POST['form_type']
+        selector = request.POST['selector']
+        if form_type == "addItemCategory":
+            context.update({'request': request, 'selector': selector})
+            return JsonResponse({
+                'status': 200,
+                'formType': render_to_string('ajaxFormType/addItemCategory.html', context)
+            })
+        elif form_type == "addItemType":
+            itemCategories = models.Item_Category.objects.filter(status=1, deleted=0)
+            context.update({'request': request, 'selector': selector, 'itemCategories': itemCategories})
+            return JsonResponse({
+                'status': 200,
+                'formType': render_to_string('ajaxFormType/addItemType.html', context)
+            })
+        elif form_type == "addItemColor":
+            context.update({'request': request, 'selector': selector})
+            return JsonResponse({
+                'status': 200,
+                'formType': render_to_string('ajaxFormType/addItemColor.html', context)
+            })
+        elif form_type == "addUom":
+            context.update({'request': request, 'selector': selector})
+            return JsonResponse({
+                'status': 200,
+                'formType': render_to_string('ajaxFormType/addUom.html', context)
+            })
+    else:
+        return JsonResponse({
+            'status': 500,
+            'message': "There should be ajax method"
+        })
 
 
 @login_required

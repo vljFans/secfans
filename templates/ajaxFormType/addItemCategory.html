@@ -1,0 +1,76 @@
+{% load template_func %}
+<form id="addItemCategoryForm">
+    <div class="form-row">
+        <div class="col-md-6 mb-3">
+            <label>Name <span class="required-indicator">*</span></label>
+            <input type="text" name="name" class="form-control" placeholder="Name" required>
+        </div>
+    </div>
+    {% if request.user.is_superuser == 1 or 'add_item_category'|get_session_permission:request is not None %}
+    <button class="btn btn-success submit-modal-btn" type="submit">Submit</button>
+    {% endif %}
+</form>
+
+<script>
+    $('.selectpicker').select2({
+        dropdownParent: $('#addFormModal')
+    });
+
+    $('#addItemCategoryForm').on('submit', function (e) {
+        e.preventDefault();
+        $('.submit-modal-btn').text('Submitting...');
+        $('.submit-modal-btn').prop('disabled', true);
+        var formData = new FormData(addItemCategoryForm);
+        $.ajax({
+            type: "POST",
+            evalScripts: true,
+            contentType: false,
+            processData: false,
+            url: "{% url 'api:itemCategoryAdd' %}",
+            data: formData,
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                $('.submit-modal-btn').text('Submit');
+                $('.submit-modal-btn').prop('disabled', false);
+                if (response.status == 200) {
+                    getItemCategory();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.submit-modal-btn').text('Submit');
+                $('.submit-modal-btn').prop('disabled', false);
+                alert(error.responseJSON.detail);
+            }
+        });
+    });
+
+    function getItemCategory() {
+        $.ajax({
+            url: "{% url 'api:itemCategoryList' %}?&find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    var options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $("#{{selector}}").parents('.input-group').find('select').html(options_text);
+                    $('#addFormModal').modal('hide');
+                    $('.selectpicker').select2({
+                        placeholder: ''
+                    });
+                } else {
+                    alert(response.message);
+                }
+            },
+        });
+    }
+</script>

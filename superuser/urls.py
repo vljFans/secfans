@@ -21,6 +21,8 @@ from . import views
 app_name = 'superuser'
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),
+
+    path('get-ajax-form-type', views.getAjaxFormType, name='getAjaxFormType'),
     
     path('role-list', views.roleList, name='roleList'),
     path('role-add', views.roleAdd, name='roleAdd'),
