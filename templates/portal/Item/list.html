@@ -138,9 +138,9 @@
                                 <td>${element.item_color__name}</td>
                                 <td>${element.uom_standard__name}</td>
                                 <td>${element.uom_sku__name}</td>
-                                <td>${element.conversion_factor}  </td>
-                                <td>₹${element.price_purchase}</td>
-                                <td>₹${element.price_sale}</td>
+                                <td class="text-right">${element.conversion_factor}  </td>
+                                <td class="text-right">₹${element.price_purchase}</td>
+                                <td class="text-right">₹${element.price_sale}</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'change_item'|get_session_permission:request is not None %}
                                 <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
