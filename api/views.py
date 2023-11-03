@@ -1471,7 +1471,7 @@ def itemList(request):
     find_all = request.GET.get('find_all', None)
     if id != None:
         item = list(models.Item.objects.get(pk=id).values(
-            'pk', 'name', 'model_no', 'item_type__name', 'item_color__name', 'uom_standard__name', 'uom_sku__name',
+            'pk', 'name', 'model_no', 'item_type__name', 'item_color__name', 'item_color__color_code', 'uom_standard__name', 'uom_sku__name',
             'conversion_factor', 'price_purchase', 'price_sale', 'photo'))
         context.update({
             'status': 200,
@@ -1480,7 +1480,7 @@ def itemList(request):
         })
     else:
         items = list(models.Item.objects.filter(status=1, deleted=0).values(
-            'pk', 'name', 'model_no', 'item_type__name', 'item_color__name', 'uom_standard__name', 'uom_sku__name',
+            'pk', 'name', 'model_no', 'item_type__name', 'item_color__name', 'item_color__color_code', 'uom_standard__name', 'uom_sku__name',
             'conversion_factor', 'price_purchase', 'price_sale', 'photo'))
         if find_all is not None and int(find_all) == 1:
             context.update({
