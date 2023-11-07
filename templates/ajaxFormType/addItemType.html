@@ -81,7 +81,7 @@
                 if (response.status == 200) {
                     var options_text = `<option value="">Choose...</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
-                        options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                        options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name} (${response.page_items[index].item_category__name})</option>`;
                     }
                     $("#{{selector}}").parents('.input-group').find('select').html(options_text);
                     $('#addFormModal').modal('hide');

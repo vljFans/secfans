@@ -1,9 +1,7 @@
 {% extends 'portal/base.html' %}
-{% load static %}
 {% load template_func %}
 
 {% block css %}
-<link type="text/css" rel="stylesheet" href="{% static 'plugins/footable/footable.core.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -52,8 +50,8 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                {% if request.user.is_superuser == 1 or 'add_customer'|get_session_permission:request is not None %}
-                                <a href="{% url 'superuser:customerAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
+                                {% if request.user.is_superuser == 1 or 'add_item_color'|get_session_permission:request is not None %}
+                                <a href="{% url 'superuser:billOfMaterialAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
                                 {% endif %}
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                                 <!-- <div class="dropdown" data-toggle="dropdown">
@@ -85,12 +83,10 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Trade Name</th>
-                                    <th>Photo</th>
-                                    <th>Contact Name</th>
-                                    <th>Contact Number</th>
-                                    <th>Contact Email</th>
-                                    <th>Customer Type</th>
+                                    <th>Name</th>
+                                    <th>Quantity</th>
+                                    <th>Uom</th>
+                                    <th>Price</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -111,23 +107,18 @@
 {% endblock %}
 
 {% block js %}
-<script src="{% static 'plugins/footable/footable.all.min.js' %}"></script>
-<script>
-    // Row Toggler
-    $('#foo-row-toggler').footable();
-</script>
 <script>
     $(document).ready(function () {
         $.ajax({
             type: "GET",
-            url: "{% url 'api:customerList' %}",
+            url: "{% url 'api:billOfMaterialList' %}",
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
-                'Authorization': deleteCookie(cookieName)
+                'Authorization': getCookieValue("accessToken")
             },
             success: function (response) {
                 if (response.status == 200) {
-                    edit_url = "{% url 'superuser:customerEdit' 1 %}";
+                    edit_url = "{% url 'superuser:billOfMaterialEdit' 1 %}";
                     page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
@@ -135,17 +126,15 @@
                         tbody_text += `<tr>
                                 <td>${index + 1}</td>
                                 <td>${element.name}</td>
-                                <td><img src="${element.photo}" class="img-responsive" width="150"></td>
-                                <td>${element.contact_name}</td>
-                                <td>${element.contact_no}</td>
-                                <td>${element.contact_email}</td>
-                                <td>${element.customer_type__name}</td>
+                                <td>${element.quantity}</td>
+                                <td>${element.uom__name}</td>
+                                <td>${element.price}</td>
                                 <td>
-                                {% if request.user.is_superuser == 1 or 'change_customer'|get_session_permission:request is not None %}
-                                <a href="${edit_url.replace('1', page_items[index].pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
+                                {% if request.user.is_superuser == 1 or 'change_bill_of_material_header'|get_session_permission:request is not None %}
+                                <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
                                 {% endif %}
-                                {% if request.user.is_superuser == 1 or 'delete_customer'|get_session_permission:request is not None %}
-                                <a id="delete-btn" data-id="${page_items[index].pk}" data-name="${element.name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
+                                {% if request.user.is_superuser == 1 or 'delete_bill_of_material_header'|get_session_permission:request is not None %}
+                                <a id="delete-btn" data-id="${element.pk}" data-name="${element.name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
                                 {% endif %}
                                 </td>
                             </tr>`;
@@ -177,14 +166,14 @@
         if (window.confirm('Are you sure to delete ' + name + '?')) {
             $.ajax({
                 type: "POST",
-                url: "{% url 'api:customerDelete' %}",
+                url: "{% url 'api:billOfMaterialDelete' %}",
                 data: ({ id: id }),
                 headers: {
                     'Authorization': getCookieValue("accessToken"),
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:customerList' %}");
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:itemColorList' %}");
                     } else {
                         alert(response.message);
                     }

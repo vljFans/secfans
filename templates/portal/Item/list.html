@@ -134,7 +134,7 @@
                                 <td>${element.name}</td>
                                 <td>${element.model_no}</td>
                                 <td><img src="${element.photo}" class="img-responsive" width="150"></td>
-                                <td>${element.item_type__name}</td>
+                                <td>${element.item_type__name} (${element.item_type__item_category__name})</td>
                                 <td><div style="height:24px;width:100%; background-color: ${element.item_color__color_code};"></div></td>
                                 <td>${element.uom_standard__name}</td>
                                 <td>${element.uom_sku__name}</td>
@@ -167,7 +167,7 @@
                 }
             },
             error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON.detail);
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
     });
@@ -194,7 +194,7 @@
                     $('.success-msg-txt').text("");
                     $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
                     $('.error-msg-txt').addClass('text-danger');
-                    $('.error-msg-txt').text(error.responseJSON.detail);
+                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
                 }
             });
         }

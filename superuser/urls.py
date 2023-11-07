@@ -63,4 +63,8 @@ urlpatterns = [
     path('item-list', views.itemList, name='itemList'),
     path('item-add', views.itemAdd, name='itemAdd'),
     path('item-edit/<int:id>', views.itemEdit, name='itemEdit'),
+    
+    path('bill-of-material-list', views.billOfMaterialList, name='billOfMaterialList'),
+    path('bill-of-material-add', views.billOfMaterialAdd, name='billOfMaterialAdd'),
+    path('bill-of-material-edit/<int:id>', views.billOfMaterialEdit, name='billOfMaterialEdit'),
 ]

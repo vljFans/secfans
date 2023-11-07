@@ -27,8 +27,10 @@ def getAjaxFormType(request):
                 'formType': render_to_string('ajaxFormType/addItemCategory.html', context)
             })
         elif form_type == "addItemType":
-            itemCategories = models.Item_Category.objects.filter(status=1, deleted=0)
-            context.update({'request': request, 'selector': selector, 'itemCategories': itemCategories})
+            itemCategories = models.Item_Category.objects.filter(
+                status=1, deleted=0)
+            context.update(
+                {'request': request, 'selector': selector, 'itemCategories': itemCategories})
             return JsonResponse({
                 'status': 200,
                 'formType': render_to_string('ajaxFormType/addItemType.html', context)
@@ -409,3 +411,37 @@ def itemEdit(request, id):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item", 'url': reverse('superuser:itemList')}, {'name': "Edit"}]
     })
     return render(request, 'portal/Item/edit.html', context)
+
+
+@login_required
+def billOfMaterialList(request):
+    context.update({
+        'page_title': "Bill Of Material List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Bill Of Material", 'url': reverse('superuser:billOfMaterialList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Bill Of Material/list.html', context)
+
+
+@login_required
+def billOfMaterialAdd(request):
+    context.update({
+        'page_title': "Bill Of Material Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Bill Of Material", 'url': reverse('superuser:billOfMaterialList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Bill Of Material/add.html', context)
+
+
+@login_required
+def billOfMaterialEdit(request, id):
+    billOfMaterial = models.Bill_Of_Material_Header.objects.prefetch_related(
+        'bill_of_material_detail_set').get(pk=id)
+    items = models.Item.objects.filter(status=1, deleted=0)
+    uoms = models.Uom.objects.filter(status=1, deleted=0)
+    context.update({
+        'billOfMaterial': billOfMaterial,
+        'items': items,
+        'uoms': uoms,
+        'page_title': "Bill Of Material Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Bill Of Material", 'url': reverse('superuser:billOfMaterialList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Bill Of Material/edit.html', context)

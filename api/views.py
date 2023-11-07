@@ -148,11 +148,11 @@ def roleList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     if id != None:
-        role = list(models.Role.objects.get(pk=id).values('pk', 'name'))
+        role = list(models.Role.objects.filter(pk=id)[:1].values('pk', 'name'))
         context.update({
             'status': 200,
             'message': "Role Fetched Successfully.",
-            'detail': role,
+            'page_items': role,
         })
     else:
         roles = list(models.Role.objects.filter(
@@ -187,7 +187,8 @@ def roleList(request):
 @permission_classes([IsAuthenticated])
 def roleAdd(request):
     context = {}
-    exist_data = models.Role.objects.filter(name__iexact=request.POST['name'])
+    exist_data = models.Role.objects.filter(
+        name__iexact=request.POST['name']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 502,
@@ -223,7 +224,7 @@ def roleAdd(request):
 def roleEdit(request):
     context = {}
     exist_data = models.Role.objects.filter(
-        name__iexact=request.POST['name']).exclude(id=request.POST['id'])
+        name__iexact=request.POST['name']).exclude(id=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 504,
@@ -294,12 +295,12 @@ def userList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     if id != None:
-        user = list(models.User.objects.get(pk=id).values(
+        user = list(models.User.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'email', 'phone', 'role__name'))
         context.update({
             'status': 200,
             'message': "User Fetched Successfully.",
-            'detail': user,
+            'page_items': user,
         })
     else:
         users = list(models.User.objects.filter(
@@ -341,7 +342,7 @@ def userAdd(request):
         })
         return JsonResponse(context)
     exist_data = models.User.objects.filter(
-        Q(email__iexact=request.POST['email']) | Q(phone__iexact=request.POST['phone']))
+        Q(email__iexact=request.POST['email']) | Q(phone__iexact=request.POST['phone'])).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 509,
@@ -387,7 +388,7 @@ def userEdit(request):
             })
             return JsonResponse(context)
     exist_data = models.User.objects.filter(Q(email__iexact=request.POST['email']) | Q(
-        phone__iexact=request.POST['phone'])).exclude(id=request.POST['id'])
+        phone__iexact=request.POST['phone'])).exclude(id=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 512,
@@ -450,12 +451,12 @@ def vendorList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     if id != None:
-        vendor = list(models.Vendor.objects.get(pk=id).values('pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk',
+        vendor = list(models.Vendor.objects.filter(pk=id)[:1].values('pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk',
                       'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
         context.update({
             'status': 200,
             'message': "Vendor Fetched Successfully.",
-            'detail': vendor,
+            'page_items': vendor,
         })
     else:
         vendors = list(models.Vendor.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'country__pk', 'state__pk',
@@ -491,7 +492,7 @@ def vendorList(request):
 def vendorAdd(request):
     context = {}
     exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
-        contact_no__iexact=request.POST['contact_no']))
+        contact_no__iexact=request.POST['contact_no'])).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 515,
@@ -531,7 +532,7 @@ def vendorAdd(request):
 def vendorEdit(request):
     context = {}
     exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
-        contact_no__iexact=request.POST['contact_no'])).exclude(id=request.POST['id'])
+        contact_no__iexact=request.POST['contact_no'])).exclude(id=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 517,
@@ -596,12 +597,12 @@ def customerList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     if id != None:
-        customer = list(models.Customer.objects.get(pk=id).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk',
+        customer = list(models.Customer.objects.filter(pk=id)[:1].values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk',
                         'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
         context.update({
             'status': 200,
             'message': "Customer Fetched Successfully.",
-            'detail': customer,
+            'page_items': customer,
         })
     else:
         customers = list(models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk',
@@ -637,7 +638,7 @@ def customerList(request):
 def customerAdd(request):
     context = {}
     exist_data = models.Customer.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
-        contact_no__iexact=request.POST['contact_no']))
+        contact_no__iexact=request.POST['contact_no'])).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 520,
@@ -716,7 +717,7 @@ def customerAdd(request):
 def customerEdit(request):
     context = {}
     exist_data = models.Customer.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
-        contact_no__iexact=request.POST['contact_no'])).exclude(id=request.POST['id'])
+        contact_no__iexact=request.POST['contact_no'])).exclude(id=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 522,
@@ -819,11 +820,11 @@ def uomList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     if id != None:
-        uom = list(models.Uom.objects.get(pk=id).values('pk', 'name'))
+        uom = list(models.Uom.objects.filter(pk=id)[:1].values('pk', 'name'))
         context.update({
             'status': 200,
             'message': "UOM Fetched Successfully.",
-            'detail': uom,
+            'page_items': uom,
         })
     else:
         uoms = list(models.Uom.objects.filter(
@@ -858,7 +859,8 @@ def uomList(request):
 @permission_classes([IsAuthenticated])
 def uomAdd(request):
     context = {}
-    exist_data = models.Uom.objects.filter(name=request.POST['name'])
+    exist_data = models.Uom.objects.filter(
+        name=request.POST['name']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 525,
@@ -889,7 +891,7 @@ def uomAdd(request):
 def uomEdit(request):
     context = {}
     exist_data = models.Uom.objects.filter(
-        name=request.POST['name']).exclude(pk=request.POST['id'])
+        name=request.POST['name']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 527,
@@ -945,12 +947,12 @@ def childUomList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     if id != None:
-        childUom = list(models.Child_Uom.objects.get(pk=id).values(
+        childUom = list(models.Child_Uom.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'uom__name', 'conversion_rate'))
         context.update({
             'status': 200,
             'message': "UOM Fetched Successfully.",
-            'detail': childUom,
+            'page_items': childUom,
         })
     else:
         childUoms = list(models.Child_Uom.objects.filter(status=1, deleted=0).values(
@@ -987,7 +989,7 @@ def childUomList(request):
 def childUomAdd(request):
     context = {}
     exist_data = models.Child_Uom.objects.filter(
-        name=request.POST['name'], uom_id=request.POST['uom_id'])
+        name=request.POST['name'], uom_id=request.POST['uom_id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 530,
@@ -1020,7 +1022,7 @@ def childUomAdd(request):
 def childUomEdit(request):
     context = {}
     exist_data = models.Child_Uom.objects.filter(
-        name=request.POST['name'], uom_id=request.POST['uom_id']).exclude(pk=request.POST['id'])
+        name=request.POST['name'], uom_id=request.POST['uom_id']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 532,
@@ -1083,7 +1085,7 @@ def itemCategoryList(request):
         context.update({
             'status': 200,
             'message': "Item Category Fetched Successfully.",
-            'detail': itemCategory,
+            'page_items': itemCategory,
         })
     else:
         itemCategories = list(models.Item_Category.objects.filter(
@@ -1119,7 +1121,7 @@ def itemCategoryList(request):
 def itemCategoryAdd(request):
     context = {}
     exist_data = models.Item_Category.objects.filter(
-        name=request.POST['name'])
+        name=request.POST['name']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 535,
@@ -1150,7 +1152,7 @@ def itemCategoryAdd(request):
 def itemCategoryEdit(request):
     context = {}
     exist_data = models.Item_Category.objects.filter(
-        name=request.POST['name']).exclude(pk=request.POST['id'])
+        name=request.POST['name']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 537,
@@ -1207,12 +1209,12 @@ def itemTypeList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     if id != None:
-        itemType = list(models.Item_Type.objects.get(pk=id).values(
+        itemType = list(models.Item_Type.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
         context.update({
             'status': 200,
             'message': "Item Type Fetched Successfully.",
-            'detail': itemType,
+            'page_items': itemType,
         })
     else:
         itemTypes = list(models.Item_Type.objects.filter(status=1, deleted=0).values(
@@ -1248,7 +1250,7 @@ def itemTypeList(request):
 def itemTypeAdd(request):
     context = {}
     exist_data = models.Item_Type.objects.filter(
-        name=request.POST['name'], item_category_id=request.POST['item_category_id'])
+        name=request.POST['name'], item_category_id=request.POST['item_category_id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 540,
@@ -1282,7 +1284,7 @@ def itemTypeAdd(request):
 def itemTypeEdit(request):
     context = {}
     exist_data = models.Item_Type.objects.filter(
-        name=request.POST['name'], item_category_id=request.POST['item_category_id']).exclude(pk=request.POST['id'])
+        name=request.POST['name'], item_category_id=request.POST['item_category_id']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 542,
@@ -1346,7 +1348,7 @@ def itemColorList(request):
         context.update({
             'status': 200,
             'message': "Item Color Fetched Successfully.",
-            'detail': itemColor,
+            'page_items': itemColor,
         })
     else:
         itemColors = list(models.Item_Color.objects.filter(
@@ -1381,7 +1383,8 @@ def itemColorList(request):
 @permission_classes([IsAuthenticated])
 def itemColorAdd(request):
     context = {}
-    exist_data = models.Item_Color.objects.filter(name=request.POST['name'])
+    exist_data = models.Item_Color.objects.filter(
+        name=request.POST['name']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 545,
@@ -1413,7 +1416,7 @@ def itemColorAdd(request):
 def itemColorEdit(request):
     context = {}
     exist_data = models.Item_Color.objects.filter(
-        name=request.POST['name']).exclude(pk=request.POST['id'])
+        name=request.POST['name']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 547,
@@ -1470,17 +1473,17 @@ def itemList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     if id != None:
-        item = list(models.Item.objects.get(pk=id).values(
-            'pk', 'name', 'model_no', 'item_type__name', 'item_color__name', 'item_color__color_code', 'uom_standard__name', 'uom_sku__name',
+        item = list(models.Item.objects.filter(pk=id)[:1].values(
+            'pk', 'name', 'model_no', 'item_type__name', 'item_type__item_category__name', 'item_color__name', 'item_color__color_code', 'uom_standard__name', 'uom_sku__name',
             'conversion_factor', 'price_purchase', 'price_sale', 'photo'))
         context.update({
             'status': 200,
             'message': "Item Fetched Successfully.",
-            'detail': item,
+            'page_items': item,
         })
     else:
         items = list(models.Item.objects.filter(status=1, deleted=0).values(
-            'pk', 'name', 'model_no', 'item_type__name', 'item_color__name', 'item_color__color_code', 'uom_standard__name', 'uom_sku__name',
+            'pk', 'name', 'model_no', 'item_type__name', 'item_type__item_category__name', 'item_color__name', 'item_color__color_code', 'uom_standard__name', 'uom_sku__name',
             'conversion_factor', 'price_purchase', 'price_sale', 'photo'))
         if find_all is not None and int(find_all) == 1:
             context.update({
@@ -1513,8 +1516,8 @@ def itemList(request):
 @permission_classes([IsAuthenticated])
 def itemAdd(request):
     context = {}
-    exist_data = models.Item.objects.filter(Q(name__iexact=request.POST['name']) & Q(
-        model_no__iexact=request.POST['model_no']))
+    exist_data = models.Item.objects.filter(
+        name__iexact=request.POST['name'], model_no__iexact=request.POST['model_no']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 550,
@@ -1565,8 +1568,8 @@ def itemAdd(request):
 @permission_classes([IsAuthenticated])
 def itemEdit(request):
     context = {}
-    exist_data = models.Item.objects.filter(Q(name__iexact=request.POST['name']) & Q(
-        model_no__iexact=request.POST['model_no'])).exclude(pk=request.POST['id'])
+    exist_data = models.Item.objects.filter(name__iexact=request.POST['name'], model_no__iexact=request.POST['model_no']).exclude(
+        pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 552,
@@ -1630,6 +1633,155 @@ def itemDelete(request):
     except Exception:
         context.update({
             'status': 554,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def billOfMaterialList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    if id != None:
+        billOfMaterial = list(models.Bill_Of_Material_Header.objects.filter(
+            pk=id)[:1].values('pk', 'name', 'uom__name', 'quantity', 'price'))
+        context.update({
+            'status': 200,
+            'message': "Bill Of Material Fetched Successfully.",
+            'page_items': billOfMaterial,
+        })
+    else:
+        items = list(models.Bill_Of_Material_Header.objects.filter(
+            status=1, deleted=0).values('pk', 'name', 'uom__name', 'quantity', 'price'))
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Bill Of Materials Fetched Successfully.",
+                'page_items': items,
+            })
+            return JsonResponse(context)
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(items, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Bill Of Materials Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def billOfMaterialAdd(request):
+    context = {}
+    exist_data = models.Bill_Of_Material_Header.objects.filter(
+        name__iexact=request.POST['name']).filter(deleted=0)
+    if len(exist_data) > 0:
+        context.update({
+            'status': 555,
+            'message': "Bill Of Material with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            billOfMaterialHeader = models.Bill_Of_Material_Header()
+            billOfMaterialHeader.name = request.POST['name']
+            billOfMaterialHeader.uom_id = request.POST['uom_id']
+            billOfMaterialHeader.quantity = request.POST['bill_of_material_quantity']
+            billOfMaterialHeader.price = request.POST['total_amount']
+            billOfMaterialHeader.save()
+
+            bill_of_material_details = []
+            for index, elem in enumerate(request.POST.getlist('item_id')):
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
+                                                item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
+            models.Bill_Of_Material_Detail.objects.bulk_create(
+                bill_of_material_details)
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Bill Of Material Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 556,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def billOfMaterialEdit(request):
+    context = {}
+    exist_data = models.Bill_Of_Material_Header.objects.filter(
+        name__iexact=request.POST['name']).exclude(pk=request.POST['id']).filter(deleted=0)
+    if len(exist_data) > 0:
+        context.update({
+            'status': 557,
+            'message': "Bill Of Material with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            billOfMaterialHeader = models.Bill_Of_Material_Header.prefetch_related(
+                'bill_of_material_set').objects.get(pk=request.POST['id'])
+            billOfMaterialHeader.name = request.POST['name']
+            billOfMaterialHeader.uom_id = request.POST['uom_id']
+            billOfMaterialHeader.quantity = request.POST['bill_of_material_quantity']
+            billOfMaterialHeader.price = request.POST['total_amount']
+            billOfMaterialHeader.save()
+            billOfMaterialHeader.bill_of_material_set.all().delete()
+            bill_of_material_details = []
+            for index, elem in enumerate(request.POST.getlist('item_id')):
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
+                                                item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
+            models.Bill_Of_Material_Detail.objects.bulk_create(
+                bill_of_material_details)
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Bill Of Material Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 558,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def billOfMaterialDelete(request):
+    context = {}
+    billOfMaterial = models.Bill_Of_Material_Header.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            billOfMaterial.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Bill Of Material Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 559,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()

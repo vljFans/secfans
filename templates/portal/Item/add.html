@@ -79,9 +79,6 @@
                                     <select class="custom-select selectpicker" id="item_type_id" name="item_type_id"
                                         required>
                                         <option value="">Choose...</option>
-                                        {% for item_type in item_types %}
-                                            <option value="{{item_type.id}}">{{item_type.name}}</option>
-                                        {% endfor %}
                                     </select>
                                     {% if request.user.is_superuser == 1 or 'add_item_type'|get_session_permission:request is not None %}
                                     <div class="btn float-end addForm" data-text="Add New Item Type"
@@ -97,9 +94,6 @@
                                     <select class="custom-select selectpicker" id="item_color_id" name="item_color_id"
                                         required>
                                         <option value="">Choose...</option>
-                                        {% for item_color in item_colors %}
-                                            <option value="{{item_color.id}}">{{item_color.name}}</option>
-                                        {% endfor %}
                                     </select>
                                     {% if request.user.is_superuser == 1 or 'add_item_color'|get_session_permission:request is not None %}
                                     <div class="btn float-end addForm" data-text="Add New Item Color"
@@ -198,6 +192,82 @@
         placeholder: ''
     });
 
+    $(document).ready(function () {
+        $.ajax({
+            url: "{% url 'api:itemTypeList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    var item_type_options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        item_type_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name} (${response.page_items[index].item_category__name})</option>`;
+                    }
+                    $('#item_type_id').html(item_type_options_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    });
+
+    $(document).ready(function () {
+        $.ajax({
+            url: "{% url 'api:itemColorList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    var item_type_options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        item_type_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $('#item_color_id').html(item_type_options_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    });
+
+    $(document).ready(function () {
+        $.ajax({
+            url: "{% url 'api:uomList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    var item_type_options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        item_type_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $('#uom_standard_id').html(item_type_options_text);
+                    $('#uom_sku_id').html(item_type_options_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    });
+
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
         $('.submit-btn').text('Submitting...');
@@ -229,7 +299,7 @@
                 $('.success-msg-txt').text("");
                 $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
                 $('.error-msg-txt').addClass('text-danger');
-                $('.error-msg-txt').text(error.responseJSON.detail);
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
     });

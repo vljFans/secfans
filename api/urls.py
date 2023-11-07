@@ -69,4 +69,9 @@ urlpatterns = [
     path('item-add', views.itemAdd, name='itemAdd'),
     path('item-edit', views.itemEdit, name='itemEdit'),
     path('item-delete', views.itemDelete, name='itemDelete'),
+    
+    path('bill-of-material-list', views.billOfMaterialList, name='billOfMaterialList'),
+    path('bill-of-material-add', views.billOfMaterialAdd, name='billOfMaterialAdd'),
+    path('bill-of-material-edit', views.billOfMaterialEdit, name='billOfMaterialEdit'),
+    path('bill-of-material-delete', views.billOfMaterialDelete, name='billOfMaterialDelete'),
 ]

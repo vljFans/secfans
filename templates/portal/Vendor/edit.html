@@ -257,7 +257,7 @@
                 $('.success-msg-txt').text("");
                 $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
                 $('.error-msg-txt').addClass('text-danger');
-                $('.error-msg-txt').text(error.responseJSON.detail);
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
     });
