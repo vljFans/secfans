@@ -147,6 +147,7 @@ def roleList(request):
     context = {}
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
     if id != None:
         role = list(models.Role.objects.filter(pk=id)[:1].values('pk', 'name'))
         context.update({
@@ -155,8 +156,10 @@ def roleList(request):
             'page_items': role,
         })
     else:
-        roles = list(models.Role.objects.filter(
-            status=1, deleted=0).values('pk', 'name'))
+        if keyword != None and keyword !="":
+            roles = list(models.Role.objects.filter(name__icontains=keyword, status=1, deleted=0).values('pk', 'name'))
+        else:
+            roles = list(models.Role.objects.filter(status=1, deleted=0).values('pk', 'name'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -294,6 +297,7 @@ def userList(request):
     context = {}
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
     if id != None:
         user = list(models.User.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'email', 'phone', 'role__name'))
@@ -303,8 +307,12 @@ def userList(request):
             'page_items': user,
         })
     else:
-        users = list(models.User.objects.filter(
-            status=1, deleted=0).exclude(is_superuser=1).values('pk', 'name', 'email', 'phone', 'role__name'))
+        if keyword != None and keyword != "":
+            users = list(models.User.objects.filter(
+                Q(name__icontains=keyword) |Q(email__icontains=keyword) | Q(phone__icontains=keyword) | Q(role__name__icontains=keyword)
+            ).filter(status=1, deleted=0).exclude(is_superuser=1).values('pk', 'name', 'email', 'phone', 'role__name'))
+        else:
+            users = list(models.User.objects.filter(status=1, deleted=0).exclude(is_superuser=1).values('pk', 'name', 'email', 'phone', 'role__name'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -450,6 +458,7 @@ def vendorList(request):
     context = {}
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
     if id != None:
         vendor = list(models.Vendor.objects.filter(pk=id)[:1].values('pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk',
                       'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
@@ -459,8 +468,20 @@ def vendorList(request):
             'page_items': vendor,
         })
     else:
-        vendors = list(models.Vendor.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'country__pk', 'state__pk',
-                       'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
+        if keyword != None and keyword != "":
+            vendors = list(
+                models.Vendor.objects.filter(
+                    Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(contact_no__icontains=keyword)
+                ).filter(status=1, deleted=0).values(
+                    'pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name',
+                    'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
+        else:
+            vendors = list(
+                models.Vendor.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'country__pk',
+                                                                         'state__pk',
+                                                                         'city__pk', 'country__name', 'state__name',
+                                                                         'city__name', 'pin', 'gst_no', 'contact_no',
+                                                                         'contact_name', 'contact_email'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -596,6 +617,7 @@ def customerList(request):
     context = {}
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
     if id != None:
         customer = list(models.Customer.objects.filter(pk=id)[:1].values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk',
                         'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
@@ -605,8 +627,24 @@ def customerList(request):
             'page_items': customer,
         })
     else:
-        customers = list(models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk',
-                         'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
+        if keyword != None and keyword != "":
+            customers = list(
+                models.Customer.objects.filter(
+                    Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(email__icontains=keyword) | Q(phone__icontains=keyword) | Q(customer_type__name__icontains=keyword)
+                ).filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark',
+                                                                           'country__pk', 'state__pk', 'city__pk',
+                                                                           'country__name', 'state__name', 'city__name',
+                                                                           'pin', 'contact_no', 'contact_name',
+                                                                           'contact_email', 'customer_type__name',
+                                                                           'photo', 'kyc_image'))
+        else:
+            customers = list(
+                models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark',
+                                                                           'country__pk', 'state__pk', 'city__pk',
+                                                                           'country__name', 'state__name', 'city__name',
+                                                                           'pin', 'contact_no', 'contact_name',
+                                                                           'contact_email', 'customer_type__name',
+                                                                           'photo', 'kyc_image'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -819,6 +857,7 @@ def uomList(request):
     context = {}
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
     if id != None:
         uom = list(models.Uom.objects.filter(pk=id)[:1].values('pk', 'name'))
         context.update({
@@ -827,8 +866,12 @@ def uomList(request):
             'page_items': uom,
         })
     else:
-        uoms = list(models.Uom.objects.filter(
-            status=1, deleted=0).values('pk', 'name'))
+        if keyword != None and keyword != "":
+            uoms = list(models.Uom.objects.filter(
+                name__icontains=keyword, status=1, deleted=0).values('pk', 'name'))
+        else:
+            uoms = list(models.Uom.objects.filter(
+                status=1, deleted=0).values('pk', 'name'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -946,6 +989,7 @@ def childUomList(request):
     context = {}
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
     if id != None:
         childUom = list(models.Child_Uom.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'uom__name', 'conversion_rate'))
@@ -955,8 +999,12 @@ def childUomList(request):
             'page_items': childUom,
         })
     else:
-        childUoms = list(models.Child_Uom.objects.filter(status=1, deleted=0).values(
-            'pk', 'name', 'uom__name', 'conversion_rate'))
+        if keyword != None and keyword != "":
+            childUoms = list(models.Child_Uom.objects.filter(name__icontains=keyword, status=1, deleted=0).values(
+                'pk', 'name', 'uom__name', 'conversion_rate'))
+        else:
+            childUoms = list(models.Child_Uom.objects.filter(status=1, deleted=0).values(
+                'pk', 'name', 'uom__name', 'conversion_rate'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -1079,6 +1127,7 @@ def itemCategoryList(request):
     context = {}
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
     if id != None:
         itemCategory = list(models.Item_Category.objects.get(
             pk=id).values('pk', 'name'))
@@ -1088,8 +1137,12 @@ def itemCategoryList(request):
             'page_items': itemCategory,
         })
     else:
-        itemCategories = list(models.Item_Category.objects.filter(
-            status=1, deleted=0).values('pk', 'name'))
+        if keyword != None and keyword != "":
+            itemCategories = list(models.Item_Category.objects.filter(
+                name__icontains=keyword, status=1, deleted=0).values('pk', 'name'))
+        else:
+            itemCategories = list(models.Item_Category.objects.filter(
+                status=1, deleted=0).values('pk', 'name'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -1208,6 +1261,7 @@ def itemTypeList(request):
     context = {}
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
     if id != None:
         itemType = list(models.Item_Type.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
@@ -1217,8 +1271,14 @@ def itemTypeList(request):
             'page_items': itemType,
         })
     else:
-        itemTypes = list(models.Item_Type.objects.filter(status=1, deleted=0).values(
-            'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
+        if keyword != None and keyword != "":
+            itemTypes = list(models.Item_Type.objects.filter(
+                Q(name__icontains=keyword) | Q(item_category__name__icontains=keyword) | Q(hsn_code__icontains=keyword)
+            ).filter(status=1, deleted=0).values(
+                'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
+        else:
+            itemTypes = list(models.Item_Type.objects.filter(status=1, deleted=0).values(
+                'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -1342,6 +1402,7 @@ def itemColorList(request):
     context = {}
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
     if id != None:
         itemColor = list(models.Item_Color.objects.get(
             pk=id).values('pk', 'name', 'color_code'))
@@ -1351,8 +1412,12 @@ def itemColorList(request):
             'page_items': itemColor,
         })
     else:
-        itemColors = list(models.Item_Color.objects.filter(
-            status=1, deleted=0).values('pk', 'name', 'color_code'))
+        if keyword != None and keyword != "":
+            itemColors = list(models.Item_Color.objects.filter(
+                name__icontains=keyword, status=1, deleted=0).values('pk', 'name', 'color_code'))
+        else:
+            itemColors = list(models.Item_Color.objects.filter(
+                status=1, deleted=0).values('pk', 'name', 'color_code'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -1472,6 +1537,7 @@ def itemList(request):
     context = {}
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
     if id != None:
         item = list(models.Item.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'model_no', 'item_type__name', 'item_type__item_category__name', 'item_color__name', 'item_color__color_code', 'uom_standard__name', 'uom_sku__name',
@@ -1482,9 +1548,16 @@ def itemList(request):
             'page_items': item,
         })
     else:
-        items = list(models.Item.objects.filter(status=1, deleted=0).values(
-            'pk', 'name', 'model_no', 'item_type__name', 'item_type__item_category__name', 'item_color__name', 'item_color__color_code', 'uom_standard__name', 'uom_sku__name',
-            'conversion_factor', 'price_purchase', 'price_sale', 'photo'))
+        if keyword != None and keyword != "":
+            items = list(models.Item.objects.filter(
+                Q(name__icontains=keyword) | Q(model_no__icontains=keyword)
+            ).filter(status=1, deleted=0).values(
+                'pk', 'name', 'model_no', 'item_type__name', 'item_type__item_category__name', 'item_color__name', 'uom_standard__name', 'uom_sku__name',
+                'conversion_factor', 'price_purchase', 'price_sale', 'photo'))
+        else:
+            items = list(models.Item.objects.filter(status=1, deleted=0).values(
+                'pk', 'name', 'model_no', 'item_type__name', 'item_type__item_category__name', 'item_color__name', 'uom_standard__name', 'uom_sku__name',
+                'conversion_factor', 'price_purchase', 'price_sale', 'photo'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,

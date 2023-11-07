@@ -29,6 +29,18 @@
     </div>
     <!--/ Breadcrumb End -->
     <!--================================-->
+    <!-- Search box Start -->
+    <div>
+        <label for="search">
+            <p style="font-size: 14px;">
+                Search :
+            </p>
+        </label>
+        <input type="text" id="search" name="search" style="width: 180px; height: 30px;" value="{{request.GET.keyword}}"
+            placeholder="Enter search term" />
+    </div>
+    <!--/ Search box End -->
+    <!--================================-->
     <!-- Form Element Start -->
     <!--================================-->
     <div class="row row-xs clearfix">
@@ -108,10 +120,11 @@
 
 {% block js %}
 <script>
-    $(document).ready(function () {
+    keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
+    function getItemTypeList(keyword) {
         $.ajax({
             type: "GET",
-            url: "{% url 'api:itemTypeList' %}",
+            url: "{% url 'api:itemTypeList' %}?keyword=" + keyword,
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -147,7 +160,7 @@
                     //     }
                     //     pagination_text += `<li class="page-item"><a class="page-link" href="?page=${response.total_pages}"><span class="fa fa-arrow-right"></span></a></li>`;
                     // }
-                    pagination_text = generatePaginationLinks(response.current_page, response.total_pages, response.button_to_show);
+                    pagination_text = generatePaginationLinks(response.current_page, response.total_pages, response.button_to_show, keyword);
                     $('#table-body').html(tbody_text);
                     $('#pagination').html(pagination_text);
                 } else {
@@ -158,7 +171,16 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
+
+    }
+    $(document).ready(function () {
+        getItemTypeList(keyword)
     });
+
+    $(document).on('keyup', '#search', function () {
+        keyword = $(this).val();
+        getItemTypeList(keyword);
+    })
 
     $(document).on('click', '#delete-btn', function () {
         id = $(this).attr('data-id');

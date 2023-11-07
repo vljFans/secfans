@@ -45,7 +45,7 @@ function locationAfterMessageStore(message, message_type = null, redirect_path =
 }
 
 // Function to generate pagination links
-function generatePaginationLinks(currentPage, totalPages, buttonsToShow) {
+function generatePaginationLinks(currentPage, totalPages, buttonsToShow, keyword=null) {
     const paginationLinks = [];
 
     // Calculate the range of buttons to display
@@ -55,18 +55,30 @@ function generatePaginationLinks(currentPage, totalPages, buttonsToShow) {
     // Display "First" button
     // paginationLinks.push(`<li class="page-item ${startButton <= 1 ? 'disabled' : ''}"><a class="page-link" href="?page=1"><span class="fa fa-arrow-left"></span></a></li>`);
     if (startButton > 1) {
-        paginationLinks.push(`<li class="page-item ${startButton > 1}"><a class="page-link" href="?page=1"><span class="fa fa-arrow-left"></span></a></li>`);
+        if (keyword != null && keyword != "") {
+            paginationLinks.push(`<li class="page-item ${startButton > 1}"><a class="page-link" href="?keyword=${keyword}&page=1"><span class="fa fa-arrow-left"></span></a></li>`);
+        } else {
+            paginationLinks.push(`<li class="page-item ${startButton > 1}"><a class="page-link" href="?page=1"><span class="fa fa-arrow-left"></span></a></li>`);
+        }
     }
 
     // Display page buttons within the range
     for (let i = startButton; i <= endButton; i++) {
-        paginationLinks.push(`<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="?page=${i}">${i}</a></li>`);
+        if (keyword != null && keyword != "") {
+            paginationLinks.push(`<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="?keyword=${keyword}&page=${i}">${i}</a></li>`);
+        } else {
+            paginationLinks.push(`<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="?page=${i}">${i}</a></li>`);
+        }
     }
 
     // Display "Last" button
     // paginationLinks.push(`<li class="page-item ${endButton >= totalPages ? 'disabled' : ''}"><a class="page-link" href="?page=${totalPages}"><span class="fa fa-arrow-right"></span></a></li>`);
     if (endButton < totalPages) {
-        paginationLinks.push(`<li class="page-item"><a class="page-link" href="?page=${totalPages}"><span class="fa fa-arrow-right"></span></a></li>`);
+        if (keyword != null && keyword != "") {
+            paginationLinks.push(`<li class="page-item"><a class="page-link" href="?keyword=${keyword}&page=${totalPages}"><span class="fa fa-arrow-right"></span></a></li>`);
+        } else {
+            paginationLinks.push(`<li class="page-item"><a class="page-link" href="?page=${totalPages}"><span class="fa fa-arrow-right"></span></a></li>`);
+        }
     }
 
     return paginationLinks.join('');
