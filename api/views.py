@@ -88,7 +88,7 @@ def getUserDetails(request):
 def getContentTypes(request):
     context = {}
     page_items = ContentType.objects.prefetch_related('permission_set').filter(app_label='api').exclude(
-        model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type'])
+        model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail'])
     context.update(
         {'status': 200, 'message': "Content Types Fetched Successfully", 'page_items': serializers.serialize('json', page_items)})
     return JsonResponse(context)

@@ -339,7 +339,7 @@ class Item(models.Model):
         verbose_name_plural = 'items'
 
 
-class Bill_Of_Material_Header(models.Model):
+class Bill_Of_Material(models.Model):
     name = models.CharField(max_length=250, blank=True, null=True)
     uom = models.ForeignKey(
         Uom, on_delete=models.CASCADE, blank=True, null=True)
@@ -364,11 +364,11 @@ class Bill_Of_Material_Header(models.Model):
 
 class Bill_Of_Material_Detail(models.Model):
     bill_of_material_header = models.ForeignKey(
-        Bill_Of_Material_Header, on_delete=models.CASCADE, blank=True, null=True)
+        Bill_Of_Material, on_delete=models.CASCADE, blank=True, null=True)
     item = models.ForeignKey(
         Item, on_delete=models.CASCADE, blank=True, null=True)
     component = models.ForeignKey(
-        Bill_Of_Material_Header, related_name="component", on_delete=models.CASCADE, blank=True, null=True)
+        Bill_Of_Material, related_name="component", on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.DecimalField(
         max_digits=10, decimal_places=5, blank=True, null=True)
     price = models.DecimalField(

@@ -129,6 +129,7 @@
             success: function (response) {
                 if (response.status == 200) {
                     edit_url = "{% url 'superuser:roleEdit' 1 %}";
+                    view_url = "{% url 'superuser:roleView' 1 %}";
                     page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
@@ -137,6 +138,9 @@
                                 <td scope="row">${index + 1}</td>
                                 <td>${element.name}</td>
                                 <td>
+                                {% if request.user.is_superuser == 1 or 'view_role'|get_session_permission:request is not None %}
+                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
+                                {% endif %}
                                 {% if request.user.is_superuser == 1 or 'change_role'|get_session_permission:request is not None %}
                                 <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
                                 {% endif %}

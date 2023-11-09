@@ -75,7 +75,7 @@ def roleList(request):
 @login_required
 def roleAdd(request):
     content_types = ContentType.objects.prefetch_related('permission_set').filter(
-        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type'])
+        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail'])
     context.update({
         'content_types': content_types,
         'page_title': "Role Add",
@@ -87,7 +87,7 @@ def roleAdd(request):
 @login_required
 def roleEdit(request, id):
     content_types = ContentType.objects.prefetch_related('permission_set').filter(
-        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type'])
+        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail'])
     role = models.Role.objects.prefetch_related(
         'role_permission_set').get(pk=id)
     selected_permissions = []
@@ -102,6 +102,25 @@ def roleEdit(request, id):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Role", 'url': reverse('superuser:roleList')}, {'name': "Edit"}]
     })
     return render(request, 'portal/Role/edit.html', context)
+
+
+@login_required
+def roleView(request, id):
+    content_types = ContentType.objects.prefetch_related('permission_set').filter(
+        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail'])
+    role = models.Role.objects.prefetch_related('role_permission_set').get(pk=id)
+    selected_permissions = []
+    for permissionDetail in role.role_permission_set.all():
+        if permissionDetail.permitted == 1:
+            selected_permissions.append(permissionDetail.permission_id)
+    context.update({
+        'role': role,
+        'content_types': content_types,
+        'selected_permissions': selected_permissions,
+        'page_title': "Role View",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Role", 'url': reverse('superuser:roleList')}, {'name': "View"}]
+    })
+    return render(request, 'portal/Role/view.html', context)
 
 
 @login_required
