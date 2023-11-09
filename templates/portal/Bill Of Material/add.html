@@ -257,7 +257,7 @@
         content_parent_index = $('.content_parent').index(parent);
         if (type_name == 'component') {
             $(element).parents().closest('.content_parent').find('.type_content').html(`<div class="col-md-3 mb-3">
-                                    <label>Bill Of Material <span class="required-indicator">*</span></label>
+                                    <label>Component <span class="required-indicator">*</span></label>
                                     <div class="input-group">
                                         <select class="custom-select selectpicker component_id" name="component_id" required>
                                             ${component_options_text}
@@ -437,7 +437,7 @@
                                         <select class="custom-select selectpicker type_id" name="type_id" required>
                                             <option value="">Choose...</option>
                                             <option value="item" selected>Item</option>
-                                            <option value="component">Bill Of Material</option>
+                                            <option value="component">Component</option>
                                         </select>
                                     </div>
                                 </div>
