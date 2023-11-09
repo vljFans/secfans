@@ -1685,7 +1685,7 @@ def componentList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     if id != None:
-        component = list(models.Bill_Of_Material_Header.objects.filter(
+        component = list(models.Bill_Of_Material.objects.filter(
             pk=id)[:1].values('pk', 'name', 'uom__name', 'quantity', 'price'))
         context.update({
             'status': 200,
@@ -1693,7 +1693,7 @@ def componentList(request):
             'page_items': component,
         })
     else:
-        components = list(models.Bill_Of_Material_Header.objects.filter(is_component=1).filter(
+        components = list(models.Bill_Of_Material.objects.filter(is_component=1).filter(
             status=1, deleted=0).values('pk', 'name', 'uom__name', 'quantity', 'price'))
         if find_all is not None and int(find_all) == 1:
             context.update({
@@ -1726,7 +1726,7 @@ def componentList(request):
 @permission_classes([IsAuthenticated])
 def componentAdd(request):
     context = {}
-    exist_data = models.Bill_Of_Material_Header.objects.filter(
+    exist_data = models.Bill_Of_Material.objects.filter(
         name__iexact=request.POST['name']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
@@ -1736,7 +1736,7 @@ def componentAdd(request):
         return JsonResponse(context)
     try:
         with transaction.atomic():
-            componentHeader = models.Bill_Of_Material_Header()
+            componentHeader = models.Bill_Of_Material()
             componentHeader.name = request.POST['name']
             componentHeader.uom_id = request.POST['uom_id']
             componentHeader.quantity = request.POST['quantity']
@@ -1746,7 +1746,7 @@ def componentAdd(request):
 
             bill_of_material_details = []
             for index, elem in enumerate(request.POST.getlist('item_id')):
-                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=componentHeader.id,
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(Bill_Of_Material_id=componentHeader.id,
                                                 item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
             models.Bill_Of_Material_Detail.objects.bulk_create(
                 bill_of_material_details)
@@ -1768,7 +1768,7 @@ def componentAdd(request):
 @permission_classes([IsAuthenticated])
 def componentEdit(request):
     context = {}
-    exist_data = models.Bill_Of_Material_Header.objects.filter(
+    exist_data = models.Bill_Of_Material.objects.filter(
         name__iexact=request.POST['name']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
@@ -1778,7 +1778,7 @@ def componentEdit(request):
         return JsonResponse(context)
     try:
         with transaction.atomic():
-            componentHeader = models.Bill_Of_Material_Header.objects.prefetch_related(
+            componentHeader = models.Bill_Of_Material.objects.prefetch_related(
                 'bill_of_material_detail_set').get(pk=request.POST['id'])
             componentHeader.name = request.POST['name']
             componentHeader.uom_id = request.POST['uom_id']
@@ -1788,7 +1788,7 @@ def componentEdit(request):
             componentHeader.bill_of_material_detail_set.all().delete()
             bill_of_material_details = []
             for index, elem in enumerate(request.POST.getlist('item_id')):
-                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=componentHeader.id,
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(Bill_Of_Material_id=componentHeader.id,
                                                 item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
             models.Bill_Of_Material_Detail.objects.bulk_create(
                 bill_of_material_details)
@@ -1810,7 +1810,7 @@ def componentEdit(request):
 @permission_classes([IsAuthenticated])
 def componentDelete(request):
     context = {}
-    component = models.Bill_Of_Material_Header.objects.prefetch_related('bill_of_material_detail_set').get(pk=request.POST['id'])
+    component = models.Bill_Of_Material.objects.prefetch_related('bill_of_material_detail_set').get(pk=request.POST['id'])
     try:
         with transaction.atomic():
             component.bill_of_material_detail_set.all().delete()
@@ -1836,7 +1836,7 @@ def billOfMaterialList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     if id != None:
-        billOfMaterial = list(models.Bill_Of_Material_Header.objects.filter(
+        billOfMaterial = list(models.Bill_Of_Material.objects.filter(
             pk=id)[:1].values('pk', 'name', 'uom__name', 'quantity', 'price'))
         context.update({
             'status': 200,
@@ -1844,7 +1844,7 @@ def billOfMaterialList(request):
             'page_items': billOfMaterial,
         })
     else:
-        billOfMaterials = list(models.Bill_Of_Material_Header.objects.exclude(is_component=1).filter(
+        billOfMaterials = list(models.Bill_Of_Material.objects.exclude(is_component=1).filter(
             status=1, deleted=0).values('pk', 'name', 'uom__name', 'quantity', 'price'))
         if find_all is not None and int(find_all) == 1:
             context.update({
@@ -1877,7 +1877,7 @@ def billOfMaterialList(request):
 @permission_classes([IsAuthenticated])
 def billOfMaterialAdd(request):
     context = {}
-    exist_data = models.Bill_Of_Material_Header.objects.exclude(is_component=1).filter(name__iexact=request.POST['name']).filter(deleted=0)
+    exist_data = models.Bill_Of_Material.objects.exclude(is_component=1).filter(name__iexact=request.POST['name']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 560,
@@ -1886,7 +1886,7 @@ def billOfMaterialAdd(request):
         return JsonResponse(context)
     try:
         with transaction.atomic():
-            billOfMaterialHeader = models.Bill_Of_Material_Header()
+            billOfMaterialHeader = models.Bill_Of_Material()
             billOfMaterialHeader.name = request.POST['name']
             billOfMaterialHeader.uom_id = request.POST['uom_id']
             billOfMaterialHeader.quantity = request.POST['quantity']
@@ -1896,10 +1896,10 @@ def billOfMaterialAdd(request):
 
             bill_of_material_details = []
             for index, elem in enumerate(request.POST.getlist('item_id')):
-                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(Bill_Of_Material_id=billOfMaterialHeader.id,
                                                 item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
             for index, elem in enumerate(request.POST.getlist('component_id')):
-                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(Bill_Of_Material_id=billOfMaterialHeader.id,
                                                 component_id=elem, quantity=request.POST.getlist('component_quantity')[index], price=request.POST.getlist('component_price')[index]))
             models.Bill_Of_Material_Detail.objects.bulk_create(
                 bill_of_material_details)
@@ -1921,7 +1921,7 @@ def billOfMaterialAdd(request):
 @permission_classes([IsAuthenticated])
 def billOfMaterialEdit(request):
     context = {}
-    exist_data = models.Bill_Of_Material_Header.objects.filter(
+    exist_data = models.Bill_Of_Material.objects.filter(
         name__iexact=request.POST['name']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
@@ -1931,7 +1931,7 @@ def billOfMaterialEdit(request):
         return JsonResponse(context)
     try:
         with transaction.atomic():
-            billOfMaterialHeader = models.Bill_Of_Material_Header.objects.prefetch_related('bill_of_material_detail_set').get(pk=request.POST['id'])
+            billOfMaterialHeader = models.Bill_Of_Material.objects.prefetch_related('bill_of_material_detail_set').get(pk=request.POST['id'])
             billOfMaterialHeader.name = request.POST['name']
             billOfMaterialHeader.uom_id = request.POST['uom_id']
             billOfMaterialHeader.quantity = request.POST['quantity']
@@ -1941,10 +1941,10 @@ def billOfMaterialEdit(request):
             billOfMaterialHeader.bill_of_material_detail_set.all().delete()
             bill_of_material_details = []
             for index, elem in enumerate(request.POST.getlist('item_id')):
-                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(Bill_Of_Material_id=billOfMaterialHeader.id,
                                                 item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
             for index, elem in enumerate(request.POST.getlist('component_id')):
-                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(Bill_Of_Material_id=billOfMaterialHeader.id,
                                                 component_id=elem, quantity=request.POST.getlist('component_quantity')[index], price=request.POST.getlist('component_price')[index]))
             models.Bill_Of_Material_Detail.objects.bulk_create(
                 bill_of_material_details)
@@ -1966,7 +1966,7 @@ def billOfMaterialEdit(request):
 @permission_classes([IsAuthenticated])
 def billOfMaterialDelete(request):
     context = {}
-    component = models.Bill_Of_Material_Header.objects.get(
+    component = models.Bill_Of_Material.objects.get(
         pk=request.POST['id'])
     try:
         with transaction.atomic():
