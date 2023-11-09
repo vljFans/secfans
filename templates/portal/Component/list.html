@@ -29,18 +29,6 @@
     </div>
     <!--/ Breadcrumb End -->
     <!--================================-->
-    <!-- Search box Start -->
-    <div>
-        <label for="search">
-            <p style="font-size: 14px;">
-                Search :
-            </p>
-        </label>
-        <input type="text" id="search" name="search" style="width: 180px; height: 30px;" value="{{request.GET.keyword}}"
-            placeholder="Enter search term" />
-    </div>
-    <!--/ Search box End -->
-    <!--================================-->
     <!-- Form Element Start -->
     <!--================================-->
     <div class="row row-xs clearfix">
@@ -62,8 +50,8 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
-                                <a href="{% url 'superuser:itemAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
+                                {% if request.user.is_superuser == 1 or 'add_item_color'|get_session_permission:request is not None %}
+                                <a href="{% url 'superuser:componentAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
                                 {% endif %}
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                                 <!-- <div class="dropdown" data-toggle="dropdown">
@@ -96,8 +84,8 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Name</th>
-                                    <th>Item Type</th>
-                                    <th>UOM</th>
+                                    <th>Quantity</th>
+                                    <th>Uom</th>
                                     <th>Price</th>
                                     <th>Action</th>
                                 </tr>
@@ -120,18 +108,17 @@
 
 {% block js %}
 <script>
-    keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
-    function getItemList(keyword) {
+    $(document).ready(function () {
         $.ajax({
             type: "GET",
-            url: "{% url 'api:itemList' %}?keyword=" + keyword,
+            url: "{% url 'api:componentList' %}",
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
                 'Authorization': getCookieValue("accessToken")
             },
             success: function (response) {
                 if (response.status == 200) {
-                    edit_url = "{% url 'superuser:itemEdit' 1 %}";
+                    edit_url = "{% url 'superuser:componentEdit' 1 %}";
                     page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
@@ -139,14 +126,14 @@
                         tbody_text += `<tr>
                                 <td>${index + 1}</td>
                                 <td>${element.name}</td>
-                                <td>${element.item_type__name} (${element.item_type__item_category__name})</td>
+                                <td>${element.quantity}</td>
                                 <td>${element.uom__name}</td>
-                                <td class="text-right">₹${element.price}</td>
+                                <td>${element.price}</td>
                                 <td>
-                                {% if request.user.is_superuser == 1 or 'change_item'|get_session_permission:request is not None %}
+                                {% if request.user.is_superuser == 1 or 'change_bill_of_material_header'|get_session_permission:request is not None %}
                                 <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
                                 {% endif %}
-                                {% if request.user.is_superuser == 1 or 'delete_item'|get_session_permission:request is not None %}
+                                {% if request.user.is_superuser == 1 or 'delete_bill_of_material_header'|get_session_permission:request is not None %}
                                 <a id="delete-btn" data-id="${element.pk}" data-name="${element.name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
                                 {% endif %}
                                 </td>
@@ -160,7 +147,7 @@
                     //     }
                     //     pagination_text += `<li class="page-item"><a class="page-link" href="?page=${response.total_pages}"><span class="fa fa-arrow-right"></span></a></li>`;
                     // }
-                    pagination_text = generatePaginationLinks(response.current_page, response.total_pages, response.button_to_show, keyword);
+                    pagination_text = generatePaginationLinks(response.current_page, response.total_pages, response.button_to_show);
                     $('#table-body').html(tbody_text);
                     $('#pagination').html(pagination_text);
                 } else {
@@ -171,16 +158,7 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
-
-    }
-    $(document).ready(function () {
-        getItemList(keyword)
     });
-
-    $(document).on('keyup', '#search', function () {
-        keyword = $(this).val();
-        getItemList(keyword)
-    })
 
     $(document).on('click', '#delete-btn', function () {
         id = $(this).attr('data-id');
@@ -188,14 +166,14 @@
         if (window.confirm('Are you sure to delete ' + name + '?')) {
             $.ajax({
                 type: "POST",
-                url: "{% url 'api:itemDelete' %}",
+                url: "{% url 'api:componentDelete' %}",
                 data: ({ id: id }),
                 headers: {
                     'Authorization': getCookieValue("accessToken"),
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:itemList' %}");
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:itemColorList' %}");
                     } else {
                         alert(response.message);
                     }

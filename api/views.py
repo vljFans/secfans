@@ -156,10 +156,12 @@ def roleList(request):
             'page_items': role,
         })
     else:
-        if keyword != None and keyword !="":
-            roles = list(models.Role.objects.filter(name__icontains=keyword, status=1, deleted=0).values('pk', 'name'))
+        if keyword != None and keyword != "":
+            roles = list(models.Role.objects.filter(
+                name__icontains=keyword, status=1, deleted=0).values('pk', 'name'))
         else:
-            roles = list(models.Role.objects.filter(status=1, deleted=0).values('pk', 'name'))
+            roles = list(models.Role.objects.filter(
+                status=1, deleted=0).values('pk', 'name'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -309,10 +311,12 @@ def userList(request):
     else:
         if keyword != None and keyword != "":
             users = list(models.User.objects.filter(
-                Q(name__icontains=keyword) |Q(email__icontains=keyword) | Q(phone__icontains=keyword) | Q(role__name__icontains=keyword)
+                Q(name__icontains=keyword) | Q(email__icontains=keyword) | Q(
+                    phone__icontains=keyword) | Q(role__name__icontains=keyword)
             ).filter(status=1, deleted=0).exclude(is_superuser=1).values('pk', 'name', 'email', 'phone', 'role__name'))
         else:
-            users = list(models.User.objects.filter(status=1, deleted=0).exclude(is_superuser=1).values('pk', 'name', 'email', 'phone', 'role__name'))
+            users = list(models.User.objects.filter(status=1, deleted=0).exclude(
+                is_superuser=1).values('pk', 'name', 'email', 'phone', 'role__name'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -471,7 +475,8 @@ def vendorList(request):
         if keyword != None and keyword != "":
             vendors = list(
                 models.Vendor.objects.filter(
-                    Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(contact_no__icontains=keyword)
+                    Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(
+                        contact_email__icontains=keyword) | Q(contact_no__icontains=keyword)
                 ).filter(status=1, deleted=0).values(
                     'pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name',
                     'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
@@ -630,13 +635,14 @@ def customerList(request):
         if keyword != None and keyword != "":
             customers = list(
                 models.Customer.objects.filter(
-                    Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(email__icontains=keyword) | Q(phone__icontains=keyword) | Q(customer_type__name__icontains=keyword)
+                    Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(email__icontains=keyword) | Q(
+                        phone__icontains=keyword) | Q(customer_type__name__icontains=keyword)
                 ).filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark',
-                                                                           'country__pk', 'state__pk', 'city__pk',
-                                                                           'country__name', 'state__name', 'city__name',
-                                                                           'pin', 'contact_no', 'contact_name',
-                                                                           'contact_email', 'customer_type__name',
-                                                                           'photo', 'kyc_image'))
+                                                     'country__pk', 'state__pk', 'city__pk',
+                                                     'country__name', 'state__name', 'city__name',
+                                                     'pin', 'contact_no', 'contact_name',
+                                                     'contact_email', 'customer_type__name',
+                                                     'photo', 'kyc_image'))
         else:
             customers = list(
                 models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark',
@@ -1273,7 +1279,8 @@ def itemTypeList(request):
     else:
         if keyword != None and keyword != "":
             itemTypes = list(models.Item_Type.objects.filter(
-                Q(name__icontains=keyword) | Q(item_category__name__icontains=keyword) | Q(hsn_code__icontains=keyword)
+                Q(name__icontains=keyword) | Q(item_category__name__icontains=keyword) | Q(
+                    hsn_code__icontains=keyword)
             ).filter(status=1, deleted=0).values(
                 'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
         else:
@@ -1540,8 +1547,7 @@ def itemList(request):
     keyword = request.GET.get('keyword', None)
     if id != None:
         item = list(models.Item.objects.filter(pk=id)[:1].values(
-            'pk', 'name', 'model_no', 'item_type__name', 'item_type__item_category__name', 'item_color__name', 'item_color__color_code', 'uom_standard__name', 'uom_sku__name',
-            'conversion_factor', 'price_purchase', 'price_sale', 'photo'))
+            'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'uom__name', 'price'))
         context.update({
             'status': 200,
             'message': "Item Fetched Successfully.",
@@ -1551,13 +1557,10 @@ def itemList(request):
         if keyword != None and keyword != "":
             items = list(models.Item.objects.filter(
                 Q(name__icontains=keyword) | Q(model_no__icontains=keyword)
-            ).filter(status=1, deleted=0).values(
-                'pk', 'name', 'model_no', 'item_type__name', 'item_type__item_category__name', 'item_color__name', 'uom_standard__name', 'uom_sku__name',
-                'conversion_factor', 'price_purchase', 'price_sale', 'photo'))
+            ).filter(status=1, deleted=0).values('pk', 'name', 'item_type__name', 'item_type__item_category__name', 'uom__name', 'price'))
         else:
             items = list(models.Item.objects.filter(status=1, deleted=0).values(
-                'pk', 'name', 'model_no', 'item_type__name', 'item_type__item_category__name', 'item_color__name', 'uom_standard__name', 'uom_sku__name',
-                'conversion_factor', 'price_purchase', 'price_sale', 'photo'))
+                'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'uom__name', 'price'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -1590,39 +1593,21 @@ def itemList(request):
 def itemAdd(request):
     context = {}
     exist_data = models.Item.objects.filter(
-        name__iexact=request.POST['name'], model_no__iexact=request.POST['model_no']).filter(deleted=0)
+        name__iexact=request.POST['name']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 550,
-            'message': "Item with this name and model number already exists.",
+            'message': "Item with this name already exists.",
         })
         return JsonResponse(context)
     try:
         with transaction.atomic():
             item = models.Item()
             item.name = request.POST['name']
-            item.model_no = request.POST['model_no']
+            item.uom_id = request.POST['uom_id']
             item.item_type_id = request.POST['item_type_id']
-            item.item_color_id = request.POST['item_color_id']
-            item.uom_standard_id = request.POST['uom_standard_id']
-            item.uom_sku_id = request.POST['uom_sku_id']
-            item.conversion_factor = request.POST['conversion_factor']
-            item.price_purchase = request.POST['price_purchase']
-            item.price_sale = request.POST['price_sale']
+            item.price = request.POST['price']
             item.save()
-            if 'photo' in request.FILES.keys():
-                photo = request.FILES['photo']
-                directory_path = settings.MEDIA_ROOT + \
-                    env("ITEM_MEDIA_PROFILE") + "/"
-                path = Path(directory_path)
-                path.mkdir(parents=True, exist_ok=True)
-                fs = FileSystemStorage(
-                    location=settings.MEDIA_ROOT + env("ITEM_MEDIA_PROFILE") + "/")
-                saved_file = fs.save(photo.name, photo)
-                photo_path = settings.MEDIA_URL + \
-                    env("ITEM_MEDIA_PROFILE") + "/" + saved_file
-                item.photo = photo_path
-                item.save()
         transaction.commit()
         context.update({
             'status': 200,
@@ -1641,7 +1626,7 @@ def itemAdd(request):
 @permission_classes([IsAuthenticated])
 def itemEdit(request):
     context = {}
-    exist_data = models.Item.objects.filter(name__iexact=request.POST['name'], model_no__iexact=request.POST['model_no']).exclude(
+    exist_data = models.Item.objects.filter(name__iexact=request.POST['name']).exclude(
         pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
@@ -1653,29 +1638,10 @@ def itemEdit(request):
         with transaction.atomic():
             item = models.Item.objects.get(pk=request.POST['id'])
             item.name = request.POST['name']
-            item.model_no = request.POST['model_no']
             item.item_type_id = request.POST['item_type_id']
-            item.item_color_id = request.POST['item_color_id']
-            item.uom_standard_id = request.POST['uom_standard_id']
-            item.uom_sku_id = request.POST['uom_sku_id']
-            item.conversion_factor = request.POST['conversion_factor']
-            item.price_purchase = request.POST['price_purchase']
-            item.price_sale = request.POST['price_sale']
+            item.uom_id = request.POST['uom_id']
+            item.price = request.POST['price']
             item.save()
-            if 'photo' in request.FILES.keys():
-                photo = request.FILES['photo']
-                directory_path = settings.MEDIA_ROOT + \
-                    env("ITEM_MEDIA_PROFILE") + "/"
-                path = Path(directory_path)
-                path.mkdir(parents=True, exist_ok=True)
-                fs = FileSystemStorage(
-                    location=settings.MEDIA_ROOT + env("ITEM_MEDIA_PROFILE") + "/")
-                saved_file = fs.save(photo.name, photo)
-                photo_path = settings.MEDIA_URL + \
-                    env("ITEM_MEDIA_PROFILE") + "/" + saved_file
-                item.photo = photo_path
-                item.save()
-
         transaction.commit()
         context.update({
             'status': 200,
@@ -1714,6 +1680,157 @@ def itemDelete(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def componentList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    if id != None:
+        component = list(models.Bill_Of_Material_Header.objects.filter(
+            pk=id)[:1].values('pk', 'name', 'uom__name', 'quantity', 'price'))
+        context.update({
+            'status': 200,
+            'message': "Component Fetched Successfully.",
+            'page_items': component,
+        })
+    else:
+        components = list(models.Bill_Of_Material_Header.objects.filter(is_component=1).filter(
+            status=1, deleted=0).values('pk', 'name', 'uom__name', 'quantity', 'price'))
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Components Fetched Successfully.",
+                'page_items': components,
+            })
+            return JsonResponse(context)
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(components, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Components Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def componentAdd(request):
+    context = {}
+    exist_data = models.Bill_Of_Material_Header.objects.filter(
+        name__iexact=request.POST['name']).filter(deleted=0)
+    if len(exist_data) > 0:
+        context.update({
+            'status': 555,
+            'message': "Component with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            componentHeader = models.Bill_Of_Material_Header()
+            componentHeader.name = request.POST['name']
+            componentHeader.uom_id = request.POST['uom_id']
+            componentHeader.quantity = request.POST['quantity']
+            componentHeader.price = request.POST['total_amount']
+            componentHeader.is_component = 1
+            componentHeader.save()
+
+            bill_of_material_details = []
+            for index, elem in enumerate(request.POST.getlist('item_id')):
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=componentHeader.id,
+                                                item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
+            models.Bill_Of_Material_Detail.objects.bulk_create(
+                bill_of_material_details)
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Component Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 556,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def componentEdit(request):
+    context = {}
+    exist_data = models.Bill_Of_Material_Header.objects.filter(
+        name__iexact=request.POST['name']).exclude(pk=request.POST['id']).filter(deleted=0)
+    if len(exist_data) > 0:
+        context.update({
+            'status': 557,
+            'message': "Component with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            componentHeader = models.Bill_Of_Material_Header.objects.prefetch_related(
+                'bill_of_material_detail_set').get(pk=request.POST['id'])
+            componentHeader.name = request.POST['name']
+            componentHeader.uom_id = request.POST['uom_id']
+            componentHeader.quantity = request.POST['quantity']
+            componentHeader.price = request.POST['total_amount']
+            componentHeader.save()
+            componentHeader.bill_of_material_detail_set.all().delete()
+            bill_of_material_details = []
+            for index, elem in enumerate(request.POST.getlist('item_id')):
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=componentHeader.id,
+                                                item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
+            models.Bill_Of_Material_Detail.objects.bulk_create(
+                bill_of_material_details)
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Component Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 558,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def componentDelete(request):
+    context = {}
+    component = models.Bill_Of_Material_Header.objects.prefetch_related('bill_of_material_detail_set').get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            component.bill_of_material_detail_set.all().delete()
+            component.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Component Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 559,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def billOfMaterialList(request):
     context = {}
     id = request.GET.get('id', None)
@@ -1727,13 +1844,13 @@ def billOfMaterialList(request):
             'page_items': billOfMaterial,
         })
     else:
-        items = list(models.Bill_Of_Material_Header.objects.filter(
+        billOfMaterials = list(models.Bill_Of_Material_Header.objects.exclude(is_component=1).filter(
             status=1, deleted=0).values('pk', 'name', 'uom__name', 'quantity', 'price'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
                 'message': "Bill Of Materials Fetched Successfully.",
-                'page_items': items,
+                'page_items': billOfMaterials,
             })
             return JsonResponse(context)
 
@@ -1741,13 +1858,13 @@ def billOfMaterialList(request):
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
         current_page = request.GET.get('current_page', 1)
 
-        paginator = CustomPaginator(items, per_page)
+        paginator = CustomPaginator(billOfMaterials, per_page)
         page_items = paginator.get_page(current_page)
         total_pages = paginator.get_total_pages()
 
         context.update({
             'status': 200,
-            'message': "Bill Of Materials Fetched Successfully.",
+            'message': "Components Fetched Successfully.",
             'page_items': page_items,
             'total_pages': total_pages,
             'current_page': int(current_page),
@@ -1760,11 +1877,10 @@ def billOfMaterialList(request):
 @permission_classes([IsAuthenticated])
 def billOfMaterialAdd(request):
     context = {}
-    exist_data = models.Bill_Of_Material_Header.objects.filter(
-        name__iexact=request.POST['name']).filter(deleted=0)
+    exist_data = models.Bill_Of_Material_Header.objects.exclude(is_component=1).filter(name__iexact=request.POST['name']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 555,
+            'status': 560,
             'message': "Bill Of Material with this name already exists.",
         })
         return JsonResponse(context)
@@ -1773,14 +1889,18 @@ def billOfMaterialAdd(request):
             billOfMaterialHeader = models.Bill_Of_Material_Header()
             billOfMaterialHeader.name = request.POST['name']
             billOfMaterialHeader.uom_id = request.POST['uom_id']
-            billOfMaterialHeader.quantity = request.POST['bill_of_material_quantity']
+            billOfMaterialHeader.quantity = request.POST['quantity']
             billOfMaterialHeader.price = request.POST['total_amount']
+            billOfMaterialHeader.is_component = 0
             billOfMaterialHeader.save()
 
             bill_of_material_details = []
             for index, elem in enumerate(request.POST.getlist('item_id')):
                 bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
                                                 item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
+            for index, elem in enumerate(request.POST.getlist('component_id')):
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
+                                                component_id=elem, quantity=request.POST.getlist('component_quantity')[index], price=request.POST.getlist('component_price')[index]))
             models.Bill_Of_Material_Detail.objects.bulk_create(
                 bill_of_material_details)
         transaction.commit()
@@ -1790,7 +1910,7 @@ def billOfMaterialAdd(request):
         })
     except Exception:
         context.update({
-            'status': 556,
+            'status': 561,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1805,24 +1925,27 @@ def billOfMaterialEdit(request):
         name__iexact=request.POST['name']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 557,
+            'status': 562,
             'message': "Bill Of Material with this name already exists.",
         })
         return JsonResponse(context)
     try:
         with transaction.atomic():
-            billOfMaterialHeader = models.Bill_Of_Material_Header.prefetch_related(
-                'bill_of_material_set').objects.get(pk=request.POST['id'])
+            billOfMaterialHeader = models.Bill_Of_Material_Header.objects.prefetch_related('bill_of_material_detail_set').get(pk=request.POST['id'])
             billOfMaterialHeader.name = request.POST['name']
             billOfMaterialHeader.uom_id = request.POST['uom_id']
-            billOfMaterialHeader.quantity = request.POST['bill_of_material_quantity']
+            billOfMaterialHeader.quantity = request.POST['quantity']
             billOfMaterialHeader.price = request.POST['total_amount']
+            billOfMaterialHeader.is_component = 0
             billOfMaterialHeader.save()
-            billOfMaterialHeader.bill_of_material_set.all().delete()
+            billOfMaterialHeader.bill_of_material_detail_set.all().delete()
             bill_of_material_details = []
             for index, elem in enumerate(request.POST.getlist('item_id')):
                 bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
                                                 item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
+            for index, elem in enumerate(request.POST.getlist('component_id')):
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
+                                                component_id=elem, quantity=request.POST.getlist('component_quantity')[index], price=request.POST.getlist('component_price')[index]))
             models.Bill_Of_Material_Detail.objects.bulk_create(
                 bill_of_material_details)
         transaction.commit()
@@ -1832,7 +1955,7 @@ def billOfMaterialEdit(request):
         })
     except Exception:
         context.update({
-            'status': 558,
+            'status': 563,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1843,10 +1966,11 @@ def billOfMaterialEdit(request):
 @permission_classes([IsAuthenticated])
 def billOfMaterialDelete(request):
     context = {}
-    billOfMaterial = models.Bill_Of_Material_Header.objects.get(pk=request.POST['id'])
+    component = models.Bill_Of_Material_Header.objects.get(
+        pk=request.POST['id'])
     try:
         with transaction.atomic():
-            billOfMaterial.delete()
+            component.delete()
         transaction.commit()
         context.update({
             'status': 200,
@@ -1854,7 +1978,7 @@ def billOfMaterialDelete(request):
         })
     except Exception:
         context.update({
-            'status': 559,
+            'status': 564,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()

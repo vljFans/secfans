@@ -319,22 +319,12 @@ class Item_Color(models.Model):
 
 class Item(models.Model):
     name = models.CharField(max_length=250, blank=True, null=True)
-    model_no = models.CharField(max_length=30, blank=True, null=True)
     item_type = models.ForeignKey(
         Item_Type, on_delete=models.CASCADE, blank=True, null=True)
-    item_color = models.ForeignKey(
-        Item_Color, on_delete=models.CASCADE, blank=True, null=True)
-    uom_standard = models.ForeignKey(
-        Uom, related_name="uom_standard", on_delete=models.CASCADE, blank=True, null=True)
-    uom_sku = models.ForeignKey(
-        Uom, related_name="uom_sku", on_delete=models.CASCADE, blank=True, null=True)
-    conversion_factor = models.DecimalField(
-        max_digits=30, decimal_places=5, blank=True, null=True)
-    price_purchase = models.DecimalField(
+    uom = models.ForeignKey(
+        Uom, on_delete=models.CASCADE, blank=True, null=True)
+    price = models.DecimalField(
         max_digits=10, decimal_places=2, blank=True, null=True)
-    price_sale = models.DecimalField(
-        max_digits=10, decimal_places=2, blank=True, null=True)
-    photo = models.CharField(max_length=250, blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -357,6 +347,7 @@ class Bill_Of_Material_Header(models.Model):
         max_digits=10, decimal_places=5, blank=True, null=True)
     price = models.DecimalField(
         max_digits=10, decimal_places=2, blank=True, null=True)
+    is_component = models.BooleanField(default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -376,6 +367,8 @@ class Bill_Of_Material_Detail(models.Model):
         Bill_Of_Material_Header, on_delete=models.CASCADE, blank=True, null=True)
     item = models.ForeignKey(
         Item, on_delete=models.CASCADE, blank=True, null=True)
+    component = models.ForeignKey(
+        Bill_Of_Material_Header, related_name="component", on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.DecimalField(
         max_digits=10, decimal_places=5, blank=True, null=True)
     price = models.DecimalField(
@@ -392,3 +385,48 @@ class Bill_Of_Material_Detail(models.Model):
         managed = True
         db_table = 'bill_of_material_details'
         verbose_name_plural = 'bill_of_material_details'
+
+
+class Product_Header(models.Model):
+    name = models.CharField(max_length=250, blank=True, null=True)
+    uom = models.ForeignKey(
+        Uom, on_delete=models.CASCADE, blank=True, null=True)
+    quantity = models.DecimalField(
+        max_digits=10, decimal_places=5, blank=True, null=True)
+    price = models.DecimalField(
+        max_digits=10, decimal_places=2, blank=True, null=True)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'product_headers'
+        verbose_name_plural = 'product_headers'
+
+
+class Product_Detail(models.Model):
+    bill_of_material_header = models.ForeignKey(
+        Bill_Of_Material_Header, on_delete=models.CASCADE, blank=True, null=True)
+    item = models.ForeignKey(
+        Item, on_delete=models.CASCADE, blank=True, null=True)
+    quantity = models.DecimalField(
+        max_digits=10, decimal_places=5, blank=True, null=True)
+    price = models.DecimalField(
+        max_digits=10, decimal_places=2, blank=True, null=True)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'product_details'
+        verbose_name_plural = 'product_details'

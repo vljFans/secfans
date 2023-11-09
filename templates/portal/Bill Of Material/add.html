@@ -73,34 +73,46 @@
                             <div class="col-md-6 mb-3"></div>
                         </div>
                         <div class="form-row content_parent">
-                            <div class="col-md-3 mb-3">
-                                <label>Item <span class="required-indicator">*</span></label>
+                            <div class="col-md-2 mb-3">
+                                <label>Type <span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker item_id" name="item_id" required>
+                                    <select class="custom-select selectpicker type_id" name="type_id" required>
                                         <option value="">Choose...</option>
+                                        <option value="item" selected>Item</option>
+                                        <option value="component">Component</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <label>Unit Price <span class="required-indicator">*</span></label>
-                                <input type="text" onkeyup="checkMaxMin(this)" readonly
-                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    name="item_unit_price" min="0.01" class="form-control item_unit_price" placeholder="Unit Price" required>
-                            </div>
-                            <div class="col-md-2 mb-3">
-                                <label>Quantity <span class="required-indicator">*</span></label>
-                                <input type="text" onkeyup="checkMaxMin(this)"
-                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    name="item_quantity" min="0.0001" class="form-control item_quantity" placeholder="Quantity" required>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label>Price <span class="required-indicator">*</span></label>
-                                <input type="text" onkeyup="checkMaxMin(this)" readonly
-                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    name="item_price" min="0.01" class="form-control item_price" placeholder="Price" required>
-                            </div>
-                            <div class="col-md-1 mb-4 text-center ">
-                                <button type="button" class="btn add_btn"><i class="fa fa-plus"></i></button>
+                            <div class="form-row col-md-10 type_content">
+                                <div class="col-md-3 mb-3">
+                                    <label>Item <span class="required-indicator">*</span></label>
+                                    <div class="input-group">
+                                        <select class="custom-select selectpicker item_id" name="item_id" required>
+                                            <option value="">Choose...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label>Unit Price <span class="required-indicator">*</span></label>
+                                    <input type="text" onkeyup="checkMaxMin(this)" readonly
+                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        name="item_unit_price" min="0.01" class="form-control item_unit_price" placeholder="0.00" required>
+                                </div>
+                                <div class="col-md-2 mb-3">
+                                    <label>Quantity <span class="required-indicator">*</span></label>
+                                    <input type="text" onkeyup="checkMaxMin(this)"
+                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        name="item_quantity" min="0.0001" class="form-control item_quantity" placeholder="Quantity" required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label>Price <span class="required-indicator">*</span></label>
+                                    <input type="text" onkeyup="checkMaxMin(this)"
+                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        name="item_price" min="0.01" class="form-control item_price" placeholder="0.00" required>
+                                </div>
+                                <div class="col-md-1 mb-4 text-center ">
+                                    <button type="button" class="btn add_btn mt-1"><i class="fa fa-plus"></i></button>
+                                </div>
                             </div>
                         </div>
                         <div class="add_more_content">
@@ -108,8 +120,8 @@
                         <div class="form-row">
                             <div class="col-md-4 mb-3">
                                 <label>Bill Of Material Quantity <span class="required-indicator">*</span></label>
-                                <input type="text" name="bill_of_material_quantity" class="form-control" placeholder="Total Amount"
-                                    required id="bill_of_material_quantity" onkeyup="checkMaxMin(this)"
+                                <input type="text" name="quantity" class="form-control" placeholder="Quantity"
+                                    required id="quantity" onkeyup="checkMaxMin(this)" value="1" readonly
                                     onkeypress="return (event.charCode >=45 &&  event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)">
                             </div>
                             <div class="col-md-4 mb-3">
@@ -173,14 +185,36 @@
                 'Authorization': getCookieValue("accessToken")
             },
             success: function (response) {
-                item_options_text = '';
                 if (response.status == 200) {
-                    var options_text = `<option value="">Choose...</option>`;
+                    item_options_text = `<option value="">Choose...</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
-                        options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                        item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
-                    item_options_text = options_text;
-                    $('.item_id').html(options_text);
+                    $('.item_id').html(item_options_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    });
+
+    $(document).ready(function () {
+        $.ajax({
+            url: "{% url 'api:componentList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    component_options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        component_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
                 } else {
                     alert(response.message);
                 }
@@ -201,7 +235,7 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    var uom_options_text = `<option value="">Choose...</option>`;
+                    uom_options_text = `<option value="">Choose...</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
                         uom_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
@@ -213,6 +247,77 @@
             error: function (error) {
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
+        });
+    });
+
+    $(document).on('change', '.type_id', function () {
+        let element = $(this);
+        type_name = element.val();
+        parent = $(this).parents('.content_parent')
+        content_parent_index = $('.content_parent').index(parent);
+        if (type_name == 'component') {
+            $(element).parents().closest('.content_parent').find('.type_content').html(`<div class="col-md-3 mb-3">
+                                    <label>Bill Of Material <span class="required-indicator">*</span></label>
+                                    <div class="input-group">
+                                        <select class="custom-select selectpicker component_id" name="component_id" required>
+                                            ${component_options_text}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label>Unit Price <span class="required-indicator">*</span></label>
+                                    <input type="text" onkeyup="checkMaxMin(this)" readonly
+                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        name="component_unit_price" min="0.01" class="form-control component_unit_price" placeholder="0.00" required>
+                                </div>
+                                <div class="col-md-2 mb-3">
+                                    <label>Quantity <span class="required-indicator">*</span></label>
+                                    <input type="text" onkeyup="checkMaxMin(this)"
+                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        name="component_quantity" min="0.0001" class="form-control component_quantity" placeholder="Quantity" required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label>Price <span class="required-indicator">*</span></label>
+                                    <input type="text" onkeyup="checkMaxMin(this)"
+                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        name="component_price" min="0.01" class="form-control component_price" placeholder="0.00" required>
+                                </div>
+                                <div class="col-md-1 mb-4 text-center ">
+                                    ${content_parent_index > 0 ? '<button type="button" class="btn remove_btn mt-1"><i class="fa fa-minus"></i></button>' : '<button type="button" class="btn add_btn mt-1"><i class="fa fa-plus"></i></button>'}
+                                </div>`)
+        } else if (type_name == 'item') {
+            $(element).parents().closest('.content_parent').find('.type_content').html(`<div class="col-md-3 mb-3">
+                                    <label>Item <span class="required-indicator">*</span></label>
+                                    <div class="input-group">
+                                        <select class="custom-select selectpicker item_id" name="item_id" required>
+                                            ${item_options_text}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label>Unit Price <span class="required-indicator">*</span></label>
+                                    <input type="text" onkeyup="checkMaxMin(this)" readonly
+                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        name="item_unit_price" min="0.01" class="form-control item_unit_price" placeholder="0.00" required>
+                                </div>
+                                <div class="col-md-2 mb-3">
+                                    <label>Quantity <span class="required-indicator">*</span></label>
+                                    <input type="text" onkeyup="checkMaxMin(this)"
+                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        name="item_quantity" min="0.0001" class="form-control item_quantity" placeholder="Quantity" required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label>Price <span class="required-indicator">*</span></label>
+                                    <input type="text" onkeyup="checkMaxMin(this)"
+                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        name="item_price" min="0.01" class="form-control item_price" placeholder="0.00" required>
+                                </div>
+                                <div class="col-md-1 mb-4 text-center ">
+                                    ${content_parent_index > 0 ? '<button type="button" class="btn remove_btn mt-1"><i class="fa fa-minus"></i></button>' : '<button type="button" class="btn add_btn mt-1"><i class="fa fa-plus"></i></button>'}
+                                </div>`)
+        }
+        $('.selectpicker').select2({
+            placeholder: ''
         });
     });
 
@@ -230,8 +335,36 @@
                 success: function (response) {
                     if (response.status == 200) {
                         element.parents('.content_parent').find('.item_quantity').val(1);
-                        element.parents('.content_parent').find('.item_unit_price').val(response.page_items[0].price_sale);
-                        element.parents('.content_parent').find('.item_price').val(response.page_items[0].price_sale);
+                        element.parents('.content_parent').find('.item_unit_price').val(response.page_items[0].price);
+                        element.parents('.content_parent').find('.item_price').val(response.page_items[0].price);
+                    } else {
+                        alert(response.message);
+                    }
+                    calculateTotalAmount();
+                },
+                error: function (error) {
+                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                }
+            });
+        }
+    });
+
+    $(document).on('change', '.component_id', function () {
+        let element = $(this);
+        component_id = element.val();
+        if (component_id != null && component_id != "") {
+            $.ajax({
+                url: "{% url 'api:componentList' %}?id="+component_id,
+                type: 'GET',
+                data: ({}),
+                headers: {
+                    'Authorization': getCookieValue("accessToken")
+                },
+                success: function (response) {
+                    if (response.status == 200) {
+                        element.parents('.content_parent').find('.component_quantity').val(1);
+                        element.parents('.content_parent').find('.component_unit_price').val(response.page_items[0].price);
+                        element.parents('.content_parent').find('.component_price').val(response.page_items[0].price);
                     } else {
                         alert(response.message);
                     }
@@ -254,6 +387,24 @@
         calculateTotalAmount();
     });
 
+    $(document).on('keyup change', '.component_quantity', function () {
+        component_quantity = $(this).val();
+        component_unit_price = $(this).parents(".content_parent").find('.component_unit_price').val();
+
+        component_price = (parseFloat(component_quantity) * parseFloat(component_unit_price)).toFixed(2);
+
+        $(this).parents(".content_parent").find('.component_price').val(component_price);
+        calculateTotalAmount();
+    });
+    
+    $(document).on('keyup change', '.item_price', function () {
+        calculateTotalAmount();
+    });
+    
+    $(document).on('keyup change', '.component_price', function () {
+        calculateTotalAmount();
+    });
+
     function checkMaxMin(element) {
         if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
             $(element).val($(element).attr('max'));
@@ -270,40 +421,56 @@
                 total_amount += parseFloat($(this).val());
             }
         });
+        $('.component_price').each(function () {
+            if ($(this).val() != "") {
+                total_amount += parseFloat($(this).val());
+            }
+        });
         $("#total_amount").val(total_amount.toFixed(2));
     }
 
     $(document).on('click', '.add_btn', function () {
         $('.add_more_content').append(`<div class="form-row content_parent">
-                                <div class="col-md-3 mb-3">
-                                    <label>Item <span class="required-indicator">*</span></label>
+                                <div class="col-md-2 mb-3">
+                                    <label>Type <span class="required-indicator">*</span></label>
                                     <div class="input-group">
-                                        <select class="custom-select selectpicker item_id" name="item_id"
-                                            required>
-                                            ${item_options_text}
+                                        <select class="custom-select selectpicker type_id" name="type_id" required>
+                                            <option value="">Choose...</option>
+                                            <option value="item" selected>Item</option>
+                                            <option value="component">Bill Of Material</option>
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-3 mb-3">
-                                    <label>Unit Price <span class="required-indicator">*</span></label>
-                                    <input type="text" onkeyup="checkMaxMin(this)" readonly
-                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                        name="item_unit_price" min="0.01" class="form-control item_unit_price" placeholder="Unit Price" required>
-                                </div>
-                                <div class="col-md-2 mb-3">
-                                    <label>Quantity <span class="required-indicator">*</span></label>
-                                    <input type="text" onkeyup="checkMaxMin(this)"
-                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                        name="item_quantity" min="0.0001" class="form-control item_quantity" placeholder="Quantity" required>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label>Price <span class="required-indicator">*</span></label>
-                                    <input type="text" onkeyup="checkMaxMin(this)" readonly
-                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                        name="item_price" min="0.01" class="form-control item_price" placeholder="Price" required>
-                                </div>
-                                <div class="col-md-1 mb-4 text-center ">
-                                    <button type="button" class="btn remove_btn"><i class="fa fa-minus"></i></button>
+                                <div class="form-row col-md-10 type_content">
+                                    <div class="col-md-3 mb-3">
+                                        <label>Item <span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker item_id" name="item_id" required>
+                                                ${item_options_text}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label>Unit Price <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="item_unit_price" min="0.01" class="form-control item_unit_price" placeholder="Unit Price" required>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>Quantity <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="item_quantity" min="0.0001" class="form-control item_quantity" placeholder="Quantity" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label>Price <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="item_price" min="0.01" class="form-control item_price" placeholder="Price" required>
+                                    </div>
+                                    <div class="col-md-1 mb-4 text-center ">
+                                        <button type="button" class="btn remove_btn mt-1"><i class="fa fa-minus"></i></button>
+                                    </div>
                                 </div>
                             </div>`);
         $('.selectpicker').select2({

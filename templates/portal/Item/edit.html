@@ -66,15 +66,6 @@
                                 <input type="text" name="name" class="form-control" placeholder="Name" value="{{item.name}}" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label>Model No. <span class="required-indicator">*</span></label>
-                                <input type="text" name="model_no" class="form-control" placeholder="Model no." value="{{item.model_no}}" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Item Photo<span class="required-indicator">*</span></label>
-                                <input type="file" name="photo" class="form-control" placeholder="photo" accept="image/*">
-                                <a href="{{item.photo}}" target="_blank" rel="noopener noreferrer">Preview</a>
-                            </div>
-                            <div class="col-md-6 mb-3">
                                 <label>Item Type <span class="required-indicator">*</span></label>
                                 <div class="input-group">
                                     <select class="custom-select selectpicker" id="item_type_id" name="item_type_id"
@@ -82,7 +73,7 @@
                                         <option value="">Choose...</option>
                                         {% for item_type in item_types %}
                                         <option {% if item.item_type_id == item_type.id %}selected{% endif %}
-                                            value="{{item_type.id}}">{{item_type.name}}</option>
+                                            value="{{item_type.id}}">{{item_type.name}} ({{item_type.item_category.name}})</option>
                                         {% endfor %}
                                     </select>
                                     {% if request.user.is_superuser == 1 or 'add_item_type'|get_session_permission:request is not None %}
@@ -94,32 +85,13 @@
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label>Item Color <span class="required-indicator">*</span></label>
+                                <label>UOM<span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker" id="item_color_id" name="item_color_id"
-                                        required>
-                                        <option value="">Choose...</option>
-                                        {% for item_color in item_colors %}
-                                        <option {% if item.item_color_id == item_color.id %}selected{% endif %}
-                                            value="{{item_color.id}}">{{item_color.name}}</option>
-                                        {% endfor %}
-                                    </select>
-                                    {% if request.user.is_superuser == 1 or 'add_item_color'|get_session_permission:request is not None %}
-                                    <div class="btn float-end addForm" data-text="Add New Item Color"
-                                        data-form="addItemColor" id="addItemColorModal" data-toggle="modal" data-target="#addFormModal">
-                                        <i class="fa fa-plus"></i>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>UOM Standard<span class="required-indicator">*</span></label>
-                                <div class="input-group">
-                                    <select class="custom-select selectpicker" id="uom_standard_id" name="uom_standard_id"
+                                    <select class="custom-select selectpicker" id="uom_id" name="uom_id"
                                         required>
                                         <option value="">Choose...</option>
                                         {% for uom in uoms %}
-                                        <option {% if item.uom_standard_id == uom.id %}selected{% endif %}
+                                        <option {% if item.uom_id == uom.id %}selected{% endif %}
                                             value="{{uom.id}}">{{uom.name}}</option>
                                         {% endfor %}
                                     </select>
@@ -132,37 +104,9 @@
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label>UOM SKU<span class="required-indicator">*</span></label>
-                                <div class="input-group">
-                                    <select class="custom-select selectpicker" id="uom_sku_id" name="uom_sku_id"
-                                        required>
-                                        <option value="">Choose...</option>
-                                        {% for uom in uoms %}
-                                        <option {% if item.uom_sku_id == uom.id %}selected{% endif %}
-                                            value="{{uom.id}}">{{uom.name}}</option>
-                                        {% endfor %}
-                                    </select>
-                                    {% if request.user.is_superuser == 1 or 'add_uom'|get_session_permission:request is not None %}
-                                    <div class="btn float-end addForm" data-text="Add New UOM"
-                                        data-form="addUom" id="addUomSku" data-toggle="modal" data-target="#addFormModal">
-                                        <i class="fa fa-plus"></i>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Conversion Factor <span class="required-indicator">*</span></label>
-                                <input type="number" name="conversion_factor" class="form-control" placeholder="0.0" min="0.0" step="0.00001" value="{{item.conversion_factor}}" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Purchase Price<span class="required-indicator">*</span></label>
-                                <input type="number" name="price_purchase" class="form-control" placeholder="₹0.00" min="0" step="0.01" value="{{item.price_purchase.normalize}}" required>
-                                <div class="invalid-feedback">Please provide a valid purchase price</div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Sale Price<span class="required-indicator">*</span></label>
-                                <input type="number" name="price_sale" class="form-control" placeholder="₹0.00" min="0" step="0.01" value="{{item.price_sale.normalize}}" required>
-                                <div class="invalid-feedback">Please provide a valid sale price</div>
+                                <label>Price<span class="required-indicator">*</span></label>
+                                <input type="number" name="price" class="form-control" placeholder="₹0.00" min="0" step="0.001" value="{{item.price.normalize}}" required>
+                                <div class="invalid-feedback">Please provide a valid price</div>
                             </div>
                         </div>
                         {% if request.user.is_superuser == 1 or 'change_item'|get_session_permission:request is not None%}

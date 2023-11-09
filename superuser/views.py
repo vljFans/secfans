@@ -383,13 +383,7 @@ def itemList(request):
 
 @login_required
 def itemAdd(request):
-    item_types = models.Item_Type.objects.filter(status=1, deleted=0)
-    item_colors = models.Item_Color.objects.filter(status=1, deleted=0)
-    uoms = models.Uom.objects.filter(status=1, deleted=0)
     context.update({
-        'item_types': item_types,
-        'item_colors': item_colors,
-        'uoms': uoms,
         'page_title': "Item Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item", 'url': reverse('superuser:itemList')}, {'name': "Add"}]
     })
@@ -414,6 +408,40 @@ def itemEdit(request, id):
 
 
 @login_required
+def componentList(request):
+    context.update({
+        'page_title': "Component List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Component", 'url': reverse('superuser:componentList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Component/list.html', context)
+
+
+@login_required
+def componentAdd(request):
+    context.update({
+        'page_title': "Component Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Component", 'url': reverse('superuser:componentList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Component/add.html', context)
+
+
+@login_required
+def componentEdit(request, id):
+    component = models.Bill_Of_Material_Header.objects.prefetch_related(
+        'bill_of_material_detail_set').get(pk=id)
+    items = models.Item.objects.filter(status=1, deleted=0)
+    uoms = models.Uom.objects.filter(status=1, deleted=0)
+    context.update({
+        'component': component,
+        'items': items,
+        'uoms': uoms,
+        'page_title': "Component Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Component", 'url': reverse('superuser:componentList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Component/edit.html', context)
+
+
+@login_required
 def billOfMaterialList(request):
     context.update({
         'page_title': "Bill Of Material List",
@@ -433,12 +461,13 @@ def billOfMaterialAdd(request):
 
 @login_required
 def billOfMaterialEdit(request, id):
-    billOfMaterial = models.Bill_Of_Material_Header.objects.prefetch_related(
-        'bill_of_material_detail_set').get(pk=id)
+    billOfMaterial = models.Bill_Of_Material_Header.objects.prefetch_related('bill_of_material_detail_set').get(pk=id)
+    components = models.Bill_Of_Material_Header.objects.filter(is_component=1).filter(status=1, deleted=0)
     items = models.Item.objects.filter(status=1, deleted=0)
     uoms = models.Uom.objects.filter(status=1, deleted=0)
     context.update({
         'billOfMaterial': billOfMaterial,
+        'components': components,
         'items': items,
         'uoms': uoms,
         'page_title': "Bill Of Material Edit",

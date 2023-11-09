@@ -66,14 +66,6 @@
                                 <input type="text" name="name" class="form-control" placeholder="Name" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label>Model No. <span class="required-indicator">*</span></label>
-                                <input type="text" name="model_no" class="form-control" placeholder="Model no." required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Item Photo<span class="required-indicator">*</span></label>
-                                <input type="file" name="photo" class="form-control" placeholder="photo" accept="image/*">
-                            </div>
-                            <div class="col-md-6 mb-3">
                                 <label>Item Type <span class="required-indicator">*</span></label>
                                 <div class="input-group">
                                     <select class="custom-select selectpicker" id="item_type_id" name="item_type_id"
@@ -89,29 +81,10 @@
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label>Item Color <span class="required-indicator">*</span></label>
+                                <label>UOM<span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker" id="item_color_id" name="item_color_id"
-                                        required>
+                                    <select class="custom-select selectpicker" id="uom_id" name="uom_id" required>
                                         <option value="">Choose...</option>
-                                    </select>
-                                    {% if request.user.is_superuser == 1 or 'add_item_color'|get_session_permission:request is not None %}
-                                    <div class="btn float-end addForm" data-text="Add New Item Color"
-                                        data-form="addItemColor" id="addItemColorModal" data-toggle="modal" data-target="#addFormModal">
-                                        <i class="fa fa-plus"></i>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>UOM Standard<span class="required-indicator">*</span></label>
-                                <div class="input-group">
-                                    <select class="custom-select selectpicker" id="uom_standard_id" name="uom_standard_id"
-                                        required>
-                                        <option value="">Choose...</option>
-                                        {% for uom in uoms %}
-                                            <option value="{{uom.id}}">{{uom.name}}</option>
-                                        {% endfor %}
                                     </select>
                                     {% if request.user.is_superuser == 1 or 'add_uom'|get_session_permission:request is not None %}
                                     <div class="btn float-end addForm" data-text="Add New UOM"
@@ -122,36 +95,9 @@
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label>UOM SKU<span class="required-indicator">*</span></label>
-                                <div class="input-group">
-                                    <select class="custom-select selectpicker" id="uom_sku_id" name="uom_sku_id"
-                                        required>
-                                        <option value="">Choose...</option>
-                                        {% for uom in uoms %}
-                                            <option value="{{uom.id}}">{{uom.name}}</option>
-                                        {% endfor %}
-                                    </select>
-                                    {% if request.user.is_superuser == 1 or 'add_uom'|get_session_permission:request is not None %}
-                                    <div class="btn float-end addForm" data-text="Add New UOM"
-                                        data-form="addUom" id="addUomSku" data-toggle="modal" data-target="#addFormModal">
-                                        <i class="fa fa-plus"></i>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Conversion Factor <span class="required-indicator">*</span></label>
-                                <input type="number" name="conversion_factor" class="form-control" placeholder="0.0" min="0.0" step="0.00001" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Purchase Price<span class="required-indicator">*</span></label>
-                                <input type="number" name="price_purchase" class="form-control" placeholder="₹0.00" min="0" step="0.01" required>
-                                <div class="invalid-feedback">Please provide a valid purchase price</div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Sale Price<span class="required-indicator">*</span></label>
-                                <input type="number" name="price_sale" class="form-control" placeholder="₹0.00" min="0" step="0.01" required>
-                                <div class="invalid-feedback">Please provide a valid sale price</div>
+                                <label>Price<span class="required-indicator">*</span></label>
+                                <input type="number" name="price"  onkeyup="checkMaxMin(this)" class="form-control" placeholder="₹0.00" min="0" step="0.01" required>
+                                <div class="invalid-feedback">Please provide a valid price</div>
                             </div>
                         </div>
                         {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
@@ -219,31 +165,6 @@
 
     $(document).ready(function () {
         $.ajax({
-            url: "{% url 'api:itemColorList' %}?find_all=1",
-            type: 'GET',
-            data: ({}),
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                if (response.status == 200) {
-                    var item_type_options_text = `<option value="">Choose...</option>`;
-                    for (let index = 0; index < response.page_items.length; index++) {
-                        item_type_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
-                    }
-                    $('#item_color_id').html(item_type_options_text);
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });
-    });
-
-    $(document).ready(function () {
-        $.ajax({
             url: "{% url 'api:uomList' %}?find_all=1",
             type: 'GET',
             data: ({}),
@@ -256,8 +177,7 @@
                     for (let index = 0; index < response.page_items.length; index++) {
                         item_type_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
-                    $('#uom_standard_id').html(item_type_options_text);
-                    $('#uom_sku_id').html(item_type_options_text);
+                    $('#uom_id').html(item_type_options_text);
                 } else {
                     alert(response.message);
                 }
@@ -267,6 +187,15 @@
             }
         });
     });
+
+    function checkMaxMin(element) {
+        if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
+            $(element).val($(element).attr('max'));
+        }
+        if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
+            $(element).val($(element).attr('min'));
+        }
+    }
 
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
