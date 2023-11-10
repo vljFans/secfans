@@ -202,7 +202,7 @@
 
     $(document).ready(function () {
         $.ajax({
-            url: "{% url 'api:bomLevelList' %}?find_all=1&level=0",
+            url: "{% url 'api:billOfMaterialList' %}?find_all=1&level=0",
             type: 'GET',
             data: ({}),
             headers: {
@@ -252,7 +252,7 @@
     $(document).on('change', '.bom_level_level', function () {
         level = $(this).val() - 1;
         $.ajax({
-            url: "{% url 'api:bomLevelList' %}?find_all=1&level="+level,
+            url: "{% url 'api:billOfMaterialList' %}?find_all=1&level="+level,
             type: 'GET',
             data: ({}),
             headers: {
@@ -379,7 +379,7 @@
         bom_level_id = element.val();
         if (bom_level_id != null && bom_level_id != "") {
             $.ajax({
-                url: "{% url 'api:bomLevelList' %}?id="+bom_level_id,
+                url: "{% url 'api:billOfMaterialList' %}?id="+bom_level_id,
                 type: 'GET',
                 data: ({}),
                 headers: {
