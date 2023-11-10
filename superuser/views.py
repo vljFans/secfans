@@ -108,7 +108,8 @@ def roleEdit(request, id):
 def roleView(request, id):
     content_types = ContentType.objects.prefetch_related('permission_set').filter(
         app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail'])
-    role = models.Role.objects.prefetch_related('role_permission_set').get(pk=id)
+    role = models.Role.objects.prefetch_related(
+        'role_permission_set').get(pk=id)
     selected_permissions = []
     for permissionDetail in role.role_permission_set.all():
         if permissionDetail.permitted == 1:
@@ -427,40 +428,6 @@ def itemEdit(request, id):
 
 
 @login_required
-def componentList(request):
-    context.update({
-        'page_title': "Component List",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Component", 'url': reverse('superuser:componentList')}, {'name': "List"}]
-    })
-    return render(request, 'portal/Component/list.html', context)
-
-
-@login_required
-def componentAdd(request):
-    context.update({
-        'page_title': "Component Add",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Component", 'url': reverse('superuser:componentList')}, {'name': "Add"}]
-    })
-    return render(request, 'portal/Component/add.html', context)
-
-
-@login_required
-def componentEdit(request, id):
-    component = models.Bill_Of_Material_Header.objects.prefetch_related(
-        'bill_of_material_detail_set').get(pk=id)
-    items = models.Item.objects.filter(status=1, deleted=0)
-    uoms = models.Uom.objects.filter(status=1, deleted=0)
-    context.update({
-        'component': component,
-        'items': items,
-        'uoms': uoms,
-        'page_title': "Component Edit",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Component", 'url': reverse('superuser:componentList')}, {'name': "Edit"}]
-    })
-    return render(request, 'portal/Component/edit.html', context)
-
-
-@login_required
 def billOfMaterialList(request):
     context.update({
         'page_title': "Bill Of Material List",
@@ -480,13 +447,15 @@ def billOfMaterialAdd(request):
 
 @login_required
 def billOfMaterialEdit(request, id):
-    billOfMaterial = models.Bill_Of_Material_Header.objects.prefetch_related('bill_of_material_detail_set').get(pk=id)
-    components = models.Bill_Of_Material_Header.objects.filter(is_component=1).filter(status=1, deleted=0)
+    billOfMaterial = models.Bill_Of_Material.objects.prefetch_related(
+        'bill_of_material_detail_set').get(pk=id)
+    bomLevels = models.Bill_Of_Material.objects.filter(
+        level__gte=0).filter(status=1, deleted=0)
     items = models.Item.objects.filter(status=1, deleted=0)
     uoms = models.Uom.objects.filter(status=1, deleted=0)
     context.update({
         'billOfMaterial': billOfMaterial,
-        'components': components,
+        'bomLevels': bomLevels,
         'items': items,
         'uoms': uoms,
         'page_title': "Bill Of Material Edit",

@@ -347,7 +347,8 @@ class Bill_Of_Material(models.Model):
         max_digits=10, decimal_places=5, blank=True, null=True)
     price = models.DecimalField(
         max_digits=10, decimal_places=2, blank=True, null=True)
-    is_component = models.BooleanField(default=0)
+    is_final = models.SmallIntegerField(default=1)
+    level = models.SmallIntegerField(default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -367,8 +368,8 @@ class Bill_Of_Material_Detail(models.Model):
         Bill_Of_Material, on_delete=models.CASCADE, blank=True, null=True)
     item = models.ForeignKey(
         Item, on_delete=models.CASCADE, blank=True, null=True)
-    component = models.ForeignKey(
-        Bill_Of_Material, related_name="component", on_delete=models.CASCADE, blank=True, null=True)
+    bom_level = models.ForeignKey(
+        Bill_Of_Material, related_name="bomLevel", on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.DecimalField(
         max_digits=10, decimal_places=5, blank=True, null=True)
     price = models.DecimalField(
@@ -379,7 +380,7 @@ class Bill_Of_Material_Detail(models.Model):
     updated_at = models.DateTimeField(default=now)
 
     def __str__(self):
-        return self.name
+        return self.pk
 
     class Meta:
         managed = True

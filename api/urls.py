@@ -70,10 +70,7 @@ urlpatterns = [
     path('item-edit', views.itemEdit, name='itemEdit'),
     path('item-delete', views.itemDelete, name='itemDelete'),
     
-    path('component-list', views.componentList, name='componentList'),
-    path('component-add', views.componentAdd, name='componentAdd'),
-    path('component-edit', views.componentEdit, name='componentEdit'),
-    path('component-delete', views.componentDelete, name='componentDelete'),
+    path('bom-level-list', views.bomLevelList, name='bomLevelList'),
     
     path('bill-of-material-list', views.billOfMaterialList, name='billOfMaterialList'),
     path('bill-of-material-add', views.billOfMaterialAdd, name='billOfMaterialAdd'),

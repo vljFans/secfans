@@ -65,10 +65,6 @@ urlpatterns = [
     path('item-add', views.itemAdd, name='itemAdd'),
     path('item-edit/<int:id>', views.itemEdit, name='itemEdit'),
     
-    path('component-list', views.componentList, name='componentList'),
-    path('component-add', views.componentAdd, name='componentAdd'),
-    path('component-edit/<int:id>', views.componentEdit, name='componentEdit'),
-    
     path('bill-of-material-list', views.billOfMaterialList, name='billOfMaterialList'),
     path('bill-of-material-add', views.billOfMaterialAdd, name='billOfMaterialAdd'),
     path('bill-of-material-edit/<int:id>', views.billOfMaterialEdit, name='billOfMaterialEdit'),

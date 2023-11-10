@@ -71,17 +71,22 @@
                                 <label>Name <span class="required-indicator">*</span></label>
                                 <input type="text" value="{{billOfMaterial.name}}" name="name" class="form-control" placeholder="Name" required>
                             </div>
-                            <div class="col-md-6 mb-3"></div>
+                            <div class="col-md-6 mb-3">
+                                <label>Level <span class="required-indicator">*</span></label>
+                                <input type="text" name="level" class="form-control" placeholder="Level"
+                                    required id="bom_level_level" onkeyup="checkMaxMin(this)" value="{{billOfMaterial.level}}" min="1"
+                                    onkeypress="return (event.charCode >=45 &&  event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)">
+                            </div>
                         </div>
                         {% for detail in billOfMaterial.bill_of_material_detail_set.all %}
-                        <div class="form-row content_parent">
+                        <div class="form-row content_parent {% if forloop.counter == 1 %}top_parent{% endif %}">
                             <div class="col-md-2 mb-3">
                                 <label>Type <span class="required-indicator">*</span>{{forloop.counter}}</label>
                                 <div class="input-group">
                                     <select class="custom-select selectpicker type_id" name="type_id" required>
                                         <option value="">Choose...</option>
                                         <option value="item" {% if detail.item_id is not None %}selected{% endif %}>Item</option>
-                                        <option value="component" {% if detail.component_id is not None %}selected{% endif %}>Component</option>
+                                        <option value="bom_level" {% if detail.bom_level_id is not None %}selected{% endif %}>BOM Level</option>
                                     </select>
                                 </div>
                             </div>
@@ -123,35 +128,35 @@
                                     <button type="button" class="btn remove_btn mt-1"><i class="fa fa-minus"></i></button>
                                     {% endif %}
                                 </div>
-                                {% elif detail.component_id is not None %}
+                                {% elif detail.bom_level_id is not None %}
                                 <div class="col-md-3 mb-3">
-                                    <label>Component <span class="required-indicator">*</span></label>
+                                    <label>BOM Level <span class="required-indicator">*</span></label>
                                     <div class="input-group">
-                                        <select class="custom-select selectpicker component_id" name="component_id" required>
+                                        <select class="custom-select selectpicker bom_level_id" name="bom_level_id" required>
                                             <option value="">Choose...</option>
-                                            {% for each in components %}
-                                            <option value="{{each.pk}}" {% if each.id == detail.component_id %}selected{% endif %}>{{each.name}}</option>
+                                            {% for each in bomLevels %}
+                                            <option value="{{each.pk}}" {% if each.id == detail.bom_level_id %}selected{% endif %}>{{each.name}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-md-3 mb-3">
                                     <label>Unit Price <span class="required-indicator">*</span></label>
-                                    <input type="text" onkeyup="checkMaxMin(this)" readonly value="{{detail.component.price}}"
+                                    <input type="text" onkeyup="checkMaxMin(this)" readonly value="{{detail.bom_level.price}}"
                                         onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                        name="component_unit_price" min="0.01" class="form-control component_unit_price" placeholder="0.00" required>
+                                        name="bom_level_unit_price" min="0.01" class="form-control bom_level_unit_price" placeholder="0.00" required>
                                 </div>
                                 <div class="col-md-2 mb-3">
                                     <label>Quantity <span class="required-indicator">*</span></label>
                                     <input type="text" onkeyup="checkMaxMin(this)" value="{{detail.quantity}}"
                                         onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                        name="component_quantity" min="0.0001" class="form-control component_quantity" placeholder="Quantity" required>
+                                        name="bom_level_quantity" min="0.0001" class="form-control bom_level_quantity" placeholder="Quantity" required>
                                 </div>
                                 <div class="col-md-3 mb-3">
                                     <label>Price <span class="required-indicator">*</span></label>
                                     <input type="text" onkeyup="checkMaxMin(this)" value="{{detail.price}}"
                                         onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                        name="component_price" min="0.01" class="form-control component_price" placeholder="0.00" required>
+                                        name="bom_level_price" min="0.01" class="form-control bom_level_price" placeholder="0.00" required>
                                 </div>
                                 <div class="col-md-1 mb-4 text-center ">
                                     {% if forloop.counter == 1 %}
@@ -167,13 +172,7 @@
                         <div class="add_more_content">
                         </div>
                         <div class="form-row">
-                            <div class="col-md-4 mb-3">
-                                <label>Bill Of Material Quantity <span class="required-indicator">*</span></label>
-                                <input type="text" name="quantity" class="form-control" placeholder="Quantity"
-                                    required id="quantity" onkeyup="checkMaxMin(this)" value="{{billOfMaterial.quantity}}" readonly
-                                    onkeypress="return (event.charCode >=45 &&  event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)">
-                            </div>
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-6 mb-3">
                                 <label>Bill Of Material Uom <span class="required-indicator">*</span></label>
                                 <div class="input-group">
                                     <select class="custom-select selectpicker uom_id" name="uom_id" id="uom_id" required>
@@ -184,10 +183,10 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-6 mb-3">
                                 <label>Total Amount <span class="required-indicator">*</span></label>
                                 <input type="text" name="total_amount" class="form-control" placeholder="Total Amount"
-                                    required readonly id="total_amount" onkeyup="checkMaxMin(this)" value="{{billOfMaterial.price}}"
+                                    required id="total_amount" onkeyup="checkMaxMin(this)" value="{{billOfMaterial.price}}"
                                     onkeypress="return (event.charCode >=45 &&  event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)">
                             </div>
                         </div>
@@ -253,8 +252,9 @@
     });
 
     $(document).ready(function () {
+        level = {{billOfMaterial.level}} - 1;
         $.ajax({
-            url: "{% url 'api:componentList' %}?find_all=1",
+            url: "{% url 'api:bomLevelList' %}?find_all=1&level=" + level,
             type: 'GET',
             data: ({}),
             headers: {
@@ -262,10 +262,37 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    component_options_text = `<option value="">Choose...</option>`;
+                    bom_level_options_text = `<option value="">Choose...</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
-                        component_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                        bom_level_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    });
+
+    
+    $(document).on('change', '.bom_level_level', function () {
+        level = $(this).val() - 1;
+        $.ajax({
+            url: "{% url 'api:bomLevelList' %}?find_all=1&level="+level,
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    bom_level_options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        bom_level_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $('.bom_level_id').html(bom_level_options_text);
                 } else {
                     alert(response.message);
                 }
@@ -305,12 +332,12 @@
         type_name = element.val();
         parent = $(this).parents('.content_parent')
         content_parent_index = $('.content_parent').index(parent);
-        if (type_name == 'component') {
+        if (type_name == 'bom_level') {
             $(element).parents().closest('.content_parent').find('.type_content').html(`<div class="col-md-3 mb-3">
-                                    <label>Component <span class="required-indicator">*</span></label>
+                                    <label>BOM Level <span class="required-indicator">*</span></label>
                                     <div class="input-group">
-                                        <select class="custom-select selectpicker component_id" name="component_id" required>
-                                            ${component_options_text}
+                                        <select class="custom-select selectpicker bom_level_id" name="bom_level_id" required>
+                                            ${bom_level_options_text}
                                         </select>
                                     </div>
                                 </div>
@@ -318,19 +345,19 @@
                                     <label>Unit Price <span class="required-indicator">*</span></label>
                                     <input type="text" onkeyup="checkMaxMin(this)" readonly
                                         onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                        name="component_unit_price" min="0.01" class="form-control component_unit_price" placeholder="0.00" required>
+                                        name="bom_level_unit_price" min="0.01" class="form-control bom_level_unit_price" placeholder="0.00" required>
                                 </div>
                                 <div class="col-md-2 mb-3">
                                     <label>Quantity <span class="required-indicator">*</span></label>
                                     <input type="text" onkeyup="checkMaxMin(this)"
                                         onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                        name="component_quantity" min="0.0001" class="form-control component_quantity" placeholder="Quantity" required>
+                                        name="bom_level_quantity" min="0.0001" class="form-control bom_level_quantity" placeholder="Quantity" required>
                                 </div>
                                 <div class="col-md-3 mb-3">
                                     <label>Price <span class="required-indicator">*</span></label>
                                     <input type="text" onkeyup="checkMaxMin(this)"
                                         onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                        name="component_price" min="0.01" class="form-control component_price" placeholder="0.00" required>
+                                        name="bom_level_price" min="0.01" class="form-control bom_level_price" placeholder="0.00" required>
                                 </div>
                                 <div class="col-md-1 mb-4 text-center ">
                                     ${content_parent_index > 0 ? '<button type="button" class="btn remove_btn mt-1"><i class="fa fa-minus"></i></button>' : '<button type="button" class="btn add_btn mt-1"><i class="fa fa-plus"></i></button>'}
@@ -399,12 +426,12 @@
         }
     });
 
-    $(document).on('change', '.component_id', function () {
+    $(document).on('change', '.bom_level_id', function () {
         let element = $(this);
-        component_id = element.val();
-        if (component_id != null && component_id != "") {
+        bom_level_id = element.val();
+        if (bom_level_id != null && bom_level_id != "") {
             $.ajax({
-                url: "{% url 'api:componentList' %}?id="+component_id,
+                url: "{% url 'api:bomLevelList' %}?id="+bom_level_id,
                 type: 'GET',
                 data: ({}),
                 headers: {
@@ -412,9 +439,9 @@
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        element.parents('.content_parent').find('.component_quantity').val(1);
-                        element.parents('.content_parent').find('.component_unit_price').val(response.page_items[0].price);
-                        element.parents('.content_parent').find('.component_price').val(response.page_items[0].price);
+                        element.parents('.content_parent').find('.bom_level_quantity').val(1);
+                        element.parents('.content_parent').find('.bom_level_unit_price').val(response.page_items[0].price);
+                        element.parents('.content_parent').find('.bom_level_price').val(response.page_items[0].price);
                     } else {
                         alert(response.message);
                     }
@@ -437,13 +464,13 @@
         calculateTotalAmount();
     });
     
-    $(document).on('keyup change', '.component_quantity', function () {
-        component_quantity = $(this).val();
-        component_unit_price = $(this).parents(".content_parent").find('.component_unit_price').val();
+    $(document).on('keyup change', '.bom_level_quantity', function () {
+        bom_level_quantity = $(this).val();
+        bom_level_unit_price = $(this).parents(".content_parent").find('.bom_level_unit_price').val();
 
-        component_price = (parseFloat(component_quantity) * parseFloat(component_unit_price)).toFixed(2);
+        bom_level_price = (parseFloat(bom_level_quantity) * parseFloat(bom_level_unit_price)).toFixed(2);
 
-        $(this).parents(".content_parent").find('.component_price').val(component_price);
+        $(this).parents(".content_parent").find('.bom_level_price').val(bom_level_price);
         calculateTotalAmount();
     });
     
@@ -451,7 +478,7 @@
         calculateTotalAmount();
     });
     
-    $(document).on('keyup change', '.component_price', function () {
+    $(document).on('keyup change', '.bom_level_price', function () {
         calculateTotalAmount();
     });
 
@@ -471,7 +498,7 @@
                 total_amount += parseFloat($(this).val());
             }
         });
-        $('.component_price').each(function () {
+        $('.bom_level_price').each(function () {
             if ($(this).val() != "") {
                 total_amount += parseFloat($(this).val());
             }
@@ -487,7 +514,7 @@
                                         <select class="custom-select selectpicker type_id" name="type_id" required>
                                             <option value="">Choose...</option>
                                             <option value="item" selected>Item</option>
-                                            <option value="component">Component</option>
+                                            <option value="bom_level">BOM Level</option>
                                         </select>
                                     </div>
                                 </div>

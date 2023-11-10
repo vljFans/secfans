@@ -156,7 +156,7 @@ def roleList(request):
             'page_items': role,
         })
     else:
-        if keyword != None and keyword != "":
+        if keyword is not None and keyword != "":
             roles = list(models.Role.objects.filter(
                 name__icontains=keyword, status=1, deleted=0).values('pk', 'name'))
         else:
@@ -309,7 +309,7 @@ def userList(request):
             'page_items': user,
         })
     else:
-        if keyword != None and keyword != "":
+        if keyword is not None and keyword != "":
             users = list(models.User.objects.filter(
                 Q(name__icontains=keyword) | Q(email__icontains=keyword) | Q(
                     phone__icontains=keyword) | Q(role__name__icontains=keyword)
@@ -472,7 +472,7 @@ def vendorList(request):
             'page_items': vendor,
         })
     else:
-        if keyword != None and keyword != "":
+        if keyword is not None and keyword != "":
             vendors = list(
                 models.Vendor.objects.filter(
                     Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(
@@ -632,7 +632,7 @@ def customerList(request):
             'page_items': customer,
         })
     else:
-        if keyword != None and keyword != "":
+        if keyword is not None and keyword != "":
             customers = list(
                 models.Customer.objects.filter(
                     Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(email__icontains=keyword) | Q(
@@ -872,7 +872,7 @@ def uomList(request):
             'page_items': uom,
         })
     else:
-        if keyword != None and keyword != "":
+        if keyword is not None and keyword != "":
             uoms = list(models.Uom.objects.filter(
                 name__icontains=keyword, status=1, deleted=0).values('pk', 'name'))
         else:
@@ -1005,7 +1005,7 @@ def childUomList(request):
             'page_items': childUom,
         })
     else:
-        if keyword != None and keyword != "":
+        if keyword is not None and keyword != "":
             childUoms = list(models.Child_Uom.objects.filter(name__icontains=keyword, status=1, deleted=0).values(
                 'pk', 'name', 'uom__name', 'conversion_rate'))
         else:
@@ -1143,7 +1143,7 @@ def itemCategoryList(request):
             'page_items': itemCategory,
         })
     else:
-        if keyword != None and keyword != "":
+        if keyword is not None and keyword != "":
             itemCategories = list(models.Item_Category.objects.filter(
                 name__icontains=keyword, status=1, deleted=0).values('pk', 'name'))
         else:
@@ -1277,7 +1277,7 @@ def itemTypeList(request):
             'page_items': itemType,
         })
     else:
-        if keyword != None and keyword != "":
+        if keyword is not None and keyword != "":
             itemTypes = list(models.Item_Type.objects.filter(
                 Q(name__icontains=keyword) | Q(item_category__name__icontains=keyword) | Q(
                     hsn_code__icontains=keyword)
@@ -1419,7 +1419,7 @@ def itemColorList(request):
             'page_items': itemColor,
         })
     else:
-        if keyword != None and keyword != "":
+        if keyword is not None and keyword != "":
             itemColors = list(models.Item_Color.objects.filter(
                 name__icontains=keyword, status=1, deleted=0).values('pk', 'name', 'color_code'))
         else:
@@ -1554,7 +1554,7 @@ def itemList(request):
             'page_items': item,
         })
     else:
-        if keyword != None and keyword != "":
+        if keyword is not None and keyword != "":
             items = list(models.Item.objects.filter(
                 Q(name__icontains=keyword) | Q(model_no__icontains=keyword)
             ).filter(status=1, deleted=0).values('pk', 'name', 'item_type__name', 'item_type__item_category__name', 'uom__name', 'price'))
@@ -1680,26 +1680,36 @@ def itemDelete(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def componentList(request):
+def bomLevelList(request):
     context = {}
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
+    level = request.GET.get('level', None)
+    keyword = request.GET.get('keyword', None)
     if id != None:
-        component = list(models.Bill_Of_Material.objects.filter(
+        bomLevel = list(models.Bill_Of_Material.objects.filter(
             pk=id)[:1].values('pk', 'name', 'uom__name', 'quantity', 'price'))
         context.update({
             'status': 200,
-            'message': "Component Fetched Successfully.",
-            'page_items': component,
+            'message': "BOM Level Fetched Successfully.",
+            'page_items': bomLevel,
         })
     else:
-        components = list(models.Bill_Of_Material.objects.filter(is_component=1).filter(
-            status=1, deleted=0).values('pk', 'name', 'uom__name', 'quantity', 'price'))
+        if keyword is not None and keyword != "":
+            bomLevels = models.Bill_Of_Material.objects.filter(name__icontains=keyword).filter(level__gte=0).filter(
+                status=1, deleted=0)
+        else:
+            bomLevels = models.Bill_Of_Material.objects.filter(level__gte=0).filter(
+                status=1, deleted=0)
+        if level is not None:
+            bomLevels = bomLevels.filter(level=level)
+        bomLevels = list(bomLevels.values(
+            'pk', 'name', 'uom__name', 'quantity', 'price'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
-                'message': "Components Fetched Successfully.",
-                'page_items': components,
+                'message': "BOM Levels Fetched Successfully.",
+                'page_items': bomLevels,
             })
             return JsonResponse(context)
 
@@ -1707,125 +1717,18 @@ def componentList(request):
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
         current_page = request.GET.get('current_page', 1)
 
-        paginator = CustomPaginator(components, per_page)
+        paginator = CustomPaginator(bomLevels, per_page)
         page_items = paginator.get_page(current_page)
         total_pages = paginator.get_total_pages()
 
         context.update({
             'status': 200,
-            'message': "Components Fetched Successfully.",
+            'message': "BOM Levels Fetched Successfully.",
             'page_items': page_items,
             'total_pages': total_pages,
             'current_page': int(current_page),
             'button_to_show': int(button_to_show),
         })
-    return JsonResponse(context)
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def componentAdd(request):
-    context = {}
-    exist_data = models.Bill_Of_Material.objects.filter(
-        name__iexact=request.POST['name']).filter(deleted=0)
-    if len(exist_data) > 0:
-        context.update({
-            'status': 555,
-            'message': "Component with this name already exists.",
-        })
-        return JsonResponse(context)
-    try:
-        with transaction.atomic():
-            componentHeader = models.Bill_Of_Material()
-            componentHeader.name = request.POST['name']
-            componentHeader.uom_id = request.POST['uom_id']
-            componentHeader.quantity = request.POST['quantity']
-            componentHeader.price = request.POST['total_amount']
-            componentHeader.is_component = 1
-            componentHeader.save()
-
-            bill_of_material_details = []
-            for index, elem in enumerate(request.POST.getlist('item_id')):
-                bill_of_material_details.append(models.Bill_Of_Material_Detail(Bill_Of_Material_id=componentHeader.id,
-                                                item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
-            models.Bill_Of_Material_Detail.objects.bulk_create(
-                bill_of_material_details)
-        transaction.commit()
-        context.update({
-            'status': 200,
-            'message': "Component Created Successfully."
-        })
-    except Exception:
-        context.update({
-            'status': 556,
-            'message': "Something Went Wrong. Please Try Again."
-        })
-        transaction.rollback()
-    return JsonResponse(context)
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def componentEdit(request):
-    context = {}
-    exist_data = models.Bill_Of_Material.objects.filter(
-        name__iexact=request.POST['name']).exclude(pk=request.POST['id']).filter(deleted=0)
-    if len(exist_data) > 0:
-        context.update({
-            'status': 557,
-            'message': "Component with this name already exists.",
-        })
-        return JsonResponse(context)
-    try:
-        with transaction.atomic():
-            componentHeader = models.Bill_Of_Material.objects.prefetch_related(
-                'bill_of_material_detail_set').get(pk=request.POST['id'])
-            componentHeader.name = request.POST['name']
-            componentHeader.uom_id = request.POST['uom_id']
-            componentHeader.quantity = request.POST['quantity']
-            componentHeader.price = request.POST['total_amount']
-            componentHeader.save()
-            componentHeader.bill_of_material_detail_set.all().delete()
-            bill_of_material_details = []
-            for index, elem in enumerate(request.POST.getlist('item_id')):
-                bill_of_material_details.append(models.Bill_Of_Material_Detail(Bill_Of_Material_id=componentHeader.id,
-                                                item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
-            models.Bill_Of_Material_Detail.objects.bulk_create(
-                bill_of_material_details)
-        transaction.commit()
-        context.update({
-            'status': 200,
-            'message': "Component Updated Successfully."
-        })
-    except Exception:
-        context.update({
-            'status': 558,
-            'message': "Something Went Wrong. Please Try Again."
-        })
-        transaction.rollback()
-    return JsonResponse(context)
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def componentDelete(request):
-    context = {}
-    component = models.Bill_Of_Material.objects.prefetch_related('bill_of_material_detail_set').get(pk=request.POST['id'])
-    try:
-        with transaction.atomic():
-            component.bill_of_material_detail_set.all().delete()
-            component.delete()
-        transaction.commit()
-        context.update({
-            'status': 200,
-            'message': "Component Deleted Successfully."
-        })
-    except Exception:
-        context.update({
-            'status': 559,
-            'message': "Something Went Wrong. Please Try Again."
-        })
-        transaction.rollback()
     return JsonResponse(context)
 
 
@@ -1835,6 +1738,8 @@ def billOfMaterialList(request):
     context = {}
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
+    level = request.GET.get('level', None)
+    keyword = request.GET.get('keyword', None)
     if id != None:
         billOfMaterial = list(models.Bill_Of_Material.objects.filter(
             pk=id)[:1].values('pk', 'name', 'uom__name', 'quantity', 'price'))
@@ -1844,8 +1749,13 @@ def billOfMaterialList(request):
             'page_items': billOfMaterial,
         })
     else:
-        billOfMaterials = list(models.Bill_Of_Material.objects.exclude(is_component=1).filter(
-            status=1, deleted=0).values('pk', 'name', 'uom__name', 'quantity', 'price'))
+        if keyword is not None and keyword != "":
+            billOfMaterials = models.Bill_Of_Material.objects.filter(name__icontains=keyword).filter(status=1, deleted=0)
+        else:
+            billOfMaterials = models.Bill_Of_Material.objects.filter(status=1, deleted=0)
+        if level is not None:
+            billOfMaterials = billOfMaterials.filter(level=level)
+        billOfMaterials = list(billOfMaterials.values('pk', 'name', 'uom__name', 'quantity', 'price'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -1864,7 +1774,7 @@ def billOfMaterialList(request):
 
         context.update({
             'status': 200,
-            'message': "Components Fetched Successfully.",
+            'message': "bomLevels Fetched Successfully.",
             'page_items': page_items,
             'total_pages': total_pages,
             'current_page': int(current_page),
@@ -1877,11 +1787,12 @@ def billOfMaterialList(request):
 @permission_classes([IsAuthenticated])
 def billOfMaterialAdd(request):
     context = {}
-    exist_data = models.Bill_Of_Material.objects.exclude(is_component=1).filter(name__iexact=request.POST['name']).filter(deleted=0)
+    exist_data = models.Bill_Of_Material.objects.filter(
+        name__iexact=request.POST['name'], level=request.POST['level']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 560,
-            'message': "Bill Of Material with this name already exists.",
+            'message': "Bill Of Material with this name and level already exists.",
         })
         return JsonResponse(context)
     try:
@@ -1889,18 +1800,23 @@ def billOfMaterialAdd(request):
             billOfMaterialHeader = models.Bill_Of_Material()
             billOfMaterialHeader.name = request.POST['name']
             billOfMaterialHeader.uom_id = request.POST['uom_id']
-            billOfMaterialHeader.quantity = request.POST['quantity']
+            billOfMaterialHeader.quantity = 1
             billOfMaterialHeader.price = request.POST['total_amount']
-            billOfMaterialHeader.is_component = 0
+            billOfMaterialHeader.is_final = 1
+            billOfMaterialHeader.level = request.POST['level']
             billOfMaterialHeader.save()
 
             bill_of_material_details = []
             for index, elem in enumerate(request.POST.getlist('item_id')):
-                bill_of_material_details.append(models.Bill_Of_Material_Detail(Bill_Of_Material_id=billOfMaterialHeader.id,
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
                                                 item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
-            for index, elem in enumerate(request.POST.getlist('component_id')):
-                bill_of_material_details.append(models.Bill_Of_Material_Detail(Bill_Of_Material_id=billOfMaterialHeader.id,
-                                                component_id=elem, quantity=request.POST.getlist('component_quantity')[index], price=request.POST.getlist('component_price')[index]))
+            for index, elem in enumerate(request.POST.getlist('bom_level_id')):
+                billOfMaterialDetail = models.Bill_Of_Material.objects.get(
+                    pk=elem)
+                billOfMaterialDetail.is_final = 0
+                billOfMaterialDetail.save()
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
+                                                bom_level_id=elem, quantity=request.POST.getlist('bom_level_quantity')[index], price=request.POST.getlist('bom_level_price')[index]))
             models.Bill_Of_Material_Detail.objects.bulk_create(
                 bill_of_material_details)
         transaction.commit()
@@ -1922,7 +1838,7 @@ def billOfMaterialAdd(request):
 def billOfMaterialEdit(request):
     context = {}
     exist_data = models.Bill_Of_Material.objects.filter(
-        name__iexact=request.POST['name']).exclude(pk=request.POST['id']).filter(deleted=0)
+        name__iexact=request.POST['name'], level=request.POST['level']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 562,
@@ -1931,21 +1847,27 @@ def billOfMaterialEdit(request):
         return JsonResponse(context)
     try:
         with transaction.atomic():
-            billOfMaterialHeader = models.Bill_Of_Material.objects.prefetch_related('bill_of_material_detail_set').get(pk=request.POST['id'])
+            billOfMaterialHeader = models.Bill_Of_Material.objects.prefetch_related(
+                'bill_of_material_detail_set').get(pk=request.POST['id'])
             billOfMaterialHeader.name = request.POST['name']
             billOfMaterialHeader.uom_id = request.POST['uom_id']
-            billOfMaterialHeader.quantity = request.POST['quantity']
+            billOfMaterialHeader.quantity = 1
             billOfMaterialHeader.price = request.POST['total_amount']
-            billOfMaterialHeader.is_component = 0
+            billOfMaterialHeader.is_final = 1
+            billOfMaterialHeader.level = request.POST['level']
             billOfMaterialHeader.save()
             billOfMaterialHeader.bill_of_material_detail_set.all().delete()
             bill_of_material_details = []
             for index, elem in enumerate(request.POST.getlist('item_id')):
-                bill_of_material_details.append(models.Bill_Of_Material_Detail(Bill_Of_Material_id=billOfMaterialHeader.id,
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
                                                 item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
-            for index, elem in enumerate(request.POST.getlist('component_id')):
-                bill_of_material_details.append(models.Bill_Of_Material_Detail(Bill_Of_Material_id=billOfMaterialHeader.id,
-                                                component_id=elem, quantity=request.POST.getlist('component_quantity')[index], price=request.POST.getlist('component_price')[index]))
+            for index, elem in enumerate(request.POST.getlist('bom_level_id')):
+                billOfMaterialDetail = models.Bill_Of_Material_Detail.objects.get(
+                    pk=elem)
+                billOfMaterialDetail.is_final = 0
+                billOfMaterialDetail.save()
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
+                                                bom_level_id=elem, quantity=request.POST.getlist('bom_level_quantity')[index], price=request.POST.getlist('bom_level_price')[index]))
             models.Bill_Of_Material_Detail.objects.bulk_create(
                 bill_of_material_details)
         transaction.commit()
@@ -1966,11 +1888,11 @@ def billOfMaterialEdit(request):
 @permission_classes([IsAuthenticated])
 def billOfMaterialDelete(request):
     context = {}
-    component = models.Bill_Of_Material.objects.get(
+    bomLevel = models.Bill_Of_Material.objects.get(
         pk=request.POST['id'])
     try:
         with transaction.atomic():
-            component.delete()
+            bomLevel.delete()
         transaction.commit()
         context.update({
             'status': 200,

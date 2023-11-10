@@ -78,11 +78,6 @@
             </li>
             {% endif %}
             {% if request.user.is_superuser == 1 or 'view_bill_of_material'|get_session_permission:request is not None %}
-            <li class="{% if request.path == '/component-list' %}active{% endif %}">
-              <a href="{% url 'superuser:componentList' %}">Components</a>
-            </li>
-            {% endif %}
-            {% if request.user.is_superuser == 1 or 'view_bill_of_material'|get_session_permission:request is not None %}
             <li class="{% if request.path == '/bill-of-material-list' %}active{% endif %}">
               <a href="{% url 'superuser:billOfMaterialList' %}">Bill Of Materials</a>
             </li>
