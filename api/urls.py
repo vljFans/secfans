@@ -70,8 +70,6 @@ urlpatterns = [
     path('item-edit', views.itemEdit, name='itemEdit'),
     path('item-delete', views.itemDelete, name='itemDelete'),
     
-    path('bom-level-list', views.bomLevelList, name='bomLevelList'),
-    
     path('bill-of-material-list', views.billOfMaterialList, name='billOfMaterialList'),
     path('bill-of-material-add', views.billOfMaterialAdd, name='billOfMaterialAdd'),
     path('bill-of-material-edit', views.billOfMaterialEdit, name='billOfMaterialEdit'),

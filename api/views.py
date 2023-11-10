@@ -1680,60 +1680,6 @@ def itemDelete(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def bomLevelList(request):
-    context = {}
-    id = request.GET.get('id', None)
-    find_all = request.GET.get('find_all', None)
-    level = request.GET.get('level', None)
-    keyword = request.GET.get('keyword', None)
-    if id != None:
-        bomLevel = list(models.Bill_Of_Material.objects.filter(
-            pk=id)[:1].values('pk', 'name', 'uom__name', 'quantity', 'price'))
-        context.update({
-            'status': 200,
-            'message': "BOM Level Fetched Successfully.",
-            'page_items': bomLevel,
-        })
-    else:
-        if keyword is not None and keyword != "":
-            bomLevels = models.Bill_Of_Material.objects.filter(name__icontains=keyword).filter(level__gte=0).filter(
-                status=1, deleted=0)
-        else:
-            bomLevels = models.Bill_Of_Material.objects.filter(level__gte=0).filter(
-                status=1, deleted=0)
-        if level is not None:
-            bomLevels = bomLevels.filter(level=level)
-        bomLevels = list(bomLevels.values(
-            'pk', 'name', 'uom__name', 'quantity', 'price'))
-        if find_all is not None and int(find_all) == 1:
-            context.update({
-                'status': 200,
-                'message': "BOM Levels Fetched Successfully.",
-                'page_items': bomLevels,
-            })
-            return JsonResponse(context)
-
-        per_page = int(env("PER_PAGE_DATA"))
-        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
-        current_page = request.GET.get('current_page', 1)
-
-        paginator = CustomPaginator(bomLevels, per_page)
-        page_items = paginator.get_page(current_page)
-        total_pages = paginator.get_total_pages()
-
-        context.update({
-            'status': 200,
-            'message': "BOM Levels Fetched Successfully.",
-            'page_items': page_items,
-            'total_pages': total_pages,
-            'current_page': int(current_page),
-            'button_to_show': int(button_to_show),
-        })
-    return JsonResponse(context)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def billOfMaterialList(request):
     context = {}
     id = request.GET.get('id', None)
