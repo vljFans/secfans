@@ -190,7 +190,7 @@
                                     onkeypress="return (event.charCode >=45 &&  event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)">
                             </div>
                         </div>
-                        {% if request.user.is_superuser == 1 or 'add_bill_of_material_header'|get_session_permission:request is not None %}
+                        {% if request.user.is_superuser == 1 or 'add_bill_of_material'|get_session_permission:request is not None %}
                         <button class="btn btn-success submit-btn" type="submit">Submit</button>
                         {% endif %}
                     </form>

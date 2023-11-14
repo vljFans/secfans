@@ -1698,12 +1698,15 @@ def billOfMaterialList(request):
         })
     else:
         if keyword is not None and keyword != "":
-            billOfMaterials = models.Bill_Of_Material.objects.filter(name__icontains=keyword).filter(status=1, deleted=0)
+            billOfMaterials = models.Bill_Of_Material.objects.filter(
+                name__icontains=keyword).filter(status=1, deleted=0)
         else:
-            billOfMaterials = models.Bill_Of_Material.objects.filter(status=1, deleted=0)
+            billOfMaterials = models.Bill_Of_Material.objects.filter(
+                status=1, deleted=0)
         if level is not None:
             billOfMaterials = billOfMaterials.filter(level=level)
-        billOfMaterials = list(billOfMaterials.values('pk', 'name', 'uom__name', 'quantity', 'price'))
+        billOfMaterials = list(billOfMaterials.values(
+            'pk', 'name', 'uom__name', 'quantity', 'price'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -1739,7 +1742,7 @@ def billOfMaterialAdd(request):
         name__iexact=request.POST['name'], level=request.POST['level']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 560,
+            'status': 555,
             'message': "Bill Of Material with this name and level already exists.",
         })
         return JsonResponse(context)
@@ -1755,9 +1758,6 @@ def billOfMaterialAdd(request):
             billOfMaterialHeader.save()
 
             bill_of_material_details = []
-            for index, elem in enumerate(request.POST.getlist('item_id')):
-                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
-                                                item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
             for index, elem in enumerate(request.POST.getlist('bom_level_id')):
                 billOfMaterialDetail = models.Bill_Of_Material.objects.get(
                     pk=elem)
@@ -1765,6 +1765,9 @@ def billOfMaterialAdd(request):
                 billOfMaterialDetail.save()
                 bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
                                                 bom_level_id=elem, quantity=request.POST.getlist('bom_level_quantity')[index], price=request.POST.getlist('bom_level_price')[index]))
+            for index, elem in enumerate(request.POST.getlist('item_id')):
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
+                                                item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
             models.Bill_Of_Material_Detail.objects.bulk_create(
                 bill_of_material_details)
         transaction.commit()
@@ -1774,7 +1777,7 @@ def billOfMaterialAdd(request):
         })
     except Exception:
         context.update({
-            'status': 561,
+            'status': 556,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1789,7 +1792,7 @@ def billOfMaterialEdit(request):
         name__iexact=request.POST['name'], level=request.POST['level']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 562,
+            'status': 557,
             'message': "Bill Of Material with this name already exists.",
         })
         return JsonResponse(context)
@@ -1806,9 +1809,6 @@ def billOfMaterialEdit(request):
             billOfMaterialHeader.save()
             billOfMaterialHeader.bill_of_material_detail_set.all().delete()
             bill_of_material_details = []
-            for index, elem in enumerate(request.POST.getlist('item_id')):
-                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
-                                                item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
             for index, elem in enumerate(request.POST.getlist('bom_level_id')):
                 billOfMaterialDetail = models.Bill_Of_Material_Detail.objects.get(
                     pk=elem)
@@ -1816,6 +1816,9 @@ def billOfMaterialEdit(request):
                 billOfMaterialDetail.save()
                 bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
                                                 bom_level_id=elem, quantity=request.POST.getlist('bom_level_quantity')[index], price=request.POST.getlist('bom_level_price')[index]))
+            for index, elem in enumerate(request.POST.getlist('item_id')):
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
+                                                item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
             models.Bill_Of_Material_Detail.objects.bulk_create(
                 bill_of_material_details)
         transaction.commit()
@@ -1825,7 +1828,7 @@ def billOfMaterialEdit(request):
         })
     except Exception:
         context.update({
-            'status': 563,
+            'status': 558,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1848,8 +1851,48 @@ def billOfMaterialDelete(request):
         })
     except Exception:
         context.update({
-            'status': 564,
+            'status': 559,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
+    return JsonResponse(context)
+
+
+def getStructureOfBOM(bom_id):
+    billOfMaterial = list(models.Bill_Of_Material.objects.filter(pk=bom_id)[:1].values('pk', 'name', 'uom__name', 'quantity', 'price'))[0]
+    childBOMS = models.Bill_Of_Material_Detail.objects.filter(status=1, deleted=0, bill_of_material_header_id=bom_id).order_by('bom_level_id')
+    id_lists = []
+    for each in childBOMS:
+        id_lists.append(each.id)
+    structure = []
+    for id in id_lists:
+        childDetail = models.Bill_Of_Material_Detail.objects.get(pk=id)
+        each_child_structure = {}
+        each_child_structure['pk'] = id
+        each_child_structure['quantity'] = childDetail.quantity
+        each_child_structure['price'] = childDetail.price
+        if childDetail.item_id is not None:
+            each_child_structure['item'] = list(models.Item.objects.filter(pk=childDetail.item_id)[:1].values('pk', 'name', 'item_type__name', 'item_type__item_category__name', 'uom__name', 'price'))[0]
+        if childDetail.bom_level_id is not None:
+            each_child_structure['bom'] = getStructureOfBOM(childDetail.bom_level_id)
+        structure.append(each_child_structure)
+    billOfMaterial['structure'] = structure
+    return billOfMaterial
+
+
+def getBillOfMaterialStructure(request):
+    context= {}
+    bom_id = request.GET.get('bom_id', None)
+    if bom_id is not None and bom_id != "":
+        billOfMaterial = getStructureOfBOM(bom_id)
+        context.update({
+            'status': 200,
+            'message': "BOM Structure fetched successfully",
+            'page_items': billOfMaterial,
+        })
+    else:
+        context.update({
+            'status': 560,
+            'message': "Please Provide valid BOM id."
+        })
     return JsonResponse(context)
