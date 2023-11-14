@@ -1,0 +1,230 @@
+{% extends 'portal/base.html' %}
+{% load static %}
+{% load template_func %}
+
+{% block css %}
+<style>
+    .input-group-addon {
+        border-left: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrapper">
+    <!--================================-->
+    <!-- Breadcrumb Start -->
+    <!--================================-->
+    <div class="pageheader pd-t-25 pd-b-35">
+        <div class="d-flex justify-content-between">
+            <div class="clearfix">
+                <div class="pd-t-5 pd-b-5">
+                    <h1 class="pd-0 mg-0 tx-20 tx-dark">{{parent_page_title}} {{page_title}}</h1>
+                </div>
+                <div class="breadcrumb pd-0 mg-0">
+                    {% for breadcrumb in breadcrumbs %}
+                    {% if forloop.counter != breadcrumbs|length %}
+                    <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                    {% else %}
+                    <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Breadcrumb End -->
+    <!--================================-->
+    <!-- Form Element Start -->
+    <!--================================-->
+    <div class="row row-xs clearfix">
+        <div class="col-md-12 col-lg-12">
+            {% if messages %}
+            {% for message in messages %}
+            {% if forloop.counter == messages|length %}
+            <div class="{{ message.tags }} success-msg-txt" style="height: 30px; text-align: center;">{{ message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            <div class="error-msg-txt" style="height: 30px; text-align: center;"></div>
+            <div class="card mg-b-30">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-header-title tx-13 mb-0">{{parent_page_title}} {{page_title}}</h6>
+                        </div>
+                        <div class="text-right">
+                            <div class="d-flex">
+                                <a href="{% url 'superuser:billOfMaterialList' %}" class="mr-3"><i
+                                        class="fa fa-step-backward"></i></a>
+                                <a href="" class="mr-3"><i class="ti-reload"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body bill_of_material_details">
+                    <!-- <div class="accordion">
+                        <div class="accordion-title">
+                            Main Assembly (1875.00/Pcs)
+                        </div>
+                        <div class="accordion-body">
+                            <div class="row mg-t-5">
+                                <label class="col-sm-4">Blade </label>
+                                <div class="col-sm-4 mg-t-10 mg-sm-t-0">
+                                    125.00/Pcs
+                                </div>
+                            </div>
+                            <div class="row mg-t-5">
+                                <label class="col-sm-4">Box </label>
+                                <div class="col-sm-4 mg-t-10 mg-sm-t-0">
+                                    95.00/Pcs
+                                </div>
+                            </div>
+                            <div class="row mg-t-5">
+                                <label class="col-sm-4">Fitting Screw </label>
+                                <div class="col-sm-4 mg-t-10 mg-sm-t-0">
+                                    15.00/Set
+                                </div>
+                            </div>
+                            <div class="accordion">
+                                <div class="accordion-title">
+                                    Stand Assembly (700.00/Pcs)
+                                </div>
+                                <div class="accordion-body">
+                                    <div class="row mg-t-5">
+                                        <label class="col-sm-4">PVC Socket </label>
+                                        <div class="col-sm-4 mg-t-10 mg-sm-t-0">
+                                            15.00/Pcs
+                                        </div>
+                                    </div>
+                                    <div class="row mg-t-5">
+                                        <label class="col-sm-4">Pipe Cutting & Paint </label>
+                                        <div class="col-sm-4 mg-t-10 mg-sm-t-0">
+                                            127.00/gm
+                                        </div>
+                                    </div>
+                                    <div class="row mg-t-5">
+                                        <label class="col-sm-4">P/F Pipe Bati </label>
+                                        <div class="col-sm-4 mg-t-10 mg-sm-t-0">
+                                            3.00/Pcs
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-title">
+                                    S/Max Guard Assembly (381.17/Pcs)
+                                </div>
+                                <div class="accordion-body">
+                                    <div class="row mg-t-5">
+                                        <label class="col-sm-4">S/Max 22" Guard </label>
+                                        <div class="col-sm-4 mg-t-10 mg-sm-t-0">
+                                            125.00/Set
+                                        </div>
+                                    </div>
+                                    <div class="row mg-t-5">
+                                        <label class="col-sm-4">S/Max Guard Ring/Belt </label>
+                                        <div class="col-sm-4 mg-t-10 mg-sm-t-0">
+                                            12.05/Pcs
+                                        </div>
+                                    </div>
+                                    <div class="row mg-t-5">
+                                        <label class="col-sm-4">T/F Guard Show </label>
+                                        <div class="col-sm-4 mg-t-10 mg-sm-t-0">
+                                            7.00/Pcs
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Form Element End -->
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    $('.accordion').accordion({
+        heightStyle: 'content',
+        collapsible: true
+    });
+    function getInnerItemStructure(items, structure_html) {
+        for (let item_index = 0; item_index < items.length; item_index++) {
+            let item_element = items[item_index];
+            structure_html += `
+                    <p><strong>Item: ${item_element.name}</strong></p>
+                    <p>Uom: ${item_element.uom__name}</p>
+                    <p>Price: ${item_element.price}</p>
+                `;
+        }
+        return structure_html;
+    }
+    function getInnerBOMStructure(structure, structure_html) {
+        for (let index = 0; index < structure.length; index++) {
+            let structure_element = structure[index];
+            if ('item' in structure_element) {
+                structure_html += `<div class="row ml-4 mg-t-5">
+                                <div class="col-md-3">
+                                    Item: ${structure_element.item.name} &nbsp;&nbsp;&nbsp;&nbsp;
+                                </div>
+                                <div class="col-md-3">
+                                    Quantity: ${structure_element.quantity} &nbsp;&nbsp;&nbsp;&nbsp;
+                                </div>
+                                <div class="col-md-3">
+                                    UOM: ${structure_element.item.uom__name} &nbsp;&nbsp;&nbsp;&nbsp;
+                                </div>
+                                <div class="col-md-3">
+                                    Price: ${structure_element.price} &nbsp;&nbsp;&nbsp;&nbsp;
+                                </div>
+                            </div>`;
+            } else if ('bom' in structure_element) {
+                structure_html += `<div class="accordion">
+                        <div class="accordion-title">
+                            ${structure_element.bom.name} &nbsp;&nbsp;&nbsp;&nbsp; (${structure_element.bom.price}/${structure_element.bom.uom__name})
+                        </div>
+                        <div class="accordion-body">`;
+                structure_html += getInnerBOMStructure(structure_element.bom.structure, '');
+                structure_html += `</div></div>`;
+            }
+        }
+        return structure_html;
+    }
+    function getStructureHtml(structure, structure_html) {
+        structure_html += `<div class="accordion">
+                        <div class="accordion-title">
+                            ${structure.name} &nbsp;&nbsp;&nbsp;&nbsp; (${structure.price}/${structure.uom__name})
+                        </div>
+                        <div class="accordion-body">`
+        if ('structure' in structure) {
+            structure_html += getInnerBOMStructure(structure.structure, '');
+            structure_html += `</div>`;
+        }
+        return structure_html;
+    }
+    $(document).ready(function () {
+        $.ajax({
+            url: "{% url 'api:getBillOfMaterialStructure' %}?bom_id={{billOfMaterial.pk}}",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                structure_html = getStructureHtml(response.page_items, '')
+                console.log(structure_html);
+                $('.bill_of_material_details').html(structure_html);
+                $('.accordion').accordion({
+                    heightStyle: 'content',
+                    collapsible: true
+                });
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    });
+</script>
+{% endblock %}

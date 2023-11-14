@@ -118,6 +118,7 @@
             success: function (response) {
                 if (response.status == 200) {
                     edit_url = "{% url 'superuser:billOfMaterialEdit' 1 %}";
+                    view_url = "{% url 'superuser:billOfMaterialView' 1 %}";
                     page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
@@ -128,10 +129,13 @@
                                 <td>${element.uom__name}</td>
                                 <td>${element.price}</td>
                                 <td>
-                                {% if request.user.is_superuser == 1 or 'change_bill_of_material_header'|get_session_permission:request is not None %}
+                                {% if request.user.is_superuser == 1 or 'view_bill_of_material'|get_session_permission:request is not None %}
+                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'change_bill_of_material'|get_session_permission:request is not None %}
                                 <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
                                 {% endif %}
-                                {% if request.user.is_superuser == 1 or 'delete_bill_of_material_header'|get_session_permission:request is not None %}
+                                {% if request.user.is_superuser == 1 or 'delete_bill_of_material'|get_session_permission:request is not None %}
                                 <a id="delete-btn" data-id="${element.pk}" data-name="${element.name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
                                 {% endif %}
                                 </td>

@@ -74,4 +74,5 @@ urlpatterns = [
     path('bill-of-material-add', views.billOfMaterialAdd, name='billOfMaterialAdd'),
     path('bill-of-material-edit', views.billOfMaterialEdit, name='billOfMaterialEdit'),
     path('bill-of-material-delete', views.billOfMaterialDelete, name='billOfMaterialDelete'),
+    path('bill-of-material-structure', views.getBillOfMaterialStructure, name='getBillOfMaterialStructure'),
 ]
