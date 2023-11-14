@@ -1,0 +1,71 @@
+{% extends 'portal/base.html' %}
+{% load template_func %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<div class="wrapper">
+    <!--================================-->
+    <!-- Breadcrumb Start -->
+    <!--================================-->
+    <div class="pageheader pd-t-25 pd-b-35">
+        <div class="d-flex justify-content-between">
+            <div class="clearfix">
+                <div class="pd-t-5 pd-b-5">
+                    <h1 class="pd-0 mg-0 tx-20 tx-dark">{{parent_page_title}} {{page_title}}</h1>
+                </div>
+                <div class="breadcrumb pd-0 mg-0">
+                    {% for breadcrumb in breadcrumbs %}
+                    {% if forloop.counter != breadcrumbs|length %}
+                    <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                    {% else %}
+                    <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Breadcrumb End -->
+    <!--================================-->
+    <!--/ View Details Start -->
+    <!--================================-->
+    <ul style="list-style-type:none;">
+        <li>
+            <p><b>Name</b>: {{customer.name}}</p>
+            <p><b>Photo</b>: <img src={{customer.photo}} class="img-responsive" width="150"></p>
+            <p><b>Contact Name</b>: {{customer.contact_name}}</p>
+            <p><b>Contact Number</b>: {{customer.contact_no}}</p>
+            <p><b>Contact STD Number</b>: {{customer.contact_no_std}}</p>
+            <p><b>Contact Email</b>: {{customer.contact_email}}</p>
+            <p><b>Customer Type</b>: {{customer.customer_type.name}}</p>
+            <p><b>Date of birth</b>: {{customer.date_of_birth}}</p>
+            <p><b>Date of Anniversary</b>: {{customer.date_of_anniversary}}</p>
+            <p><b>Address</b>: {{customer.address}}</p>
+            <p><b>Landmark</b>: {{customer.landmark}}</p>
+            <p><b>City</b>: {{customer.city.name}}</p>
+            <p><b>Pin Code</b>: {{customer.pin}}</p>
+            <p><b>State</b>: {{customer.state.name}}</p>
+            <p><b>Country</b>: {{customer.country.name}}</p>
+            <p><b>KYC Type</b>: {{customer.kyc_type.name}}</p>
+            <p><b>KYC Detail</b>: {{customer.kyc_detail}}</p>
+            <p><b>KYC Document</b>: <a href="{{customer.kyc_image}}" target="new">Preview</a> </p>
+            <p><b>Weekly closing day</b>: {{customer.weekly_closing_day}}</p>
+            <p><b>Morning from time</b>: {{customer.morning_from_time}}</p>
+            <p><b>Morning to time</b>: {{customer.morning_to_time}}</p>
+            <p><b>Evening from time</b>: {{customer.evening_from_time}}</p>
+            <p><b>Evening to time</b>: {{customer.evening_to_time}}</p>
+        </li>
+      </ul>  
+    <!-- View Details End -->
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    $(document).ready(function () {
+        $("b").css({"width":"200px","display": "inline-block"})
+    });
+</script>
+{% endblock %}

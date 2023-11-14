@@ -136,11 +136,12 @@
             url: "{% url 'api:customerList' %}?keyword=" + keyword,
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
-                'Authorization': deleteCookie(cookieName)
+                'Authorization': getCookieValue("accessToken")
             },
             success: function (response) {
                 if (response.status == 200) {
                     edit_url = "{% url 'superuser:customerEdit' 1 %}";
+                    view_url = "{% url 'superuser:customerView' 1 %}";
                     page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
@@ -154,6 +155,9 @@
                                 <td>${element.contact_email}</td>
                                 <td>${element.customer_type__name}</td>
                                 <td>
+                                {% if request.user.is_superuser == 1 or 'view_customer'|get_session_permission:request is not None %}
+                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
+                                {% endif %}
                                 {% if request.user.is_superuser == 1 or 'change_customer'|get_session_permission:request is not None %}
                                 <a href="${edit_url.replace('1', page_items[index].pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
                                 {% endif %}

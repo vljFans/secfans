@@ -619,6 +619,7 @@ def vendorDelete(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def customerList(request):
+    print("AAAAAAA")
     context = {}
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
@@ -643,6 +644,7 @@ def customerList(request):
                                                      'pin', 'contact_no', 'contact_name',
                                                      'contact_email', 'customer_type__name',
                                                      'photo', 'kyc_image'))
+            print(customers)
         else:
             customers = list(
                 models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark',
