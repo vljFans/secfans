@@ -195,6 +195,17 @@ def vendorEdit(request, id):
 
 
 @login_required
+def vendorView(request, id):
+    vendor = models.Vendor.objects.get(pk=id)
+    context.update({
+        'vendor': vendor,
+        'page_title': "Vendor View",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Vendor", 'url': reverse('superuser:vendorList')}, {'name': "View"}]
+    })
+    return render(request, 'portal/Vendor/view.html', context)
+
+
+@login_required
 def customerList(request):
     context.update({
         'page_title': "Customer List",
@@ -237,6 +248,17 @@ def customerEdit(request, id):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Customer", 'url': reverse('superuser:customerList')}, {'name': "Edit"}]
     })
     return render(request, 'portal/Customer/edit.html', context)
+
+
+@login_required
+def customerView(request, id):
+    customer = models.Customer.objects.get(pk=id)
+    context.update({
+        'customer': customer,
+        'page_title': "Customer View",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Customer", 'url': reverse('superuser:customerList')}, {'name': "View"}]
+    })
+    return render(request, 'portal/Customer/view.html', context)
 
 
 @login_required

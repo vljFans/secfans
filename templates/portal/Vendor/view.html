@@ -29,11 +29,30 @@
     </div>
     <!--/ Breadcrumb End -->
     <!--================================-->
-    
+    <!--/ View Details Start -->
+    <!--================================-->
+    <ul style="list-style-type:none;">
+        <li>
+            <p><b>Name</b>: {{vendor.name}}</p>
+            <p><b>Contact Name</b>: {{vendor.contact_name}}</p>
+            <p><b>Contact Number</b>: {{vendor.contact_no}}</p>
+            <p><b>Contact Email</b>: {{vendor.contact_email}}</p>
+            <p><b>GST Number</b>: {{vendor.gst_no}}</p>
+            <p><b>Address</b>: {{vendor.address}}</p>
+            <p><b>City</b>: {{vendor.city.name}}</p>
+            <p><b>Pin Code</b>: {{vendor.pin}}</p>
+            <p><b>State</b>: {{vendor.state.name}}</p>
+            <p><b>Country</b>: {{vendor.country.name}}</p>
+        </li>
+      </ul>  
+    <!-- View Details End -->
 </div>
 {% endblock %}
 
 {% block js %}
-
-
+<script>
+    $(document).ready(function () {
+        $("b").css({"width":"130px","display": "inline-block"})
+    });
+</script>
 {% endblock %}
