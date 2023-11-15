@@ -1704,7 +1704,7 @@ def billOfMaterialList(request):
             billOfMaterials = models.Bill_Of_Material.objects.filter(
                 status=1, deleted=0)
         if level is not None:
-            billOfMaterials = billOfMaterials.filter(level=level)
+            billOfMaterials = billOfMaterials.filter(level__lte=level)
         billOfMaterials = list(billOfMaterials.values(
             'pk', 'name', 'uom__name', 'quantity', 'price'))
         if find_all is not None and int(find_all) == 1:
@@ -1810,8 +1810,7 @@ def billOfMaterialEdit(request):
             billOfMaterialHeader.bill_of_material_detail_set.all().delete()
             bill_of_material_details = []
             for index, elem in enumerate(request.POST.getlist('bom_level_id')):
-                billOfMaterialDetail = models.Bill_Of_Material_Detail.objects.get(
-                    pk=elem)
+                billOfMaterialDetail = models.Bill_Of_Material.objects.get(pk=elem)
                 billOfMaterialDetail.is_final = 0
                 billOfMaterialDetail.save()
                 bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,

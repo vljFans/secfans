@@ -471,7 +471,7 @@ def billOfMaterialAdd(request):
 def billOfMaterialEdit(request, id):
     billOfMaterial = models.Bill_Of_Material.objects.prefetch_related(
         'bill_of_material_detail_set').get(pk=id)
-    bomLevels = models.Bill_Of_Material.objects.filter(level__lte=billOfMaterial.level - 1).filter(level__gte=0).filter(status=1, deleted=0)
+    bomLevels = models.Bill_Of_Material.objects.filter(level__lte=billOfMaterial.level - 1).filter(status=1, deleted=0)
     items = models.Item.objects.filter(status=1, deleted=0)
     uoms = models.Uom.objects.filter(status=1, deleted=0)
     context.update({
