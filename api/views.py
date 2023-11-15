@@ -1704,7 +1704,7 @@ def billOfMaterialList(request):
             billOfMaterials = models.Bill_Of_Material.objects.filter(
                 status=1, deleted=0)
         if level is not None:
-            billOfMaterials = billOfMaterials.filter(level=level)
+            billOfMaterials = billOfMaterials.filter(level__lte=level)
         billOfMaterials = list(billOfMaterials.values(
             'pk', 'name', 'uom__name', 'quantity', 'price'))
         if find_all is not None and int(find_all) == 1:
