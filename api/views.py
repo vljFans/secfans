@@ -1810,8 +1810,7 @@ def billOfMaterialEdit(request):
             billOfMaterialHeader.bill_of_material_detail_set.all().delete()
             bill_of_material_details = []
             for index, elem in enumerate(request.POST.getlist('bom_level_id')):
-                billOfMaterialDetail = models.Bill_Of_Material_Detail.objects.get(
-                    pk=elem)
+                billOfMaterialDetail = models.Bill_Of_Material.objects.get(pk=elem)
                 billOfMaterialDetail.is_final = 0
                 billOfMaterialDetail.save()
                 bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
