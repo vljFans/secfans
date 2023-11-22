@@ -21,12 +21,14 @@
           </a>
         </li>
         <li class="mg-l-20-force mg-t-25-force menu-navigation">Navigation</li>
-        {% if request.user.is_superuser == 1 or 'view_role,view_user,view_vendor,view_customer,view_uom,view_child_uom,view_item_category,view_item_type,view_item_color,view_bill_of_material,view_item'|get_session_permission:request is not None %}
-        <li class="{% if request.path == '/role-list' or request.path == '/user-list' or request.path == '/vendor-list' or request.path == '/customer-list' or request.path == '/uom-list' or request.path == '/child-uom-list' or request.path == '/item-category-list' or request.path == '/item-type-list' or request.path == '/item-color-list' or request.path == '/component-list' or request.path == '/item-list' %}open active{% endif %}">
+        {% if request.user.is_superuser == 1 or 'view_role,view_user,view_vendor,view_customer,view_uom,view_item_type,view_item_color,view_item'|get_session_permission:request is not None %}
+        <li
+          class="{% if request.path == '/role-list' or request.path == '/user-list' or request.path == '/vendor-list' or request.path == '/customer-list' or request.path == '/uom-list' or request.path == '/item-type-list' or request.path == '/item-color-list' or request.path == '/item-list' %}open active{% endif %}">
           <a href="javascript:void(0)"><i data-feather="mail"></i>
             <span>Masters</span><i class="accordion-icon fa fa-angle-left"></i>
           </a>
-          <ul class="sub-menu" style="display: {% if request.path == '/role-list' or request.path == '/user-list' or request.path == '/vendor-list' or request.path == '/customer-list' or request.path == '/uom-list' or request.path == '/child-uom-list' or request.path == '/item-category-list' or request.path == '/item-type-list' or request.path == '/item-color-list' or request.path == '/component-list' or request.path == '/item-list' %}block{% else %}none{% endif %};">
+          <ul class="sub-menu"
+            style="display: {% if request.path == '/role-list' or request.path == '/user-list' or request.path == '/vendor-list' or request.path == '/customer-list' or request.path == '/uom-list' or request.path == '/item-type-list' or request.path == '/item-color-list' or request.path == '/item-list' %}block{% else %}none{% endif %};">
             {% if request.user.is_superuser == 1 or 'view_role'|get_session_permission:request is not None %}
             <li class="{% if request.path == '/role-list' %}active{% endif %}">
               <a href="{% url 'superuser:roleList' %}">Role</a>
@@ -77,23 +79,31 @@
               <a href="{% url 'superuser:itemList' %}">Item</a>
             </li>
             {% endif %}
-            {% if request.user.is_superuser == 1 or 'view_bill_of_material'|get_session_permission:request is not None %}
-            <li class="{% if request.path == '/bill-of-material-list' %}active{% endif %}">
-              <a href="{% url 'superuser:billOfMaterialList' %}">Bill Of Materials</a>
+          </ul>
+        </li>
+        {% endif %}
+        {% if request.user.is_superuser == 1 or 'view_bill_of_material'|get_session_permission:request is not None %}
+        <li class="{% if request.path == '/bill-of-material-list' %}open active{% endif %}">
+          <a href="{% url 'superuser:billOfMaterialList' %}"><i data-feather="printer"></i>
+            <span>Bill Of Material</span></a>
+        </li>
+        {% endif %}
+        {% if request.user.is_superuser == 1 or 'view_purchase_order'|get_session_permission:request is not None %}
+        <li
+          class="{% if request.path == '/purchase-order-list' %}open active{% endif %}">
+          <a href="javascript:void(0)"><i data-feather="feather"></i>
+            <span>Inbound</span><i class="accordion-icon fa fa-angle-left"></i>
+          </a>
+          <ul class="sub-menu"
+            style="display: {% if request.path == '/purchase-order-list' %}block{% else %}none{% endif %};">
+            {% if request.user.is_superuser == 1 or 'view_purchase_order'|get_session_permission:request is not None %}
+            <li class="{% if request.path == '/purchase-order-list' %}active{% endif %}">
+              <a href="{% url 'superuser:purchaseOrderList' %}">Purchase Order</a>
             </li>
             {% endif %}
           </ul>
         </li>
         {% endif %}
-        <li>
-          <a href="javascript:void(0)"><i data-feather="feather"></i>
-            <span>Apps View</span><i class="accordion-icon fa fa-angle-left"></i></a>
-          <ul class="sub-menu">
-            <li><a href="app-chatroom.html">Chat Room</a></li>
-            <li><a href="app-calendar.html">Calendar</a></li>
-            <li><a href="app-file-manager.html">File Manager</a></li>
-          </ul>
-        </li>
         <li class="mg-l-20-force mg-t-25-force menu-elements">Elements</li>
         <li>
           <a href="javascript:void(0)"><i data-feather="underline"></i>

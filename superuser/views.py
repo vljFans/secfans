@@ -516,3 +516,51 @@ def billOfMaterialView(request, id):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Bill Of Material", 'url': reverse('superuser:billOfMaterialList')}, {'name': "View"}]
     })
     return render(request, 'portal/Bill Of Material/view.html', context)
+
+
+@login_required
+def purchaseOrderList(request):
+    context.update({
+        'page_title': "Purchase Order List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Purchase Order", 'url': reverse('superuser:purchaseOrderList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Purchase Order/list.html', context)
+
+
+@login_required
+def purchaseOrderAdd(request):
+    context.update({
+        'page_title': "Purchase Order Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Purchase Order", 'url': reverse('superuser:purchaseOrderList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Purchase Order/add.html', context)
+
+
+@login_required
+def purchaseOrderEdit(request, id):
+    billOfMaterial = models.Bill_Of_Material.objects.prefetch_related(
+        'bill_of_material_detail_set').get(pk=id)
+    bomLevels = models.Bill_Of_Material.objects.filter(level__lte=billOfMaterial.level - 1).filter(status=1, deleted=0)
+    items = models.Item.objects.filter(status=1, deleted=0)
+    uoms = models.Uom.objects.filter(status=1, deleted=0)
+    context.update({
+        'billOfMaterial': billOfMaterial,
+        'bomLevels': bomLevels,
+        'items': items,
+        'uoms': uoms,
+        'page_title': "Purchase Order Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Purchase Order", 'url': reverse('superuser:purchaseOrderList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Purchase Order/edit.html', context)
+
+
+@login_required
+def purchaseOrderView(request, id):
+    billOfMaterial = models.Bill_Of_Material.objects.prefetch_related('bill_of_material_detail_set').get(pk=id)
+    # billOfMaterial = getStructureOfBOM(id)
+    context.update({
+        'billOfMaterial': billOfMaterial,
+        'page_title': "Purchase Order View",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Purchase Order", 'url': reverse('superuser:purchaseOrderList')}, {'name': "View"}]
+    })
+    return render(request, 'portal/Purchase Order/view.html', context)

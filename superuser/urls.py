@@ -71,4 +71,9 @@ urlpatterns = [
     path('bill-of-material-add', views.billOfMaterialAdd, name='billOfMaterialAdd'),
     path('bill-of-material-edit/<int:id>', views.billOfMaterialEdit, name='billOfMaterialEdit'),
     path('bill-of-material-view/<int:id>', views.billOfMaterialView, name='billOfMaterialView'),
+    
+    path('purchase-order-list', views.purchaseOrderList, name='purchaseOrderList'),
+    path('purchase-order-add', views.purchaseOrderAdd, name='purchaseOrderAdd'),
+    path('purchase-order-edit/<int:id>', views.purchaseOrderEdit, name='purchaseOrderEdit'),
+    path('purchase-order-view/<int:id>', views.purchaseOrderView, name='purchaseOrderView'),
 ]

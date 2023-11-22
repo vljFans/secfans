@@ -79,7 +79,7 @@
                             </div>
                         </div>
                         {% for detail in billOfMaterial.bill_of_material_detail_set.all %}
-                        <div class="form-row content_parent {% if forloop.counter == 1 %}top_parent{% endif %}">
+                        <div class="form-row content_parent">
                             <div class="col-md-2 mb-3">
                                 <label>Type <span class="required-indicator">*</span>{{forloop.counter}}</label>
                                 <div class="input-group">

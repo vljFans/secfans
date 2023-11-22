@@ -75,4 +75,9 @@ urlpatterns = [
     path('bill-of-material-edit', views.billOfMaterialEdit, name='billOfMaterialEdit'),
     path('bill-of-material-delete', views.billOfMaterialDelete, name='billOfMaterialDelete'),
     path('bill-of-material-structure', views.getBillOfMaterialStructure, name='getBillOfMaterialStructure'),
+    
+    path('purchase-order-list', views.purchaseOrderList, name='purchaseOrderList'),
+    path('purchase-order-add', views.purchaseOrderAdd, name='purchaseOrderAdd'),
+    path('purchase-order-edit', views.purchaseOrderEdit, name='purchaseOrderEdit'),
+    path('purchase-order-delete', views.purchaseOrderDelete, name='purchaseOrderDelete'),
 ]

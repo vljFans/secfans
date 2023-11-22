@@ -5,7 +5,7 @@ from django.utils.timezone import now
 
 
 class Role(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=50)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -132,7 +132,7 @@ class City(models.Model):
 
 
 class Vendor(models.Model):
-    name = models.CharField(max_length=30, blank=True, null=True)
+    name = models.CharField(max_length=50, blank=True, null=True)
     address = models.CharField(max_length=100, blank=True, null=True)
     country = models.ForeignKey(
         Country, on_delete=models.CASCADE, blank=True, null=True)
@@ -143,7 +143,7 @@ class Vendor(models.Model):
     pin = models.CharField(max_length=6, blank=True, null=True)
     gst_no = models.CharField(max_length=16, blank=True, null=True)
     contact_no = models.CharField(max_length=15, blank=True, null=True)
-    contact_name = models.CharField(max_length=30, blank=True, null=True)
+    contact_name = models.CharField(max_length=50, blank=True, null=True)
     contact_email = models.CharField(max_length=100, blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
@@ -160,7 +160,7 @@ class Vendor(models.Model):
 
 
 class Customer_Type(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=50)
 
     def __str__(self):
         return self.name
@@ -172,7 +172,7 @@ class Customer_Type(models.Model):
 
 
 class KYC_Type(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=50)
 
     def __str__(self):
         return self.name
@@ -184,10 +184,10 @@ class KYC_Type(models.Model):
 
 
 class Customer(models.Model):
-    name = models.CharField(max_length=30, blank=True, null=True)
+    name = models.CharField(max_length=50, blank=True, null=True)
     customer_type = models.ForeignKey(
         Customer_Type, on_delete=models.CASCADE, blank=True, null=True)
-    landmark = models.CharField(max_length=30, blank=True, null=True)
+    landmark = models.CharField(max_length=50, blank=True, null=True)
     address = models.CharField(max_length=100, blank=True, null=True)
     country = models.ForeignKey(
         Country, on_delete=models.CASCADE, blank=True, null=True)
@@ -198,7 +198,7 @@ class Customer(models.Model):
     pin = models.CharField(max_length=6, blank=True, null=True)
     contact_no = models.CharField(max_length=15, blank=True, null=True)
     contact_no_std = models.CharField(max_length=15, blank=True, null=True)
-    contact_name = models.CharField(max_length=30, blank=True, null=True)
+    contact_name = models.CharField(max_length=50, blank=True, null=True)
     contact_email = models.CharField(max_length=100, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     date_of_anniversary = models.CharField(max_length=5, blank=True, null=True)
@@ -228,7 +228,7 @@ class Customer(models.Model):
 
 
 class Uom(models.Model):
-    name = models.CharField(max_length=30, blank=True, null=True)
+    name = models.CharField(max_length=50, blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -244,11 +244,10 @@ class Uom(models.Model):
 
 
 class Child_Uom(models.Model):
-    name = models.CharField(max_length=30, blank=True, null=True)
+    name = models.CharField(max_length=50, blank=True, null=True)
     uom = models.ForeignKey(
         Uom, on_delete=models.CASCADE, blank=True, null=True)
-    conversion_rate = models.DecimalField(
-        default=1, max_digits=30, decimal_places=5, blank=True, null=True)
+    conversion_rate = models.DecimalField(default=1, max_digits=30, decimal_places=5)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -264,7 +263,7 @@ class Child_Uom(models.Model):
 
 
 class Item_Category(models.Model):
-    name = models.CharField(max_length=30, blank=True, null=True)
+    name = models.CharField(max_length=50, blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -280,12 +279,11 @@ class Item_Category(models.Model):
 
 
 class Item_Type(models.Model):
-    name = models.CharField(max_length=30, blank=True, null=True)
+    name = models.CharField(max_length=50, blank=True, null=True)
     item_category = models.ForeignKey(
         Item_Category, on_delete=models.CASCADE, blank=True, null=True)
     hsn_code = models.CharField(max_length=40, blank=True, null=True)
-    gst_percentage = models.DecimalField(
-        default=1, max_digits=10, decimal_places=2)
+    gst_percentage = models.DecimalField(default=0, max_digits=10, decimal_places=2)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -301,7 +299,7 @@ class Item_Type(models.Model):
 
 
 class Item_Color(models.Model):
-    name = models.CharField(max_length=30, blank=True, null=True)
+    name = models.CharField(max_length=50, blank=True, null=True)
     color_code = models.CharField(max_length=7, blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
@@ -323,8 +321,7 @@ class Item(models.Model):
         Item_Type, on_delete=models.CASCADE, blank=True, null=True)
     uom = models.ForeignKey(
         Uom, on_delete=models.CASCADE, blank=True, null=True)
-    price = models.DecimalField(
-        max_digits=10, decimal_places=2, blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -341,12 +338,9 @@ class Item(models.Model):
 
 class Bill_Of_Material(models.Model):
     name = models.CharField(max_length=250, blank=True, null=True)
-    uom = models.ForeignKey(
-        Uom, on_delete=models.CASCADE, blank=True, null=True)
-    quantity = models.DecimalField(
-        max_digits=10, decimal_places=5, blank=True, null=True)
-    price = models.DecimalField(
-        max_digits=10, decimal_places=2, blank=True, null=True)
+    uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True)
+    quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     is_final = models.SmallIntegerField(default=1)
     level = models.SmallIntegerField(default=0)
     status = models.SmallIntegerField(default=1)
@@ -371,9 +365,9 @@ class Bill_Of_Material_Detail(models.Model):
     bom_level = models.ForeignKey(
         Bill_Of_Material, related_name="bomLevel", on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.DecimalField(
-        max_digits=10, decimal_places=5, blank=True, null=True)
+        max_digits=10, decimal_places=5, default=0)
     price = models.DecimalField(
-        max_digits=10, decimal_places=2, blank=True, null=True)
+        max_digits=10, decimal_places=2, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -386,3 +380,60 @@ class Bill_Of_Material_Detail(models.Model):
         managed = True
         db_table = 'bill_of_material_details'
         verbose_name_plural = 'bill_of_material_details'
+
+
+class Purchase_Order(models.Model):
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True)
+    order_number = models.CharField(max_length=50, blank=True, null=True)
+    order_date = models.DateField(blank=True, null=True)
+    quotation_number = models.CharField(max_length=50, blank=True, null=True)
+    quotation_date = models.DateField(blank=True, null=True)
+    reference_number = models.CharField(max_length=50, blank=True, null=True)
+    business_terms = models.CharField(max_length=250, blank=True, null=True)
+    discount_type = models.CharField(max_length=20, null=True, blank=True)
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    discounted_value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    excise_duty_percentage = models.DecimalField(max_digits=3, decimal_places=2, default=0)
+    insurance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    octroi = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    freight = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    packing = models.CharField(max_length=250, blank=True, null=True)
+    payment_terms = models.CharField(max_length=250, blank=True, null=True)
+    delivery_schedule = models.CharField(max_length=150, blank=True, null=True)
+    delivery_at = models.CharField(max_length=150, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.order_no
+
+    class Meta:
+        managed = True
+        db_table = 'purchase_order_headers'
+        verbose_name_plural = 'purchase_order_headers'
+
+
+class Purchase_Order_Detail(models.Model):
+    purchase_order_header = models.ForeignKey(Purchase_Order, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    gst_percentage = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    amount_with_gst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.purchase_order_header.order_number
+
+    class Meta:
+        managed = True
+        db_table = 'purchase_order_details'
+        verbose_name_plural = 'purchase_order_details'

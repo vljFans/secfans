@@ -466,6 +466,9 @@ def vendorList(request):
     if id != None:
         vendor = list(models.Vendor.objects.filter(pk=id)[:1].values('pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk',
                       'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
+        if len(vendor) > 0:
+            purchase_order_count = models.Purchase_Order.objects.filter(vendor_id=vendor[0]['pk']).count()
+            vendor[0]['next_purchase_order_number'] = env("PURCHASE_ORDER_NUMBER_SEQ").replace("${VENDOR_SHORT}", ''.join(word[0] for word in vendor[0]['name'].split())).replace("${AI_DIGIT_3}", str(purchase_order_count + 1).zfill(3)).replace("${FINANCE_YEAR}", datetime.today().strftime('%y') + "-" + (datetime(datetime.today().year + 1, 1, 1).strftime('%y')))
         context.update({
             'status': 200,
             'message': "Vendor Fetched Successfully.",
@@ -1549,7 +1552,7 @@ def itemList(request):
     keyword = request.GET.get('keyword', None)
     if id != None:
         item = list(models.Item.objects.filter(pk=id)[:1].values(
-            'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'uom__name', 'price'))
+            'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price'))
         context.update({
             'status': 200,
             'message': "Item Fetched Successfully.",
@@ -1557,12 +1560,10 @@ def itemList(request):
         })
     else:
         if keyword is not None and keyword != "":
-            items = list(models.Item.objects.filter(
-                Q(name__icontains=keyword) | Q(model_no__icontains=keyword)
-            ).filter(status=1, deleted=0).values('pk', 'name', 'item_type__name', 'item_type__item_category__name', 'uom__name', 'price'))
+            items = list(models.Item.objects.filter(Q(name__icontains=keyword) | Q(item_type__name__icontains=keyword) | Q(uom__name__icontains=keyword)).filter(status=1, deleted=0).values('pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price'))
         else:
             items = list(models.Item.objects.filter(status=1, deleted=0).values(
-                'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'uom__name', 'price'))
+                'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -1894,4 +1895,178 @@ def getBillOfMaterialStructure(request):
             'status': 560,
             'message': "Please Provide valid BOM id."
         })
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def purchaseOrderList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    level = request.GET.get('level', None)
+    keyword = request.GET.get('keyword', None)
+    if id != None:
+        billOfMaterial = list(models.Bill_Of_Material.objects.filter(
+            pk=id)[:1].values('pk', 'name', 'uom__name', 'quantity', 'price'))
+        context.update({
+            'status': 200,
+            'message': "Bill Of Material Fetched Successfully.",
+            'page_items': billOfMaterial,
+        })
+    else:
+        if keyword is not None and keyword != "":
+            billOfMaterials = models.Bill_Of_Material.objects.filter(
+                name__icontains=keyword).filter(status=1, deleted=0)
+        else:
+            billOfMaterials = models.Bill_Of_Material.objects.filter(
+                status=1, deleted=0)
+        if level is not None:
+            billOfMaterials = billOfMaterials.filter(level__lte=level)
+        billOfMaterials = list(billOfMaterials.values(
+            'pk', 'name', 'uom__name', 'quantity', 'price'))
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Bill Of Materials Fetched Successfully.",
+                'page_items': billOfMaterials,
+            })
+            return JsonResponse(context)
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(billOfMaterials, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "bomLevels Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def purchaseOrderAdd(request):
+    context = {}
+    print(request.POST)
+    try:
+        with transaction.atomic():
+            purchaseOrderHeader = models.Purchase_Order()
+            purchaseOrderHeader.order_number = request.POST['order_number']
+            purchaseOrderHeader.order_date = request.POST['order_date']
+            purchaseOrderHeader.quotation_number = request.POST['quotation_number']
+            purchaseOrderHeader.quotation_date = request.POST['quotation_date']
+            purchaseOrderHeader.reference_number = request.POST['reference_number']
+            purchaseOrderHeader.business_terms = request.POST['business_terms']
+            purchaseOrderHeader.discount_type = request.POST['discount_type']
+            purchaseOrderHeader.discount_value = request.POST['discount_value'] if request.POST['discount_value'] != "" else 0
+            purchaseOrderHeader.discounted_value = request.POST['discounted_value'] if request.POST['discounted_value'] != "" else 0
+            purchaseOrderHeader.excise_duty_percentage = request.POST['excise_duty_percentage'] if request.POST['excise_duty_percentage'] != "" else 0
+            purchaseOrderHeader.insurance = request.POST['insurance'] if request.POST['insurance'] != "" else 0
+            purchaseOrderHeader.octroi = request.POST['octroi'] if request.POST['octroi'] != "" else 0
+            purchaseOrderHeader.freight = request.POST['freight'] if request.POST['freight'] != "" else 0
+            purchaseOrderHeader.packing = request.POST['packing']
+            purchaseOrderHeader.payment_terms = request.POST['payment_terms']
+            purchaseOrderHeader.delivery_schedule = request.POST['delivery_schedule']
+            purchaseOrderHeader.delivery_at = request.POST['delivery_at']
+            purchaseOrderHeader.notes = request.POST['notes']
+            purchaseOrderHeader.total_amount = request.POST['total_amount']
+            purchaseOrderHeader.save()
+
+            purchase_order_details = []
+            for index, elem in enumerate(request.POST.getlist('item_id')):
+                purchase_order_details.append(models.Purchase_Order_Detail(purchase_order_header_id=purchaseOrderHeader.id, item_id=elem, quantity=request.POST.getlist('item_quantity')[index], rate=request.POST.getlist('rate')[index], amount=request.POST.getlist('item_price')[index], gst_percentage=request.POST.getlist('gst_percentage')[index], amount_with_gst=request.POST.getlist('amount_with_gst')[index]))
+            models.Purchase_Order_Detail.objects.bulk_create(purchase_order_details)
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Purchase Order Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 561,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def purchaseOrderEdit(request):
+    context = {}
+    exist_data = models.Bill_Of_Material.objects.filter(
+        name__iexact=request.POST['name'], level=request.POST['level']).exclude(pk=request.POST['id']).filter(deleted=0)
+    if len(exist_data) > 0:
+        context.update({
+            'status': 557,
+            'message': "Bill Of Material with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            billOfMaterialHeader = models.Bill_Of_Material.objects.prefetch_related(
+                'bill_of_material_detail_set').get(pk=request.POST['id'])
+            billOfMaterialHeader.name = request.POST['name']
+            billOfMaterialHeader.uom_id = request.POST['uom_id']
+            billOfMaterialHeader.quantity = 1
+            billOfMaterialHeader.price = request.POST['total_amount']
+            billOfMaterialHeader.is_final = 1
+            billOfMaterialHeader.level = request.POST['level']
+            billOfMaterialHeader.save()
+            billOfMaterialHeader.bill_of_material_detail_set.all().delete()
+            bill_of_material_details = []
+            for index, elem in enumerate(request.POST.getlist('bom_level_id')):
+                billOfMaterialDetail = models.Bill_Of_Material.objects.get(pk=elem)
+                billOfMaterialDetail.is_final = 0
+                billOfMaterialDetail.save()
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
+                                                bom_level_id=elem, quantity=request.POST.getlist('bom_level_quantity')[index], price=request.POST.getlist('bom_level_price')[index]))
+            for index, elem in enumerate(request.POST.getlist('item_id')):
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
+                                                item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
+            models.Bill_Of_Material_Detail.objects.bulk_create(
+                bill_of_material_details)
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Bill Of Material Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 558,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def purchaseOrderDelete(request):
+    context = {}
+    bomLevel = models.Bill_Of_Material.objects.get(
+        pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            bomLevel.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Bill Of Material Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 559,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
     return JsonResponse(context)
