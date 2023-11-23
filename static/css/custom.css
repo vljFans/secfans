@@ -1,3 +1,7 @@
+.logo a.logo-img img {
+    max-height: 50px;
+}
+
 .selectpicker {
     height: 100px;
 }
