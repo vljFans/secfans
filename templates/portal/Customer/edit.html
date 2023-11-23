@@ -178,7 +178,7 @@
                             <div class="col-md-4 mb-3">
                                 <label>KYC Document<span class="required-indicator">*</span></label>
                                 <input type="file" name="kyc_image" class="form-control" placeholder="KYC Document" accept="application/pdf">
-                                <a href="{{customer.kyc_image}}" target="_blank" rel="noopener noreferrer">Preview</a>
+                                <a href="{{ }}" target="_blank" rel="noopener noreferrer">Preview</a>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>Date of Birth</label>
@@ -189,10 +189,9 @@
                                 <input type="text" value="{{customer.date_of_anniversary}}" name="date_of_anniversary" class="form-control dateMonth" placeholder="MM-DD" >
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label>Weekly Closing Day <span class="required-indicator">*</span></label>
+                                <label>Weekly Closing Day</label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker" id="weekly_closing_day" name="weekly_closing_day"
-                                        required multiple>
+                                    <select class="custom-select selectpicker" id="weekly_closing_day" name="weekly_closing_day" multiple>
                                         <option value="">Choose...</option>
                                         <option {% if 'sunday' in customer.weekly_closing_day %}selected{% endif %} value="sunday">Sunday</option>
                                         <option {% if 'monday' in customer.weekly_closing_day %}selected{% endif %} value="monday">Monday</option>
