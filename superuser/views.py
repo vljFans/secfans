@@ -566,6 +566,7 @@ def purchaseOrderEdit(request, id):
 @login_required
 def purchaseOrderView(request, id):
     purchaseOrder = models.Purchase_Order.objects.prefetch_related('purchase_order_detail_set').get(pk=id)
+    purchaseOrder.amount_with_gst = purchaseOrder.total_amount + purchaseOrder.discounted_value
     context.update({
         'purchaseOrder': purchaseOrder,
         'page_title': "Purchase Order View",
