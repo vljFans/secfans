@@ -2015,7 +2015,8 @@ def purchaseOrderEdit(request):
     context = {}
     try:
         with transaction.atomic():
-            purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related('purchase_order_detail_set').get(pk=request.POST['id'])
+            purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related(
+                'purchase_order_detail_set').get(pk=request.POST['id'])
             purchaseOrderHeader.vendor_id = request.POST['vendor_id']
             purchaseOrderHeader.order_number = request.POST['order_number']
             purchaseOrderHeader.order_date = request.POST['order_date']
@@ -2024,9 +2025,12 @@ def purchaseOrderEdit(request):
             purchaseOrderHeader.reference_number = request.POST['reference_number']
             purchaseOrderHeader.business_terms = request.POST['business_terms']
             purchaseOrderHeader.discount_type = request.POST['discount_type']
-            purchaseOrderHeader.discount_value = request.POST['discount_value'] if request.POST['discount_value'] != "" else 0
-            purchaseOrderHeader.discounted_value = request.POST['discounted_value'] if request.POST['discounted_value'] != "" else 0
-            purchaseOrderHeader.excise_duty_percentage = request.POST['excise_duty_percentage'] if request.POST['excise_duty_percentage'] != "" else 0
+            purchaseOrderHeader.discount_value = request.POST[
+                'discount_value'] if request.POST['discount_value'] != "" else 0
+            purchaseOrderHeader.discounted_value = request.POST[
+                'discounted_value'] if request.POST['discounted_value'] != "" else 0
+            purchaseOrderHeader.excise_duty_percentage = request.POST[
+                'excise_duty_percentage'] if request.POST['excise_duty_percentage'] != "" else 0
             purchaseOrderHeader.insurance = request.POST['insurance'] if request.POST['insurance'] != "" else 0
             purchaseOrderHeader.octroi = request.POST['octroi'] if request.POST['octroi'] != "" else 0
             purchaseOrderHeader.freight = request.POST['freight'] if request.POST['freight'] != "" else 0
