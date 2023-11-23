@@ -151,17 +151,6 @@
         heightStyle: 'content',
         collapsible: true
     });
-    function getInnerItemStructure(items, structure_html) {
-        for (let item_index = 0; item_index < items.length; item_index++) {
-            let item_element = items[item_index];
-            structure_html += `
-                    <p><strong>Item: ${item_element.name}</strong></p>
-                    <p>Uom: ${item_element.uom__name}</p>
-                    <p>Price: ${item_element.price}</p>
-                `;
-        }
-        return structure_html;
-    }
     function getInnerBOMStructure(structure, structure_html) {
         for (let index = 0; index < structure.length; index++) {
             let structure_element = structure[index];
@@ -214,7 +203,6 @@
             },
             success: function (response) {
                 structure_html = getStructureHtml(response.page_items, '')
-                console.log(structure_html);
                 $('.bill_of_material_details').html(structure_html);
                 $('.accordion').accordion({
                     heightStyle: 'content',
