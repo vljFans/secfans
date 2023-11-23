@@ -118,12 +118,16 @@
                         </td>
                         <td style="border-bottom:0px!important; border-top:0px!important;">{{orderDetail.quantity}}</td>
                         <td style="border-bottom:0px!important; border-top:0px!important;">{{orderDetail.rate}}</td>
-                        <td style="border-bottom:0px!important; border-top:0px!important;">{{orderDetail.amount}}</td>
+                        <td style="border-bottom:0px!important; border-top:0px!important; text-align: right;">{{orderDetail.amount}}</td>
                         <td style="border-bottom:0px!important; border-top:0px!important;">{{orderDetail.gst_percentage}}</td>
-                        <td style="border-bottom:0px!important; border-top:0px!important;">{{orderDetail.amount_with_gst}}</td> 
+                        <td style="border-bottom:0px!important; border-top:0px!important; text-align: right;">{{orderDetail.amount_with_gst}}</td> 
                     </tr>
                     {% endfor %}
-
+                    <tr>
+                        <td colspan="8" style="text-align: right;">
+                            <strong>{{purchaseOrder.amount_with_gst}}</strong>
+                        </td>
+                    </tr>
 
                 </table>
             </td>
@@ -133,7 +137,6 @@
                         <td style="width: 50%;">Business Terms</td>
                         <td style="width: 50%;">{{purchaseOrder.business_terms}}</td>
                     </tr>
-
                     <tr>
                         <td>Discount</td>
                         <td>{% if purchaseOrder.discount_value == 0 %}
@@ -148,8 +151,13 @@
                     </tr>
                     <tr>
                         <td>Excise Duty %</td>
-                        <td>{% if purchaseOrder.excise_duty_percentage == 0 %}NA{% else
-                            %}{{purchaseOrder.excise_duty_percentage}}{% endif %}</td>
+                        <td>
+                            {% if purchaseOrder.excise_duty_percentage == 0 %}
+                            NA
+                            {% else %}
+                            {{purchaseOrder.excise_duty_percentage}}
+                            {% endif %}
+                        </td>
                     </tr>
                     <tr>
                         <td>Insurance</td>
@@ -212,9 +220,9 @@
     </table>
 </body>
 <script>
-    // $(document).ready(function () {
-    //     window.print();
-    // });
+    $(document).ready(function () {
+        window.print();
+    });
 </script>
 
 </html>
