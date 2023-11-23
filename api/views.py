@@ -2013,47 +2013,46 @@ def purchaseOrderAdd(request):
 @permission_classes([IsAuthenticated])
 def purchaseOrderEdit(request):
     context = {}
-    exist_data = models.Bill_Of_Material.objects.filter(
-        name__iexact=request.POST['name'], level=request.POST['level']).exclude(pk=request.POST['id']).filter(deleted=0)
-    if len(exist_data) > 0:
-        context.update({
-            'status': 557,
-            'message': "Bill Of Material with this name already exists.",
-        })
-        return JsonResponse(context)
     try:
         with transaction.atomic():
-            billOfMaterialHeader = models.Bill_Of_Material.objects.prefetch_related(
-                'bill_of_material_detail_set').get(pk=request.POST['id'])
-            billOfMaterialHeader.name = request.POST['name']
-            billOfMaterialHeader.uom_id = request.POST['uom_id']
-            billOfMaterialHeader.quantity = 1
-            billOfMaterialHeader.price = request.POST['total_amount']
-            billOfMaterialHeader.is_final = 1
-            billOfMaterialHeader.level = request.POST['level']
-            billOfMaterialHeader.save()
-            billOfMaterialHeader.bill_of_material_detail_set.all().delete()
-            bill_of_material_details = []
-            for index, elem in enumerate(request.POST.getlist('bom_level_id')):
-                billOfMaterialDetail = models.Bill_Of_Material.objects.get(
-                    pk=elem)
-                billOfMaterialDetail.is_final = 0
-                billOfMaterialDetail.save()
-                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
-                                                bom_level_id=elem, quantity=request.POST.getlist('bom_level_quantity')[index], price=request.POST.getlist('bom_level_price')[index]))
+            purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related('purchase_order_detail_set').get(pk=request.POST['id'])
+            purchaseOrderHeader.vendor_id = request.POST['vendor_id']
+            purchaseOrderHeader.order_number = request.POST['order_number']
+            purchaseOrderHeader.order_date = request.POST['order_date']
+            purchaseOrderHeader.quotation_number = request.POST['quotation_number']
+            purchaseOrderHeader.quotation_date = request.POST['quotation_date']
+            purchaseOrderHeader.reference_number = request.POST['reference_number']
+            purchaseOrderHeader.business_terms = request.POST['business_terms']
+            purchaseOrderHeader.discount_type = request.POST['discount_type']
+            purchaseOrderHeader.discount_value = request.POST['discount_value'] if request.POST['discount_value'] != "" else 0
+            purchaseOrderHeader.discounted_value = request.POST['discounted_value'] if request.POST['discounted_value'] != "" else 0
+            purchaseOrderHeader.excise_duty_percentage = request.POST['excise_duty_percentage'] if request.POST['excise_duty_percentage'] != "" else 0
+            purchaseOrderHeader.insurance = request.POST['insurance'] if request.POST['insurance'] != "" else 0
+            purchaseOrderHeader.octroi = request.POST['octroi'] if request.POST['octroi'] != "" else 0
+            purchaseOrderHeader.freight = request.POST['freight'] if request.POST['freight'] != "" else 0
+            purchaseOrderHeader.packing = request.POST['packing']
+            purchaseOrderHeader.payment_terms = request.POST['payment_terms']
+            purchaseOrderHeader.delivery_schedule = request.POST['delivery_schedule']
+            purchaseOrderHeader.delivery_at = request.POST['delivery_at']
+            purchaseOrderHeader.notes = request.POST['notes']
+            purchaseOrderHeader.total_amount = request.POST['total_amount']
+            purchaseOrderHeader.save()
+            purchaseOrderHeader.purchase_order_detail_set.all().delete()
+
+            purchase_order_details = []
             for index, elem in enumerate(request.POST.getlist('item_id')):
-                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
-                                                item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
-            models.Bill_Of_Material_Detail.objects.bulk_create(
-                bill_of_material_details)
+                purchase_order_details.append(models.Purchase_Order_Detail(purchase_order_header_id=purchaseOrderHeader.id, item_id=elem, quantity=request.POST.getlist('item_quantity')[index], rate=request.POST.getlist(
+                    'rate')[index], amount=request.POST.getlist('item_price')[index], gst_percentage=request.POST.getlist('gst_percentage')[index], amount_with_gst=request.POST.getlist('amount_with_gst')[index]))
+            models.Purchase_Order_Detail.objects.bulk_create(
+                purchase_order_details)
         transaction.commit()
         context.update({
             'status': 200,
-            'message': "Bill Of Material Updated Successfully."
+            'message': "Purchase Order Updated Successfully."
         })
     except Exception:
         context.update({
-            'status': 558,
+            'status': 562,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
