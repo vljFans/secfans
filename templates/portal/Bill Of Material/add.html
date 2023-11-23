@@ -429,13 +429,17 @@
     $(document).on('keyup change', '.bom_level_price', function () {
         calculateTotalAmount();
     });
-
+    
     function checkMaxMin(element) {
-        if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
-            $(element).val($(element).attr('max'));
-        }
-        if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
+        if ($(element).val() == "") {
             $(element).val($(element).attr('min'));
+        } else {
+            if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
+                $(element).val($(element).attr('max'));
+            }
+            if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
+                $(element).val($(element).attr('min'));
+            }
         }
     }
 

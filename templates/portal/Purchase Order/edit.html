@@ -174,25 +174,25 @@
                                 <label>Excise Duty %</label>
                                 <input type="text" value="{{purchaseOrder.excise_duty_percentage}}" name="excise_duty_percentage" class="form-control"
                                     onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    max="100" min="0.00" placeholder="0%">
+                                    onkeyup="checkMaxMin(this)" id="excise_duty_percentage" max="100" min="0.00" placeholder="0%">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Insurance</label>
                                 <input type="text" value="{{purchaseOrder.insurance}}" name="insurance" class="form-control"
                                     onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    min="0.00" placeholder="₹0.00">
+                                    onkeyup="checkMaxMin(this)" id="insurance" min="0.00" placeholder="₹0.00">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Octroi</label>
                                 <input type="text" value="{{purchaseOrder.octroi}}" name="octroi" class="form-control"
                                     onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    min="0.00" placeholder="₹0.00">
+                                    onkeyup="checkMaxMin(this)" id="octroi" min="0.00" placeholder="₹0.00">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Freight</label>
                                 <input type="text" value="{{purchaseOrder.freight}}" name="freight" class="form-control"
                                     onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    min="0.00" placeholder="₹0.00">
+                                    onkeyup="checkMaxMin(this)" id="freight" min="0.00" placeholder="₹0.00">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Packing<span class="required-indicator">*</span></label>
@@ -389,6 +389,16 @@
         }
         $("#discounted_value").val(discounted_value);
         total_amount -= discounted_value;
+
+        excise_duty_percentage = $('#excise_duty_percentage').val();
+        insurance = $('#insurance').val();
+        octroi = $('#octroi').val();
+        freight = $('#freight').val();
+
+        total_amount += (parseFloat(insurance) + parseFloat(octroi) + parseFloat(freight));
+
+        total_amount = total_amount + (total_amount * parseFloat(excise_duty_percentage) / 100)
+
         $("#total_amount").val((total_amount).toFixed(2));
     }
 
@@ -469,17 +479,36 @@
         }
     });
 
+    $(document).on('keyup change', '#discount_value', function () {
+        calculateTotalAmount();
+    });
 
-    $(document).on('keyup', '#discount_value', function () {
+    $(document).on('keyup change', '#excise_duty_percentage', function () {
+        calculateTotalAmount();
+    });
+
+    $(document).on('keyup change', '#insurance', function () {
+        calculateTotalAmount();
+    });
+
+    $(document).on('keyup change', '#octroi', function () {
+        calculateTotalAmount();
+    });
+
+    $(document).on('keyup change', '#freight', function () {
         calculateTotalAmount();
     });
 
     function checkMaxMin(element) {
-        if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
-            $(element).val($(element).attr('max'));
-        }
-        if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
+        if ($(element).val() == "") {
             $(element).val($(element).attr('min'));
+        } else {
+            if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
+                $(element).val($(element).attr('max'));
+            }
+            if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
+                $(element).val($(element).attr('min'));
+            }
         }
     }
 

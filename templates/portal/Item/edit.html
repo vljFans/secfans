@@ -105,7 +105,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Price<span class="required-indicator">*</span></label>
-                                <input type="number" name="price" class="form-control" placeholder="₹0.00" min="0" step="0.001" value="{{item.price.normalize}}" required>
+                                <input type="number" name="price" onkeyup="checkMaxMin(this)" class="form-control" placeholder="₹0.00" min="0" step="0.001" value="{{item.price.normalize}}" required>
                                 <div class="invalid-feedback">Please provide a valid price</div>
                             </div>
                         </div>
@@ -146,6 +146,19 @@
     $('.selectpicker').select2({
         placeholder: ''
     });
+
+    function checkMaxMin(element) {
+        if ($(element).val() == "") {
+            $(element).val($(element).attr('min'));
+        } else {
+            if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
+                $(element).val($(element).attr('max'));
+            }
+            if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
+                $(element).val($(element).attr('min'));
+            }
+        }
+    }
 
     $(document).on('submit', '#edit_form', function (e) {
         e.preventDefault();
