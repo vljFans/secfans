@@ -467,8 +467,10 @@ def vendorList(request):
         vendor = list(models.Vendor.objects.filter(pk=id)[:1].values('pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk',
                       'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
         if len(vendor) > 0:
-            purchase_order_count = models.Purchase_Order.objects.filter(vendor_id=vendor[0]['pk']).count()
-            vendor[0]['next_purchase_order_number'] = env("PURCHASE_ORDER_NUMBER_SEQ").replace("${VENDOR_SHORT}", ''.join(word[0] for word in vendor[0]['name'].split())).replace("${AI_DIGIT_3}", str(purchase_order_count + 1).zfill(3)).replace("${FINANCE_YEAR}", datetime.today().strftime('%y') + "-" + (datetime(datetime.today().year + 1, 1, 1).strftime('%y')))
+            purchase_order_count = models.Purchase_Order.objects.filter(
+                vendor_id=vendor[0]['pk']).count()
+            vendor[0]['next_purchase_order_number'] = env("PURCHASE_ORDER_NUMBER_SEQ").replace("${VENDOR_SHORT}", ''.join(word[0] for word in vendor[0]['name'].split())).replace(
+                "${AI_DIGIT_3}", str(purchase_order_count + 1).zfill(3)).replace("${FINANCE_YEAR}", datetime.today().strftime('%y') + "-" + (datetime(datetime.today().year + 1, 1, 1).strftime('%y')))
         context.update({
             'status': 200,
             'message': "Vendor Fetched Successfully.",
@@ -1560,7 +1562,8 @@ def itemList(request):
         })
     else:
         if keyword is not None and keyword != "":
-            items = list(models.Item.objects.filter(Q(name__icontains=keyword) | Q(item_type__name__icontains=keyword) | Q(uom__name__icontains=keyword)).filter(status=1, deleted=0).values('pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price'))
+            items = list(models.Item.objects.filter(Q(name__icontains=keyword) | Q(item_type__name__icontains=keyword) | Q(uom__name__icontains=keyword)).filter(
+                status=1, deleted=0).values('pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price'))
         else:
             items = list(models.Item.objects.filter(status=1, deleted=0).values(
                 'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price'))
@@ -1726,7 +1729,7 @@ def billOfMaterialList(request):
 
         context.update({
             'status': 200,
-            'message': "bomLevels Fetched Successfully.",
+            'message': "BOM Levels Fetched Successfully.",
             'page_items': page_items,
             'total_pages': total_pages,
             'current_page': int(current_page),
@@ -1811,7 +1814,8 @@ def billOfMaterialEdit(request):
             billOfMaterialHeader.bill_of_material_detail_set.all().delete()
             bill_of_material_details = []
             for index, elem in enumerate(request.POST.getlist('bom_level_id')):
-                billOfMaterialDetail = models.Bill_Of_Material.objects.get(pk=elem)
+                billOfMaterialDetail = models.Bill_Of_Material.objects.get(
+                    pk=elem)
                 billOfMaterialDetail.is_final = 0
                 billOfMaterialDetail.save()
                 bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
@@ -1859,8 +1863,10 @@ def billOfMaterialDelete(request):
 
 
 def getStructureOfBOM(bom_id):
-    billOfMaterial = list(models.Bill_Of_Material.objects.filter(pk=bom_id)[:1].values('pk', 'name', 'uom__name', 'quantity', 'price'))[0]
-    childBOMS = models.Bill_Of_Material_Detail.objects.filter(status=1, deleted=0, bill_of_material_header_id=bom_id).order_by('bom_level_id')
+    billOfMaterial = list(models.Bill_Of_Material.objects.filter(pk=bom_id)[
+                          :1].values('pk', 'name', 'uom__name', 'quantity', 'price'))[0]
+    childBOMS = models.Bill_Of_Material_Detail.objects.filter(
+        status=1, deleted=0, bill_of_material_header_id=bom_id).order_by('bom_level_id')
     id_lists = []
     for each in childBOMS:
         id_lists.append(each.id)
@@ -1872,16 +1878,18 @@ def getStructureOfBOM(bom_id):
         each_child_structure['quantity'] = childDetail.quantity
         each_child_structure['price'] = childDetail.price
         if childDetail.item_id is not None:
-            each_child_structure['item'] = list(models.Item.objects.filter(pk=childDetail.item_id)[:1].values('pk', 'name', 'item_type__name', 'item_type__item_category__name', 'uom__name', 'price'))[0]
+            each_child_structure['item'] = list(models.Item.objects.filter(pk=childDetail.item_id)[:1].values(
+                'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'uom__name', 'price'))[0]
         if childDetail.bom_level_id is not None:
-            each_child_structure['bom'] = getStructureOfBOM(childDetail.bom_level_id)
+            each_child_structure['bom'] = getStructureOfBOM(
+                childDetail.bom_level_id)
         structure.append(each_child_structure)
     billOfMaterial['structure'] = structure
     return billOfMaterial
 
 
 def getBillOfMaterialStructure(request):
-    context= {}
+    context = {}
     bom_id = request.GET.get('bom_id', None)
     if bom_id is not None and bom_id != "":
         billOfMaterial = getStructureOfBOM(bom_id)
@@ -1904,32 +1912,29 @@ def purchaseOrderList(request):
     context = {}
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
-    level = request.GET.get('level', None)
     keyword = request.GET.get('keyword', None)
     if id != None:
-        billOfMaterial = list(models.Bill_Of_Material.objects.filter(
-            pk=id)[:1].values('pk', 'name', 'uom__name', 'quantity', 'price'))
+        purchaseOrder = list(models.Purchase_Order.objects.filter(pk=id)[:1].values('pk', 'order_number', 'order_date', 'quotation_number', 'quotation_date', 'reference_number', 'business_terms', 'discount_type',
+                             'discount_value', 'discounted_value', 'excise_duty_percentage', 'insurance', 'octroi', 'freight', 'packing', 'payment_terms', 'delivery_schedule', 'delivery_at', 'notes', 'total_amount', 'vendor__name'))
         context.update({
             'status': 200,
-            'message': "Bill Of Material Fetched Successfully.",
-            'page_items': billOfMaterial,
+            'message': "Purchase Order Fetched Successfully.",
+            'page_items': purchaseOrder,
         })
     else:
         if keyword is not None and keyword != "":
-            billOfMaterials = models.Bill_Of_Material.objects.filter(
-                name__icontains=keyword).filter(status=1, deleted=0)
+            purchaseOrders = models.Purchase_Order.objects.filter(Q(vendor__name__icontains=keyword) | Q(order_number__icontains=keyword) | Q(
+                order_date__icontains=keyword) | Q(total_amount__icontains=keyword)).filter(status=1, deleted=0)
         else:
-            billOfMaterials = models.Bill_Of_Material.objects.filter(
+            purchaseOrders = models.Purchase_Order.objects.filter(
                 status=1, deleted=0)
-        if level is not None:
-            billOfMaterials = billOfMaterials.filter(level__lte=level)
-        billOfMaterials = list(billOfMaterials.values(
-            'pk', 'name', 'uom__name', 'quantity', 'price'))
+        purchaseOrders = list(purchaseOrders.values('pk', 'order_number', 'order_date', 'quotation_number', 'quotation_date', 'reference_number', 'business_terms', 'discount_type', 'discount_value',
+                              'discounted_value', 'excise_duty_percentage', 'insurance', 'octroi', 'freight', 'packing', 'payment_terms', 'delivery_schedule', 'delivery_at', 'notes', 'total_amount', 'vendor__name'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
-                'message': "Bill Of Materials Fetched Successfully.",
-                'page_items': billOfMaterials,
+                'message': "Purchase Orders Fetched Successfully.",
+                'page_items': purchaseOrders,
             })
             return JsonResponse(context)
 
@@ -1937,13 +1942,13 @@ def purchaseOrderList(request):
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
         current_page = request.GET.get('current_page', 1)
 
-        paginator = CustomPaginator(billOfMaterials, per_page)
+        paginator = CustomPaginator(purchaseOrders, per_page)
         page_items = paginator.get_page(current_page)
         total_pages = paginator.get_total_pages()
 
         context.update({
             'status': 200,
-            'message': "bomLevels Fetched Successfully.",
+            'message': "Purchase Orders Fetched Successfully.",
             'page_items': page_items,
             'total_pages': total_pages,
             'current_page': int(current_page),
@@ -1956,10 +1961,10 @@ def purchaseOrderList(request):
 @permission_classes([IsAuthenticated])
 def purchaseOrderAdd(request):
     context = {}
-    print(request.POST)
     try:
         with transaction.atomic():
             purchaseOrderHeader = models.Purchase_Order()
+            purchaseOrderHeader.vendor_id = request.POST['vendor_id']
             purchaseOrderHeader.order_number = request.POST['order_number']
             purchaseOrderHeader.order_date = request.POST['order_date']
             purchaseOrderHeader.quotation_number = request.POST['quotation_number']
@@ -1967,9 +1972,12 @@ def purchaseOrderAdd(request):
             purchaseOrderHeader.reference_number = request.POST['reference_number']
             purchaseOrderHeader.business_terms = request.POST['business_terms']
             purchaseOrderHeader.discount_type = request.POST['discount_type']
-            purchaseOrderHeader.discount_value = request.POST['discount_value'] if request.POST['discount_value'] != "" else 0
-            purchaseOrderHeader.discounted_value = request.POST['discounted_value'] if request.POST['discounted_value'] != "" else 0
-            purchaseOrderHeader.excise_duty_percentage = request.POST['excise_duty_percentage'] if request.POST['excise_duty_percentage'] != "" else 0
+            purchaseOrderHeader.discount_value = request.POST[
+                'discount_value'] if request.POST['discount_value'] != "" else 0
+            purchaseOrderHeader.discounted_value = request.POST[
+                'discounted_value'] if request.POST['discounted_value'] != "" else 0
+            purchaseOrderHeader.excise_duty_percentage = request.POST[
+                'excise_duty_percentage'] if request.POST['excise_duty_percentage'] != "" else 0
             purchaseOrderHeader.insurance = request.POST['insurance'] if request.POST['insurance'] != "" else 0
             purchaseOrderHeader.octroi = request.POST['octroi'] if request.POST['octroi'] != "" else 0
             purchaseOrderHeader.freight = request.POST['freight'] if request.POST['freight'] != "" else 0
@@ -1983,8 +1991,10 @@ def purchaseOrderAdd(request):
 
             purchase_order_details = []
             for index, elem in enumerate(request.POST.getlist('item_id')):
-                purchase_order_details.append(models.Purchase_Order_Detail(purchase_order_header_id=purchaseOrderHeader.id, item_id=elem, quantity=request.POST.getlist('item_quantity')[index], rate=request.POST.getlist('rate')[index], amount=request.POST.getlist('item_price')[index], gst_percentage=request.POST.getlist('gst_percentage')[index], amount_with_gst=request.POST.getlist('amount_with_gst')[index]))
-            models.Purchase_Order_Detail.objects.bulk_create(purchase_order_details)
+                purchase_order_details.append(models.Purchase_Order_Detail(purchase_order_header_id=purchaseOrderHeader.id, item_id=elem, quantity=request.POST.getlist('item_quantity')[index], rate=request.POST.getlist(
+                    'rate')[index], amount=request.POST.getlist('item_price')[index], gst_percentage=request.POST.getlist('gst_percentage')[index], amount_with_gst=request.POST.getlist('amount_with_gst')[index]))
+            models.Purchase_Order_Detail.objects.bulk_create(
+                purchase_order_details)
         transaction.commit()
         context.update({
             'status': 200,
@@ -2025,7 +2035,8 @@ def purchaseOrderEdit(request):
             billOfMaterialHeader.bill_of_material_detail_set.all().delete()
             bill_of_material_details = []
             for index, elem in enumerate(request.POST.getlist('bom_level_id')):
-                billOfMaterialDetail = models.Bill_Of_Material.objects.get(pk=elem)
+                billOfMaterialDetail = models.Bill_Of_Material.objects.get(
+                    pk=elem)
                 billOfMaterialDetail.is_final = 0
                 billOfMaterialDetail.save()
                 bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,

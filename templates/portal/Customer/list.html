@@ -139,6 +139,7 @@
                 'Authorization': getCookieValue("accessToken")
             },
             success: function (response) {
+                $('.error-msg-txt').text("");
                 if (response.status == 200) {
                     edit_url = "{% url 'superuser:customerEdit' 1 %}";
                     view_url = "{% url 'superuser:customerView' 1 %}";

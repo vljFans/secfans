@@ -127,6 +127,7 @@
                 'Authorization': getCookieValue("accessToken")
             },
             success: function (response) {
+                $('.error-msg-txt').text("");
                 if (response.status == 200) {
                     edit_url = "{% url 'superuser:uomEdit' 1 %}";
                     page_items = response.page_items;
