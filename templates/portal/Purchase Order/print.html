@@ -99,7 +99,7 @@
                         <td rowspan="2" style="text-align: center;">Rate</td>
                         <td rowspan="2" style="text-align: center;">Amount</td>
                         <td rowspan="2" style="text-align: center;">GST %</td>
-                        <td rowspan="2" style="text-align: center;">GST Amount</td>
+                        <td rowspan="2" style="text-align: center;">Amount With GST</td>
                     </tr>
 
                     <tr>
@@ -111,23 +111,23 @@
 
                     {% for orderDetail in purchaseOrder.purchase_order_detail_set.all %}
                     <tr>
-                        <td style="border-bottom:0px!important; border-top:0px!important;">{{forloop.counter}}</td>
-                        <td style="border-bottom:0px!important; border-top:0px!important;">{{orderDetail.item.name}}
+                        <td style="border-bottom:0px!important; border-top:0px!important; text-align: center;">{{forloop.counter}}</td>
+                        <td style="border-bottom:0px!important; border-top:0px!important; text-align: center;">{{orderDetail.item.name}}
                         </td>
-                        <td style="border-bottom:0px!important; border-top:0px!important;">{{orderDetail.item.uom.name}}
+                        <td style="border-bottom:0px!important; border-top:0px!important; text-align: center;">{{orderDetail.item.uom.name}}
                         </td>
-                        <td style="border-bottom:0px!important; border-top:0px!important;">{{orderDetail.quantity}}</td>
-                        <td style="border-bottom:0px!important; border-top:0px!important;">{{orderDetail.rate}}</td>
+                        <td style="border-bottom:0px!important; border-top:0px!important; text-align: center;">{{orderDetail.quantity}}</td>
+                        <td style="border-bottom:0px!important; border-top:0px!important; text-align: center;">{{orderDetail.rate}}</td>
                         <td style="border-bottom:0px!important; border-top:0px!important; text-align: right;">{{orderDetail.amount}}</td>
-                        <td style="border-bottom:0px!important; border-top:0px!important;">{{orderDetail.gst_percentage}}</td>
+                        <td style="border-bottom:0px!important; border-top:0px!important; text-align: center;">{{orderDetail.gst_percentage}}</td>
                         <td style="border-bottom:0px!important; border-top:0px!important; text-align: right;">{{orderDetail.amount_with_gst}}</td> 
                     </tr>
                     {% endfor %}
-                    <tr>
+                    <!-- <tr>
                         <td colspan="8" style="text-align: right;">
                             <strong>{{purchaseOrder.amount_with_gst}}</strong>
                         </td>
-                    </tr>
+                    </tr> -->
 
                 </table>
             </td>
