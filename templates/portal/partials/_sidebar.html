@@ -15,7 +15,7 @@
   <div class="page-sidebar-inner">
     <div class="page-sidebar-menu">
       <ul class="accordion-menu">
-        <li class="active">
+        <li class="{% if request.path == '/' %}active{% endif %}">
           <a href="{% url 'superuser:dashboard' %}"><i data-feather="home"></i>
             <span>Dashboard</span>
           </a>
