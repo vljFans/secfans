@@ -192,6 +192,11 @@ def roleList(request):
 @permission_classes([IsAuthenticated])
 def roleAdd(request):
     context = {}
+    if not request.POST['name']:
+        context.update({
+            'status': 502,
+            'message': "Name has not been provided."
+        })
     exist_data = models.Role.objects.filter(
         name__iexact=request.POST['name']).filter(deleted=0)
     if len(exist_data) > 0:
@@ -228,11 +233,16 @@ def roleAdd(request):
 @permission_classes([IsAuthenticated])
 def roleEdit(request):
     context = {}
+    if not request.POST['name']:
+        context.update({
+            'status': 504,
+            'message': "Name has not been provided."
+        })
     exist_data = models.Role.objects.filter(
         name__iexact=request.POST['name']).exclude(id=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 504,
+            'status': 505,
             'message': "Role with this name already exists."
         })
         return JsonResponse(context)
@@ -256,7 +266,7 @@ def roleEdit(request):
         })
     except Exception:
         context.update({
-            'status': 505,
+            'status': 506,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -271,7 +281,7 @@ def roleDelete(request):
         'role_permission_set', 'user_set').get(pk=request.POST['id'])
     if len(role.user_set.all()) > 0:
         context.update({
-            'status': 506,
+            'status': 507,
             'message': "Can not delete as " + str(len(role.user_set.all())) + " user(s) exist with this role."
         })
         return JsonResponse(context)
@@ -286,7 +296,7 @@ def roleDelete(request):
         })
     except Exception:
         context.update({
-            'status': 507,
+            'status': 508,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -347,9 +357,15 @@ def userList(request):
 @permission_classes([IsAuthenticated])
 def userAdd(request):
     context = {}
+    if not request.POST['name'] or request.POST['role_id'] or request.POST['email'] or request.POST['phone'] or \
+            request.POST['password'] or request.POST['confirm_password']:
+        context.update({
+            'status': 509,
+            'message': "Name/Role/Email/Phone/Password/Confirmed Password has not been provided."
+        })
     if request.POST['password'] != request.POST['confirm_password']:
         context.update({
-            'status': 508,
+            'status': 510,
             'message': "Passwords do not match."
         })
         return JsonResponse(context)
@@ -357,7 +373,7 @@ def userAdd(request):
         Q(email__iexact=request.POST['email']) | Q(phone__iexact=request.POST['phone'])).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 509,
+            'status': 511,
             'message': "User with this email or phone number already exists."
         })
         return JsonResponse(context)
@@ -381,7 +397,7 @@ def userAdd(request):
         })
     except Exception:
         context.update({
-            'status': 510,
+            'status': 512,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -392,10 +408,16 @@ def userAdd(request):
 @permission_classes([IsAuthenticated])
 def userEdit(request):
     context = {}
+    if not request.POST['name'] or request.POST['role_id'] or request.POST['email'] or request.POST['phone'] or \
+            request.POST['password'] or request.POST['confirm_password']:
+        context.update({
+            'status': 513,
+            'message': "Name/Role/Email/Phone/Password/Confirmed Password has not been provided."
+        })
     if request.POST['password'] != "" or request.POST['confirm_password'] != "":
         if request.POST['password'] != request.POST['confirm_password']:
             context.update({
-                'status': 511,
+                'status': 514,
                 'message': "Passwords do not match."
             })
             return JsonResponse(context)
@@ -403,7 +425,7 @@ def userEdit(request):
         phone__iexact=request.POST['phone'])).exclude(id=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 512,
+            'status': 515,
             'message': "User with this email or phone number already exists."
         })
         return JsonResponse(context)
@@ -427,7 +449,7 @@ def userEdit(request):
         })
     except Exception:
         context.update({
-            'status': 513,
+            'status': 516,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -449,7 +471,7 @@ def userDelete(request):
         })
     except Exception:
         context.update({
-            'status': 514,
+            'status': 517,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -517,11 +539,18 @@ def vendorList(request):
 @permission_classes([IsAuthenticated])
 def vendorAdd(request):
     context = {}
+    if not request.POST['name'] or request.POST['contact_name'] or request.POST['contact_email'] or \
+            request.POST['contact_no'] or request.POST['gst_no'] or request.POST['pin'] or request.POST['address']\
+            or request.POST['country_id'] or request.POST['state_id'] or request.POST['city_id']:
+        context.update({
+            'status': 518,
+            'message': "Name/Contact Name/Contact Email/Contact No/GST No/Pin/Address/Country/State/City has not been provided."
+        })
     exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
         contact_no__iexact=request.POST['contact_no'])).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 515,
+            'status': 519,
             'message': "Vendor with this email or phone number already exists."
         })
         return JsonResponse(context)
@@ -546,7 +575,7 @@ def vendorAdd(request):
         })
     except Exception:
         context.update({
-            'status': 516,
+            'status': 520,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -557,11 +586,18 @@ def vendorAdd(request):
 @permission_classes([IsAuthenticated])
 def vendorEdit(request):
     context = {}
+    if not request.POST['name'] or request.POST['contact_name'] or request.POST['contact_email'] or \
+            request.POST['contact_no'] or request.POST['gst_no'] or request.POST['pin'] or request.POST['address']\
+            or request.POST['country_id'] or request.POST['state_id'] or request.POST['city_id']:
+        context.update({
+            'status': 521,
+            'message': "Name/Contact Name/Contact Email/Contact No/GST No/Pin/Address/Country/State/City has not been provided."
+        })
     exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
         contact_no__iexact=request.POST['contact_no'])).exclude(id=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 517,
+            'status': 522,
             'message': "Vendor with this email or phone number already exists."
         })
         return JsonResponse(context)
@@ -587,7 +623,7 @@ def vendorEdit(request):
         })
     except Exception:
         context.update({
-            'status': 518,
+            'status': 523,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -609,7 +645,7 @@ def vendorDelete(request):
         })
     except Exception:
         context.update({
-            'status': 519,
+            'status': 524,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -683,11 +719,24 @@ def customerList(request):
 @permission_classes([IsAuthenticated])
 def customerAdd(request):
     context = {}
+    if not request.POST['name'] or request.POST['contact_name'] or request.POST['contact_email'] or \
+            request.POST['contact_no'] or request.POST['contact_no_std'] or request.POST['landmark'] or\
+            request.POST['pin'] or request.POST['customer_type_id'] or request.POST['kyc_type_id'] or \
+            request.POST['kyc_detail'] or request.POST['date_of_birth'] or request.POST['date_of_anniversary'] or\
+            request.POST['morning_from_time'] or request.POST['morning_to_time'] or request.POST['evening_from_time']or\
+            request.POST['evening_to_time'] or request.POST['address'] or request.POST['country_id'] or\
+            request.POST['state_id'] or request.POST['city_id']:
+        context.update({
+            'status': 525,
+            'message': "Name/Contact Name/Contact Email/Contact No STD/Landmark/Pin/Customer Type/KYC Type/KYC Detail/"
+                       "Date of birth/Date of anniversary/Morning from time/Morning To time/Evening From Time/"
+                       "Evening To Time/Address/Country/State/City has not been provided."
+        })
     exist_data = models.Customer.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
         contact_no__iexact=request.POST['contact_no'])).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 520,
+            'status': 526,
             'message': "Customer with this email or phone number already exists."
         })
         return JsonResponse(context)
@@ -751,7 +800,7 @@ def customerAdd(request):
         })
     except Exception:
         context.update({
-            'status': 521,
+            'status': 527,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -762,11 +811,24 @@ def customerAdd(request):
 @permission_classes([IsAuthenticated])
 def customerEdit(request):
     context = {}
+    if not request.POST['name'] or request.POST['contact_name'] or request.POST['contact_email'] or \
+            request.POST['contact_no'] or request.POST['contact_no_std'] or request.POST['landmark'] or\
+            request.POST['pin'] or request.POST['customer_type_id'] or request.POST['kyc_type_id'] or \
+            request.POST['kyc_detail'] or request.POST['date_of_birth'] or request.POST['date_of_anniversary'] or\
+            request.POST['morning_from_time'] or request.POST['morning_to_time'] or request.POST['evening_from_time']or\
+            request.POST['evening_to_time'] or request.POST['address'] or request.POST['country_id'] or\
+            request.POST['state_id'] or request.POST['city_id']:
+        context.update({
+            'status': 528,
+            'message': "Name/Contact Name/Contact Email/Contact No STD/Landmark/Pin/Customer Type/KYC Type/KYC Detail/"
+                       "Date of birth/Date of anniversary/Morning from time/Morning To time/Evening From Time/"
+                       "Evening To Time/Address/Country/State/City has not been provided."
+        })
     exist_data = models.Customer.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
         contact_no__iexact=request.POST['contact_no'])).exclude(id=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 522,
+            'status': 529,
             'message': "Customer with this email or phone number already exists."
         })
         return JsonResponse(context)
@@ -830,7 +892,7 @@ def customerEdit(request):
         })
     except Exception:
         context.update({
-            'status': 523,
+            'status': 530,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -852,7 +914,7 @@ def customerDelete(request):
         })
     except Exception:
         context.update({
-            'status': 524,
+            'status': 531,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -910,11 +972,16 @@ def uomList(request):
 @permission_classes([IsAuthenticated])
 def uomAdd(request):
     context = {}
+    if not request.POST['name']:
+        context.update({
+            'status': 532,
+            'message': "Name has not been provided."
+        })
     exist_data = models.Uom.objects.filter(
         name=request.POST['name']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 525,
+            'status': 533,
             'message': "Uom with this name already exists.",
         })
         return JsonResponse(context)
@@ -930,7 +997,7 @@ def uomAdd(request):
         })
     except Exception:
         context.update({
-            'status': 526,
+            'status': 534,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -941,11 +1008,16 @@ def uomAdd(request):
 @permission_classes([IsAuthenticated])
 def uomEdit(request):
     context = {}
+    if not request.POST['name']:
+        context.update({
+            'status': 535,
+            'message': "Name has not been provided."
+        })
     exist_data = models.Uom.objects.filter(
         name=request.POST['name']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 527,
+            'status': 536,
             'message': "Uom with this name already exists.",
         })
         return JsonResponse(context)
@@ -962,7 +1034,7 @@ def uomEdit(request):
         })
     except Exception:
         context.update({
-            'status': 528,
+            'status': 537,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -984,7 +1056,7 @@ def uomDelete(request):
         })
     except Exception:
         context.update({
-            'status': 529,
+            'status': 538,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1044,11 +1116,16 @@ def childUomList(request):
 @permission_classes([IsAuthenticated])
 def childUomAdd(request):
     context = {}
+    if not request.POST['name'] or request.POST['uom_id'] or request.POST['conversion_rate']:
+        context.update({
+            'status': 539,
+            'message': "Name/Uom/Conversion Rate has not been provided."
+        })
     exist_data = models.Child_Uom.objects.filter(
         name=request.POST['name'], uom_id=request.POST['uom_id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 530,
+            'status': 540,
             'message': "Child Uom with this name and Uom already exists.",
         })
         return JsonResponse(context)
@@ -1066,7 +1143,7 @@ def childUomAdd(request):
         })
     except Exception:
         context.update({
-            'status': 531,
+            'status': 541,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1077,11 +1154,16 @@ def childUomAdd(request):
 @permission_classes([IsAuthenticated])
 def childUomEdit(request):
     context = {}
+    if not request.POST['name'] or request.POST['uom_id'] or request.POST['conversion_rate']:
+        context.update({
+            'status': 542,
+            'message': "Name/Uom/Conversion Rate has not been provided."
+        })
     exist_data = models.Child_Uom.objects.filter(
         name=request.POST['name'], uom_id=request.POST['uom_id']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 532,
+            'status': 543,
             'message': "Child Uom with this name and Uom already exists.",
         })
         return JsonResponse(context)
@@ -1100,7 +1182,7 @@ def childUomEdit(request):
         })
     except Exception:
         context.update({
-            'status': 533,
+            'status': 544,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1122,7 +1204,7 @@ def childUomDelete(request):
         })
     except Exception:
         context.update({
-            'status': 534,
+            'status': 545,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1181,11 +1263,16 @@ def itemCategoryList(request):
 @permission_classes([IsAuthenticated])
 def itemCategoryAdd(request):
     context = {}
+    if not request.POST['name']:
+        context.update({
+            'status': 546,
+            'message': "Name has not been provided."
+        })
     exist_data = models.Item_Category.objects.filter(
         name=request.POST['name']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 535,
+            'status': 547,
             'message': "Item Category with this name already exists.",
         })
         return JsonResponse(context)
@@ -1201,7 +1288,7 @@ def itemCategoryAdd(request):
         })
     except Exception:
         context.update({
-            'status': 536,
+            'status': 548,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1212,11 +1299,16 @@ def itemCategoryAdd(request):
 @permission_classes([IsAuthenticated])
 def itemCategoryEdit(request):
     context = {}
+    if not request.POST['name']:
+        context.update({
+            'status': 549,
+            'message': "Name has not been provided."
+        })
     exist_data = models.Item_Category.objects.filter(
         name=request.POST['name']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 537,
+            'status': 550,
             'message': "Item Category with this name already exists.",
         })
         return JsonResponse(context)
@@ -1234,7 +1326,7 @@ def itemCategoryEdit(request):
         })
     except Exception:
         context.update({
-            'status': 538,
+            'status': 551,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1256,7 +1348,7 @@ def itemCategoryDelete(request):
         })
     except Exception:
         context.update({
-            'status': 539,
+            'status': 552,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1318,11 +1410,16 @@ def itemTypeList(request):
 @permission_classes([IsAuthenticated])
 def itemTypeAdd(request):
     context = {}
+    if not request.POST['name'] or request.POST['item_category_id'] or request.POST['hsn_code'] or request.POST['gst_percentage']:
+        context.update({
+            'status': 553,
+            'message': "Name/Item Category/HSN Code/GST Percentage has not been provided."
+        })
     exist_data = models.Item_Type.objects.filter(
         name=request.POST['name'], item_category_id=request.POST['item_category_id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 540,
+            'status': 554,
             'message': "Item Type with this name and item category already exists.",
         })
         return JsonResponse(context)
@@ -1341,7 +1438,7 @@ def itemTypeAdd(request):
         })
     except Exception:
         context.update({
-            'status': 541,
+            'status': 555,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1352,11 +1449,16 @@ def itemTypeAdd(request):
 @permission_classes([IsAuthenticated])
 def itemTypeEdit(request):
     context = {}
+    if not request.POST['name'] or request.POST['item_category_id'] or request.POST['hsn_code'] or request.POST['gst_percentage']:
+        context.update({
+            'status': 556,
+            'message': "Name/Item Category/HSN Code/GST Percentage has not been provided."
+        })
     exist_data = models.Item_Type.objects.filter(
         name=request.POST['name'], item_category_id=request.POST['item_category_id']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 542,
+            'status': 557,
             'message': "Item Type with this name and item category already exists.",
         })
         return JsonResponse(context)
@@ -1376,7 +1478,7 @@ def itemTypeEdit(request):
         })
     except Exception:
         context.update({
-            'status': 543,
+            'status': 558,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1398,7 +1500,7 @@ def itemTypeDelete(request):
         })
     except Exception:
         context.update({
-            'status': 544,
+            'status': 559,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1457,11 +1559,16 @@ def itemColorList(request):
 @permission_classes([IsAuthenticated])
 def itemColorAdd(request):
     context = {}
+    if not request.POST['name'] or request.POST['color_code']:
+        context.update({
+            'status': 560,
+            'message': "Name/Color Code has not been provided."
+        })
     exist_data = models.Item_Color.objects.filter(
         name=request.POST['name']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 545,
+            'status': 561,
             'message': "Item Color with this name already exists.",
         })
         return JsonResponse(context)
@@ -1478,7 +1585,7 @@ def itemColorAdd(request):
         })
     except Exception:
         context.update({
-            'status': 546,
+            'status': 562,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1489,11 +1596,16 @@ def itemColorAdd(request):
 @permission_classes([IsAuthenticated])
 def itemColorEdit(request):
     context = {}
+    if not request.POST['name'] or request.POST['color_code']:
+        context.update({
+            'status': 563,
+            'message': "Name/Color Code has not been provided."
+        })
     exist_data = models.Item_Color.objects.filter(
         name=request.POST['name']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 547,
+            'status': 564,
             'message': "Item Color with this name already exists.",
         })
         return JsonResponse(context)
@@ -1511,7 +1623,7 @@ def itemColorEdit(request):
         })
     except Exception:
         context.update({
-            'status': 548,
+            'status': 565,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1533,7 +1645,7 @@ def itemColorDelete(request):
         })
     except Exception:
         context.update({
-            'status': 549,
+            'status': 566,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1594,11 +1706,16 @@ def itemList(request):
 @permission_classes([IsAuthenticated])
 def itemAdd(request):
     context = {}
+    if not request.POST['name'] or request.POST['uom_id'] or request.POST['item_type_id'] or request.POST['price']:
+        context.update({
+            'status': 567,
+            'message': "Name/UOM/Item Type/Price has not been provided."
+        })
     exist_data = models.Item.objects.filter(
         name__iexact=request.POST['name']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 550,
+            'status': 568,
             'message': "Item with this name already exists.",
         })
         return JsonResponse(context)
@@ -1617,7 +1734,7 @@ def itemAdd(request):
         })
     except Exception:
         context.update({
-            'status': 551,
+            'status': 569,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1628,11 +1745,16 @@ def itemAdd(request):
 @permission_classes([IsAuthenticated])
 def itemEdit(request):
     context = {}
+    if not request.POST['name'] or request.POST['uom_id'] or request.POST['item_type_id'] or request.POST['price']:
+        context.update({
+            'status': 570,
+            'message': "Name/UOM/Item Type/Price has not been provided."
+        })
     exist_data = models.Item.objects.filter(name__iexact=request.POST['name']).exclude(
         pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 552,
+            'status': 571,
             'message': "Item with this name and model number already exists.",
         })
         return JsonResponse(context)
@@ -1651,7 +1773,7 @@ def itemEdit(request):
         })
     except Exception:
         context.update({
-            'status': 553,
+            'status': 572,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1673,7 +1795,7 @@ def itemDelete(request):
         })
     except Exception:
         context.update({
-            'status': 554,
+            'status': 573,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1699,7 +1821,7 @@ def billOfMaterialList(request):
     else:
         if keyword is not None and keyword != "":
             billOfMaterials = models.Bill_Of_Material.objects.filter(
-                name__icontains=keyword).filter(status=1, deleted=0)
+                Q(name__icontains=keyword) | Q(uom__name__icontains=keyword) | Q(price__icontains=keyword)).filter(status=1, deleted=0)
         else:
             billOfMaterials = models.Bill_Of_Material.objects.filter(
                 status=1, deleted=0)
@@ -1738,11 +1860,16 @@ def billOfMaterialList(request):
 @permission_classes([IsAuthenticated])
 def billOfMaterialAdd(request):
     context = {}
+    if not request.POST['name'] or request.POST['uom_id'] or request.POST['total_amount'] or request.POST['level']:
+        context.update({
+            'status': 574,
+            'message': "Name/UOM/Total Amount/Level has not been provided."
+        })
     exist_data = models.Bill_Of_Material.objects.filter(
         name__iexact=request.POST['name'], level=request.POST['level']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 555,
+            'status': 575,
             'message': "Bill Of Material with this name and level already exists.",
         })
         return JsonResponse(context)
@@ -1777,7 +1904,7 @@ def billOfMaterialAdd(request):
         })
     except Exception:
         context.update({
-            'status': 556,
+            'status': 576,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1788,11 +1915,16 @@ def billOfMaterialAdd(request):
 @permission_classes([IsAuthenticated])
 def billOfMaterialEdit(request):
     context = {}
+    if not request.POST['name'] or request.POST['uom_id'] or request.POST['total_amount'] or request.POST['level']:
+        context.update({
+            'status': 577,
+            'message': "Name/UOM/Total Amount/Level has not been provided."
+        })
     exist_data = models.Bill_Of_Material.objects.filter(
         name__iexact=request.POST['name'], level=request.POST['level']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
-            'status': 557,
+            'status': 578,
             'message': "Bill Of Material with this name already exists.",
         })
         return JsonResponse(context)
@@ -1827,7 +1959,7 @@ def billOfMaterialEdit(request):
         })
     except Exception:
         context.update({
-            'status': 558,
+            'status': 579,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1850,7 +1982,7 @@ def billOfMaterialDelete(request):
         })
     except Exception:
         context.update({
-            'status': 559,
+            'status': 580,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -1858,6 +1990,7 @@ def billOfMaterialDelete(request):
 
 
 def getStructureOfBOM(bom_id):
+    print(list(models.Bill_Of_Material.objects.filter(pk=bom_id)))
     billOfMaterial = list(models.Bill_Of_Material.objects.filter(pk=bom_id)[:1].values('pk', 'name', 'uom__name', 'quantity', 'price'))[0]
     childBOMS = models.Bill_Of_Material_Detail.objects.filter(status=1, deleted=0, bill_of_material_header_id=bom_id).order_by('bom_level_id')
     id_lists = []
@@ -1891,7 +2024,7 @@ def getBillOfMaterialStructure(request):
         })
     else:
         context.update({
-            'status': 560,
+            'status': 581,
             'message': "Please Provide valid BOM id."
         })
     return JsonResponse(context)

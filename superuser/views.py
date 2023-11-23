@@ -486,6 +486,7 @@ def billOfMaterialEdit(request, id):
 
 
 def getStructureOfBOM(bom_id):
+    print()
     billOfMaterial = list(models.Bill_Of_Material.objects.filter(pk=bom_id)[:1].values('pk', 'name', 'uom__name', 'quantity', 'price'))[0]
     childBOMS = models.Bill_Of_Material_Detail.objects.filter(status=1, deleted=0, bill_of_material_header_id=bom_id)
     id_lists = []
