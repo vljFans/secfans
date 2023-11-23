@@ -2064,15 +2064,14 @@ def purchaseOrderEdit(request):
 @permission_classes([IsAuthenticated])
 def purchaseOrderDelete(request):
     context = {}
-    bomLevel = models.Bill_Of_Material.objects.get(
-        pk=request.POST['id'])
+    purchaseOrder = models.Purchase_Order.objects.get(pk=request.POST['id'])
     try:
         with transaction.atomic():
-            bomLevel.delete()
+            purchaseOrder.delete()
         transaction.commit()
         context.update({
             'status': 200,
-            'message': "Bill Of Material Deleted Successfully."
+            'message': "Purchase Order Deleted Successfully."
         })
     except Exception:
         context.update({
