@@ -12,6 +12,10 @@ environ.Env.read_env()
 context = {}
 context['project_name'] = env("PROJECT_NAME")
 context['client_name'] = env("CLIENT_NAME")
+context['client_address'] = env("CLIENT_ADDRESS")
+context['client_work_address'] = env("CLIENT_WORK_ADDRESS")
+context['client_contact'] = env("CLIENT_CONTACT")
+context['client_gst_number'] = env("CLIENT_GST_NUMBER")
 
 # Create your views here.
 
@@ -561,11 +565,19 @@ def purchaseOrderEdit(request, id):
 
 @login_required
 def purchaseOrderView(request, id):
-    purchaseOrder = models.Purchase_Order.objects.prefetch_related(
-        'purchase_order_detail_set').get(pk=id)
+    purchaseOrder = models.Purchase_Order.objects.prefetch_related('purchase_order_detail_set').get(pk=id)
     context.update({
         'purchaseOrder': purchaseOrder,
         'page_title': "Purchase Order View",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Purchase Order", 'url': reverse('superuser:purchaseOrderList')}, {'name': "View"}]
     })
     return render(request, 'portal/Purchase Order/view.html', context)
+
+
+@login_required
+def purchaseOrderPrint(request, id):
+    purchaseOrder = models.Purchase_Order.objects.prefetch_related('purchase_order_detail_set').get(pk=id)
+    context.update({
+        'purchaseOrder': purchaseOrder,
+    })
+    return render(request, 'portal/Purchase Order/print.html', context)

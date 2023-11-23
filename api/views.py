@@ -542,10 +542,10 @@ def vendorList(request):
 @permission_classes([IsAuthenticated])
 def vendorAdd(request):
     context = {}
-    if not request.POST['name'] or request.POST['contact_name'] or request.POST['contact_email'] or  request.POST['contact_no'] or request.POST['pin'] or request.POST['address'] or request.POST['country_id'] or request.POST['state_id'] or request.POST['city_id']:
+    if not request.POST['name'] or request.POST['contact_name'] or request.POST['contact_email'] or request.POST['contact_no'] or request.POST['gst_no'] or request.POST['pin'] or request.POST['address'] or request.POST['country_id'] or request.POST['state_id'] or request.POST['city_id']:
         context.update({
             'status': 517,
-            'message': "Name/Contact Name/Contact Email/Contact No/Pin/Address/Country/State/City has not been provided."
+            'message': "Name/Contact Name/Contact Email/Contact No/GST Number/Pin/Address/Country/State/City has not been provided."
         })
     exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
         contact_no__iexact=request.POST['contact_no'])).filter(deleted=0)
@@ -587,10 +587,10 @@ def vendorAdd(request):
 @permission_classes([IsAuthenticated])
 def vendorEdit(request):
     context = {}
-    if not request.POST['name'] or request.POST['contact_name'] or request.POST['contact_email'] or request.POST['contact_no'] or request.POST['pin'] or request.POST['address'] or request.POST['country_id'] or request.POST['state_id'] or request.POST['city_id']:
+    if not request.POST['name'] or request.POST['contact_name'] or request.POST['contact_email'] or request.POST['contact_no'] or request.POST['gst_no'] or request.POST['pin'] or request.POST['address'] or request.POST['country_id'] or request.POST['state_id'] or request.POST['city_id']:
         context.update({
             'status': 520,
-            'message': "Name/Contact Name/Contact Email/Contact No/Pin/Address/Country/State/City has not been provided."
+            'message': "Name/Contact Name/Contact Email/Contact No/GST Number/Pin/Address/Country/State/City has not been provided."
         })
     exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
         contact_no__iexact=request.POST['contact_no'])).exclude(id=request.POST['id']).filter(deleted=0)

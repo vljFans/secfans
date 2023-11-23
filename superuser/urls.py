@@ -76,4 +76,5 @@ urlpatterns = [
     path('purchase-order-add', views.purchaseOrderAdd, name='purchaseOrderAdd'),
     path('purchase-order-edit/<int:id>', views.purchaseOrderEdit, name='purchaseOrderEdit'),
     path('purchase-order-view/<int:id>', views.purchaseOrderView, name='purchaseOrderView'),
+    path('purchase-order-print/<int:id>', views.purchaseOrderPrint, name='purchaseOrderPrint'),
 ]

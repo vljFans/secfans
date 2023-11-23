@@ -133,6 +133,8 @@
                 $('.error-msg-txt').text("");
                 if (response.status == 200) {
                     edit_url = "{% url 'superuser:purchaseOrderEdit' 1 %}";
+                    view_url = "{% url 'superuser:purchaseOrderView' 1 %}";
+                    print_url = "{% url 'superuser:purchaseOrderPrint' 1 %}";
                     page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
@@ -144,6 +146,10 @@
                                 <td>${element.order_date}</td>
                                 <td>₹${element.total_amount}</td>
                                 <td>
+                                {% if request.user.is_superuser == 1 or 'view_purchase_order'|get_session_permission:request is not None %}
+                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
+                                <a target="new" href="${print_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-print"></i> </a>    
+                                {% endif %}
                                 {% if request.user.is_superuser == 1 or 'change_purchase_order'|get_session_permission:request is not None %}
                                 <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
                                 {% endif %}

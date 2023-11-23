@@ -1,0 +1,220 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+    <title>Purchase Order</title>
+    <style type="text/css">
+        body {
+            position: absolute;
+            top: 2%;
+            left: 2%;
+            right: 2%;
+        }
+
+        table,
+        th,
+        tr,
+        td {
+            border: 1px solid rgb(195, 195, 195);
+        }
+
+        tr,
+        th,
+        td {
+            font-family: sans-serif;
+            font-size: 12px;
+            padding: 7px;
+            text-align: left;
+        }
+
+        .fs-16 {
+            font-size: 16px;
+        }
+
+        .fs-10 {
+            font-size: 10px;
+        }
+
+        .fs-11 {
+            font-size: 11px;
+        }
+    </style>
+</head>
+
+<body>
+    <table style="border-width:0px; border-spacing:0px; width: 100%;">
+        <tr>
+            <td rowspan="3" colspan="4" style="width:40%;"><strong class="fs-16">{{client_name}}.</strong><br>
+                {{client_address}},<br>
+                Ph. – {{client_contact}}<br>
+                Works – {{client_work_address}}
+            </td>
+            <td rowspan="4" colspan="4" style="width:30%;"><strong>{{purchaseOrder.vendor.name}}</strong><br>
+                {{purchaseOrder.vendor.address}}<br>{{purchaseOrder.vendor.city.name}} – {{purchaseOrder.vendor.pin}},
+                {{purchaseOrder.vendor.state.name}}</td>
+            <td colspan="2"> </td>
+        </tr>
+        <tr>
+            <td colspan="2" class="fs-16" style="text-align: center; width:30%;"><strong>PURCHASE ORDER</strong></td>
+        </tr>
+        <tr>
+            <td colspan="2">No. {{purchaseOrder.order_number}} Date: {{purchaseOrder.order_date|date:"d.m.Y"}}<br>
+                Please quote this on all future correspondence
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" class="fs-16"><strong>GSTIN – {{client_gst_number}}</strong></td>
+            <td colspan="2">Your Quotation. No.- {{purchaseOrder.quotation_number}}<br>
+                Date: {{purchaseOrder.quotation_date|date:"d/m/Y"}}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8">Please supply the under mentioned goods in accordance with your quotation and as per terms
+                and conditions accepted </td>
+            <td style="width: 14.7%;">Drawing /<br>
+                Specification./<br>
+                Sample Ref</td>
+            <td> </td>
+        </tr>
+    </table>
+    <table style="border-width:0px; border-spacing:0px; width:100%; border:0px!important;">
+        <tr>
+            <td style="width:70%; padding:0px; border-right:0px; border-top:0px;">
+                <table style="border-width:0px; border-spacing:0px; width:100%; height:450px;">
+                    <tr>
+                        <!-- <td rowspan="2">Sl. No.</td>
+                        <td rowspan="2" style="text-align: center;">Description of Materials</td>
+                        <td rowspan="2" style="text-align: center;">Unit</td>
+                        <td rowspan="2" style="text-align: center;">Quantity</td>
+                        <td colspan="2" style="text-align: center;">Rate</td>
+                        <td colspan="2" style="text-align: center;">Amount</td>
+                        <td rowspan="2" style="text-align: center;">GST %</td>
+                        <td rowspan="2" style="text-align: center;">GST Amount</td> -->
+                        <td rowspan="2">Sl. No.</td>
+                        <td rowspan="2" style="text-align: center;">Description of Materials</td>
+                        <td rowspan="2" style="text-align: center;">Unit</td>
+                        <td rowspan="2" style="text-align: center;">Quantity</td>
+                        <td rowspan="2" style="text-align: center;">Rate</td>
+                        <td rowspan="2" style="text-align: center;">Amount</td>
+                        <td rowspan="2" style="text-align: center;">GST %</td>
+                        <td rowspan="2" style="text-align: center;">GST Amount</td>
+                    </tr>
+
+                    <tr>
+                        <!-- <td>Rs.</td>
+                        <td>P</td>
+                        <td>Rs.</td>
+                        <td>P</td> -->
+                    </tr>
+
+                    {% for orderDetail in purchaseOrder.purchase_order_detail_set.all %}
+                    <tr>
+                        <td style="border-bottom:0px!important; border-top:0px!important;">{{forloop.counter}}</td>
+                        <td style="border-bottom:0px!important; border-top:0px!important;">{{orderDetail.item.name}}
+                        </td>
+                        <td style="border-bottom:0px!important; border-top:0px!important;">{{orderDetail.item.uom.name}}
+                        </td>
+                        <td style="border-bottom:0px!important; border-top:0px!important;">{{orderDetail.quantity}}</td>
+                        <td style="border-bottom:0px!important; border-top:0px!important;">{{orderDetail.rate}}</td>
+                        <td style="border-bottom:0px!important; border-top:0px!important;">{{orderDetail.amount}}</td>
+                        <td style="border-bottom:0px!important; border-top:0px!important;">{{orderDetail.gst_percentage}}</td>
+                        <td style="border-bottom:0px!important; border-top:0px!important;">{{orderDetail.amount_with_gst}}</td> 
+                    </tr>
+                    {% endfor %}
+
+
+                </table>
+            </td>
+            <td style="width:30%; padding:0px; border-right:0px; border-left:0px; border-top:0px;">
+                <table style="border-width:0px; border-spacing:0px; width:100%;">
+                    <tr style="width: 100%;">
+                        <td style="width: 50%;">Business Terms</td>
+                        <td style="width: 50%;">{{purchaseOrder.business_terms}}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Discount</td>
+                        <td>{% if purchaseOrder.discount_value == 0 %}
+                            NA
+                            {% else %}
+                            {{purchaseOrder.discount_value}}
+                            {% endif %}
+                            {% if purchaseOrder.discount_type == 'percentage' %}
+                            %
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Excise Duty %</td>
+                        <td>{% if purchaseOrder.excise_duty_percentage == 0 %}NA{% else
+                            %}{{purchaseOrder.excise_duty_percentage}}{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <td>Insurance</td>
+                        <td>{% if purchaseOrder.insurance == 0 %}NA{% else %}{{purchaseOrder.insurance}}{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <td>Octroi</td>
+                        <td>{% if purchaseOrder.octroi == 0 %}NA{% else %}{{purchaseOrder.octroi}}{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <td>Freight</td>
+                        <td>{% if purchaseOrder.freight == 0 %}NA{% else %}{{purchaseOrder.freight}}{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <td>Packing</td>
+                        <td>{{purchaseOrder.packing}}</td>
+                    </tr>
+                    <tr>
+                        <td>Payment Terms</td>
+                        <td>{{purchaseOrder.payment_terms}}</td>
+                    </tr>
+                    <tr>
+                        <td>Delivery Schedule</td>
+                        <td>{{purchaseOrder.delivery_schedule}}</td>
+                    </tr>
+                    <tr>
+                        <td>Delivery at</td>
+                        <td>{{purchaseOrder.delivery_at}}</td>
+                    </tr>
+                    <tr>
+                        <td>GSTIN</td>
+                        <td class="fs-10">{{purchaseOrder.vendor.gst_no}}</td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2" style="text-align: center;">
+                            <strong>PLEASE ENCLOSE TEST CERTIFICATE OF<br>
+                                MATERIAL ALONG WITH CHALLAN<br>
+                                WHEREEVER APPLICABLE
+                            </strong>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+
+
+    <table style="border-width:0px; border-spacing:0px; width:100%;">
+        <tr>
+            <td colspan="8" class="fs-10" style="width:70%;">Note for Consideration:<br>
+                # This order is subject to the Terms and conditions, if nothing to the contrary is heard within
+                48 hours of the receipt of the order , it will be understood that the order has been accepted.<br>
+                ## Please Submit your bill in duplicate along with receipted Challan & inspection report.<br>
+                ### Transporter’s name to be intimated at the time of delivery.</td>
+            <td colspan="2" style="text-align: center;">For Shiva Engineering Co..<br><br><br><br>
+                Authorised Signatory</td>
+        </tr>
+    </table>
+</body>
+<script>
+    // $(document).ready(function () {
+    //     window.print();
+    // });
+</script>
+
+</html>

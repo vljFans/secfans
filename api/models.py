@@ -409,7 +409,7 @@ class Purchase_Order(models.Model):
     updated_at = models.DateTimeField(default=now)
 
     def __str__(self):
-        return self.order_no
+        return self.order_number
 
     class Meta:
         managed = True
