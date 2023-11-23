@@ -277,7 +277,6 @@ def roleDelete(request):
         return JsonResponse(context)
     try:
         with transaction.atomic():
-            role.role_permission_set.all().delete()
             role.delete()
         transaction.commit()
         context.update({
@@ -2078,7 +2077,7 @@ def purchaseOrderDelete(request):
         })
     except Exception:
         context.update({
-            'status': 559,
+            'status': 563,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()

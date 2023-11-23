@@ -471,7 +471,8 @@ def billOfMaterialAdd(request):
 def billOfMaterialEdit(request, id):
     billOfMaterial = models.Bill_Of_Material.objects.prefetch_related(
         'bill_of_material_detail_set').get(pk=id)
-    bomLevels = models.Bill_Of_Material.objects.filter(level__lte=billOfMaterial.level - 1).filter(status=1, deleted=0)
+    bomLevels = models.Bill_Of_Material.objects.filter(
+        level__lte=billOfMaterial.level - 1).filter(status=1, deleted=0)
     items = models.Item.objects.filter(status=1, deleted=0)
     uoms = models.Uom.objects.filter(status=1, deleted=0)
     context.update({
@@ -486,8 +487,10 @@ def billOfMaterialEdit(request, id):
 
 
 def getStructureOfBOM(bom_id):
-    billOfMaterial = list(models.Bill_Of_Material.objects.filter(pk=bom_id)[:1].values('pk', 'name', 'uom__name', 'quantity', 'price'))[0]
-    childBOMS = models.Bill_Of_Material_Detail.objects.filter(status=1, deleted=0, bill_of_material_header_id=bom_id)
+    billOfMaterial = list(models.Bill_Of_Material.objects.filter(pk=bom_id)[
+                          :1].values('pk', 'name', 'uom__name', 'quantity', 'price'))[0]
+    childBOMS = models.Bill_Of_Material_Detail.objects.filter(
+        status=1, deleted=0, bill_of_material_header_id=bom_id)
     id_lists = []
     for each in childBOMS:
         id_lists.append(each.id)
@@ -499,16 +502,20 @@ def getStructureOfBOM(bom_id):
         each_child_structure['quantity'] = childDetail.quantity
         each_child_structure['price'] = childDetail.price
         if childDetail.item_id is not None:
-            each_child_structure['item'] = list(models.Item.objects.filter(pk=childDetail.item_id)[:1].values('pk', 'name', 'item_type__name', 'item_type__item_category__name', 'uom__name', 'price'))[0]
+            each_child_structure['item'] = list(models.Item.objects.filter(pk=childDetail.item_id)[:1].values(
+                'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'uom__name', 'price'))[0]
         if childDetail.bom_level_id is not None:
-            each_child_structure['bom'] = getStructureOfBOM(childDetail.bom_level_id)
+            each_child_structure['bom'] = getStructureOfBOM(
+                childDetail.bom_level_id)
         structure.append(each_child_structure)
     billOfMaterial['structure'] = structure
     return billOfMaterial
 
+
 @login_required
 def billOfMaterialView(request, id):
-    billOfMaterial = models.Bill_Of_Material.objects.prefetch_related('bill_of_material_detail_set').get(pk=id)
+    billOfMaterial = models.Bill_Of_Material.objects.prefetch_related(
+        'bill_of_material_detail_set').get(pk=id)
     # billOfMaterial = getStructureOfBOM(id)
     context.update({
         'billOfMaterial': billOfMaterial,
@@ -538,16 +545,14 @@ def purchaseOrderAdd(request):
 
 @login_required
 def purchaseOrderEdit(request, id):
-    billOfMaterial = models.Bill_Of_Material.objects.prefetch_related(
-        'bill_of_material_detail_set').get(pk=id)
-    bomLevels = models.Bill_Of_Material.objects.filter(level__lte=billOfMaterial.level - 1).filter(status=1, deleted=0)
+    purchaseOrder = models.Purchase_Order.objects.prefetch_related(
+        'purchase_order_detail_set').get(pk=id)
+    vendors = models.Vendor.objects.filter(status=1, deleted=0)
     items = models.Item.objects.filter(status=1, deleted=0)
-    uoms = models.Uom.objects.filter(status=1, deleted=0)
     context.update({
-        'billOfMaterial': billOfMaterial,
-        'bomLevels': bomLevels,
+        'purchaseOrder': purchaseOrder,
+        'vendors': vendors,
         'items': items,
-        'uoms': uoms,
         'page_title': "Purchase Order Edit",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Purchase Order", 'url': reverse('superuser:purchaseOrderList')}, {'name': "Edit"}]
     })
@@ -556,10 +561,10 @@ def purchaseOrderEdit(request, id):
 
 @login_required
 def purchaseOrderView(request, id):
-    billOfMaterial = models.Bill_Of_Material.objects.prefetch_related('bill_of_material_detail_set').get(pk=id)
-    # billOfMaterial = getStructureOfBOM(id)
+    purchaseOrder = models.Purchase_Order.objects.prefetch_related(
+        'purchase_order_detail_set').get(pk=id)
     context.update({
-        'billOfMaterial': billOfMaterial,
+        'purchaseOrder': purchaseOrder,
         'page_title': "Purchase Order View",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Purchase Order", 'url': reverse('superuser:purchaseOrderList')}, {'name': "View"}]
     })
