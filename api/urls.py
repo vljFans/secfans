@@ -40,6 +40,7 @@ urlpatterns = [
     path('customer-add', views.customerAdd, name='customerAdd'),
     path('customer-edit', views.customerEdit, name='customerEdit'),
     path('customer-delete', views.customerDelete, name='customerDelete'),
+    path('customer-export', views.customerExport, name='customerExport'),
 
     path('uom-list', views.uomList, name='uomList'),
     path('uom-add', views.uomAdd, name='uomAdd'),
@@ -70,6 +71,7 @@ urlpatterns = [
     path('item-add', views.itemAdd, name='itemAdd'),
     path('item-edit', views.itemEdit, name='itemEdit'),
     path('item-delete', views.itemDelete, name='itemDelete'),
+    path('item-export', views.itemExport, name='itemExport'),
     
     path('bill-of-material-list', views.billOfMaterialList, name='billOfMaterialList'),
     path('bill-of-material-add', views.billOfMaterialAdd, name='billOfMaterialAdd'),

@@ -940,6 +940,58 @@ def customerDelete(request):
 
 
 @api_view(['GET'])
+def customerExport(request):
+    keyword = request.GET.get('keyword')
+    if keyword is not None and keyword != "":
+        page_items = models.Customer.objects.filter(Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(email__icontains=keyword) | Q(
+            phone__icontains=keyword) | Q(customer_type__name__icontains=keyword) | Q(pin__icontains=keyword) | Q(city__name__icontains=keyword)).filter(status=1, deleted=0)
+    else:
+        page_items = models.Customer.objects.filter(status=1, deleted=0)
+
+    directory_path = settings.MEDIA_ROOT + '/reports/'
+    path = Path(directory_path)
+    path.mkdir(parents=True, exist_ok=True)
+
+    for f in os.listdir(settings.MEDIA_ROOT + '/reports/'):
+        if not f.endswith(".xlsx"):
+            continue
+        os.remove(os.path.join(settings.MEDIA_ROOT + '/reports/', f))
+
+    # tmpname = str(datetime.now().microsecond) + ".xlsx"
+    tmpname = "Customer" + ".xlsx"
+    wb = Workbook()
+
+    # grab the active worksheet
+    ws = wb.active
+
+    # Data can be assigned directly to cells
+    ws['A1'] = "Name"
+    ws['B1'] = "Address"
+    ws['C1'] = "Contact Name"
+    ws['D1'] = "Contact Number"
+    ws['E1'] = "Contact Email"
+    ws['F1'] = "Customer Type"
+    ws['G1'] = "Country"
+    ws['H1'] = "State"
+    ws['I1'] = "City"
+    ws['J1'] = "Pin"
+
+    # Rows can also be appended
+    for each in page_items:
+        ws.append([each.name, each.address, each.contact_name, each.contact_no, each.contact_email,
+                  each.customer_type.name, each.country.name, each.state.name, each.city.name, each.pin])
+
+    # Save the file
+    wb.save(settings.MEDIA_ROOT + '/reports/' + tmpname)
+    os.chmod(settings.MEDIA_ROOT + '/reports/' + tmpname, 0o777)
+    return JsonResponse({
+        'code': 200,
+        'filename': settings.MEDIA_URL + 'reports/' + tmpname,
+        'name':  tmpname
+    })
+
+
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def uomList(request):
     context = {}
@@ -1817,6 +1869,51 @@ def itemDelete(request):
         })
         transaction.rollback()
     return JsonResponse(context)
+
+
+@api_view(['GET'])
+def itemExport(request):
+    keyword = request.GET.get('keyword')
+    if keyword is not None and keyword != "":
+        page_items = models.Item.objects.filter(Q(name__icontains=keyword) | Q(item_type__name__icontains=keyword) | Q(uom__name__icontains=keyword)).filter(status=1, deleted=0)
+    else:
+        page_items = models.Item.objects.filter(status=1, deleted=0)
+
+    directory_path = settings.MEDIA_ROOT + '/reports/'
+    path = Path(directory_path)
+    path.mkdir(parents=True, exist_ok=True)
+
+    for f in os.listdir(settings.MEDIA_ROOT + '/reports/'):
+        if not f.endswith(".xlsx"):
+            continue
+        os.remove(os.path.join(settings.MEDIA_ROOT + '/reports/', f))
+
+    # tmpname = str(datetime.now().microsecond) + ".xlsx"
+    tmpname = "Item" + ".xlsx"
+    wb = Workbook()
+
+    # grab the active worksheet
+    ws = wb.active
+
+    # Data can be assigned directly to cells
+    ws['A1'] = "Name"
+    ws['B1'] = "Item Type"
+    ws['C1'] = "Item Category"
+    ws['D1'] = "UOM"
+    ws['E1'] = "Price"
+
+    # Rows can also be appended
+    for each in page_items:
+        ws.append([each.name, each.item_type.name, each.item_type.item_category.name, each.uom.name, each.price])
+
+    # Save the file
+    wb.save(settings.MEDIA_ROOT + '/reports/' + tmpname)
+    os.chmod(settings.MEDIA_ROOT + '/reports/' + tmpname, 0o777)
+    return JsonResponse({
+        'code': 200,
+        'filename': settings.MEDIA_URL + 'reports/' + tmpname,
+        'name':  tmpname
+    })
 
 
 @api_view(['GET'])
