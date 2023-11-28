@@ -714,24 +714,11 @@ def customerList(request):
         })
     else:
         if keyword is not None and keyword != "":
-            customers = list(
-                models.Customer.objects.filter(
-                    Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(email__icontains=keyword) | Q(
-                        phone__icontains=keyword) | Q(customer_type__name__icontains=keyword)
-                ).filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark',
-                                                     'country__pk', 'state__pk', 'city__pk',
-                                                     'country__name', 'state__name', 'city__name',
-                                                     'pin', 'contact_no', 'contact_name',
-                                                     'contact_email', 'customer_type__name',
-                                                     'photo', 'kyc_image'))
+            customers = list(models.Customer.objects.filter(Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(email__icontains=keyword) | Q(phone__icontains=keyword) | Q(customer_type__name__icontains=keyword) | Q(pin__icontains=keyword) | Q(city__name__icontains=keyword)).filter(
+                status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
         else:
-            customers = list(
-                models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark',
-                                                                           'country__pk', 'state__pk', 'city__pk',
-                                                                           'country__name', 'state__name', 'city__name',
-                                                                           'pin', 'contact_no', 'contact_name',
-                                                                           'contact_email', 'customer_type__name',
-                                                                           'photo', 'kyc_image'))
+            customers = list(models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk',
+                             'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -790,10 +777,13 @@ def customerAdd(request):
             customer.kyc_detail = request.POST['kyc_detail']
             customer.date_of_birth = request.POST['date_of_birth'] if request.POST['date_of_birth'] != "" else None
             customer.date_of_anniversary = request.POST['date_of_anniversary']
-            customer.weekly_closing_day = ", ".join(request.POST.getlist('weekly_closing_day')) if 'weekly_closing_day' in request.POST.keys() else None
-            customer.morning_from_time = request.POST['morning_from_time'] if request.POST['date_of_birth'] != "" else None
+            customer.weekly_closing_day = ", ".join(request.POST.getlist(
+                'weekly_closing_day')) if 'weekly_closing_day' in request.POST.keys() else None
+            customer.morning_from_time = request.POST[
+                'morning_from_time'] if request.POST['date_of_birth'] != "" else None
             customer.morning_to_time = request.POST['morning_to_time'] if request.POST['date_of_birth'] != "" else None
-            customer.evening_from_time = request.POST['evening_from_time'] if request.POST['date_of_birth'] != "" else None
+            customer.evening_from_time = request.POST[
+                'evening_from_time'] if request.POST['date_of_birth'] != "" else None
             customer.evening_to_time = request.POST['evening_to_time'] if request.POST['date_of_birth'] != "" else None
             customer.address = request.POST['address']
             customer.country_id = request.POST['country_id']
@@ -873,10 +863,13 @@ def customerEdit(request):
             customer.kyc_detail = request.POST['kyc_detail']
             customer.date_of_birth = request.POST['date_of_birth'] if request.POST['date_of_birth'] != "" else None
             customer.date_of_anniversary = request.POST['date_of_anniversary']
-            customer.weekly_closing_day = ", ".join(request.POST.getlist('weekly_closing_day')) if 'weekly_closing_day' in request.POST.keys() else None
-            customer.morning_from_time = request.POST['morning_from_time'] if request.POST['date_of_birth'] != "" else None
+            customer.weekly_closing_day = ", ".join(request.POST.getlist(
+                'weekly_closing_day')) if 'weekly_closing_day' in request.POST.keys() else None
+            customer.morning_from_time = request.POST[
+                'morning_from_time'] if request.POST['date_of_birth'] != "" else None
             customer.morning_to_time = request.POST['morning_to_time'] if request.POST['date_of_birth'] != "" else None
-            customer.evening_from_time = request.POST['evening_from_time'] if request.POST['date_of_birth'] != "" else None
+            customer.evening_from_time = request.POST[
+                'evening_from_time'] if request.POST['date_of_birth'] != "" else None
             customer.evening_to_time = request.POST['evening_to_time'] if request.POST['date_of_birth'] != "" else None
             customer.address = request.POST['address']
             customer.country_id = request.POST['country_id']
