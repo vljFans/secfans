@@ -14,11 +14,13 @@ from django.http import JsonResponse
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.hashers import make_password, check_password
 from datetime import datetime
+from openpyxl import Workbook
 from django.db import transaction
 from django.db.models import Q
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from pathlib import Path
+import os
 import math
 import environ
 
@@ -498,20 +500,12 @@ def vendorList(request):
         })
     else:
         if keyword is not None and keyword != "":
-            vendors = list(
-                models.Vendor.objects.filter(
-                    Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(
-                        contact_email__icontains=keyword) | Q(contact_no__icontains=keyword)
-                ).filter(status=1, deleted=0).values(
-                    'pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name',
-                    'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
+            vendors = list(models.Vendor.objects.filter(Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(contact_no__icontains=keyword) | Q(pin__icontains=keyword) | Q(city__name__icontains=keyword)).filter(status=1, deleted=0).values(
+                'pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name',
+                'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
         else:
             vendors = list(
-                models.Vendor.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'country__pk',
-                                                                         'state__pk',
-                                                                         'city__pk', 'country__name', 'state__name',
-                                                                         'city__name', 'pin', 'gst_no', 'contact_no',
-                                                                         'contact_name', 'contact_email'))
+                models.Vendor.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -652,6 +646,58 @@ def vendorDelete(request):
 
 
 @api_view(['GET'])
+def vendorExport(request):
+    keyword = request.GET.get('keyword')
+    if keyword is not None and keyword != "":
+        page_items = models.Vendor.objects.filter(Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(
+            contact_no__icontains=keyword) | Q(pin__icontains=keyword) | Q(city__name__icontains=keyword)).filter(status=1, deleted=0)
+    else:
+        page_items = models.Vendor.objects.filter(status=1, deleted=0)
+
+    directory_path = settings.MEDIA_ROOT + '/reports/'
+    path = Path(directory_path)
+    path.mkdir(parents=True, exist_ok=True)
+
+    for f in os.listdir(settings.MEDIA_ROOT + '/reports/'):
+        if not f.endswith(".xlsx"):
+            continue
+        os.remove(os.path.join(settings.MEDIA_ROOT + '/reports/', f))
+
+    # tmpname = str(datetime.now().microsecond) + ".xlsx"
+    tmpname = "Vendor" + ".xlsx"
+    wb = Workbook()
+
+    # grab the active worksheet
+    ws = wb.active
+
+    # Data can be assigned directly to cells
+    ws['A1'] = "Name"
+    ws['B1'] = "Address"
+    ws['C1'] = "Contact Name"
+    ws['D1'] = "Contact Number"
+    ws['E1'] = "Contact Email"
+    ws['F1'] = "GST Number"
+    ws['G1'] = "Country"
+    ws['H1'] = "State"
+    ws['I1'] = "City"
+    ws['J1'] = "Pin"
+
+    # Rows can also be appended
+    for each in page_items:
+        ws.append([each.name, each.address, each.contact_name, each.contact_no,
+                  each.contact_email, each.gst_no, each.country.name, each.state.name, each.city.name, each.pin])
+
+    # Save the file
+    wb.save(settings.MEDIA_ROOT + '/reports/' + tmpname)
+    os.chmod(settings.MEDIA_ROOT + '/reports/' + tmpname, 0o777)
+    return JsonResponse({
+        'code': 200,
+        'filename': settings.MEDIA_URL + 'reports/' + tmpname,
+        'name':  tmpname
+    })
+
+
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def customerList(request):
     context = {}
@@ -729,6 +775,56 @@ def customerAdd(request):
             'message': "Customer with this email or phone number already exists."
         })
         return JsonResponse(context)
+    # customer = models.Customer()
+    # customer.name = request.POST['name']
+    # customer.contact_name = request.POST['contact_name']
+    # customer.contact_email = request.POST['contact_email']
+    # customer.contact_no = request.POST['contact_no']
+    # customer.contact_no_std = request.POST['contact_no_std']
+    # customer.landmark = request.POST['landmark']
+    # customer.pin = request.POST['pin']
+    # customer.customer_type_id = request.POST['customer_type_id']
+    # customer.kyc_type_id = request.POST['kyc_type_id']
+    # customer.kyc_detail = request.POST['kyc_detail']
+    # customer.date_of_birth = request.POST['date_of_birth'] if request.POST['date_of_birth'] != "" else None
+    # customer.date_of_anniversary = request.POST['date_of_anniversary']
+    # customer.weekly_closing_day = ", ".join(request.POST.getlist('weekly_closing_day')) if 'weekly_closing_day' in request.POST.keys() else None
+    # customer.morning_from_time = request.POST['morning_from_time'] if request.POST['date_of_birth'] != "" else None
+    # customer.morning_to_time = request.POST['morning_to_time'] if request.POST['date_of_birth'] != "" else None
+    # customer.evening_from_time = request.POST['evening_from_time'] if request.POST['date_of_birth'] != "" else None
+    # customer.evening_to_time = request.POST['evening_to_time'] if request.POST['date_of_birth'] != "" else None
+    # customer.address = request.POST['address']
+    # customer.country_id = request.POST['country_id']
+    # customer.state_id = request.POST['state_id']
+    # customer.city_id = request.POST['city_id']
+    # customer.save()
+
+    # if 'photo' in request.FILES.keys():
+    #     photo = request.FILES['photo']
+    #     directory_path = settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
+    #         "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/"
+    #     path = Path(directory_path)
+    #     path.mkdir(parents=True, exist_ok=True)
+    #     fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
+    #         "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/")
+    #     saved_file = fs.save(photo.name, photo)
+    #     photo_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace(
+    #         "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/" + saved_file
+    #     customer.photo = photo_path
+    #     customer.save()
+    # if 'kyc_image' in request.FILES.keys():
+    #     kyc_image = request.FILES['kyc_image']
+    #     directory_path = settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
+    #         "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/"
+    #     path = Path(directory_path)
+    #     path.mkdir(parents=True, exist_ok=True)
+    #     fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
+    #         "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/")
+    #     saved_file = fs.save(kyc_image.name, kyc_image)
+    #     kyc_image_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace(
+    #         "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/" + saved_file
+    #     customer.kyc_image = kyc_image_path
+    #     customer.save()
     try:
         with transaction.atomic():
             customer = models.Customer()
@@ -744,12 +840,11 @@ def customerAdd(request):
             customer.kyc_detail = request.POST['kyc_detail']
             customer.date_of_birth = request.POST['date_of_birth'] if request.POST['date_of_birth'] != "" else None
             customer.date_of_anniversary = request.POST['date_of_anniversary']
-            customer.weekly_closing_day = ", ".join(
-                request.POST.getlist('weekly_closing_day'))
-            customer.morning_from_time = request.POST['morning_from_time']
-            customer.morning_to_time = request.POST['morning_to_time']
-            customer.evening_from_time = request.POST['evening_from_time']
-            customer.evening_to_time = request.POST['evening_to_time']
+            customer.weekly_closing_day = ", ".join(request.POST.getlist('weekly_closing_day')) if 'weekly_closing_day' in request.POST.keys() else None
+            customer.morning_from_time = request.POST['morning_from_time'] if request.POST['date_of_birth'] != "" else None
+            customer.morning_to_time = request.POST['morning_to_time'] if request.POST['date_of_birth'] != "" else None
+            customer.evening_from_time = request.POST['evening_from_time'] if request.POST['date_of_birth'] != "" else None
+            customer.evening_to_time = request.POST['evening_to_time'] if request.POST['date_of_birth'] != "" else None
             customer.address = request.POST['address']
             customer.country_id = request.POST['country_id']
             customer.state_id = request.POST['state_id']
@@ -758,11 +853,11 @@ def customerAdd(request):
 
             if 'photo' in request.FILES.keys():
                 photo = request.FILES['photo']
-                directory_path = settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace(
+                directory_path = settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
                     "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/"
                 path = Path(directory_path)
                 path.mkdir(parents=True, exist_ok=True)
-                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace(
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
                     "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/")
                 saved_file = fs.save(photo.name, photo)
                 photo_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace(
@@ -771,11 +866,11 @@ def customerAdd(request):
                 customer.save()
             if 'kyc_image' in request.FILES.keys():
                 kyc_image = request.FILES['kyc_image']
-                directory_path = settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace(
+                directory_path = settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
                     "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/"
                 path = Path(directory_path)
                 path.mkdir(parents=True, exist_ok=True)
-                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace(
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
                     "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/")
                 saved_file = fs.save(kyc_image.name, kyc_image)
                 kyc_image_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace(
@@ -828,12 +923,11 @@ def customerEdit(request):
             customer.kyc_detail = request.POST['kyc_detail']
             customer.date_of_birth = request.POST['date_of_birth'] if request.POST['date_of_birth'] != "" else None
             customer.date_of_anniversary = request.POST['date_of_anniversary']
-            customer.weekly_closing_day = ", ".join(
-                request.POST.getlist('weekly_closing_day'))
-            customer.morning_from_time = request.POST['morning_from_time']
-            customer.morning_to_time = request.POST['morning_to_time']
-            customer.evening_from_time = request.POST['evening_from_time']
-            customer.evening_to_time = request.POST['evening_to_time']
+            customer.weekly_closing_day = ", ".join(request.POST.getlist('weekly_closing_day')) if 'weekly_closing_day' in request.POST.keys() else None
+            customer.morning_from_time = request.POST['morning_from_time'] if request.POST['date_of_birth'] != "" else None
+            customer.morning_to_time = request.POST['morning_to_time'] if request.POST['date_of_birth'] != "" else None
+            customer.evening_from_time = request.POST['evening_from_time'] if request.POST['date_of_birth'] != "" else None
+            customer.evening_to_time = request.POST['evening_to_time'] if request.POST['date_of_birth'] != "" else None
             customer.address = request.POST['address']
             customer.country_id = request.POST['country_id']
             customer.state_id = request.POST['state_id']
@@ -842,11 +936,11 @@ def customerEdit(request):
 
             if 'photo' in request.FILES.keys():
                 photo = request.FILES['photo']
-                directory_path = settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace(
+                directory_path = settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
                     "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/"
                 path = Path(directory_path)
                 path.mkdir(parents=True, exist_ok=True)
-                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace(
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
                     "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/")
                 saved_file = fs.save(photo.name, photo)
                 photo_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace(
@@ -855,11 +949,11 @@ def customerEdit(request):
                 customer.save()
             if 'kyc_image' in request.FILES.keys():
                 kyc_image = request.FILES['kyc_image']
-                directory_path = settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace(
+                directory_path = settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
                     "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/"
                 path = Path(directory_path)
                 path.mkdir(parents=True, exist_ok=True)
-                fs = FileSystemStorage(location=settings.MEDIA_ROOT + env("CUSTOMER_MEDIA_PROFILE").replace(
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
                     "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/")
                 saved_file = fs.save(kyc_image.name, kyc_image)
                 kyc_image_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace(

@@ -65,6 +65,9 @@
                                 {% if request.user.is_superuser == 1 or 'add_vendor'|get_session_permission:request is not None %}
                                 <a href="{% url 'superuser:vendorAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
                                 {% endif %}
+                                {% if request.user.is_superuser == 1 or 'view_vendor'|get_session_permission:request is not None %}
+                                <a href="javascript:void(0);" url="{% url 'api:vendorExport' %}?&keyword={{request.GET.keyword}}" class="mr-3 excel_download"><i class="fa fa-download"></i></a>
+                                {% endif %}
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                                 <!-- <div class="dropdown" data-toggle="dropdown">
                                     <a href=""><i class="ti-more-alt"></i></a>

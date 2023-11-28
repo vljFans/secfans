@@ -2,10 +2,13 @@ from django.shortcuts import render
 from sec.decorators import login_required
 from django.urls import reverse
 from django.contrib.contenttypes.models import ContentType
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.template.loader import render_to_string
+from django.db.models import Q
 from api import models
 import environ
+import os
+from sec import settings
 env = environ.Env()
 environ.Env.read_env()
 

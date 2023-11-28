@@ -34,6 +34,7 @@ urlpatterns = [
     path('vendor-add', views.vendorAdd, name='vendorAdd'),
     path('vendor-edit', views.vendorEdit, name='vendorEdit'),
     path('vendor-delete', views.vendorDelete, name='vendorDelete'),
+    path('vendor-export', views.vendorExport, name='vendorExport'),
 
     path('customer-list', views.customerList, name='customerList'),
     path('customer-add', views.customerAdd, name='customerAdd'),

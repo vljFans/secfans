@@ -288,6 +288,23 @@
                 },
             });
         });
+
+        $(document).on('click', '.excel_download', function () {
+            url = $(this).attr('url');
+            $.ajax({
+                url: url,
+                type: 'GET',
+                data: ({}),
+                success: function (response) {
+                    const anchor = document.createElement("a");
+                    anchor.href = window.location.origin + "/" + response.filename;
+                    anchor.download = response.name;
+                    document.body.appendChild(anchor);
+                    anchor.click();
+                    document.body.removeChild(anchor);
+                },
+            });
+        });
     </script>
 
     {% block js %}
