@@ -533,6 +533,16 @@ def billOfMaterialView(request, id):
 
 
 @login_required
+def billOfMaterialPrint(request, id):
+    billOfMaterial = models.Bill_Of_Material.objects.prefetch_related('bill_of_material_detail_set').get(pk=id)
+    context.update({
+        'page_title': "Bill Of Material Print",
+        'billOfMaterial': billOfMaterial,
+    })
+    return render(request, 'portal/Bill Of Material/print.html', context)
+
+
+@login_required
 def purchaseOrderList(request):
     context.update({
         'page_title': "Purchase Order List",
@@ -583,6 +593,7 @@ def purchaseOrderPrint(request, id):
     purchaseOrder = models.Purchase_Order.objects.prefetch_related('purchase_order_detail_set').get(pk=id)
     purchaseOrder.amount_with_gst = purchaseOrder.total_amount + purchaseOrder.discounted_value
     context.update({
-        'purchaseOrder': purchaseOrder,
+        'page_title': "Purchase Order Print",
+        'purchaseOrder': purchaseOrder
     })
     return render(request, 'portal/Purchase Order/print.html', context)
