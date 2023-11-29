@@ -457,6 +457,41 @@ def itemEdit(request, id):
 
 
 @login_required
+def storeList(request):
+    context.update({
+        'page_title': "Store List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store", 'url': reverse('superuser:storeList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Store/list.html', context)
+
+
+@login_required
+def storeAdd(request):
+    context.update({
+        'page_title': "Store Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store", 'url': reverse('superuser:storeList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Store/add.html', context)
+
+
+@login_required
+def storeEdit(request, id):
+    store = models.Store.objects.get(pk=id)
+    countries = models.Country.objects.all()
+    states = models.State.objects.filter(country_id=store.country_id)
+    cities = models.City.objects.filter(state_id=store.state_id)
+    context.update({
+        'store': store,
+        'countries': countries,
+        'states': states,
+        'cities': cities,
+        'page_title': "Store Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store", 'url': reverse('superuser:storeList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Store/edit.html', context)
+
+
+@login_required
 def billOfMaterialList(request):
     context.update({
         'page_title': "Bill Of Material List",
@@ -534,7 +569,8 @@ def billOfMaterialView(request, id):
 
 @login_required
 def billOfMaterialPrint(request, id):
-    billOfMaterial = models.Bill_Of_Material.objects.prefetch_related('bill_of_material_detail_set').get(pk=id)
+    billOfMaterial = models.Bill_Of_Material.objects.prefetch_related(
+        'bill_of_material_detail_set').get(pk=id)
     context.update({
         'page_title': "Bill Of Material Print",
         'billOfMaterial': billOfMaterial,
@@ -578,8 +614,10 @@ def purchaseOrderEdit(request, id):
 
 @login_required
 def purchaseOrderView(request, id):
-    purchaseOrder = models.Purchase_Order.objects.prefetch_related('purchase_order_detail_set').get(pk=id)
-    purchaseOrder.amount_with_gst = purchaseOrder.total_amount + purchaseOrder.discounted_value
+    purchaseOrder = models.Purchase_Order.objects.prefetch_related(
+        'purchase_order_detail_set').get(pk=id)
+    purchaseOrder.amount_with_gst = purchaseOrder.total_amount + \
+        purchaseOrder.discounted_value
     context.update({
         'purchaseOrder': purchaseOrder,
         'page_title': "Purchase Order View",
@@ -590,8 +628,10 @@ def purchaseOrderView(request, id):
 
 @login_required
 def purchaseOrderPrint(request, id):
-    purchaseOrder = models.Purchase_Order.objects.prefetch_related('purchase_order_detail_set').get(pk=id)
-    purchaseOrder.amount_with_gst = purchaseOrder.total_amount + purchaseOrder.discounted_value
+    purchaseOrder = models.Purchase_Order.objects.prefetch_related(
+        'purchase_order_detail_set').get(pk=id)
+    purchaseOrder.amount_with_gst = purchaseOrder.total_amount + \
+        purchaseOrder.discounted_value
     context.update({
         'page_title': "Purchase Order Print",
         'purchaseOrder': purchaseOrder

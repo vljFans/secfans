@@ -1824,7 +1824,7 @@ def itemEdit(request):
     if len(exist_data) > 0:
         context.update({
             'status': 570,
-            'message': "Item with this name and model number already exists.",
+            'message': "Item with this name already exists.",
         })
         return JsonResponse(context)
     try:
@@ -1875,7 +1875,8 @@ def itemDelete(request):
 def itemExport(request):
     keyword = request.GET.get('keyword')
     if keyword is not None and keyword != "":
-        page_items = models.Item.objects.filter(Q(name__icontains=keyword) | Q(item_type__name__icontains=keyword) | Q(uom__name__icontains=keyword)).filter(status=1, deleted=0)
+        page_items = models.Item.objects.filter(Q(name__icontains=keyword) | Q(
+            item_type__name__icontains=keyword) | Q(uom__name__icontains=keyword)).filter(status=1, deleted=0)
     else:
         page_items = models.Item.objects.filter(status=1, deleted=0)
 
@@ -1904,7 +1905,219 @@ def itemExport(request):
 
     # Rows can also be appended
     for each in page_items:
-        ws.append([each.name, each.item_type.name, each.item_type.item_category.name, each.uom.name, each.price])
+        ws.append([each.name, each.item_type.name,
+                  each.item_type.item_category.name, each.uom.name, each.price])
+
+    # Save the file
+    wb.save(settings.MEDIA_ROOT + '/reports/' + tmpname)
+    os.chmod(settings.MEDIA_ROOT + '/reports/' + tmpname, 0o777)
+    return JsonResponse({
+        'code': 200,
+        'filename': settings.MEDIA_URL + 'reports/' + tmpname,
+        'name':  tmpname
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def storeList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
+    if id != None:
+        store = list(models.Store.objects.filter(pk=id)[:1].values(
+            'pk', 'name', 'address', 'contact_name', 'contact_no', 'contact_email', 'manager_name', 'pin', 'city__name', 'state__name', 'country__name'))
+        context.update({
+            'status': 200,
+            'message': "Store Fetched Successfully.",
+            'page_items': store,
+        })
+    else:
+        if keyword is not None and keyword != "":
+            stores = list(models.Store.objects.filter(Q(name__icontains=keyword) | Q(address__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(contact_no__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(manager_name__icontains=keyword) | Q(pin__icontains=keyword)).filter(
+                status=1, deleted=0).values('pk', 'name', 'address', 'contact_name', 'contact_no', 'contact_email', 'manager_name', 'pin', 'city__name', 'state__name', 'country__name'))
+        else:
+            stores = list(models.Store.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'contact_name',
+                          'contact_no', 'contact_email', 'manager_name', 'pin', 'city__name', 'state__name', 'country__name'))
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Stores Fetched Successfully.",
+                'page_items': stores,
+            })
+            return JsonResponse(context)
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(stores, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Stores Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def storeAdd(request):
+    context = {}
+    if not request.POST['name'] or request.POST['address'] or request.POST['contact_name'] or request.POST['contact_no'] or request.POST['contact_email'] or request.POST['pin'] or request.POST['city_id'] or request.POST['state_id'] or request.POST['country_id']:
+        context.update({
+            'status': 566,
+            'message': "Name/Address/Contact Name/Contact Number/Contact Email/Pin/City/State/Country has not been provided."
+        })
+    exist_data = models.Store.objects.filter(
+        name__iexact=request.POST['name']).filter(deleted=0)
+    if len(exist_data) > 0:
+        context.update({
+            'status': 567,
+            'message': "Store with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            store = models.Store()
+            store.name = request.POST['name']
+            store.address = request.POST['address']
+            store.country_id = request.POST['country_id']
+            store.state_id = request.POST['state_id']
+            store.city_id = request.POST['city_id']
+            store.pin = request.POST['pin']
+            store.contact_name = request.POST['contact_name']
+            store.contact_no = request.POST['contact_no']
+            store.contact_email = request.POST['contact_email']
+            store.manager_name = request.POST['manager_name']
+            store.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Store Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 568,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def storeEdit(request):
+    context = {}
+    if not request.POST['name'] or request.POST['address'] or request.POST['contact_name'] or request.POST['contact_no'] or request.POST['contact_email'] or request.POST['pin'] or request.POST['city_id'] or request.POST['state_id'] or request.POST['country_id']:
+        context.update({
+            'status': 566,
+            'message': "Name/Address/Contact Name/Contact Number/Contact Email/Pin/City/State/Country has not been provided."
+        })
+    exist_data = models.Store.objects.filter(name__iexact=request.POST['name']).exclude(
+        pk=request.POST['id']).filter(deleted=0)
+    if len(exist_data) > 0:
+        context.update({
+            'status': 570,
+            'message': "Store with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            store = models.Store.objects.get(pk=request.POST['id'])
+            store.name = request.POST['name']
+            store.address = request.POST['address']
+            store.country_id = request.POST['country_id']
+            store.state_id = request.POST['state_id']
+            store.city_id = request.POST['city_id']
+            store.pin = request.POST['pin']
+            store.contact_name = request.POST['contact_name']
+            store.contact_no = request.POST['contact_no']
+            store.contact_email = request.POST['contact_email']
+            store.manager_name = request.POST['manager_name']
+            store.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Store Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 571,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def storeDelete(request):
+    context = {}
+    store = models.Store.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            store.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Store Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 572,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+def storeExport(request):
+    keyword = request.GET.get('keyword')
+    if keyword is not None and keyword != "":
+        page_items = models.Store.objects.filter(Q(name__icontains=keyword) | Q(address__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(contact_no__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(manager_name__icontains=keyword) | Q(pin__icontains=keyword)).filter(status=1, deleted=0)
+    else:
+        page_items = models.Store.objects.filter(status=1, deleted=0)
+
+    directory_path = settings.MEDIA_ROOT + '/reports/'
+    path = Path(directory_path)
+    path.mkdir(parents=True, exist_ok=True)
+
+    for f in os.listdir(settings.MEDIA_ROOT + '/reports/'):
+        if not f.endswith(".xlsx"):
+            continue
+        os.remove(os.path.join(settings.MEDIA_ROOT + '/reports/', f))
+
+    # tmpname = str(datetime.now().microsecond) + ".xlsx"
+    tmpname = "Store" + ".xlsx"
+    wb = Workbook()
+
+    # grab the active worksheet
+    ws = wb.active
+
+    # Data can be assigned directly to cells
+    ws['A1'] = "Name"
+    ws['B1'] = "Address"
+    ws['C1'] = "Contact Name"
+    ws['D1'] = "Contact Number"
+    ws['E1'] = "Contact Email"
+    ws['F1'] = "Manager"
+    ws['G1'] = "Pin"
+    ws['H1'] = "City"
+    ws['I1'] = "State"
+    ws['J1'] = "Country"
+
+    # Rows can also be appended
+    for each in page_items:
+        ws.append([each.name, each.address, each.contact_name, each.contact_no, each.contact_email, each.manager_name, each.pin, each.city.name, each.state.name, each.country.name])
 
     # Save the file
     wb.save(settings.MEDIA_ROOT + '/reports/' + tmpname)

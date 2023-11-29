@@ -66,6 +66,10 @@ urlpatterns = [
     path('item-list', views.itemList, name='itemList'),
     path('item-add', views.itemAdd, name='itemAdd'),
     path('item-edit/<int:id>', views.itemEdit, name='itemEdit'),
+
+    path('store-list', views.storeList, name='storeList'),
+    path('store-add', views.storeAdd, name='storeAdd'),
+    path('store-edit/<int:id>', views.storeEdit, name='storeEdit'),
     
     path('bill-of-material-list', views.billOfMaterialList, name='billOfMaterialList'),
     path('bill-of-material-add', views.billOfMaterialAdd, name='billOfMaterialAdd'),

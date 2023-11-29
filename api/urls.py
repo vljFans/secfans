@@ -72,6 +72,12 @@ urlpatterns = [
     path('item-edit', views.itemEdit, name='itemEdit'),
     path('item-delete', views.itemDelete, name='itemDelete'),
     path('item-export', views.itemExport, name='itemExport'),
+
+    path('store-list', views.storeList, name='storeList'),
+    path('store-add', views.storeAdd, name='storeAdd'),
+    path('store-edit', views.storeEdit, name='storeEdit'),
+    path('store-delete', views.storeDelete, name='storeDelete'),
+    path('store-export', views.storeExport, name='storeExport'),
     
     path('bill-of-material-list', views.billOfMaterialList, name='billOfMaterialList'),
     path('bill-of-material-add', views.billOfMaterialAdd, name='billOfMaterialAdd'),
