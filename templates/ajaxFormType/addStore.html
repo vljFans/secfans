@@ -42,12 +42,8 @@
             <div class="col-md-4 mb-3">
                 <label>Country <span class="required-indicator">*</span></label>
                 <div class="input-group">
-                    <select class="custom-select selectpicker" id="country_id" name="country_id"
-                        required>
+                    <select class="custom-select selectpicker" id="country_id" name="country_id" required>
                         <option value="">Choose...</option>
-                        {% for country in countries %}
-                        <option value="{{country.id}}">{{country.name}}</option>
-                        {% endfor %}
                     </select>
                 </div>
             </div>
@@ -92,7 +88,7 @@
             success: function (response) {
                 if (response.status == 200) {
                     page_items = JSON.parse(response.page_items);
-                    var options_text = `<option value="">Select State</option>`;
+                    var options_text = `<option value="">Choose...</option>`;
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index].fields;
                         options_text += `<option value="${page_items[index].pk}">${element.name}</option>`;

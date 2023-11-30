@@ -55,8 +55,7 @@ def getAjaxFormType(request):
                 'formType': render_to_string('ajaxFormType/addUom.html', context)
             })
         elif form_type == "addStore":
-            countries = models.Country.objects.all()
-            context.update({'request': request, 'selector': selector, 'countries':countries})
+            context.update({'request': request, 'selector': selector})
             return JsonResponse({
                 'status': 200,
                 'formType': render_to_string('ajaxFormType/addStore.html', context)
