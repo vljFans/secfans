@@ -54,6 +54,21 @@ def getAjaxFormType(request):
                 'status': 200,
                 'formType': render_to_string('ajaxFormType/addUom.html', context)
             })
+        elif form_type == "addStore":
+            countries = models.Country.objects.all()
+            context.update({'request': request, 'selector': selector, 'countries':countries})
+            return JsonResponse({
+                'status': 200,
+                'formType': render_to_string('ajaxFormType/addStore.html', context)
+            })
+        elif form_type == "addItem":
+            itemTypes = models.Item_Type.objects.filter(status=1, deleted=0)
+            uoms = models.Uom.objects.filter(status=1, deleted=0)
+            context.update({'request': request, 'selector': selector, 'itemTypes':itemTypes, 'uoms':uoms})
+            return JsonResponse({
+                'status': 200,
+                'formType': render_to_string('ajaxFormType/addItem.html', context)
+            })
     else:
         return JsonResponse({
             'status': 500,

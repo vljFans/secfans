@@ -72,6 +72,12 @@
                                         </option>
                                         {% endfor %}
                                     </select>
+                                    {% if request.user.is_superuser == 1 or 'add_store'|get_session_permission:request is not None %}
+                                    <div class="btn float-end addForm" data-text="Add New Store"
+                                        data-form="addStore" id="addStoreModal" data-toggle="modal" data-target="#addFormModal">
+                                        <i class="fa fa-plus"></i>
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -85,12 +91,17 @@
                                         </option>
                                         {% endfor %}
                                     </select>
+                                    {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                    <div class="btn float-end addForm" data-text="Add New Item"
+                                        data-form="addItem" id="addItemModal" data-toggle="modal" data-target="#addFormModal">
+                                        <i class="fa fa-plus"></i>
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
-
                                 <label>Opening quantity<span class="required-indicator">*</span></label>
-                                <input type="text" name="opening_qty" class="form-control decimal" placeholder="Opening quantity" value="{{item.price.normalize}}" required>
+                                <input type="text" name="opening_qty" class="form-control decimal" placeholder="Opening quantity" value="{{storeItem.opening_qty.normalize}}" required>
                             </div>
                         </div>
                         {% if request.user.is_superuser == 1 or 'change_store_item'|get_session_permission:request is not None%}
