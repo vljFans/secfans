@@ -876,6 +876,7 @@ def customerEdit(request):
             customer.country_id = request.POST['country_id']
             customer.state_id = request.POST['state_id']
             customer.city_id = request.POST['city_id']
+            customer.updated_at = datetime.now()
             customer.save()
 
             if 'photo' in request.FILES.keys():
@@ -1835,6 +1836,7 @@ def itemEdit(request):
             item.item_type_id = request.POST['item_type_id']
             item.uom_id = request.POST['uom_id']
             item.price = request.POST['price']
+            item.updated_at = datetime.now()
             item.save()
         transaction.commit()
         context.update({
@@ -2043,6 +2045,7 @@ def storeEdit(request):
             store.contact_no = request.POST['contact_no']
             store.contact_email = request.POST['contact_email']
             store.manager_name = request.POST['manager_name']
+            store.updated_at = datetime.now()
             store.save()
         transaction.commit()
         context.update({
@@ -2266,6 +2269,7 @@ def billOfMaterialEdit(request):
             billOfMaterialHeader.price = request.POST['total_amount']
             billOfMaterialHeader.is_final = 1
             billOfMaterialHeader.level = request.POST['level']
+            billOfMaterialHeader.updated_at = datetime.now()
             billOfMaterialHeader.save()
             billOfMaterialHeader.bill_of_material_detail_set.all().delete()
             bill_of_material_details = []
@@ -2506,6 +2510,7 @@ def purchaseOrderEdit(request):
             purchaseOrderHeader.delivery_at = request.POST['delivery_at']
             purchaseOrderHeader.notes = request.POST['notes']
             purchaseOrderHeader.total_amount = request.POST['total_amount']
+            purchaseOrderHeader.updated_at = datetime.now()
             purchaseOrderHeader.save()
             purchaseOrderHeader.purchase_order_detail_set.all().delete()
 
@@ -2666,6 +2671,7 @@ def storeItemEdit(request):
             storeItem.opening_qty = Decimal(request.POST['opening_qty'])
             storeItem.on_hand_qty = Decimal(request.POST['opening_qty'])
             storeItem.closing_qty = Decimal(request.POST['opening_qty'])
+            storeItem.updated_at = datetime.now()
             storeItem.save()
         transaction.commit()
         context.update({
