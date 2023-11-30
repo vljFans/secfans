@@ -2707,7 +2707,7 @@ def storeItemDelete(request):
 def storeItemExport(request):
     keyword = request.GET.get('keyword')
     if keyword is not None and keyword != "":
-        page_items = models.Store_Item.objects.filter(Q(store__name__icontains=keyword) | Q(item__name__icontains=keyword) | Q(opening_qty__icontains=keyword) | Q(on_hand_qty__icontains=keyword) | Q(closing_qty__icontains=keyword)).filter(status=1, deleted=0)
+        page_items = models.Store_Item.objects.filter(Q(store__name__icontains=keyword) | Q(item__name__icontains=keyword) | Q(opening_qty__icontains=keyword)).filter(status=1, deleted=0)
     else:
         page_items = models.Store_Item.objects.filter(status=1, deleted=0)
 
