@@ -1,33 +1,41 @@
 {% load template_func %}
-<form id="addItemTypeForm">
+<form id="addItemForm">
     <div class="form-row">
         <div class="col-md-6 mb-3">
             <label>Name <span class="required-indicator">*</span></label>
             <input type="text" name="name" class="form-control" placeholder="Name" required>
         </div>
         <div class="col-md-6 mb-3">
-            <label>Item Category <span class="required-indicator">*</span></label>
+            <label>Item Type <span class="required-indicator">*</span></label>
             <div class="input-group">
-                <select class="custom-select selectpicker" id="item_category_id"
-                    name="item_category_id" required>
+                <select class="custom-select selectpicker" id="item_type_id"
+                    name="item_type_id" required>
                     <option value="">Choose...</option>
-                    {% for itemCategory in itemCategories %}
-                    <option value="{{itemCategory.id}}">{{itemCategory.name}}</option>
+                    {% for itemType in itemTypes %}
+                    <option value="{{itemType.id}}">{{itemType.name}}</option>
                     {% endfor %}
                 </select>
             </div>
         </div>
         <div class="col-md-6 mb-3">
-            <label>HSN Code<span class="required-indicator">*</span></label>
-            <input type="text" name="hsn_code" class="form-control" placeholder="HSN Code" required>
+            <label>UOMs<span class="required-indicator">*</span></label>
+            <div class="input-group">
+                <select class="custom-select selectpicker" id="uom_id"
+                    name="uom_id" required>
+                    <option value="">Choose...</option>
+                    {% for uom in uoms %}
+                    <option value="{{uom.id}}">{{uom.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
         <div class="col-md-6 mb-3">
-            <label>GST Percentage<span class="required-indicator">*</span></label>
-            <input type="number" name="gst_percentage" class="form-control" placeholder="0.00%"
-                min="0.0" max=100 step="0.01" required>
+            <label>Price<span class="required-indicator">*</span></label>
+            <input type="number" name="price" class="form-control" placeholder="₹0.00" min="0.0" max=100 step="0.01" required>
+            <div class="invalid-feedback">Please provide a valid price</div>
         </div>
     </div>
-    {% if request.user.is_superuser == 1 or 'add_item_type'|get_session_permission:request is not None %}
+    {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
     <button class="btn btn-success submit-modal-btn" type="submit">Submit</button>
     {% endif %}
 </form>
@@ -37,17 +45,18 @@
         dropdownParent: $('#addFormModal')
     });
 
-    $('#addItemTypeForm').on('submit', function (e) {
+    $('#addItemForm').on('submit', function (e) {
         e.preventDefault();
         $('.submit-modal-btn').text('Submitting...');
         $('.submit-modal-btn').prop('disabled', true);
-        var formData = new FormData(addItemTypeForm);
+        var formData = new FormData(addItemForm);
+        console.log(formData.values())
         $.ajax({
             type: "POST",
             evalScripts: true,
             contentType: false,
             processData: false,
-            url: "{% url 'api:itemTypeAdd' %}",
+            url: "{% url 'api:itemAdd' %}",
             data: formData,
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -56,7 +65,7 @@
                 $('.submit-modal-btn').text('Submit');
                 $('.submit-modal-btn').prop('disabled', false);
                 if (response.status == 200) {
-                    getItemType();
+                    getItem();
                 } else {
                     alert(response.message);
                 }
@@ -69,9 +78,9 @@
         });
     });
 
-    function getItemType() {
+    function getItem() {
         $.ajax({
-            url: "{% url 'api:itemTypeList' %}?&find_all=1",
+            url: "{% url 'api:itemList' %}?&find_all=1",
             type: 'GET',
             data: ({}),
             headers: {
@@ -81,7 +90,7 @@
                 if (response.status == 200) {
                     var options_text = `<option value="">Choose...</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
-                        options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name} (${response.page_items[index].item_category__name})</option>`;
+                        options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
                     $("#{{selector}}").parents('.input-group').find('select').html(options_text);
                     $('#addFormModal').modal('hide');

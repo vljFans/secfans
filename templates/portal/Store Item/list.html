@@ -145,9 +145,9 @@
                                 <td>${index + 1}</td>
                                 <td>${element.store__name}</td>
                                 <td>${element.item__name}</td>
-                                <td>${element.opening_qty}</td>
-                                <td>${element.on_hand_qty}</td>
-                                <td>${element.closing_qty}</td>
+                                <td>${parseFloat(element.opening_qty)}</td>
+                                <td>${parseFloat(element.on_hand_qty)}</td>
+                                <td>${parseFloat(element.closing_qty)}</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'change_store_item'|get_session_permission:request is not None %}
                                 <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    

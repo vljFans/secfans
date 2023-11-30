@@ -1,0 +1,211 @@
+{% load template_func %}
+<form id="addStoreForm">
+    
+    <div class="form-row">
+        <div class="form-row">
+            <div class="col-md-4 mb-3">
+                <label>Name <span class="required-indicator">*</span></label>
+                <input type="text" name="name" class="form-control" placeholder="Name" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label>Contact Name <span class="required-indicator">*</span></label>
+                <input type="text" name="contact_name" class="form-control" placeholder="Contact Name"
+                    required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label>Contact Number <span class="required-indicator">*</span></label>
+                <input type="text" onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                    maxlength="10" name="contact_no" class="form-control" placeholder="Contact Number"
+                    required>
+                <div class="invalid-feedback">Enter a 10 digit number.</div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label>Contact Email <span class="required-indicator">*</span></label>
+                <input type="email" name="contact_email" class="form-control"
+                    placeholder="Contact Email" required>
+                <div class="invalid-feedback">Enter a valid email.</div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label>Manager Name <span class="required-indicator">*</span></label>
+                <input type="text" name="manager_name" class="form-control" placeholder="Manager Name"
+                    required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label>Pin <span class="required-indicator">*</span></label>
+                <div class="input-group">
+                    <input type="text" name="pin" class="form-control" required maxlength="6"
+                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                        placeholder="Pin Number">
+                    <div class="invalid-feedback">Enter a valid Pin Code.</div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label>Country <span class="required-indicator">*</span></label>
+                <div class="input-group">
+                    <select class="custom-select selectpicker" id="country_id" name="country_id"
+                        required>
+                        <option value="">Choose...</option>
+                        {% for country in countries %}
+                        <option value="{{country.id}}">{{country.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label>State <span class="required-indicator">*</span></label>
+                <div class="input-group">
+                    <select class="custom-select selectpicker" id="state_id" name="state_id" required>
+                        <option value="">Choose...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label>City <span class="required-indicator">*</span></label>
+                <div class="input-group">
+                    <select class="custom-select selectpicker" id="city_id" name="city_id" required>
+                        <option value="">Choose...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-12 mb-3">
+                <label>Address <span class="required-indicator">*</span></label>
+                <textarea name="address" required class="form-control" rows="3"
+                    placeholder="Address"></textarea>
+            </div>
+        </div>
+    </div>
+    {% if request.user.is_superuser == 1 or 'add_store'|get_session_permission:request is not None %}
+    <button class="btn btn-success submit-modal-btn" type="submit">Submit</button>
+    {% endif %}
+</form>
+
+<script>
+    $('.selectpicker').select2({
+        dropdownParent: $('#addFormModal')
+    });
+
+    $(document).ready(function () {
+        $.ajax({
+            url: "{% url 'api:getCountries' %}",
+            type: 'get',
+            data: ({}),
+            success: function (response) {
+                if (response.status == 200) {
+                    page_items = JSON.parse(response.page_items);
+                    var options_text = `<option value="">Select State</option>`;
+                    for (let index = 0; index < page_items.length; index++) {
+                        const element = page_items[index].fields;
+                        options_text += `<option value="${page_items[index].pk}">${element.name}</option>`;
+                    }
+                    $("#country_id").html(options_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+        });
+    })
+
+    $(document).on('change', '#country_id', function () {
+        let country_id = $(this).val();
+        $.ajax({
+            url: "{% url 'api:getCountryStates' %}",
+            type: 'post',
+            data: ({ country_id: country_id }),
+            success: function (response) {
+                if (response.status == 200) {
+                    page_items = JSON.parse(response.page_items);
+                    var options_text = `<option value="">Select State</option>`;
+                    for (let index = 0; index < page_items.length; index++) {
+                        const element = page_items[index].fields;
+                        options_text += `<option value="${page_items[index].pk}">${element.name}</option>`;
+                    }
+                    $("#state_id").html(options_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+        });
+    });
+
+    $(document).on('change', '#state_id', function () {
+        let state_id = $(this).val();
+        $.ajax({
+            url: "{% url 'api:getStateCities' %}",
+            type: 'post',
+            data: ({ state_id: state_id, csrfmiddlewaretoken: '{{csrf_token}}' }),
+            success: function (response) {
+                if (response.status == 200) {
+                    page_items = JSON.parse(response.page_items);
+                    var options_text = `<option value="">Select City</option>`;
+                    for (let index = 0; index < page_items.length; index++) {
+                        const element = page_items[index].fields;
+                        options_text += `<option value="${page_items[index].pk}">${element.name}</option>`;
+                    }
+                    $("#city_id").html(options_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+        });
+    });
+
+    $('#addStoreForm').on('submit', function (e) {
+        e.preventDefault();
+        $('.submit-modal-btn').text('Submitting...');
+        $('.submit-modal-btn').prop('disabled', true);
+        var formData = new FormData(addStoreForm);
+        console.log(formData.values())
+        $.ajax({
+            type: "POST",
+            evalScripts: true,
+            contentType: false,
+            processData: false,
+            url: "{% url 'api:storeAdd' %}",
+            data: formData,
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                $('.submit-modal-btn').text('Submit');
+                $('.submit-modal-btn').prop('disabled', false);
+                if (response.status == 200) {
+                    getStore();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.submit-modal-btn').text('Submit');
+                $('.submit-modal-btn').prop('disabled', false);
+                alert(error.responseJSON.detail);
+            }
+        });
+    });
+
+    function getStore() {
+        $.ajax({
+            url: "{% url 'api:storeList' %}?&find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    var options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $("#{{selector}}").parents('.input-group').find('select').html(options_text);
+                    $('#addFormModal').modal('hide');
+                    $('.selectpicker').select2({
+                        placeholder: ''
+                    });
+                } else {
+                    alert(response.message);
+                }
+            },
+        });
+    }
+
+</script>
