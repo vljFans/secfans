@@ -11,8 +11,8 @@
                 <select class="custom-select selectpicker" id="item_category_id"
                     name="item_category_id" required>
                     <option value="">Choose...</option>
-                    {% for item_category in item_categories %}
-                    <option value="{{item_category.id}}">{{item_category.name}}</option>
+                    {% for itemCategory in itemCategories %}
+                    <option value="{{itemCategory.id}}">{{itemCategory.name}}</option>
                     {% endfor %}
                 </select>
             </div>
