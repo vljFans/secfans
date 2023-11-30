@@ -82,4 +82,8 @@ urlpatterns = [
     path('purchase-order-edit/<int:id>', views.purchaseOrderEdit, name='purchaseOrderEdit'),
     path('purchase-order-view/<int:id>', views.purchaseOrderView, name='purchaseOrderView'),
     path('purchase-order-print/<int:id>', views.purchaseOrderPrint, name='purchaseOrderPrint'),
+
+    path('store-item-list', views.storeItemList, name='storeItemList'),
+    path('store-item-add', views.storeItemAdd, name='storeItemAdd'),
+    path('store-item-edit/<int:id>', views.storeItemEdit, name='storeItemEdit'),
 ]

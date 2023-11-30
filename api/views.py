@@ -2548,3 +2548,202 @@ def purchaseOrderDelete(request):
         })
         transaction.rollback()
     return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def storeItemList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
+    if id != None:
+        storeItem = list(models.Store_Item.objects.filter(pk=id)[:1].values(
+            'pk', 'store', 'item', 'opening_qty', 'on_hand_qty', 'closing_qty'))
+        context.update({
+            'status': 200,
+            'message': "Store Item Fetched Successfully.",
+            'page_items': storeItem,
+        })
+    else:
+        if keyword is not None and keyword != "":
+            storeItems = list(
+                models.Store_Item.objects.filter(
+                    Q(store__name__icontains=keyword) | Q(item__name__icontains=keyword) | Q(opening_qty__icontains=keyword) | Q(on_hand_qty__icontains=keyword) | Q(closing_qty__icontains=keyword)
+                ).filter(
+                status=1, deleted=0).values('pk', 'store', 'item', 'opening_qty', 'on_hand_qty', 'closing_qty')
+            )
+        else:
+            storeItems = list(models.Store_Item.objects.filter(status=1, deleted=0).values('pk', 'store', 'item', 'opening_qty', 'on_hand_qty', 'closing_qty'))
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Store Items Fetched Successfully.",
+                'page_items': storeItems,
+            })
+            return JsonResponse(context)
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(storeItems, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Store Items Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def storeItemAdd(request):
+    context = {}
+    if not request.POST['store_id'] or request.POST['item_id'] or request.POST['opening_qty']:
+        context.update({
+            'status': 586,
+            'message': "Store/Item/Opening Quantity has not been provided."
+        })
+    exist_data = models.Store_Item.objects.filter(
+        store=request.POST['store_id'], item=request.POST['item_id']).filter(deleted=0)
+    if len(exist_data) > 0:
+        context.update({
+            'status': 587,
+            'message': "Store Item with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            storeItem = models.Store_Item()
+            storeItem.store = request.POST['store_id']
+            storeItem.item = request.POST['item_id']
+            storeItem.opening_qty = float(request.POST['opening_qty'])
+            storeItem.on_hand_qty = float(request.POST['opening_qty'])
+            storeItem.closing_qty = float(request.POST['opening_qty'])
+            storeItem.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Store Item Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 588,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def storeItemEdit(request):
+    context = {}
+    if not request.POST['store_id'] or request.POST['item_id'] or request.POST['opening_qty'] or request.POST['on_hand_qty'] or request.POST['closing_qty']:
+        context.update({
+            'status': 589,
+            'message': "Store/Item/Opening Quantity/On hand quantity/Closing quantity has not been provided."
+        })
+    exist_data = models.Store_Item.objects.filter(name__iexact=request.POST['name']).exclude(
+        pk=request.POST['id']).filter(deleted=0)
+    if len(exist_data) > 0:
+        context.update({
+            'status': 590,
+            'message': "Store Item with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            storeItem = models.Store_Item()
+            storeItem.store = request.POST['store_id']
+            storeItem.item = request.POST['item_id']
+            storeItem.opening_qty = request.POST['opening_qty']
+            storeItem.on_hand_qty = request.POST['opening_qty']
+            storeItem.closing_qty = request.POST['opening_qty']
+            storeItem.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Store Item Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 591,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def storeItemDelete(request):
+    context = {}
+    storeItem = models.Store_Item.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            storeItem.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Store Item Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 592,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+def storeItemExport(request):
+    keyword = request.GET.get('keyword')
+    if keyword is not None and keyword != "":
+        page_items = models.Store_Item.objects.filter(Q(store__name__icontains=keyword) | Q(item__name__icontains=keyword) | Q(opening_qty__icontains=keyword) | Q(on_hand_qty__icontains=keyword) | Q(closing_qty__icontains=keyword)).filter(status=1, deleted=0)
+    else:
+        page_items = models.Store_Item.objects.filter(status=1, deleted=0)
+
+    directory_path = settings.MEDIA_ROOT + '/reports/'
+    path = Path(directory_path)
+    path.mkdir(parents=True, exist_ok=True)
+
+    for f in os.listdir(settings.MEDIA_ROOT + '/reports/'):
+        if not f.endswith(".xlsx"):
+            continue
+        os.remove(os.path.join(settings.MEDIA_ROOT + '/reports/', f))
+
+    # tmpname = str(datetime.now().microsecond) + ".xlsx"
+    tmpname = "Store Item" + ".xlsx"
+    wb = Workbook()
+
+    # grab the active worksheet
+    ws = wb.active
+
+    # Data can be assigned directly to cells
+    ws['A1'] = "Store"
+    ws['B1'] = "Item"
+    ws['C1'] = "Opening quantity"
+    ws['D1'] = "On hand quantity"
+    ws['E1'] = "Closing quantity"
+
+    # Rows can also be appended
+    for each in page_items:
+        ws.append([each.store.name, each.item.name, each.opening_qty, each.on_hand_qty, each.closing_qty])
+
+    # Save the file
+    wb.save(settings.MEDIA_ROOT + '/reports/' + tmpname)
+    os.chmod(settings.MEDIA_ROOT + '/reports/' + tmpname, 0o777)
+    return JsonResponse({
+        'code': 200,
+        'filename': settings.MEDIA_URL + 'reports/' + tmpname,
+        'name':  tmpname
+    })

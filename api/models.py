@@ -321,10 +321,8 @@ class Item_Color(models.Model):
 
 class Item(models.Model):
     name = models.CharField(max_length=250, blank=True, null=True)
-    item_type = models.ForeignKey(
-        Item_Type, on_delete=models.CASCADE, blank=True, null=True)
-    uom = models.ForeignKey(
-        Uom, on_delete=models.CASCADE, blank=True, null=True)
+    item_type = models.ForeignKey(Item_Type, on_delete=models.CASCADE, blank=True, null=True)
+    uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
@@ -370,16 +368,11 @@ class Store(models.Model):
 
 
 class Store_Item(models.Model):
-    store = models.ForeignKey(
-        Store, on_delete=models.CASCADE, blank=True, null=True)
-    item = models.ForeignKey(
-        Item, on_delete=models.CASCADE, blank=True, null=True)
-    opening_qty = models.DecimalField(
-        max_digits=10, decimal_places=5, default=0)
-    on_hand_qty = models.DecimalField(
-        max_digits=10, decimal_places=5, default=0)
-    closing_qty = models.DecimalField(
-        max_digits=10, decimal_places=5, default=0)
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, blank=True, null=True)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
+    opening_qty = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    on_hand_qty = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    closing_qty = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)

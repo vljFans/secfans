@@ -15,7 +15,7 @@ environ.Env.read_env()
 context = {}
 context['project_name'] = env("PROJECT_NAME")
 context['client_name'] = env("CLIENT_NAME")
-context['client_address'] = env("CLIENT_ADDRESS")
+context['client_add ress'] = env("CLIENT_ADDRESS")
 context['client_work_address'] = env("CLIENT_WORK_ADDRESS")
 context['client_contact'] = env("CLIENT_CONTACT")
 context['client_gst_number'] = env("CLIENT_GST_NUMBER")
@@ -637,3 +637,36 @@ def purchaseOrderPrint(request, id):
         'purchaseOrder': purchaseOrder
     })
     return render(request, 'portal/Purchase Order/print.html', context)
+
+
+@login_required
+def storeItemList(request):
+    context.update({
+        'page_title': "Store Item List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Item", 'url': reverse('superuser:storeItemList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Store Item/list.html', context)
+
+
+@login_required
+def storeItemAdd(request):
+    context.update({
+        'page_title': "Store Item Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Item", 'url': reverse('superuser:storeItemList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Store Item/add.html', context)
+
+
+@login_required
+def storeItemEdit(request, id):
+    storeItem = models.Store_Item.objects.get(pk=id)
+    stores = models.Store.objects.all()
+    items = models.Item.objects.all()
+    context.update({
+        'storeItem': storeItem,
+        'stores': stores,
+        'items': items,
+        'page_title': "Store Item Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Item", 'url': reverse('superuser:storeItemList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Store Item/edit.html', context)

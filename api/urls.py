@@ -89,4 +89,10 @@ urlpatterns = [
     path('purchase-order-add', views.purchaseOrderAdd, name='purchaseOrderAdd'),
     path('purchase-order-edit', views.purchaseOrderEdit, name='purchaseOrderEdit'),
     path('purchase-order-delete', views.purchaseOrderDelete, name='purchaseOrderDelete'),
+
+    path('store-item-list', views.storeItemList, name='storeItemList'),
+    path('store-item-add', views.storeItemAdd, name='storeItemAdd'),
+    path('store-item-edit', views.storeItemEdit, name='storeItemEdit'),
+    path('store-item-delete', views.storeItemDelete, name='storeItemDelete'),
+    path('store-item-export', views.storeItemExport, name='storeItemExport'),
 ]
