@@ -20,6 +20,7 @@ from django.db.models import Q
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from pathlib import Path
+from decimal import Decimal
 import os
 import math
 import environ
@@ -2559,7 +2560,7 @@ def storeItemList(request):
     keyword = request.GET.get('keyword', None)
     if id != None:
         storeItem = list(models.Store_Item.objects.filter(pk=id)[:1].values(
-            'pk', 'store', 'item', 'opening_qty', 'on_hand_qty', 'closing_qty'))
+            'pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty'))
         context.update({
             'status': 200,
             'message': "Store Item Fetched Successfully.",
@@ -2571,10 +2572,10 @@ def storeItemList(request):
                 models.Store_Item.objects.filter(
                     Q(store__name__icontains=keyword) | Q(item__name__icontains=keyword) | Q(opening_qty__icontains=keyword) | Q(on_hand_qty__icontains=keyword) | Q(closing_qty__icontains=keyword)
                 ).filter(
-                status=1, deleted=0).values('pk', 'store', 'item', 'opening_qty', 'on_hand_qty', 'closing_qty')
+                status=1, deleted=0).values('pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty')
             )
         else:
-            storeItems = list(models.Store_Item.objects.filter(status=1, deleted=0).values('pk', 'store', 'item', 'opening_qty', 'on_hand_qty', 'closing_qty'))
+            storeItems = list(models.Store_Item.objects.filter(status=1, deleted=0).values('pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -2611,22 +2612,21 @@ def storeItemAdd(request):
             'status': 586,
             'message': "Store/Item/Opening Quantity has not been provided."
         })
-    exist_data = models.Store_Item.objects.filter(
-        store=request.POST['store_id'], item=request.POST['item_id']).filter(deleted=0)
+    exist_data = models.Store_Item.objects.filter(store=request.POST['store_id'], item=request.POST['item_id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 587,
-            'message': "Store Item with this name already exists.",
+            'message': "Item in this Store already exists.",
         })
         return JsonResponse(context)
     try:
         with transaction.atomic():
             storeItem = models.Store_Item()
-            storeItem.store = request.POST['store_id']
-            storeItem.item = request.POST['item_id']
-            storeItem.opening_qty = float(request.POST['opening_qty'])
-            storeItem.on_hand_qty = float(request.POST['opening_qty'])
-            storeItem.closing_qty = float(request.POST['opening_qty'])
+            storeItem.store_id = request.POST['store_id']
+            storeItem.item_id = request.POST['item_id']
+            storeItem.opening_qty = Decimal(request.POST['opening_qty'])
+            storeItem.on_hand_qty = Decimal(request.POST['opening_qty'])
+            storeItem.closing_qty = Decimal(request.POST['opening_qty'])
             storeItem.save()
         transaction.commit()
         context.update({
@@ -2646,27 +2646,26 @@ def storeItemAdd(request):
 @permission_classes([IsAuthenticated])
 def storeItemEdit(request):
     context = {}
-    if not request.POST['store_id'] or request.POST['item_id'] or request.POST['opening_qty'] or request.POST['on_hand_qty'] or request.POST['closing_qty']:
+    if not request.POST['store_id'] or request.POST['item_id'] or request.POST['opening_qty']:
         context.update({
             'status': 589,
-            'message': "Store/Item/Opening Quantity/On hand quantity/Closing quantity has not been provided."
+            'message': "Store/Item/Opening Quantity has not been provided."
         })
-    exist_data = models.Store_Item.objects.filter(name__iexact=request.POST['name']).exclude(
-        pk=request.POST['id']).filter(deleted=0)
+    exist_data = exist_data = models.Store_Item.objects.filter(store=request.POST['store_id'], item=request.POST['item_id']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 590,
-            'message': "Store Item with this name already exists.",
+            'message': "Item in this Store already exists.",
         })
         return JsonResponse(context)
     try:
         with transaction.atomic():
-            storeItem = models.Store_Item()
-            storeItem.store = request.POST['store_id']
-            storeItem.item = request.POST['item_id']
-            storeItem.opening_qty = request.POST['opening_qty']
-            storeItem.on_hand_qty = request.POST['opening_qty']
-            storeItem.closing_qty = request.POST['opening_qty']
+            storeItem = models.Store_Item.objects.get(pk=request.POST['id'])
+            storeItem.store_id = request.POST['store_id']
+            storeItem.item_id = request.POST['item_id']
+            storeItem.opening_qty = Decimal(request.POST['opening_qty'])
+            storeItem.on_hand_qty = Decimal(request.POST['opening_qty'])
+            storeItem.closing_qty = Decimal(request.POST['opening_qty'])
             storeItem.save()
         transaction.commit()
         context.update({

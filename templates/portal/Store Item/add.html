@@ -67,12 +67,6 @@
                                     <select class="custom-select selectpicker" id="store_id" name="store_id" required>
                                         <option value="">Choose...</option>
                                     </select>
-                                    {% if request.user.is_superuser == 1 or 'add_store'|get_session_permission:request is not None %}
-                                        <div class="btn float-end addForm" data-text="Add New Store" data-form="addStore"
-                                            id="addStore" data-toggle="modal" data-target="#addFormModal">
-                                            <i class="fa fa-plus"></i>
-                                        </div>
-                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -81,12 +75,6 @@
                                     <select class="custom-select selectpicker" id="item_id" name="item_id" required>
                                         <option value="">Choose...</option>
                                     </select>
-                                    {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
-                                    <div class="btn float-end addForm" data-text="Add New Item" data-form="addItem"
-                                        id="addItemModal" data-toggle="modal" data-target="#addFormModal">
-                                        <i class="fa fa-plus"></i>
-                                    </div>
-                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -167,12 +155,12 @@
                 }
             }
         });
-        //Allow Upto Two decimal places value only
+        //Allow Upto Five decimal places value only
         $('.decimal').keyup(function () {
             if ($(this).val().indexOf('.') != -1) {
                 if ($(this).val().split(".")[1].length > 2) {
                     if (isNaN(parseFloat(this.value))) return;
-                    this.value = parseFloat(this.value).toFixed(2);
+                    this.value = parseFloat(this.value).toFixed(5);
                 }
             }
         });

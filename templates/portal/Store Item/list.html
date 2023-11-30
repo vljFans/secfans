@@ -142,16 +142,9 @@
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index];
                         tbody_text += `<tr>
-                                <th>Store</th>
-                                <th>Item</th>
-                                <th>Opening quantity</th>
-                                <th>On hand quantity</th>
-                                <th>Closing quantity</th>
-                                <th>Action</th>
                                 <td>${index + 1}</td>
-                                <td>${element.item__name}</td>
                                 <td>${element.store__name}</td>
-                                <td>₹${element.price}</td>
+                                <td>${element.item__name}</td>
                                 <td>${element.opening_qty}</td>
                                 <td>${element.on_hand_qty}</td>
                                 <td>${element.closing_qty}</td>
@@ -160,7 +153,7 @@
                                 <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
                                 {% endif %}
                                 {% if request.user.is_superuser == 1 or 'delete_store_item'|get_session_permission:request is not None %}
-                                <a id="delete-btn" data-id="${element.pk}" data-name="${element.name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
+                                <a id="delete-btn" data-id="${element.pk}" data-name="${element.item__name} in ${element.store__name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
                                 {% endif %}
                                 </td>
                             </tr>`;
