@@ -321,8 +321,10 @@ class Item_Color(models.Model):
 
 class Item(models.Model):
     name = models.CharField(max_length=250, blank=True, null=True)
-    item_type = models.ForeignKey(Item_Type, on_delete=models.CASCADE, blank=True, null=True)
-    uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True)
+    item_type = models.ForeignKey(
+        Item_Type, on_delete=models.CASCADE, blank=True, null=True)
+    uom = models.ForeignKey(
+        Uom, on_delete=models.CASCADE, blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
@@ -368,11 +370,16 @@ class Store(models.Model):
 
 
 class Store_Item(models.Model):
-    store = models.ForeignKey(Store, on_delete=models.CASCADE, blank=True, null=True)
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
-    opening_qty = models.DecimalField(max_digits=10, decimal_places=5, default=0)
-    on_hand_qty = models.DecimalField(max_digits=10, decimal_places=5, default=0)
-    closing_qty = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    store = models.ForeignKey(
+        Store, on_delete=models.CASCADE, blank=True, null=True)
+    item = models.ForeignKey(
+        Item, on_delete=models.CASCADE, blank=True, null=True)
+    opening_qty = models.DecimalField(
+        max_digits=10, decimal_places=5, default=0)
+    on_hand_qty = models.DecimalField(
+        max_digits=10, decimal_places=5, default=0)
+    closing_qty = models.DecimalField(
+        max_digits=10, decimal_places=5, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -479,7 +486,7 @@ class Purchase_Order_Detail(models.Model):
         Purchase_Order, on_delete=models.CASCADE)
     item = models.ForeignKey(
         Item, on_delete=models.CASCADE, blank=True, null=True)
-    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     gst_percentage = models.DecimalField(
@@ -498,3 +505,72 @@ class Purchase_Order_Detail(models.Model):
         managed = True
         db_table = 'purchase_order_details'
         verbose_name_plural = 'purchase_order_details'
+
+
+class Transaction_Type(models.Model):
+    name = models.CharField(max_length=100, blank=True, null=True)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'transaction_types'
+        verbose_name_plural = 'transaction_types'
+
+
+class Store_Transaction(models.Model):
+    vendor = models.ForeignKey(
+        Vendor, on_delete=models.CASCADE, blank=True, null=True)
+    transaction_type = models.ForeignKey(
+        Transaction_Type, on_delete=models.CASCADE, blank=True, null=True)
+    purchase_order_header = models.ForeignKey(
+        Purchase_Order, on_delete=models.CASCADE, blank=True, null=True)
+    transaction_number = models.CharField(max_length=25, blank=True, null=True)
+    transaction_date = models.DateField(blank=True, null=True)
+    total_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.transaction_number
+
+    class Meta:
+        managed = True
+        db_table = 'store_transaction_headers'
+        verbose_name_plural = 'store_transaction_headers'
+
+
+class Store_Transaction_Detail(models.Model):
+    store_transaction_header = models.ForeignKey(
+        Store_Transaction, on_delete=models.CASCADE, blank=True, null=True)
+    item = models.ForeignKey(
+        Item, on_delete=models.CASCADE, blank=True, null=True)
+    store = models.ForeignKey(
+        Store, on_delete=models.CASCADE, blank=True, null=True)
+    quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    gst_percentage = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0)
+    amount_with_gst = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.store_transaction_header.transaction_number
+
+    class Meta:
+        managed = True
+        db_table = 'store_transaction_details'
+        verbose_name_plural = 'store_transaction_details'
