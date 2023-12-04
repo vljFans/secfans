@@ -86,4 +86,8 @@ urlpatterns = [
     path('store-item-list', views.storeItemList, name='storeItemList'),
     path('store-item-add', views.storeItemAdd, name='storeItemAdd'),
     path('store-item-edit/<int:id>', views.storeItemEdit, name='storeItemEdit'),
+
+    path('store-transaction-list', views.storeTransactionList, name='storeTransactionList'),
+    path('store-transaction-add', views.storeTransactionAdd, name='storeTransactionAdd'),
+    path('store-transaction-edit/<int:id>', views.storeTransactionEdit, name='storeTransactionEdit'),
 ]

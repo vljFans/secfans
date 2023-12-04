@@ -91,7 +91,7 @@ def getUserDetails(request):
 def getContentTypes(request):
     context = {}
     page_items = ContentType.objects.prefetch_related('permission_set').filter(app_label='api').exclude(
-        model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail'])
+        model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail'])
     context.update(
         {'status': 200, 'message': "Content Types Fetched Successfully", 'page_items': serializers.serialize('json', page_items)})
     return JsonResponse(context)
@@ -151,7 +151,7 @@ def roleList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    if id != None:
+    if id is not None and id != "":
         role = list(models.Role.objects.filter(pk=id)[:1].values('pk', 'name'))
         context.update({
             'status': 200,
@@ -312,7 +312,7 @@ def userList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    if id != None:
+    if id is not None and id != "":
         user = list(models.User.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'email', 'phone', 'role__name'))
         context.update({
@@ -486,7 +486,7 @@ def vendorList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    if id != None:
+    if id is not None and id != "":
         vendor = list(models.Vendor.objects.filter(pk=id)[:1].values('pk', 'name', 'address', 'country__pk', 'state__pk', 'city__pk',
                       'country__name', 'state__name', 'city__name', 'pin', 'gst_no', 'contact_no', 'contact_name', 'contact_email'))
         if len(vendor) > 0:
@@ -705,7 +705,7 @@ def customerList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    if id != None:
+    if id is not None and id != "":
         customer = list(models.Customer.objects.filter(pk=id)[:1].values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk',
                         'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
         context.update({
@@ -1000,7 +1000,7 @@ def uomList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    if id != None:
+    if id is not None and id != "":
         uom = list(models.Uom.objects.filter(pk=id)[:1].values('pk', 'name'))
         context.update({
             'status': 200,
@@ -1142,7 +1142,7 @@ def childUomList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    if id != None:
+    if id is not None and id != "":
         childUom = list(models.Child_Uom.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'uom__name', 'conversion_rate'))
         context.update({
@@ -1290,7 +1290,7 @@ def itemCategoryList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    if id != None:
+    if id is not None and id != "":
         itemCategory = list(models.Item_Category.objects.get(
             pk=id).values('pk', 'name'))
         context.update({
@@ -1434,7 +1434,7 @@ def itemTypeList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    if id != None:
+    if id is not None and id != "":
         itemType = list(models.Item_Type.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
         context.update({
@@ -1586,7 +1586,7 @@ def itemColorList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    if id != None:
+    if id is not None and id != "":
         itemColor = list(models.Item_Color.objects.get(
             pk=id).values('pk', 'name', 'color_code'))
         context.update({
@@ -1731,7 +1731,7 @@ def itemList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    if id != None:
+    if id is not None and id != "":
         item = list(models.Item.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price'))
         context.update({
@@ -1928,7 +1928,7 @@ def storeList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    if id != None:
+    if id is not None and id != "":
         store = list(models.Store.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'address', 'contact_name', 'contact_no', 'contact_email', 'manager_name', 'pin', 'city__name', 'state__name', 'country__name'))
         context.update({
@@ -2087,7 +2087,8 @@ def storeDelete(request):
 def storeExport(request):
     keyword = request.GET.get('keyword')
     if keyword is not None and keyword != "":
-        page_items = models.Store.objects.filter(Q(name__icontains=keyword) | Q(address__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(contact_no__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(manager_name__icontains=keyword) | Q(pin__icontains=keyword)).filter(status=1, deleted=0)
+        page_items = models.Store.objects.filter(Q(name__icontains=keyword) | Q(address__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(
+            contact_no__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(manager_name__icontains=keyword) | Q(pin__icontains=keyword)).filter(status=1, deleted=0)
     else:
         page_items = models.Store.objects.filter(status=1, deleted=0)
 
@@ -2121,7 +2122,8 @@ def storeExport(request):
 
     # Rows can also be appended
     for each in page_items:
-        ws.append([each.name, each.address, each.contact_name, each.contact_no, each.contact_email, each.manager_name, each.pin, each.city.name, each.state.name, each.country.name])
+        ws.append([each.name, each.address, each.contact_name, each.contact_no, each.contact_email,
+                  each.manager_name, each.pin, each.city.name, each.state.name, each.country.name])
 
     # Save the file
     wb.save(settings.MEDIA_ROOT + '/reports/' + tmpname)
@@ -2141,7 +2143,7 @@ def billOfMaterialList(request):
     find_all = request.GET.get('find_all', None)
     level = request.GET.get('level', None)
     keyword = request.GET.get('keyword', None)
-    if id != None:
+    if id is not None and id != "":
         billOfMaterial = list(models.Bill_Of_Material.objects.filter(
             pk=id)[:1].values('pk', 'name', 'uom__name', 'quantity', 'price'))
         context.update({
@@ -2373,7 +2375,8 @@ def purchaseOrderList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    if id != None:
+    vendor_id = request.GET.get('vendor_id', None)
+    if id is not None and id != "":
         purchaseOrder = list(models.Purchase_Order.objects.filter(pk=id)[:1].values('pk', 'order_number', 'order_date', 'quotation_number', 'quotation_date', 'reference_number', 'business_terms', 'discount_type',
                              'discount_value', 'discounted_value', 'excise_duty_percentage', 'insurance', 'octroi', 'freight', 'packing', 'payment_terms', 'delivery_schedule', 'delivery_at', 'notes', 'total_amount', 'vendor__name'))
         context.update({
@@ -2382,12 +2385,15 @@ def purchaseOrderList(request):
             'page_items': purchaseOrder,
         })
     else:
-        if keyword is not None and keyword != "":
-            purchaseOrders = models.Purchase_Order.objects.filter(Q(vendor__name__icontains=keyword) | Q(order_number__icontains=keyword) | Q(
-                order_date__icontains=keyword) | Q(total_amount__icontains=keyword)).filter(status=1, deleted=0)
+        if vendor_id is not None and vendor_id != "":
+            purchaseOrders = models.Purchase_Order.objects.filter(
+                vendor_id=vendor_id).filter(status=1, deleted=0)
         else:
             purchaseOrders = models.Purchase_Order.objects.filter(
                 status=1, deleted=0)
+        if keyword is not None and keyword != "":
+            purchaseOrders = purchaseOrders.filter(Q(vendor__name__icontains=keyword) | Q(order_number__icontains=keyword) | Q(
+                order_date__icontains=keyword) | Q(total_amount__icontains=keyword)).filter(status=1, deleted=0)
         purchaseOrders = list(purchaseOrders.values('pk', 'order_number', 'order_date', 'quotation_number', 'quotation_date', 'reference_number', 'business_terms', 'discount_type', 'discount_value',
                               'discounted_value', 'excise_duty_percentage', 'insurance', 'octroi', 'freight', 'packing', 'payment_terms', 'delivery_schedule', 'delivery_at', 'notes', 'total_amount', 'vendor__name'))
         if find_all is not None and int(find_all) == 1:
@@ -2558,12 +2564,36 @@ def purchaseOrderDelete(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def purchaseOrderDetails(request):
+    context = {}
+    header_id = request.GET.get('header_id', None)
+    if header_id is not None and header_id != "":
+        header_detail = list(models.Purchase_Order.objects.filter(id=header_id).values('pk', 'order_number', 'order_date', 'quotation_number', 'quotation_date', 'reference_number', 'business_terms', 'discount_type',
+                             'discount_value', 'discounted_value', 'excise_duty_percentage', 'insurance', 'octroi', 'freight', 'packing', 'payment_terms', 'delivery_schedule', 'delivery_at', 'notes', 'total_amount', 'delivered_total_amount'))
+        orderDetails = list(models.Purchase_Order_Detail.objects.filter(purchase_order_header_id=header_id).values('pk', 'quantity', 'rate', 'amount', 'gst_percentage', 'amount_with_gst', 'delivered_quantity',
+                            'delivered_rate', 'delivered_amount', 'delivered_gst_percentage', 'delivered_amount_with_gst', 'item_id', 'item__name', 'purchase_order_header_id', 'purchase_order_header__order_number'))
+        context.update({
+            'status': 200,
+            'message': "Purchase Order Details Fetched Successfully.",
+            'header_detail': header_detail,
+            'page_items': orderDetails,
+        })
+    else:
+        context.update({
+            'status': 588,
+            'message': "Please Provide Header Id.",
+        })
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def storeItemList(request):
     context = {}
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    if id != None:
+    if id is not None and id != "":
         storeItem = list(models.Store_Item.objects.filter(pk=id)[:1].values(
             'pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty'))
         context.update({
@@ -2575,12 +2605,14 @@ def storeItemList(request):
         if keyword is not None and keyword != "":
             storeItems = list(
                 models.Store_Item.objects.filter(
-                    Q(store__name__icontains=keyword) | Q(item__name__icontains=keyword) | Q(opening_qty__icontains=keyword) | Q(on_hand_qty__icontains=keyword) | Q(closing_qty__icontains=keyword)
+                    Q(store__name__icontains=keyword) | Q(item__name__icontains=keyword) | Q(
+                        opening_qty__icontains=keyword) | Q(on_hand_qty__icontains=keyword) | Q(closing_qty__icontains=keyword)
                 ).filter(
-                status=1, deleted=0).values('pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty')
+                    status=1, deleted=0).values('pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty')
             )
         else:
-            storeItems = list(models.Store_Item.objects.filter(status=1, deleted=0).values('pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty'))
+            storeItems = list(models.Store_Item.objects.filter(status=1, deleted=0).values(
+                'pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -2617,7 +2649,8 @@ def storeItemAdd(request):
             'status': 586,
             'message': "Store/Item/Opening Quantity has not been provided."
         })
-    exist_data = models.Store_Item.objects.filter(store=request.POST['store_id'], item=request.POST['item_id']).filter(deleted=0)
+    exist_data = models.Store_Item.objects.filter(
+        store=request.POST['store_id'], item=request.POST['item_id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 587,
@@ -2656,7 +2689,8 @@ def storeItemEdit(request):
             'status': 589,
             'message': "Store/Item/Opening Quantity has not been provided."
         })
-    exist_data = exist_data = models.Store_Item.objects.filter(store=request.POST['store_id'], item=request.POST['item_id']).exclude(pk=request.POST['id']).filter(deleted=0)
+    exist_data = exist_data = models.Store_Item.objects.filter(
+        store=request.POST['store_id'], item=request.POST['item_id']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 590,
@@ -2713,7 +2747,8 @@ def storeItemDelete(request):
 def storeItemExport(request):
     keyword = request.GET.get('keyword')
     if keyword is not None and keyword != "":
-        page_items = models.Store_Item.objects.filter(Q(store__name__icontains=keyword) | Q(item__name__icontains=keyword) | Q(opening_qty__icontains=keyword)).filter(status=1, deleted=0)
+        page_items = models.Store_Item.objects.filter(Q(store__name__icontains=keyword) | Q(
+            item__name__icontains=keyword) | Q(opening_qty__icontains=keyword)).filter(status=1, deleted=0)
     else:
         page_items = models.Store_Item.objects.filter(status=1, deleted=0)
 
@@ -2742,7 +2777,243 @@ def storeItemExport(request):
 
     # Rows can also be appended
     for each in page_items:
-        ws.append([each.store.name, each.item.name, each.opening_qty, each.on_hand_qty, each.closing_qty])
+        ws.append([each.store.name, each.item.name, each.opening_qty,
+                  each.on_hand_qty, each.closing_qty])
+
+    # Save the file
+    wb.save(settings.MEDIA_ROOT + '/reports/' + tmpname)
+    os.chmod(settings.MEDIA_ROOT + '/reports/' + tmpname, 0o777)
+    return JsonResponse({
+        'code': 200,
+        'filename': settings.MEDIA_URL + 'reports/' + tmpname,
+        'name':  tmpname
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def storeTransactionList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
+    if id is not None and id != "":
+        storeItem = list(models.Store_Item.objects.filter(pk=id)[:1].values(
+            'pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty'))
+        context.update({
+            'status': 200,
+            'message': "Store Item Fetched Successfully.",
+            'page_items': storeItem,
+        })
+    else:
+        if keyword is not None and keyword != "":
+            storeItems = list(
+                models.Store_Item.objects.filter(
+                    Q(store__name__icontains=keyword) | Q(item__name__icontains=keyword) | Q(
+                        opening_qty__icontains=keyword) | Q(on_hand_qty__icontains=keyword) | Q(closing_qty__icontains=keyword)
+                ).filter(
+                    status=1, deleted=0).values('pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty')
+            )
+        else:
+            storeItems = list(models.Store_Item.objects.filter(status=1, deleted=0).values(
+                'pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty'))
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Store Items Fetched Successfully.",
+                'page_items': storeItems,
+            })
+            return JsonResponse(context)
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(storeItems, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Store Items Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def storeTransactionAdd(request):
+    context = {}
+    if not request.POST['transaction_type_id'] or request.POST['vendor_id'] or request.POST['transaction_date'] or request.POST['total_amount']:
+        context.update({
+            'status': 586,
+            'message': "Transaction Type/Vendor/Transaction Date/Total Amount has not been provided."
+        })
+    try:
+        with transaction.atomic():
+            store_transaction_count = models.Store_Transaction.objects.all().count()
+            storeTransactionHeader = models.Store_Transaction()
+            storeTransactionHeader.vendor_id = request.POST['vendor_id']
+            storeTransactionHeader.transaction_type_id = request.POST['transaction_type_id']
+            storeTransactionHeader.purchase_order_header_id = request.POST[
+                'purchase_order_header_id']
+            storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+                "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
+            storeTransactionHeader.transaction_date = request.POST['transaction_date']
+            storeTransactionHeader.total_amount = request.POST['total_amount']
+            storeTransactionHeader.save()
+
+            order_details = []
+            for index, elem in enumerate(request.POST.getlist('item_id')):
+                order_details.append(models.Store_Transaction_Detail(store_transaction_header_id=storeTransactionHeader.id, item_id=elem, store_id=request.POST.getlist('store_id')[index], quantity=request.POST.getlist('item_quantity')[index], rate=request.POST.getlist(
+                    'rate')[index], amount=request.POST.getlist('item_price')[index], gst_percentage=request.POST.getlist('gst_percentage')[index], amount_with_gst=request.POST.getlist('amount_with_gst')[index]))
+                storeItem = models.Store_Item.objects.filter(item_id=elem, store_id=request.POST.getlist('store_id')[index]).first()
+                if storeItem is None:
+                    storeItem = models.Store_Item()
+                    storeItem.opening_qty = Decimal(request.POST.getlist('item_quantity')[index])
+                    storeItem.on_hand_qty = Decimal(request.POST.getlist('item_quantity')[index])
+                    storeItem.closing_qty = Decimal(request.POST.getlist('item_quantity')[index])
+                    storeItem.item_id = elem
+                    storeItem.store_id = request.POST.getlist('store_id')[index]
+                    storeItem.save()
+                else:
+                    storeItem.on_hand_qty += Decimal(request.POST.getlist('item_quantity')[index])
+                    storeItem.closing_qty += Decimal(request.POST.getlist('item_quantity')[index])
+                    storeItem.save()
+            models.Store_Transaction_Detail.objects.bulk_create(order_details)
+            if request.POST['with_purchase_order'] != "" and request.POST['with_purchase_order'] != "":
+                for index, elem in enumerate(request.POST.getlist('detail_id')):
+                    purchaseOrderItem = models.Purchase_Order_Detail.objects.get(pk=elem)
+                    purchaseOrderItem.delivered_quantity += Decimal(request.POST.getlist('item_quantity')[index])
+                    purchaseOrderItem.save()
+                purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related('purchase_order_detail_set').get(pk=request.POST['purchase_order_header_id'])
+                flag = True
+                for purchaseOrderDetail in purchaseOrderHeader.purchase_order_detail_set.all():
+                    if Decimal(purchaseOrderDetail.quantity) > Decimal(purchaseOrderDetail.delivered_quantity):
+                        flag = False
+                        break
+                if flag == True:
+                    purchaseOrderHeader.status = 3
+                else:
+                    purchaseOrderHeader.status = 2
+                purchaseOrderHeader.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Store Transaction Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 588,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def storeTransactionEdit(request):
+    context = {}
+    if not request.POST['store_id'] or request.POST['item_id'] or request.POST['opening_qty']:
+        context.update({
+            'status': 589,
+            'message': "Store/Item/Opening Quantity has not been provided."
+        })
+    exist_data = exist_data = models.Store_Item.objects.filter(
+        store=request.POST['store_id'], item=request.POST['item_id']).exclude(pk=request.POST['id']).filter(deleted=0)
+    if len(exist_data) > 0:
+        context.update({
+            'status': 590,
+            'message': "Item in this Store already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            storeItem = models.Store_Item.objects.get(pk=request.POST['id'])
+            storeItem.store_id = request.POST['store_id']
+            storeItem.item_id = request.POST['item_id']
+            storeItem.opening_qty = Decimal(request.POST['opening_qty'])
+            storeItem.on_hand_qty = Decimal(request.POST['opening_qty'])
+            storeItem.closing_qty = Decimal(request.POST['opening_qty'])
+            storeItem.updated_at = datetime.now()
+            storeItem.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Store Item Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 591,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def storeTransactionDelete(request):
+    context = {}
+    storeItem = models.Store_Item.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            storeItem.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Store Item Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 592,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+def storeTransactionExport(request):
+    keyword = request.GET.get('keyword')
+    if keyword is not None and keyword != "":
+        page_items = models.Store_Item.objects.filter(Q(store__name__icontains=keyword) | Q(
+            item__name__icontains=keyword) | Q(opening_qty__icontains=keyword)).filter(status=1, deleted=0)
+    else:
+        page_items = models.Store_Item.objects.filter(status=1, deleted=0)
+
+    directory_path = settings.MEDIA_ROOT + '/reports/'
+    path = Path(directory_path)
+    path.mkdir(parents=True, exist_ok=True)
+
+    for f in os.listdir(settings.MEDIA_ROOT + '/reports/'):
+        if not f.endswith(".xlsx"):
+            continue
+        os.remove(os.path.join(settings.MEDIA_ROOT + '/reports/', f))
+
+    # tmpname = str(datetime.now().microsecond) + ".xlsx"
+    tmpname = "Store Item" + ".xlsx"
+    wb = Workbook()
+
+    # grab the active worksheet
+    ws = wb.active
+
+    # Data can be assigned directly to cells
+    ws['A1'] = "Store"
+    ws['B1'] = "Item"
+    ws['C1'] = "Opening quantity"
+    ws['D1'] = "On hand quantity"
+    ws['E1'] = "Closing quantity"
+
+    # Rows can also be appended
+    for each in page_items:
+        ws.append([each.store.name, each.item.name, each.opening_qty,
+                  each.on_hand_qty, each.closing_qty])
 
     # Save the file
     wb.save(settings.MEDIA_ROOT + '/reports/' + tmpname)

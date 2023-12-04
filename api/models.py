@@ -467,6 +467,8 @@ class Purchase_Order(models.Model):
     notes = models.TextField(blank=True, null=True)
     total_amount = models.DecimalField(
         max_digits=10, decimal_places=2, default=0)
+    delivered_total_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -492,6 +494,16 @@ class Purchase_Order_Detail(models.Model):
     gst_percentage = models.DecimalField(
         max_digits=10, decimal_places=2, default=0)
     amount_with_gst = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0)
+    delivered_quantity = models.DecimalField(
+        max_digits=10, decimal_places=5, default=0)
+    delivered_rate = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0)
+    delivered_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0)
+    delivered_gst_percentage = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0)
+    delivered_amount_with_gst = models.DecimalField(
         max_digits=10, decimal_places=2, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)

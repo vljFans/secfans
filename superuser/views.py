@@ -63,7 +63,8 @@ def getAjaxFormType(request):
         elif form_type == "addItem":
             itemTypes = models.Item_Type.objects.filter(status=1, deleted=0)
             uoms = models.Uom.objects.filter(status=1, deleted=0)
-            context.update({'request': request, 'selector': selector, 'itemTypes':itemTypes, 'uoms':uoms})
+            context.update({'request': request, 'selector': selector,
+                           'itemTypes': itemTypes, 'uoms': uoms})
             return JsonResponse({
                 'status': 200,
                 'formType': render_to_string('ajaxFormType/addItem.html', context)
@@ -96,7 +97,7 @@ def roleList(request):
 @login_required
 def roleAdd(request):
     content_types = ContentType.objects.prefetch_related('permission_set').filter(
-        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail'])
+        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail'])
     context.update({
         'content_types': content_types,
         'page_title': "Role Add",
@@ -108,7 +109,7 @@ def roleAdd(request):
 @login_required
 def roleEdit(request, id):
     content_types = ContentType.objects.prefetch_related('permission_set').filter(
-        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail'])
+        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail'])
     role = models.Role.objects.prefetch_related(
         'role_permission_set').get(pk=id)
     selected_permissions = []
@@ -128,7 +129,7 @@ def roleEdit(request, id):
 @login_required
 def roleView(request, id):
     content_types = ContentType.objects.prefetch_related('permission_set').filter(
-        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail'])
+        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail'])
     role = models.Role.objects.prefetch_related(
         'role_permission_set').get(pk=id)
     selected_permissions = []
@@ -684,3 +685,37 @@ def storeItemEdit(request, id):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Item", 'url': reverse('superuser:storeItemList')}, {'name': "Edit"}]
     })
     return render(request, 'portal/Store Item/edit.html', context)
+
+
+@login_required
+def storeTransactionList(request):
+    context.update({
+        'page_title': "Store Transaction List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Store Transaction/list.html', context)
+
+
+@login_required
+def storeTransactionAdd(request):
+    context.update({
+        'transaction_type': "1",
+        'page_title': "Store Transaction Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Store Transaction/add.html', context)
+
+
+@login_required
+def storeTransactionEdit(request, id):
+    storeItem = models.Store_Item.objects.get(pk=id)
+    stores = models.Store.objects.all()
+    items = models.Item.objects.all()
+    context.update({
+        'storeItem': storeItem,
+        'stores': stores,
+        'items': items,
+        'page_title': "Store Transaction Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Store Transaction/edit.html', context)
