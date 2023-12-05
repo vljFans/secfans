@@ -2376,6 +2376,7 @@ def purchaseOrderList(request):
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
     vendor_id = request.GET.get('vendor_id', None)
+    delivery_status = request.GET.get('delivery_status', None)
     if id is not None and id != "":
         purchaseOrder = list(models.Purchase_Order.objects.filter(pk=id)[:1].values('pk', 'order_number', 'order_date', 'quotation_number', 'quotation_date', 'reference_number', 'business_terms', 'discount_type',
                              'discount_value', 'discounted_value', 'excise_duty_percentage', 'insurance', 'octroi', 'freight', 'packing', 'payment_terms', 'delivery_schedule', 'delivery_at', 'notes', 'total_amount', 'vendor__name'))
@@ -2391,6 +2392,8 @@ def purchaseOrderList(request):
         else:
             purchaseOrders = models.Purchase_Order.objects.filter(
                 status=1, deleted=0)
+        if delivery_status is not None and delivery_status != "":
+            purchaseOrders = purchaseOrders.filter(delivery_status__in=delivery_status.split(","))
         if keyword is not None and keyword != "":
             purchaseOrders = purchaseOrders.filter(Q(vendor__name__icontains=keyword) | Q(order_number__icontains=keyword) | Q(
                 order_date__icontains=keyword) | Q(total_amount__icontains=keyword)).filter(status=1, deleted=0)
@@ -2888,6 +2891,10 @@ def storeTransactionAdd(request):
                 for index, elem in enumerate(request.POST.getlist('detail_id')):
                     purchaseOrderItem = models.Purchase_Order_Detail.objects.get(pk=elem)
                     purchaseOrderItem.delivered_quantity += Decimal(request.POST.getlist('item_quantity')[index])
+                    purchaseOrderItem.delivered_rate = Decimal(request.POST.getlist('rate')[index])
+                    purchaseOrderItem.delivered_amount += Decimal(request.POST.getlist('item_price')[index])
+                    purchaseOrderItem.delivered_gst_percentage = Decimal(request.POST.getlist('gst_percentage')[index])
+                    purchaseOrderItem.delivered_amount_with_gst += Decimal(request.POST.getlist('amount_with_gst')[index])
                     purchaseOrderItem.save()
                 purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related('purchase_order_detail_set').get(pk=request.POST['purchase_order_header_id'])
                 flag = True
@@ -2922,6 +2929,16 @@ def storeTransactionDelete(request):
     try:
         with transaction.atomic():
             storeTransaction.delete()
+            if storeTransaction.purchase_order_header_id is not None:
+                purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related('purchase_order_detail_set').get(pk=storeTransaction.purchase_order_header_id)
+                for purchaseOrderDetail in purchaseOrderHeader.purchase_order_detail_set.all():
+                    purchaseOrderDetail.delivered_quantity = 0
+                    purchaseOrderDetail.delivered_amount = 0
+                    purchaseOrderDetail.delivered_gst_percentage = 0
+                    purchaseOrderDetail.delivered_amount_with_gst = 0
+                    purchaseOrderDetail.save()
+                purchaseOrderHeader.delivery_status = 1
+                purchaseOrderHeader.save()
         transaction.commit()
         context.update({
             'status': 200,

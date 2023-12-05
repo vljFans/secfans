@@ -356,7 +356,7 @@
     $(document).on('change', '#vendor_id', function () {
         let vendor_id = $(this).val();
         $.ajax({
-            url: "{% url 'api:purchaseOrderList' %}?vendor_id=" + vendor_id,
+            url: "{% url 'api:purchaseOrderList' %}?vendor_id=" + vendor_id + "&delivery_status=1,2",
             type: 'GET',
             data: ({ vendor_id: vendor_id}),
             headers: {
