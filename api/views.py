@@ -2797,31 +2797,30 @@ def storeTransactionList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
+    vendor_id = request.GET.get('vendor_id', None)
+    transaction_type_id = request.GET.get('transaction_type_id', None)
     if id is not None and id != "":
-        storeItem = list(models.Store_Item.objects.filter(pk=id)[:1].values(
-            'pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty'))
+        storeTransaction = list(models.Store_Transaction.objects.filter(pk=id)[:1].values('pk', 'transaction_number', 'transaction_date', 'total_amount', 'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name'))
         context.update({
             'status': 200,
-            'message': "Store Item Fetched Successfully.",
-            'page_items': storeItem,
+            'message': "Store Transaction Fetched Successfully.",
+            'page_items': storeTransaction,
         })
     else:
-        if keyword is not None and keyword != "":
-            storeItems = list(
-                models.Store_Item.objects.filter(
-                    Q(store__name__icontains=keyword) | Q(item__name__icontains=keyword) | Q(
-                        opening_qty__icontains=keyword) | Q(on_hand_qty__icontains=keyword) | Q(closing_qty__icontains=keyword)
-                ).filter(
-                    status=1, deleted=0).values('pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty')
-            )
+        if vendor_id is not None and vendor_id != "":
+            storeTransactions = models.Store_Transaction.objects.filter(vendor_id=vendor_id).filter(status=1, deleted=0)
         else:
-            storeItems = list(models.Store_Item.objects.filter(status=1, deleted=0).values(
-                'pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty'))
+            storeTransactions = models.Store_Transaction.objects.filter(status=1, deleted=0)
+        if transaction_type_id is not None and transaction_type_id != "":
+            storeTransactions = storeTransactions.filter(transaction_type_id=transaction_type_id)
+        if keyword is not None and keyword != "":
+            storeTransactions = storeTransactions.filter(Q(vendor__name__icontains=keyword) | Q(transaction_number__icontains=keyword) | Q(transaction_date__icontains=keyword) | Q(total_amount__icontains=keyword)).filter(status=1, deleted=0)
+        storeTransactions = list(storeTransactions.values('pk', 'transaction_number', 'transaction_date', 'total_amount', 'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
-                'message': "Store Items Fetched Successfully.",
-                'page_items': storeItems,
+                'message': "Store Transactions Fetched Successfully.",
+                'page_items': storeTransactions,
             })
             return JsonResponse(context)
 
@@ -2829,13 +2828,13 @@ def storeTransactionList(request):
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
         current_page = request.GET.get('current_page', 1)
 
-        paginator = CustomPaginator(storeItems, per_page)
+        paginator = CustomPaginator(storeTransactions, per_page)
         page_items = paginator.get_page(current_page)
         total_pages = paginator.get_total_pages()
 
         context.update({
             'status': 200,
-            'message': "Store Items Fetched Successfully.",
+            'message': "Store Transactions Fetched Successfully.",
             'page_items': page_items,
             'total_pages': total_pages,
             'current_page': int(current_page),
@@ -2897,9 +2896,9 @@ def storeTransactionAdd(request):
                         flag = False
                         break
                 if flag == True:
-                    purchaseOrderHeader.status = 3
+                    purchaseOrderHeader.delivery_status = 3
                 else:
-                    purchaseOrderHeader.status = 2
+                    purchaseOrderHeader.delivery_status = 2
                 purchaseOrderHeader.save()
         transaction.commit()
         context.update({
@@ -2917,57 +2916,16 @@ def storeTransactionAdd(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def storeTransactionEdit(request):
-    context = {}
-    if not request.POST['store_id'] or request.POST['item_id'] or request.POST['opening_qty']:
-        context.update({
-            'status': 589,
-            'message': "Store/Item/Opening Quantity has not been provided."
-        })
-    exist_data = exist_data = models.Store_Item.objects.filter(
-        store=request.POST['store_id'], item=request.POST['item_id']).exclude(pk=request.POST['id']).filter(deleted=0)
-    if len(exist_data) > 0:
-        context.update({
-            'status': 590,
-            'message': "Item in this Store already exists.",
-        })
-        return JsonResponse(context)
-    try:
-        with transaction.atomic():
-            storeItem = models.Store_Item.objects.get(pk=request.POST['id'])
-            storeItem.store_id = request.POST['store_id']
-            storeItem.item_id = request.POST['item_id']
-            storeItem.opening_qty = Decimal(request.POST['opening_qty'])
-            storeItem.on_hand_qty = Decimal(request.POST['opening_qty'])
-            storeItem.closing_qty = Decimal(request.POST['opening_qty'])
-            storeItem.updated_at = datetime.now()
-            storeItem.save()
-        transaction.commit()
-        context.update({
-            'status': 200,
-            'message': "Store Item Updated Successfully."
-        })
-    except Exception:
-        context.update({
-            'status': 591,
-            'message': "Something Went Wrong. Please Try Again."
-        })
-        transaction.rollback()
-    return JsonResponse(context)
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
 def storeTransactionDelete(request):
     context = {}
-    storeItem = models.Store_Item.objects.get(pk=request.POST['id'])
+    storeTransaction = models.Store_Transaction.objects.get(pk=request.POST['id'])
     try:
         with transaction.atomic():
-            storeItem.delete()
+            storeTransaction.delete()
         transaction.commit()
         context.update({
             'status': 200,
-            'message': "Store Item Deleted Successfully."
+            'message': "Store Transaction Deleted Successfully."
         })
     except Exception:
         context.update({
@@ -2979,47 +2937,22 @@ def storeTransactionDelete(request):
 
 
 @api_view(['GET'])
-def storeTransactionExport(request):
-    keyword = request.GET.get('keyword')
-    if keyword is not None and keyword != "":
-        page_items = models.Store_Item.objects.filter(Q(store__name__icontains=keyword) | Q(
-            item__name__icontains=keyword) | Q(opening_qty__icontains=keyword)).filter(status=1, deleted=0)
+@permission_classes([IsAuthenticated])
+def storeTransactionDetails(request):
+    context = {}
+    header_id = request.GET.get('header_id', None)
+    if header_id is not None and header_id != "":
+        header_detail = list(models.Store_Transaction.objects.filter(id=header_id).values('pk', 'transaction_number', 'transaction_date', 'total_amount', 'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name'))
+        orderDetails = list(models.Store_Transaction_Detail.objects.filter(purchase_order_header_id=header_id).values('pk', 'quantity', 'rate', 'amount', 'gst_percentage', 'amount_with_gst', 'item_id', 'item__name', 'store_id', 'store__name', 'store_transaction_header_id', 'store_transaction_header__transaction_number', 'store_transaction_header__transaction_date'))
+        context.update({
+            'status': 200,
+            'message': "Store Transaction Details Fetched Successfully.",
+            'header_detail': header_detail,
+            'page_items': orderDetails,
+        })
     else:
-        page_items = models.Store_Item.objects.filter(status=1, deleted=0)
-
-    directory_path = settings.MEDIA_ROOT + '/reports/'
-    path = Path(directory_path)
-    path.mkdir(parents=True, exist_ok=True)
-
-    for f in os.listdir(settings.MEDIA_ROOT + '/reports/'):
-        if not f.endswith(".xlsx"):
-            continue
-        os.remove(os.path.join(settings.MEDIA_ROOT + '/reports/', f))
-
-    # tmpname = str(datetime.now().microsecond) + ".xlsx"
-    tmpname = "Store Item" + ".xlsx"
-    wb = Workbook()
-
-    # grab the active worksheet
-    ws = wb.active
-
-    # Data can be assigned directly to cells
-    ws['A1'] = "Store"
-    ws['B1'] = "Item"
-    ws['C1'] = "Opening quantity"
-    ws['D1'] = "On hand quantity"
-    ws['E1'] = "Closing quantity"
-
-    # Rows can also be appended
-    for each in page_items:
-        ws.append([each.store.name, each.item.name, each.opening_qty,
-                  each.on_hand_qty, each.closing_qty])
-
-    # Save the file
-    wb.save(settings.MEDIA_ROOT + '/reports/' + tmpname)
-    os.chmod(settings.MEDIA_ROOT + '/reports/' + tmpname, 0o777)
-    return JsonResponse({
-        'code': 200,
-        'filename': settings.MEDIA_URL + 'reports/' + tmpname,
-        'name':  tmpname
-    })
+        context.update({
+            'status': 588,
+            'message': "Please Provide Header Id.",
+        })
+    return JsonResponse(context)

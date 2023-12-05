@@ -89,5 +89,5 @@ urlpatterns = [
 
     path('store-transaction-list', views.storeTransactionList, name='storeTransactionList'),
     path('store-transaction-add', views.storeTransactionAdd, name='storeTransactionAdd'),
-    path('store-transaction-edit/<int:id>', views.storeTransactionEdit, name='storeTransactionEdit'),
+    path('store-transaction-view/<int:id>', views.storeTransactionView, name='storeTransactionView'),
 ]

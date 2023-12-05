@@ -707,15 +707,11 @@ def storeTransactionAdd(request):
 
 
 @login_required
-def storeTransactionEdit(request, id):
-    storeItem = models.Store_Item.objects.get(pk=id)
-    stores = models.Store.objects.all()
-    items = models.Item.objects.all()
+def storeTransactionView(request, id):
+    storeTransaction = models.Store_Transaction.objects.prefetch_related('store_transaction_detail_set').get(pk=id)
     context.update({
-        'storeItem': storeItem,
-        'stores': stores,
-        'items': items,
-        'page_title': "Store Transaction Edit",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}, {'name': "Edit"}]
+        'storeTransaction': storeTransaction,
+        'page_title': "Store Transaction View",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}, {'name': "View"}]
     })
-    return render(request, 'portal/Store Transaction/edit.html', context)
+    return render(request, 'portal/Store Transaction/view.html', context)

@@ -171,7 +171,7 @@
                             </div>
                         </div>
                         {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
-                        <button class="btn btn-success submit-btn" type="submit">Submit</button>
+                        <button onclick="return confirm('Please check the form again before submitting. It can not be changed')" class="btn btn-success submit-btn" type="submit">Submit</button>
                         {% endif %}
                     </form>
                 </div>

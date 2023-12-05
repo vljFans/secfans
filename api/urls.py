@@ -99,7 +99,6 @@ urlpatterns = [
 
     path('store-transaction-list', views.storeTransactionList, name='storeTransactionList'),
     path('store-transaction-add', views.storeTransactionAdd, name='storeTransactionAdd'),
-    path('store-transaction-edit', views.storeTransactionEdit, name='storeTransactionEdit'),
     path('store-transaction-delete', views.storeTransactionDelete, name='storeTransactionDelete'),
-    path('store-transaction-export', views.storeTransactionExport, name='storeTransactionExport'),
+    path('store-transaction-details', views.storeTransactionDetails, name='storeTransactionDetails'),
 ]

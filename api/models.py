@@ -469,6 +469,7 @@ class Purchase_Order(models.Model):
         max_digits=10, decimal_places=2, default=0)
     delivered_total_amount = models.DecimalField(
         max_digits=10, decimal_places=2, default=0)
+    delivery_status = models.SmallIntegerField(default=1)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
