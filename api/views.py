@@ -2887,7 +2887,7 @@ def storeTransactionAdd(request):
                     storeItem.closing_qty += Decimal(request.POST.getlist('item_quantity')[index])
                     storeItem.save()
             models.Store_Transaction_Detail.objects.bulk_create(order_details)
-            if request.POST['with_purchase_order'] != "" and request.POST['with_purchase_order'] != "":
+            if request.POST['with_purchase_order'] != "" and int(request.POST['with_purchase_order']) != 0:
                 for index, elem in enumerate(request.POST.getlist('detail_id')):
                     purchaseOrderItem = models.Purchase_Order_Detail.objects.get(pk=elem)
                     purchaseOrderItem.delivered_quantity += Decimal(request.POST.getlist('item_quantity')[index])
@@ -2925,10 +2925,9 @@ def storeTransactionAdd(request):
 @permission_classes([IsAuthenticated])
 def storeTransactionDelete(request):
     context = {}
-    storeTransaction = models.Store_Transaction.objects.get(pk=request.POST['id'])
+    storeTransaction = models.Store_Transaction.objects.prefetch_related('store_transaction_detail_set').get(pk=request.POST['id'])
     try:
         with transaction.atomic():
-            storeTransaction.delete()
             if storeTransaction.purchase_order_header_id is not None:
                 purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related('purchase_order_detail_set').get(pk=storeTransaction.purchase_order_header_id)
                 for purchaseOrderDetail in purchaseOrderHeader.purchase_order_detail_set.all():
@@ -2937,8 +2936,15 @@ def storeTransactionDelete(request):
                     purchaseOrderDetail.delivered_gst_percentage = 0
                     purchaseOrderDetail.delivered_amount_with_gst = 0
                     purchaseOrderDetail.save()
+                for storeTransactionDetail in storeTransaction.store_transaction_detail_set.all():
+                    storeItem = models.Store_Item.objects.filter(item_id=storeTransactionDetail.item_id, store_id=storeTransactionDetail.store_id).first()
+                    if storeItem is not None:
+                        storeItem.on_hand_qty -= Decimal(storeTransactionDetail.quantity)
+                        storeItem.closing_qty -= Decimal(storeTransactionDetail.quantity)
+                        storeItem.save()
                 purchaseOrderHeader.delivery_status = 1
                 purchaseOrderHeader.save()
+            storeTransaction.delete()
         transaction.commit()
         context.update({
             'status': 200,
