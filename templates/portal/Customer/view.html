@@ -49,7 +49,9 @@
         <ul style="list-style-type:none;">
             <li>
                 <p><b>Name</b>: {{customer.name}}</p>
+                {% if customer.photo is not None %}
                 <p><b>Photo</b>: <img src="{{customer.photo}}" class="img-responsive" width="150"></p>
+                {% endif %}
                 <p><b>Contact Name</b>: {{customer.contact_name}}</p>
                 <p><b>Contact Number</b>: {{customer.contact_no}}</p>
                 <p><b>Contact STD Number</b>: {{customer.contact_no_std}}</p>
@@ -65,7 +67,9 @@
                 <p><b>Country</b>: {{customer.country.name}}</p>
                 <p><b>KYC Type</b>: {{customer.kyc_type.name}}</p>
                 <p><b>KYC Detail</b>: {{customer.kyc_detail}}</p>
+                {% if customer.kyc_image is not None %}
                 <p><b>KYC Document</b>: <a href="{{customer.kyc_image}}" target="new">Preview</a> </p>
+                {% endif %}
                 <p><b>Weekly closing day</b>: {{customer.weekly_closing_day}}</p>
                 <p><b>Morning from time</b>: {{customer.morning_from_time}}</p>
                 <p><b>Morning to time</b>: {{customer.morning_to_time}}</p>

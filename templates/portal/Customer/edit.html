@@ -90,7 +90,9 @@
                             <div class="col-md-4 mb-3">
                                 <label>Customer Photo</label>
                                 <input type="file" name="photo" class="form-control" placeholder="photo" accept="image/*">
+                                {% if customer.photo is not None %}
                                 <a href="{{customer.photo}}" target="_blank" rel="noopener noreferrer">Preview</a>
+                                {% endif %}
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>Customer Type <span class="required-indicator">*</span></label>
@@ -178,7 +180,9 @@
                             <div class="col-md-4 mb-3">
                                 <label>KYC Document<span class="required-indicator">*</span></label>
                                 <input type="file" name="kyc_image" class="form-control" placeholder="KYC Document" accept="application/pdf">
+                                {% if customer.kyc_image is not None %}
                                 <a href="{{customer.kyc_image}}" target="_blank" rel="noopener noreferrer">Preview</a>
+                                {% endif %}
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>Date of Birth</label>
