@@ -153,7 +153,13 @@
                         tbody_text += `<tr>
                                 <td>${index + 1}</td>
                                 <td>${element.name}</td>
-                                <td><img src="${element.photo}" class="img-responsive" width="150"></td>
+                                <td>
+                                    ${element.photo != null ?
+                                        `<img src="${element.photo}" class="img-responsive" width="100" height="100">`
+                                        : 
+                                        ``
+                                    }
+                                </td>
                                 <td>${element.contact_name}</td>
                                 <td>${element.contact_no}</td>
                                 <td>${element.contact_email}</td>
