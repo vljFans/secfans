@@ -91,6 +91,8 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Store Transaction Details -->
                             <div class="purchase_order_details col-md-12">
                                 <div class="form-row content_parent">
                                     <div class="col-md-3 mb-3">
@@ -117,7 +119,7 @@
                                     </div>
                                     <div class="col-md-2 mb-3">
                                         <label>Price <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="item_price" min="0.01" class="form-control item_price"
                                             placeholder="0.00" required>
@@ -149,12 +151,14 @@
                                     </div>
                                 </div>
                             </div>
+
                             <div class="add_more_content col-md-12">
                             </div>
                             <!-- <div class="col-md-4 mb-3">
                                 <label>Transaction Number <span class="required-indicator">*</span></label>
                                 <input type="text" name="transaction_number" class="form-control" placeholder="Transaction Number" required id="transaction_number">
                             </div> -->
+
                             <div class="col-md-6 mb-3">
                                 <label>Transaction Date <span class="required-indicator">*</span></label>
                                 <input type="date" name="transaction_date" class="form-control" placeholder="Transaction Date" required id="transaction_date">
@@ -212,6 +216,8 @@
         placeholder: ''
     });
 
+    // Show or Hide Purchase Order Reference Dropdown
+    // Also add a new store transaction detail for "Without purchase order"
     $(document).on('change', '#with_purchase_order', function () {
         purchase_order_type = $(this).val();
         if (parseInt(purchase_order_type) == 1) {
@@ -245,7 +251,7 @@
                                     </div>
                                     <div class="col-md-2 mb-3">
                                         <label>Price <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="item_price" min="0.01" class="form-control item_price"
                                             placeholder="0.00" required>
@@ -284,6 +290,8 @@
     });
 
     $(document).ready(function () {
+
+        // Provide options for vendor dropdown
         $.ajax({
             url: "{% url 'api:vendorList' %}?find_all=1",
             type: 'GET',
@@ -306,6 +314,8 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
+        
+        // Provide options for item dropdown
         $.ajax({
             url: "{% url 'api:itemList' %}?find_all=1",
             type: 'GET',
@@ -329,6 +339,8 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
+
+        // Provide options for store dropdown
         $.ajax({
             url: "{% url 'api:storeList' %}?find_all=1",
             type: 'GET',
@@ -352,13 +364,14 @@
             }
         });
     });
-
+    
+    // Provide options for Purchase order reference dropdown who has the same vendor as the selected Vendor in it's dropwdown
     $(document).on('change', '#vendor_id', function () {
         let vendor_id = $(this).val();
         $.ajax({
             url: "{% url 'api:purchaseOrderList' %}?vendor_id=" + vendor_id + "&delivery_status=1,2",
             type: 'GET',
-            data: ({ vendor_id: vendor_id}),
+            data: ({}),
             headers: {
                 'Authorization': getCookieValue("accessToken")
             },
@@ -400,7 +413,7 @@
                                     </div>
                                     <div class="col-md-2 mb-3">
                                         <label>Price <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="item_price" min="0.01" class="form-control item_price"
                                             placeholder="0.00" required>
@@ -473,7 +486,7 @@
                                     </div>
                                     <div class="col-md-2 mb-3">
                                         <label>Price <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="item_price" min="0.01" class="form-control item_price"
                                             placeholder="0.00" required>
@@ -578,15 +591,6 @@
         calculateTotalAmount();
     });
 
-    $(document).on('keyup change', '.item_price', function () {
-        gst_percentage = $(this).parents(".content_parent").find('.gst_percentage').val();
-        gst_value = (parseFloat(item_price) * parseFloat(gst_percentage) / 100).toFixed(2);
-        item_with_gst_price = (parseFloat(item_price) + parseFloat(gst_value)).toFixed(2);
-        $(this).parents(".content_parent").find('.amount_with_gst').val(item_with_gst_price);
-
-        calculateTotalAmount();
-    });
-
     function calculateTotalAmount() {
         total_amount = 0;
         $('.amount_with_gst').each(function () {
@@ -599,7 +603,6 @@
     }
 
     function checkMaxMin(element) {
-        console.log(element);
         if ($(element).val() == "") {
             $(element).val($(element).attr('min'));
         } else {
