@@ -520,31 +520,48 @@
 
     $(document).on('change', '.item_id', function () {
         let element = $(this);
-        item_id = element.val();
-        if (item_id != null && item_id != "") {
-            $.ajax({
-                url: "{% url 'api:itemList' %}?id=" + item_id,
-                type: 'GET',
-                data: ({}),
-                headers: {
-                    'Authorization': getCookieValue("accessToken")
-                },
-                success: function (response) {
-                    if (response.status == 200) {
-                        element.parents('.content_parent').find('.item_quantity').val(1);
-                        element.parents('.content_parent').find('.rate').val(response.page_items[0].price);
-                        element.parents('.content_parent').find('.item_price').val(response.page_items[0].price);
-                        element.parents('.content_parent').find('.gst_percentage').val(response.page_items[0].item_type__gst_percentage);
-                        element.parents('.content_parent').find('.amount_with_gst').val((parseFloat(response.page_items[0].price) + (parseFloat(response.page_items[0].price) * parseFloat(response.page_items[0].item_type__gst_percentage) / 100)).toFixed(2));
-                    } else {
-                        alert(response.message);
+        let item_count = 0;
+        $('.item_id').each(function () {
+            if ($(this).val() == element.val()) {
+                item_count += 1;
+            }
+        })
+        if (item_count > 1) {
+            element.val("");
+            element.parents('.content_parent').find('.item_quantity').val("");
+            element.parents('.content_parent').find('.rate').val("");
+            element.parents('.content_parent').find('.item_price').val("");
+            element.parents('.content_parent').find('.gst_percentage').val("");
+            element.parents('.content_parent').find('.amount_with_gst').val("");
+            alert("Item already added in the list.");
+            calculateTotalAmount();
+        } else {
+            item_id = element.val();
+            if (item_id != null && item_id != "") {
+                $.ajax({
+                    url: "{% url 'api:itemList' %}?id=" + item_id,
+                    type: 'GET',
+                    data: ({}),
+                    headers: {
+                        'Authorization': getCookieValue("accessToken")
+                    },
+                    success: function (response) {
+                        if (response.status == 200) {
+                            element.parents('.content_parent').find('.item_quantity').val(1);
+                            element.parents('.content_parent').find('.rate').val(response.page_items[0].price);
+                            element.parents('.content_parent').find('.item_price').val(response.page_items[0].price);
+                            element.parents('.content_parent').find('.gst_percentage').val(response.page_items[0].item_type__gst_percentage);
+                            element.parents('.content_parent').find('.amount_with_gst').val((parseFloat(response.page_items[0].price) + (parseFloat(response.page_items[0].price) * parseFloat(response.page_items[0].item_type__gst_percentage) / 100)).toFixed(2));
+                        } else {
+                            alert(response.message);
+                        }
+                        calculateTotalAmount();
+                    },
+                    error: function (error) {
+                        $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
                     }
-                    calculateTotalAmount();
-                },
-                error: function (error) {
-                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-                }
-            });
+                });
+            }
         }
     });
 
