@@ -359,7 +359,7 @@ def userList(request):
 @permission_classes([IsAuthenticated])
 def userAdd(request):
     context = {}
-    if not request.POST['name'] or request.POST['role_id'] or request.POST['email'] or request.POST['phone'] or request.POST['password'] or request.POST['confirm_password']:
+    if not request.POST['name'] or not request.POST['role_id'] or not request.POST['email'] or not request.POST['phone'] or not request.POST['password'] or not request.POST['confirm_password']:
         context.update({
             'status': 508,
             'message': "Name/Role/Email/Phone/Password/Confirmed Password has not been provided."
@@ -409,13 +409,13 @@ def userAdd(request):
 @permission_classes([IsAuthenticated])
 def userEdit(request):
     context = {}
-    if not request.POST['name'] or request.POST['role_id'] or request.POST['email'] or request.POST['phone'] or \
-            request.POST['password'] or request.POST['confirm_password']:
+    if not request.POST['name'] or not request.POST['role_id'] or not request.POST['email'] or not request.POST['phone'] or \
+            request.POST['password'] or not request.POST['confirm_password']:
         context.update({
             'status': 512,
             'message': "Name/Role/Email/Phone/Password/Confirmed Password has not been provided."
         })
-    if request.POST['password'] != "" or request.POST['confirm_password'] != "":
+    if request.POST['password'] != "" or not request.POST['confirm_password'] != "":
         if request.POST['password'] != request.POST['confirm_password']:
             context.update({
                 'status': 513,
@@ -537,7 +537,7 @@ def vendorList(request):
 @permission_classes([IsAuthenticated])
 def vendorAdd(request):
     context = {}
-    if not request.POST['name'] or request.POST['contact_name'] or request.POST['contact_email'] or request.POST['contact_no'] or request.POST['gst_no'] or request.POST['pin'] or request.POST['address'] or request.POST['country_id'] or request.POST['state_id'] or request.POST['city_id']:
+    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['gst_no'] or not request.POST['pin'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
         context.update({
             'status': 517,
             'message': "Name/Contact Name/Contact Email/Contact No/GST Number/Pin/Address/Country/State/City has not been provided."
@@ -582,7 +582,7 @@ def vendorAdd(request):
 @permission_classes([IsAuthenticated])
 def vendorEdit(request):
     context = {}
-    if not request.POST['name'] or request.POST['contact_name'] or request.POST['contact_email'] or request.POST['contact_no'] or request.POST['gst_no'] or request.POST['pin'] or request.POST['address'] or request.POST['country_id'] or request.POST['state_id'] or request.POST['city_id']:
+    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['gst_no'] or not request.POST['pin'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
         context.update({
             'status': 520,
             'message': "Name/Contact Name/Contact Email/Contact No/GST Number/Pin/Address/Country/State/City has not been provided."
@@ -750,7 +750,7 @@ def customerList(request):
 @permission_classes([IsAuthenticated])
 def customerAdd(request):
     context = {}
-    if not request.POST['name'] or request.POST['contact_name'] or request.POST['contact_email'] or request.POST['contact_no'] or request.POST['landmark'] or request.POST['pin'] or request.POST['customer_type_id'] or request.POST['kyc_type_id'] or request.POST['kyc_detail'] or request.POST['address'] or request.POST['country_id'] or request.POST['state_id'] or request.POST['city_id']:
+    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['landmark'] or not request.POST['pin'] or not request.POST['customer_type_id'] or not request.POST['kyc_type_id'] or not request.POST['kyc_detail'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
         context.update({
             'status': 524,
             'message': "Name/Contact Name/Contact Email/Contact No/Landmark/Pin/Customer Type/KYC Type/KYC Detail/Address/Country/State/City has not been provided."
@@ -836,7 +836,7 @@ def customerAdd(request):
 @permission_classes([IsAuthenticated])
 def customerEdit(request):
     context = {}
-    if not request.POST['name'] or request.POST['contact_name'] or request.POST['contact_email'] or request.POST['contact_no'] or request.POST['landmark'] or request.POST['pin'] or request.POST['customer_type_id'] or request.POST['kyc_type_id'] or request.POST['kyc_detail'] or request.POST['address'] or request.POST['country_id'] or request.POST['state_id'] or request.POST['city_id']:
+    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['landmark'] or not request.POST['pin'] or not request.POST['customer_type_id'] or not request.POST['kyc_type_id'] or not request.POST['kyc_detail'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
         context.update({
             'status': 527,
             'message': "Name/Contact Name/Contact Email/Contact No/Landmark/Pin/Customer Type/KYC Type/KYC Detail/Address/Country/State/City has not been provided."
@@ -1188,7 +1188,7 @@ def childUomList(request):
 @permission_classes([IsAuthenticated])
 def childUomAdd(request):
     context = {}
-    if not request.POST['name'] or request.POST['uom_id'] or request.POST['conversion_rate']:
+    if not request.POST['name'] or not request.POST['uom_id'] or not request.POST['conversion_rate']:
         context.update({
             'status': 538,
             'message': "Name/Uom/Conversion Rate has not been provided."
@@ -1226,7 +1226,7 @@ def childUomAdd(request):
 @permission_classes([IsAuthenticated])
 def childUomEdit(request):
     context = {}
-    if not request.POST['name'] or request.POST['uom_id'] or request.POST['conversion_rate']:
+    if not request.POST['name'] or not request.POST['uom_id'] or not request.POST['conversion_rate']:
         context.update({
             'status': 541,
             'message': "Name/Uom/Conversion Rate has not been provided."
@@ -1482,7 +1482,7 @@ def itemTypeList(request):
 @permission_classes([IsAuthenticated])
 def itemTypeAdd(request):
     context = {}
-    if not request.POST['name'] or request.POST['item_category_id'] or request.POST['hsn_code'] or request.POST['gst_percentage']:
+    if not request.POST['name'] or not request.POST['item_category_id'] or not request.POST['hsn_code'] or not request.POST['gst_percentage']:
         context.update({
             'status': 552,
             'message': "Name/Item Category/HSN Code/GST Percentage has not been provided."
@@ -1521,7 +1521,7 @@ def itemTypeAdd(request):
 @permission_classes([IsAuthenticated])
 def itemTypeEdit(request):
     context = {}
-    if not request.POST['name'] or request.POST['item_category_id'] or request.POST['hsn_code'] or request.POST['gst_percentage']:
+    if not request.POST['name'] or not request.POST['item_category_id'] or not request.POST['hsn_code'] or not request.POST['gst_percentage']:
         context.update({
             'status': 555,
             'message': "Name/Item Category/HSN Code/GST Percentage has not been provided."
@@ -1631,7 +1631,7 @@ def itemColorList(request):
 @permission_classes([IsAuthenticated])
 def itemColorAdd(request):
     context = {}
-    if not request.POST['name'] or request.POST['color_code']:
+    if not request.POST['name'] or not request.POST['color_code']:
         context.update({
             'status': 559,
             'message': "Name/Color Code has not been provided."
@@ -1668,7 +1668,7 @@ def itemColorAdd(request):
 @permission_classes([IsAuthenticated])
 def itemColorEdit(request):
     context = {}
-    if not request.POST['name'] or request.POST['color_code']:
+    if not request.POST['name'] or not request.POST['color_code']:
         context.update({
             'status': 562,
             'message': "Name/Color Code has not been provided."
@@ -1777,7 +1777,7 @@ def itemList(request):
 @permission_classes([IsAuthenticated])
 def itemAdd(request):
     context = {}
-    if not request.POST['name'] or request.POST['uom_id'] or request.POST['item_type_id'] or request.POST['price']:
+    if not request.POST['name'] or not request.POST['uom_id'] or not request.POST['item_type_id'] or not request.POST['price']:
         context.update({
             'status': 566,
             'message': "Name/UOM/Item Type/Price has not been provided."
@@ -1816,7 +1816,7 @@ def itemAdd(request):
 @permission_classes([IsAuthenticated])
 def itemEdit(request):
     context = {}
-    if not request.POST['name'] or request.POST['uom_id'] or request.POST['item_type_id'] or request.POST['price']:
+    if not request.POST['name'] or not request.POST['uom_id'] or not request.POST['item_type_id'] or not request.POST['price']:
         context.update({
             'status': 569,
             'message': "Name/UOM/Item Type/Price has not been provided."
@@ -1974,7 +1974,7 @@ def storeList(request):
 @permission_classes([IsAuthenticated])
 def storeAdd(request):
     context = {}
-    if not request.POST['name'] or request.POST['address'] or request.POST['contact_name'] or request.POST['contact_no'] or request.POST['contact_email'] or request.POST['pin'] or request.POST['city_id'] or request.POST['state_id'] or request.POST['country_id']:
+    if not request.POST['name'] or not request.POST['address'] or not request.POST['contact_name'] or not request.POST['contact_no'] or not request.POST['contact_email'] or not request.POST['pin'] or not request.POST['city_id'] or not request.POST['state_id'] or not request.POST['country_id']:
         context.update({
             'status': 566,
             'message': "Name/Address/Contact Name/Contact Number/Contact Email/Pin/City/State/Country has not been provided."
@@ -2019,7 +2019,7 @@ def storeAdd(request):
 @permission_classes([IsAuthenticated])
 def storeEdit(request):
     context = {}
-    if not request.POST['name'] or request.POST['address'] or request.POST['contact_name'] or request.POST['contact_no'] or request.POST['contact_email'] or request.POST['pin'] or request.POST['city_id'] or request.POST['state_id'] or request.POST['country_id']:
+    if not request.POST['name'] or not request.POST['address'] or not request.POST['contact_name'] or not request.POST['contact_no'] or not request.POST['contact_email'] or not request.POST['pin'] or not request.POST['city_id'] or not request.POST['state_id'] or not request.POST['country_id']:
         context.update({
             'status': 566,
             'message': "Name/Address/Contact Name/Contact Number/Contact Email/Pin/City/State/Country has not been provided."
@@ -2193,7 +2193,7 @@ def billOfMaterialList(request):
 @permission_classes([IsAuthenticated])
 def billOfMaterialAdd(request):
     context = {}
-    if not request.POST['name'] or request.POST['uom_id'] or request.POST['total_amount'] or request.POST['level']:
+    if not request.POST['name'] or not request.POST['uom_id'] or not request.POST['total_amount'] or not request.POST['level']:
         context.update({
             'status': 573,
             'message': "Name/UOM/Total Amount/Level has not been provided."
@@ -2248,7 +2248,7 @@ def billOfMaterialAdd(request):
 @permission_classes([IsAuthenticated])
 def billOfMaterialEdit(request):
     context = {}
-    if not request.POST['name'] or request.POST['uom_id'] or request.POST['total_amount'] or request.POST['level']:
+    if not request.POST['name'] or not request.POST['uom_id'] or not request.POST['total_amount'] or not request.POST['level']:
         context.update({
             'status': 576,
             'message': "Name/UOM/Total Amount/Level has not been provided."
@@ -2430,7 +2430,7 @@ def purchaseOrderList(request):
 @permission_classes([IsAuthenticated])
 def purchaseOrderAdd(request):
     context = {}
-    if not request.POST['vendor_id'] or request.POST['order_number'] or request.POST['order_date'] or request.POST['quotation_number'] or request.POST['quotation_date'] or request.POST['total_amount']:
+    if not request.POST['vendor_id'] or not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['quotation_number'] or not request.POST['quotation_date'] or not request.POST['total_amount']:
         context.update({
             'status': 581,
             'message': "Vendor/Order NUmber/Order Date/Quotation Number/Quotation Date/Total Amount has not been provided."
@@ -2487,7 +2487,7 @@ def purchaseOrderAdd(request):
 @permission_classes([IsAuthenticated])
 def purchaseOrderEdit(request):
     context = {}
-    if not request.POST['vendor_id'] or request.POST['order_number'] or request.POST['order_date'] or request.POST['quotation_number'] or request.POST['quotation_date'] or request.POST['total_amount']:
+    if not request.POST['vendor_id'] or not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['quotation_number'] or not request.POST['quotation_date'] or not request.POST['total_amount']:
         context.update({
             'status': 583,
             'message': "Vendor/Order NUmber/Order Date/Quotation Number/Quotation Date/Total Amount has not been provided."
@@ -2647,7 +2647,7 @@ def storeItemList(request):
 @permission_classes([IsAuthenticated])
 def storeItemAdd(request):
     context = {}
-    if not request.POST['store_id'] or request.POST['item_id'] or request.POST['opening_qty']:
+    if not request.POST['store_id'] or not request.POST['item_id'] or not request.POST['opening_qty']:
         context.update({
             'status': 586,
             'message': "Store/Item/Opening Quantity has not been provided."
@@ -2687,7 +2687,7 @@ def storeItemAdd(request):
 @permission_classes([IsAuthenticated])
 def storeItemEdit(request):
     context = {}
-    if not request.POST['store_id'] or request.POST['item_id'] or request.POST['opening_qty']:
+    if not request.POST['store_id'] or not request.POST['item_id'] or not request.POST['opening_qty']:
         context.update({
             'status': 589,
             'message': "Store/Item/Opening Quantity has not been provided."
@@ -2850,7 +2850,7 @@ def storeTransactionList(request):
 @permission_classes([IsAuthenticated])
 def storeTransactionAdd(request):
     context = {}
-    if not request.POST['transaction_type_id'] or request.POST['vendor_id'] or request.POST['transaction_date'] or request.POST['total_amount']:
+    if not request.POST['transaction_type_id'] or not request.POST['vendor_id'] or not request.POST['transaction_date'] or not request.POST['total_amount']:
         context.update({
             'status': 586,
             'message': "Transaction Type/Vendor/Transaction Date/Total Amount has not been provided."
