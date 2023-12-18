@@ -18,11 +18,11 @@
                 </div>
                 <div class="breadcrumb pd-0 mg-0">
                     {% for breadcrumb in breadcrumbs %}
-                        {% if forloop.counter != breadcrumbs|length %}
-                        <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
-                        {% else %}
-                        <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
-                        {% endif %}
+                    {% if forloop.counter != breadcrumbs|length %}
+                    <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                    {% else %}
+                    <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
+                    {% endif %}
                     {% endfor %}
                 </div>
             </div>
@@ -60,13 +60,17 @@
                 </div>
                 <div class="card-body">
                     <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
-                        <input type="hidden" name="transaction_type_id" value="{{transaction_type}}">
+                        <input type="hidden" name="id" value="{{storeTransaction.id}}">
+                        <input type="hidden" name="transaction_type_id" value="{{transaction_type_id}}">  
                         <div class="form-row">
                             <div class="col-md-4 mb-3">
                                 <label>Vendor<span class="required-indicator">*</span></label>
                                 <div class="input-group">
                                     <select class="custom-select selectpicker" id="vendor_id" name="vendor_id" required>
                                         <option value="">Choose...</option>
+                                        {% for vendor in vendors %}
+                                        <option {% if storeTransaction.vendor_id == vendor.pk %}selected{% endif %} value="{{vendor.pk}}">{{vendor.name}}</option>
+                                        {% endfor %}
                                     </select>
                                 </div>
                             </div>
@@ -75,24 +79,367 @@
                                 <div class="input-group">
                                     <select class="custom-select selectpicker" id="with_purchase_order"
                                         name="with_purchase_order" required>
-                                        <option value="1" selected>With Purchase Order</option>
-                                        <option value="0">Without Purchase Order</option>
+                                        <option value="1" {% if storeTransaction.purchase_order_header_id %}selected{% endif %} >With Purchase Order</option>
+                                        <option value="0" {% if not storeTransaction.purchase_order_header_id %}selected{% endif %} >Without Purchase Order</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <div class="purchase_order_type_content">
+                                <div class="purchase_order_type_content" {% if not storeTransaction.purchase_order_header_id %}style="display: none;"{% endif %}>
                                     <label>Purchase Order Reference<span class="required-indicator">*</span></label>
                                     <div class="input-group">
                                         <select class="custom-select selectpicker" id="purchase_order_header_id"
-                                            name="purchase_order_header_id" required>
+                                            name="purchase_order_header_id" {% if storeTransaction.purchase_order_header_id %}required{% endif %}>
                                             <option value="">Select Purchase Order</option>
+                                            {% for purchaseOrderHeader in purchaseOrderHeaders %}
+                                                {% if storeTransaction.vendor_id == purchaseOrderHeader.vendor_id %}
+                                                    <option {% if storeTransaction.purchase_order_header_id == purchaseOrderHeader.pk %}selected{% endif %} value="{{purchaseOrderHeader.pk}}">{{purchaseOrderHeader.order_number}}</option>
+                                                {% endif %}
+                                            {% endfor %}
                                         </select>
                                     </div>
                                 </div>
                             </div>
                             <div class="purchase_order_details col-md-12">
-                                <div class="form-row content_parent">
+                                <div class="original_purchase_order_details">
+                                {% for storeTransactionDetail in storeTransactionDetails%}
+                                    <div class="form-row content_parent">
+                                        {% if storeTransaction.purchase_order_header_id %}
+                                        <input type="hidden" class="hidden_item_id" name="item_id" value="{{storeTransactionDetail.item_id}}"> 
+                                        {% endif %}
+                                        <div class="col-md-3 mb-3">
+                                            <label>Item <span class="required-indicator">*</span></label>
+                                            <div class="input-group">
+                                                <select class="custom-select selectpicker item_id" name="item_id" required {% if storeTransaction.purchase_order_header_id %}disabled{% endif %}>
+                                                    <option value="">Choose...</option>
+                                                    {% for item in items %}
+                                                        <option {% if storeTransactionDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-1 mb-3">
+                                            <label>Rate <span class="required-indicator">*</span></label>
+                                            <input type="text" onkeyup="checkMaxMin(this)" value="{{storeTransactionDetail.rate}}" readonly
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="rate" min="0.01" class="form-control rate"
+                                                placeholder="0.00" required>
+                                        </div>
+                                        <div class="col-md-1 mb-3">
+                                            <label>Quantity <span class="required-indicator">*</span></label>
+                                            <input type="text" onkeyup="checkMaxMin(this)" value="{{storeTransactionDetail.quantity}}"
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="item_quantity" min="0.0001" class="form-control item_quantity"
+                                                {% for key, value in max_quantity.items %}
+                                                    {% if storeTransactionDetail.id == key %}
+                                                        max="{{value}}"
+                                                    {% endif %}
+                                                {% endfor %}
+                                                placeholder="Quantity" required>
+                                        </div>
+                                        <div class="col-md-2 mb-3">
+                                            <label>Price <span class="required-indicator">*</span></label>
+                                            <input type="text" onkeyup="checkMaxMin(this)" readonly value="{{storeTransactionDetail.amount}}"
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="item_price" min="0.01" class="form-control item_price"
+                                                placeholder="0.00" required>
+                                        </div>
+                                        <div class="col-md-1 mb-3">
+                                            <label>GST %<span class="required-indicator">*</span></label>
+                                            <input type="text" name="gst_percentage" class="form-control gst_percentage" readonly value="{{storeTransactionDetail.gst_percentage}}"
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                max="100" min="0.00" placeholder="0%">
+                                        </div>
+                                        <div class="col-md-2 mb-3">
+                                            <label>Price With GST <span class="required-indicator">*</span></label>
+                                            <input type="text" onkeyup="checkMaxMin(this)" readonly value="{{storeTransactionDetail.amount_with_gst}}"
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="amount_with_gst" min="0.01" class="form-control amount_with_gst"
+                                                placeholder="0.00" required>
+                                        </div>
+                                        <div class="col-md-1 mb-3">
+                                            <label>Store <span class="required-indicator">*</span></label>
+                                            <div class="input-group">
+                                                <select class="custom-select selectpicker store_id" name="store_id" required>
+                                                    <option value="">Choose...</option>
+                                                    {% for store in stores %}
+                                                        <option {% if storeTransactionDetail.store_id == store.pk %}selected{% endif %} value="{{store.pk}}">{{store.name}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        {% if storeTransaction.purchase_order_header_id %}
+                                            <div class="col-md-1 mb-4 text-center ">
+                                                <button type="button" class="btn remove_item mt-1"><i class="fa fa-minus"></i></button>
+                                            </div>
+                                        {% else %}
+                                            {% if forloop.counter == 1 %}
+                                                <div class="col-md-1 mb-4 text-center ">
+                                                    <button type="button" class="btn add_item mt-1"><i class="fa fa-plus"></i></button>
+                                                </div>
+                                            {% else %}
+                                                <div class="col-md-1 mb-4 text-center ">
+                                                    <button type="button" class="btn remove_item mt-1"><i class="fa fa-minus"></i></button>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                                </div>
+                            </div>  
+                            <div class="add_more_content col-md-12">
+                            </div>
+                            <!-- <div class="col-md-4 mb-3">
+                                <label>Transaction Number <span class="required-indicator">*</span></label>
+                                <input type="text" name="transaction_number" class="form-control" placeholder="Transaction Number" required id="transaction_number">
+                            </div> -->
+                            <div class="col-md-6 mb-3">
+                                <label>Transaction Date <span class="required-indicator">*</span></label>
+                                <input type="date" value="{{storeTransaction.transaction_date|date:'Y-m-d'}}" name="transaction_date" class="form-control" placeholder="Transaction Date" required id="transaction_date">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Total Amount <span class="required-indicator">*</span></label>
+                                <input type="text" name="total_amount" class="form-control" placeholder="Total Amount" value="{{storeTransaction.total_amount}}"
+                                    required id="total_amount" onkeyup="checkMaxMin(this)"
+                                    onkeypress="return (event.charCode >=45 &&  event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label>Notes</label>
+                                <textarea name="notes" rows="5" class="form-control" placeholder="Note"></textarea>
+                            </div>
+                        </div>
+                        {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
+                        <button onclick="return confirm('Please check the form again before submitting. It can not be changed')" class="btn btn-success submit-btn" type="submit">Submit</button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Form Element End -->
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+<script>
+    var vendor_options_text = ``;
+    var item_options_text = ``;
+    var item_options = [];
+    var item_options_used_pk = [];
+    var store_options_text = ``;
+    $('.selectpicker').select2({
+        placeholder: ''
+    });
+    
+    function renderItemDropdown(){
+        $('.item_id').each(function(){
+            let selected_item_pk=$(this).val()
+            $(this).children("option").each(function(index, element){
+                if( $(this).val()!==selected_item_pk && item_options_used_pk.includes($(this).val()) ){
+                    $(this).prop("hidden",true)
+                }
+                else{
+                    $(this).prop("hidden",false)
+                }
+            })
+        })
+    }
+
+    $(document).ready(function () {
+        if("{{storeTransaction.purchase_order_header_id}}"=="None"){
+            $(".item_id").each(function() {
+                item_options_used_pk.push($(this).val())
+            })
+        }
+
+        $.ajax({
+            url: "{% url 'api:vendorList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    vendor_options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        vendor_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    // $('#vendor_id').html(vendor_options_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+        $.ajax({
+            url: "{% url 'api:itemList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    item_options = response.page_items;
+                    item_options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    // $('.item_id').html(item_options_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+        $.ajax({
+            url: "{% url 'api:storeList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    store_options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        store_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    // $('.store_id').html(store_options_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+
+        // $.ajax({
+        //     url: "{% url 'api:purchaseOrderDetails' %}?header_id=" + "{{storeTransaction.purchase_order_header.pk}}",
+        //     type: 'GET',
+        //     data: ({}),
+        //     headers: {
+        //         'Authorization': getCookieValue("accessToken")
+        //     },
+        //     success: function (response) {
+        //         if (response.status == 200) {
+        //             var purchase_details = ``;
+        //             for (let index = 0; index < response.page_items.length; index++) {
+        //                 // console.log(response.page_items[index].quantity, response.page_items[index].delivered_quantity)
+        //                 // total_amount = response.header_detail[0].total_amount - response.header_detail[0].delivered_total_amount;
+        //                 purchase_details += `<div class="form-row content_parent">
+        //                         <div class="col-md-3 mb-3">
+        //                             <label>Item <span class="required-indicator">*</span></label>
+        //                             <div class="input-group">
+        //                                 <select class="custom-select selectpicker item_id" name="item_id" required disabled>
+        //                                     ${item_options.map((item) => `<option ${item.id == response.page_items[index].item_id ? "selected" : ""} value="${response.page_items[index].item_id}">${response.page_items[index].item__name}</option>`)}
+        //                                 </select>
+        //                             </div>
+        //                         </div>
+        //                         <input type="hidden" name="detail_id" value="${response.page_items[index].pk}">
+        //                         <input type="hidden" name="item_id" value="${response.page_items[index].item_id}">
+        //                         <div class="col-md-1 mb-3">
+        //                             <label>Rate <span class="required-indicator">*</span></label>
+        //                             <input type="text" onkeyup="checkMaxMin(this)" readonly
+        //                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+        //                                 name="rate" min="0.01" class="form-control rate"
+        //                                 value="${response.page_items[index].rate}" placeholder="0.00" required>
+        //                         </div>
+        //                         <div class="col-md-1 mb-3">
+        //                             <label>Quantity <span class="required-indicator">*</span></label>
+        //                             <input type="text" onkeyup="checkMaxMin(this)"
+        //                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+        //                                 name="item_quantity" min="0.0001" max="${response.page_items[index].quantity - response.page_items[index].delivered_quantity}" class="form-control item_quantity"
+        //                                 value="${response.page_items[index].quantity}" placeholder="Quantity" required>
+        //                         </div>
+        //                         <div class="col-md-2 mb-3">
+        //                             <label>Price <span class="required-indicator">*</span></label>
+        //                             <input type="text" onkeyup="checkMaxMin(this)" readonly
+        //                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+        //                                 name="item_price" min="0.01" class="form-control item_price"
+        //                                 value="${response.page_items[index].amount}" placeholder="0.00" required>
+        //                         </div>
+        //                         <div class="col-md-1 mb-3">
+        //                             <label>GST %<span class="required-indicator">*</span></label>
+        //                             <input type="text" name="gst_percentage" class="form-control gst_percentage" readonly
+        //                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+        //                                 value="${response.page_items[index].gst_percentage}" max="100" min="0.00" placeholder="0%">
+        //                         </div>
+        //                         <div class="col-md-2 mb-3">
+        //                             <label>Price With GST <span class="required-indicator">*</span></label>
+        //                             <input type="text" onkeyup="checkMaxMin(this)" readonly
+        //                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+        //                                 name="amount_with_gst" min="0.01" class="form-control amount_with_gst"
+        //                                 value="${response.page_items[index].amount_with_gst}" placeholder="0.00" required>
+        //                         </div>
+        //                         <div class="col-md-1 mb-3">
+        //                             <label>Store <span class="required-indicator">*</span></label>
+        //                             <div class="input-group">
+        //                                 <select class="custom-select selectpicker store_id" name="store_id" required>
+        //                                     ${store_options_text}
+        //                                 </select>
+        //                             </div>
+        //                         </div>
+        //                         <div class="col-md-1 mb-4 text-center ">
+        //                             <button type="button" class="btn remove_item mt-1"><i class="fa fa-minus"></i></button>
+        //                         </div>
+        //                     </div>`;
+                        
+        //             }
+        //             $(".purchase_order_details").html(purchase_details);
+        //             $(".add_more_content").html(``);
+        //             // $("#total_amount").val(total_amount.toFixed(2));
+        //             $('.selectpicker').select2({
+        //                 placeholder: ''
+        //             });
+        //         } else {
+        //             alert(response.message);
+        //         }
+        //         // calculateTotalAmount();
+        //     },
+        // });
+
+    });
+
+
+    $(document).on('change', '#with_purchase_order', function () {
+        purchase_order_type = $(this).val();
+        console.log("{{storeTransaction.purchase_order_header_id}}");
+        if("{{storeTransaction.purchase_order_header_id}}"=="None" && parseInt(purchase_order_type)==0){
+            (function(){
+                location.reload(true);
+            })();
+        }
+        if (parseInt(purchase_order_type) == 1) {
+            $('.purchase_order_type_content').show();
+            $('#purchase_order_header_id').attr('required', 'required');
+            purchase_details = `<div class="form-row content_parent">
                                     <div class="col-md-3 mb-3">
                                         <label>Item <span class="required-indicator">*</span></label>
                                         <div class="input-group">
@@ -148,101 +495,12 @@
                                             <i class="fa fa-plus"></i>
                                         </button>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="add_more_content col-md-12">
-                            </div>
-                            <!-- <div class="col-md-4 mb-3">
-                                <label>Transaction Number <span class="required-indicator">*</span></label>
-                                <input type="text" name="transaction_number" class="form-control" placeholder="Transaction Number" required id="transaction_number">
-                            </div> -->
-                            <div class="col-md-6 mb-3">
-                                <label>Transaction Date <span class="required-indicator">*</span></label>
-                                <input type="date" name="transaction_date" class="form-control" placeholder="Transaction Date" required id="transaction_date">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Total Amount <span class="required-indicator">*</span></label>
-                                <input type="text" name="total_amount" class="form-control" placeholder="Total Amount"
-                                    required id="total_amount" onkeyup="checkMaxMin(this)"
-                                    onkeypress="return (event.charCode >=45 &&  event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)">
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label>Notes</label>
-                                <textarea name="notes" rows="5" class="form-control" placeholder="Note"></textarea>
-                            </div>
-                        </div>
-                        {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
-                        <button onclick="return confirm('Please check the form again before submitting. It can not be changed')" class="btn btn-success submit-btn" type="submit">Submit</button>
-                        {% endif %}
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!--/ Form Element End -->
-</div>
-{% endblock %}
-
-{% block js %}
-<script>
-    // Example starter JavaScript for disabling form submissions if there are invalid fields
-    (function () {
-        'use strict';
-        window.addEventListener('load', function () {
-            // Fetch all the forms we want to apply custom Bootstrap validation styles to
-            var forms = document.getElementsByClassName('needs-validation');
-            // Loop over them and prevent submission
-            var validation = Array.prototype.filter.call(forms, function (form) {
-                form.addEventListener('submit', function (event) {
-                    if (form.checkValidity() === false) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            });
-        }, false);
-    })();
-</script>
-<script>
-    var vendor_options_text = ``;
-    var item_options_text = ``;
-    var item_options = [];
-    var item_options_used_pk = [];
-    var store_options_text = ``;
-    $('.selectpicker').select2({
-        placeholder: '',
-        templateResult: function(option) {
-            if(option.element && (option.element).hasAttribute('hidden')){
-                return null;
-            }
-            return option.text;
-        }
-    });
-
-    function renderItemDropdown(){
-        $('.item_id').each(function(){
-            let selected_item_pk=$(this).val()
-            console.log(this)
-            $(this).children("option").each(function(index, element){
-                if( $(this).val()!==selected_item_pk && item_options_used_pk.includes($(this).val()) ){
-                    $(this).prop("hidden",true)
-                }
-                else{
-                    $(this).prop("hidden",false)
-                }
-            })
-        })
-    }
-
-    $(document).on('change', '#with_purchase_order', function () {
-        purchase_order_type = $(this).val();
-        if (parseInt(purchase_order_type) == 1) {
-            $('.purchase_order_type_content').show();
-            $('#purchase_order_header_id').attr('required', 'required');
+                                </div>`;
+            $(".purchase_order_details").html(purchase_details);
         } else {
             $('.purchase_order_type_content').hide();
             $('#purchase_order_header_id').val("")
+            $('#purchase_order_header_id').removeAttr("required")
             $('#purchase_order_header_id').removeAttr('required');
             purchase_details = `<div class="form-row content_parent">
                                     <div class="col-md-3 mb-3">
@@ -312,77 +570,7 @@
             }
         });
     });
-
-    $(document).ready(function () {
-        $.ajax({
-            url: "{% url 'api:vendorList' %}?find_all=1",
-            type: 'GET',
-            data: ({}),
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                if (response.status == 200) {
-                    vendor_options_text = `<option value="">Choose...</option>`;
-                    for (let index = 0; index < response.page_items.length; index++) {
-                        vendor_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
-                    }
-                    $('#vendor_id').html(vendor_options_text);
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });
-        $.ajax({
-            url: "{% url 'api:itemList' %}?find_all=1",
-            type: 'GET',
-            data: ({}),
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                if (response.status == 200) {
-                    item_options = response.page_items;
-                    item_options_text = `<option value="">Choose...</option>`;
-                    for (let index = 0; index < response.page_items.length; index++) {
-                        item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
-                    }
-                    $('.item_id').html(item_options_text);
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });
-        $.ajax({
-            url: "{% url 'api:storeList' %}?find_all=1",
-            type: 'GET',
-            data: ({}),
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                if (response.status == 200) {
-                    store_options_text = `<option value="">Choose...</option>`;
-                    for (let index = 0; index < response.page_items.length; index++) {
-                        store_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
-                    }
-                    $('.store_id').html(store_options_text);
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });
-    });
-
+ 
     $(document).on('change', '#vendor_id', function () {
         let vendor_id = $(this).val();
         $.ajax({
@@ -599,13 +787,13 @@
                                     </div>
                                 </div>`);
         $('.selectpicker').select2({
-                placeholder: '',
-                templateResult: function(option) {
-                    if(option.element && (option.element).hasAttribute('hidden')){
-                        return null;
-                    }
-                    return option.text;
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
                 }
+                return option.text;
+            }
         });
         renderItemDropdown();
     });
@@ -683,7 +871,7 @@
 
         calculateTotalAmount();
     });
-    
+
     function calculateTotalAmount() {
         total_amount = 0;
         $('.amount_with_gst').each(function () {
@@ -722,72 +910,82 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    var purchase_details = ``;
-                    // var total_amount = response.header_detail[0].total_amount - response.header_detail[0].delivered_total_amount;
-                    for (let index = 0; index < response.page_items.length; index++) {
-                        if ((response.page_items[index].quantity - response.page_items[index].delivered_quantity) > 0) {
-                            purchase_details += `<div class="form-row content_parent">
-                                    <div class="col-md-3 mb-3">
-                                        <label>Item <span class="required-indicator">*</span></label>
-                                        <div class="input-group">
-                                            <select class="custom-select selectpicker item_id" name="item_id" required disabled>
-                                                ${item_options.map((item) => `<option ${item.id == response.page_items[index].item_id ? "selected" : ""} value="${response.page_items[index].item_id}">${response.page_items[index].item__name}</option>`)}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <input type="hidden" name="detail_id" value="${response.page_items[index].pk}">
-                                    <input type="hidden" name="item_id" value="${response.page_items[index].item_id}">
-                                    <div class="col-md-1 mb-3">
-                                        <label>Rate <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="rate" min="0.01" class="form-control rate"
-                                            value="${response.page_items[index].rate}" placeholder="0.00" required>
-                                    </div>
-                                    <div class="col-md-1 mb-3">
-                                        <label>Quantity <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="item_quantity" min="0.0001" max="${response.page_items[index].quantity - response.page_items[index].delivered_quantity}" class="form-control item_quantity"
-                                            value="${response.page_items[index].quantity - response.page_items[index].delivered_quantity}" placeholder="Quantity" required>
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Price <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="item_price" min="0.01" class="form-control item_price"
-                                            value="${(response.page_items[index].quantity - response.page_items[index].delivered_quantity)*response.page_items[index].rate}" placeholder="0.00" required>
-                                    </div>
-                                    <div class="col-md-1 mb-3">
-                                        <label>GST %<span class="required-indicator">*</span></label>
-                                        <input type="text" name="gst_percentage" class="form-control gst_percentage" readonly
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            value="${response.page_items[index].gst_percentage}" max="100" min="0.00" placeholder="0%">
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Price With GST <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="amount_with_gst" min="0.01" class="form-control amount_with_gst"
-                                            value="${((response.page_items[index].quantity - response.page_items[index].delivered_quantity)*response.page_items[index].rate)*(1+(response.page_items[index].gst_percentage / 100))}" placeholder="0.00" required>
-                                    </div>
-                                    <div class="col-md-1 mb-3">
-                                        <label>Store <span class="required-indicator">*</span></label>
-                                        <div class="input-group">
-                                            <select class="custom-select selectpicker store_id" name="store_id" required>
-                                                ${store_options_text}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-1 mb-4 text-center ">
-                                        <button type="button" class="btn remove_item mt-1"><i class="fa fa-minus"></i></button>
-                                    </div>
-                                </div>`;
-                        }
+                    if(header_id==="{{storeTransaction.purchase_order_header_id}}"){
+                        (function() {
+                            location.reload(true);
+                        })();
                     }
-                    $(".purchase_order_details").html(purchase_details);
-                    $(".add_more_content").html(``);
-                    // $("#total_amount").val(total_amount.toFixed(2));
+                    else{
+                        var purchase_details = ``;
+                        for (let index = 0; index < response.page_items.length; index++) {
+                            let max_quantity = response.page_items[index].quantity - response.page_items[index].delivered_quantity
+                            if (max_quantity > 0) {
+                                let price = max_quantity * response.page_items[index].rate;
+                                let amount_with_gst = price * ( 1 + (response.page_items[index].gst_percentage/100))
+                                purchase_details += `<div class="form-row content_parent">
+                                        <div class="col-md-3 mb-3">
+                                            <label>Item <span class="required-indicator">*</span></label>
+                                            <div class="input-group">
+                                                <select class="custom-select selectpicker item_id" name="item_id" required disabled>
+                                                    ${item_options.map((item) => `<option ${item.id == response.page_items[index].item_id ? "selected" : ""} value="${response.page_items[index].item_id}">${response.page_items[index].item__name}</option>`)}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" name="detail_id" value="${response.page_items[index].pk}">
+                                        <input type="hidden" name="item_id" value="${response.page_items[index].item_id}">
+                                        <div class="col-md-1 mb-3">
+                                            <label>Rate <span class="required-indicator">*</span></label>
+                                            <input type="text" onkeyup="checkMaxMin(this)" readonly
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="rate" min="0.01" class="form-control rate"
+                                                value="${response.page_items[index].rate}" placeholder="0.00" required>
+                                        </div>
+                                        <div class="col-md-1 mb-3">
+                                            <label>Quantity <span class="required-indicator">*</span></label>
+                                            <input type="text" onkeyup="checkMaxMin(this)"
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="item_quantity" min="0.0001" max="${max_quantity}" class="form-control item_quantity"
+                                                value="${max_quantity}" placeholder="Quantity" required>
+                                        </div>
+                                        <div class="col-md-2 mb-3">
+                                            <label>Price <span class="required-indicator">*</span></label>
+                                            <input type="text" onkeyup="checkMaxMin(this)" readonly
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="item_price" min="0.01" class="form-control item_price"
+                                                value="${price}" placeholder="0.00" required>
+                                        </div>
+                                        <div class="col-md-1 mb-3">
+                                            <label>GST %<span class="required-indicator">*</span></label>
+                                            <input type="text" name="gst_percentage" class="form-control gst_percentage" readonly
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                value="${response.page_items[index].gst_percentage}" max="100" min="0.00" placeholder="0%">
+                                        </div>
+                                        <div class="col-md-2 mb-3">
+                                            <label>Price With GST <span class="required-indicator">*</span></label>
+                                            <input type="text" onkeyup="checkMaxMin(this)" readonly
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="amount_with_gst" min="0.01" class="form-control amount_with_gst"
+                                                value="${amount_with_gst}" placeholder="0.00" required>
+                                        </div>
+                                        <div class="col-md-1 mb-3">
+                                            <label>Store <span class="required-indicator">*</span></label>
+                                            <div class="input-group">
+                                                <select class="custom-select selectpicker store_id" name="store_id" required>
+                                                    ${store_options_text}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-1 mb-4 text-center ">
+                                            <button type="button" class="btn remove_item mt-1"><i class="fa fa-minus"></i></button>
+                                        </div>
+                                    </div>`;
+                            }
+                        }
+                        original_purchase_order_details = $(".original_purchase_order_details").clone();
+                        $(".purchase_order_details").html(purchase_details);
+                        $(".add_more_content").html(``);
+                        calculateTotalAmount();
+                    }
                     $('.selectpicker').select2({
                         placeholder: '',
                         templateResult: function(option) {
@@ -800,7 +998,6 @@
                 } else {
                     alert(response.message);
                 }
-                calculateTotalAmount();
             },
         });
     });
@@ -815,7 +1012,7 @@
             evalScripts: true,
             contentType: false,
             processData: false,
-            url: "{% url 'api:storeTransactionAdd' %}",
+            url: "{% url 'api:storeTransactionEdit' %}",
             data: formData,
             headers: {
                 'Authorization': getCookieValue("accessToken")

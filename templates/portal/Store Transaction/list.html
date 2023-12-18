@@ -133,7 +133,9 @@
                 $('.error-msg-txt').text("");
                 if (response.status == 200) {
                     view_url = "{% url 'superuser:storeTransactionView' 1 %}";
+                    edit_url = "{% url 'superuser:storeTransactionEdit' 1 %}";
                     page_items = response.page_items;
+                    console.log(page_items)
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index];
@@ -146,6 +148,9 @@
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
                                 <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'change_store_transaction'|get_session_permission:request is not None %}
+                                <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
                                 {% endif %}
                                 {% if request.user.is_superuser == 1 or 'delete_store_transaction'|get_session_permission:request is not None %}
                                 <a id="delete-btn" data-id="${element.pk}" data-name="${element.transaction_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
