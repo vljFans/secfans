@@ -3084,14 +3084,10 @@ def storeTransactionEdit(request):
                                 updated_store_transaction_detail.save()
 
                                 # Purchase Order Detail Update
-                                updated_purchase_order_detail = models.Purchase_Order_Detail.objects.filter(
-                                    purchase_order_header_id=updated_purchase_order_id).get(item_id=og_store_transaction_detail.item_id)
-                                updated_purchase_order_detail.delivered_quantity -= (
-                                    og_store_transaction_detail.quantity-updated_store_transaction_detail.quantity)
-                                updated_purchase_order_detail.delivered_amount -= (
-                                    og_store_transaction_detail.quantity-updated_store_transaction_detail.quantity)
-                                updated_purchase_order_detail.delivered_amount_with_gst -= (
-                                    og_store_transaction_detail.quantity-updated_store_transaction_detail.quantity)
+                                updated_purchase_order_detail = models.Purchase_Order_Detail.objects.filter(purchase_order_header_id=updated_purchase_order_id).get(item_id=og_store_transaction_detail.item_id)
+                                updated_purchase_order_detail.delivered_quantity -= (og_store_transaction_detail.quantity-updated_store_transaction_detail.quantity)
+                                updated_purchase_order_detail.delivered_amount -= ( (og_store_transaction_detail.quantity-updated_store_transaction_detail.quantity)*updated_purchase_order_detail.delivered_rate)
+                                updated_purchase_order_detail.delivered_amount_with_gst -= ( ( (og_store_transaction_detail.quantity-updated_store_transaction_detail.quantity)*updated_purchase_order_detail.delivered_rate )* (1+ (updated_purchase_order_detail.delivered_gst_percentage/100)) )
                                 updated_purchase_order_detail.save()
                                 
                                 # Purchase Order Header Delivery Status Update
@@ -3164,11 +3160,10 @@ def storeTransactionEdit(request):
                                     pk=og_store_transaction_detail.id).delete()
 
                                 # Purchase Order Detail Update
-                                updated_purchase_order_detail = models.Purchase_Order_Detail.objects.filter(
-                                    purchase_order_header_id=updated_purchase_order_id, item_id=og_store_transaction_detail.item_id).first()
+                                updated_purchase_order_detail = models.Purchase_Order_Detail.objects.filter(purchase_order_header_id=updated_purchase_order_id, item_id=og_store_transaction_detail.item_id).first()
                                 updated_purchase_order_detail.delivered_quantity -= og_store_transaction_detail.quantity
-                                updated_purchase_order_detail.delivered_amount -= og_store_transaction_detail.quantity
-                                updated_purchase_order_detail.delivered_amount_with_gst -= og_store_transaction_detail.quantity
+                                updated_purchase_order_detail.delivered_amount -= (og_store_transaction_detail.quantity*updated_purchase_order_detail.delivered_rate)
+                                updated_purchase_order_detail.delivered_amount_with_gst -= ( ( og_store_transaction_detail.quantity*updated_purchase_order_detail.delivered_rate ) * ( 1 + updated_purchase_order_detail.delivered_gst_percentage/100 ) )
                                 updated_purchase_order_detail.save()
 
                                 # Purchase Order Header Delivery Status Update
@@ -3203,13 +3198,12 @@ def storeTransactionEdit(request):
                         # Updation of old purchase order details and store items
                         for og_store_transaction_detail in og_store_transaction_details:
 
-                            # Updation of purchase order details
-                            updated_purchase_order_detail = models.Purchase_Order_Detail.objects.filter(
-                                purchase_order_header=og_purchase_order_id, item_id=og_store_transaction_detail.item_id).first()
-                            updated_purchase_order_detail.delivered_quantity -= og_store_transaction_detail.quantity
-                            updated_purchase_order_detail.delivered_amount -= og_store_transaction_detail.quantity
-                            updated_purchase_order_detail.delivered_amount_with_gst -= og_store_transaction_detail.quantity
-                            updated_purchase_order_detail.save()
+                            # Updation of old purchase order details
+                            old_purchase_order_detail = models.Purchase_Order_Detail.objects.filter(purchase_order_header_id=updated_purchase_order_id, item_id=og_store_transaction_detail.item_id).first()
+                            old_purchase_order_detail.delivered_quantity -= og_store_transaction_detail.quantity
+                            old_purchase_order_detail.delivered_amount -= (og_store_transaction_detail.quantity*old_purchase_order_detail.delivered_rate)
+                            old_purchase_order_detail.delivered_amount_with_gst -= ( ( og_store_transaction_detail.quantity*old_purchase_order_detail.delivered_rate ) * ( 1 + old_purchase_order_detail.delivered_gst_percentage/100 ) )
+                            old_purchase_order_detail.save()
 
                             # Updation of old Storeitems
                             updated_store_item = models.Store_Item.objects.filter(
@@ -3298,13 +3292,13 @@ def storeTransactionEdit(request):
 
                     # Updation of old purchase order details and store items
                     for og_store_transaction_detail in og_store_transaction_details:
-                        # Updation of purchase order details
-                        updated_purchase_order_detail = models.Purchase_Order_Detail.objects.filter(
-                            purchase_order_header=og_purchase_order_id, item_id=og_store_transaction_detail.item_id).first()
-                        updated_purchase_order_detail.delivered_quantity -= og_store_transaction_detail.quantity
-                        updated_purchase_order_detail.delivered_amount -= og_store_transaction_detail.quantity
-                        updated_purchase_order_detail.delivered_amount_with_gst -= og_store_transaction_detail.quantity
-                        updated_purchase_order_detail.save()
+
+                        # Updation of old purchase order details
+                        old_purchase_order_detail = models.Purchase_Order_Detail.objects.filter(purchase_order_header_id=updated_purchase_order_id, item_id=og_store_transaction_detail.item_id).first()
+                        old_purchase_order_detail.delivered_quantity -= og_store_transaction_detail.quantity
+                        old_purchase_order_detail.delivered_amount -= (og_store_transaction_detail.quantity*old_purchase_order_detail.delivered_rate)
+                        old_purchase_order_detail.delivered_amount_with_gst -= ( ( og_store_transaction_detail.quantity*old_purchase_order_detail.delivered_rate ) * ( 1 + old_purchase_order_detail.delivered_gst_percentage/100 ) )
+                        old_purchase_order_detail.save()
 
                         # Updation of old Storeitems
                         updated_store_item = models.Store_Item.objects.filter(
