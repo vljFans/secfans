@@ -136,7 +136,7 @@
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index];
                         tbody_text += `<tr>
-                                <td scope="row">${index + 1}</td>
+                                <td>${((response.total_pages - 1) * response.per_page) +  index + 1}</td>
                                 <td>${element.name}</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'view_role'|get_session_permission:request is not None %}
