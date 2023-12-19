@@ -707,6 +707,41 @@ def storeTransactionAdd(request):
 
 
 @login_required
+def storeTransactionEdit(request, id):
+    storeTransaction = models.Store_Transaction.objects.get(pk=id)
+
+    vendors = models.Vendor.objects.filter(status=1, deleted=0)
+    purchaseOrderHeaders = models.Purchase_Order.objects.filter(status=1, deleted=0)
+    purchaseOrderDetails = models.Purchase_Order_Detail.objects.filter(status=1, deleted=0, purchase_order_header=storeTransaction.purchase_order_header_id) if storeTransaction.purchase_order_header_id else None
+
+    storeTransactionDetails = models.Store_Transaction_Detail.objects.filter(status=1, deleted=0, store_transaction_header=storeTransaction.id)
+    items = models.Item.objects.filter(status=1, deleted=0)
+    stores = models.Store.objects.filter(status=1, deleted=0)
+
+    max_quantity={}
+
+    if storeTransaction.purchase_order_header_id:
+        for storeTransactionDetail in storeTransactionDetails:
+            purchaseOrderDetail = purchaseOrderDetails.get(item_id=storeTransactionDetail.item_id)
+            max_quantity[storeTransactionDetail.id] = float(purchaseOrderDetail.quantity - purchaseOrderDetail.delivered_quantity + storeTransactionDetail.quantity)
+
+    context.update({
+        'storeTransaction': storeTransaction,
+        'vendors': vendors,
+        'transaction_type': "1",
+        'purchaseOrderHeaders': purchaseOrderHeaders,
+        'max_quantity': max_quantity,
+        'storeTransactionDetails': storeTransactionDetails,
+        'items': items,
+        'stores': stores,
+        'page_title': "Store Transaction Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Store Transaction/edit.html', context)
+
+
+
+@login_required
 def storeTransactionView(request, id):
     storeTransaction = models.Store_Transaction.objects.prefetch_related('store_transaction_detail_set').get(pk=id)
     context.update({
