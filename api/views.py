@@ -3031,7 +3031,6 @@ def storeTransactionAdd(request):
 def storeTransactionEdit(request):
     context = {}
     data = request.POST
-    # print(data)
     if not request.POST['vendor_id'] or not request.POST['transaction_date'] or not request.POST['total_amount']:
         context.update({
             'status': 586,
@@ -3094,7 +3093,7 @@ def storeTransactionEdit(request):
                                 updated_purchase_order_detail.delivered_amount_with_gst -= (
                                     og_store_transaction_detail.quantity-updated_store_transaction_detail.quantity)
                                 updated_purchase_order_detail.save()
-
+                                
                                 # Purchase Order Header Delivery Status Update
                                 purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related(
                                     'purchase_order_detail_set').get(pk=updated_purchase_order_id)
@@ -3114,13 +3113,11 @@ def storeTransactionEdit(request):
                                 if og_store_transaction_detail.store_id == updated_store_transaction_detail.store_id:
                                     storeItem = models.Store_Item.objects.filter(
                                         store_id=updated_store_transaction_detail.store_id, item_id=updated_store_transaction_detail.item_id).first()
-                                    storeItem
                                     storeItem.on_hand_qty -= (
                                         og_store_transaction_detail.quantity-updated_store_transaction_detail.quantity)
                                     storeItem.closing_qty -= (
                                         og_store_transaction_detail.quantity-updated_store_transaction_detail.quantity)
-                                    updated_store_item.save()
-
+                                    storeItem.save()
                                 # Different Store
                                 else:
                                     og_store_item = models.Store_Item.objects.filter(
@@ -3158,7 +3155,7 @@ def storeTransactionEdit(request):
                                         og_store_item.on_hand_qty -= og_store_transaction_detail.quantity
                                         og_store_item.closing_qty -= og_store_transaction_detail.quantity
                                         og_store_item.save()
-
+                               
                             # Store Transaction Detail is not there
                             else:
 
