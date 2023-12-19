@@ -205,7 +205,7 @@
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label>Notes</label>
-                                <textarea name="notes" rows="5" class="form-control" placeholder="Note"></textarea>
+                                <textarea name="notes" rows="5" class="form-control" placeholder="Note">{{storeTransaction.notes}}</textarea>
                             </div>
                         </div>
                         {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
