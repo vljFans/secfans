@@ -3476,12 +3476,14 @@ def storeTransactionDelete(request):
                 purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related('purchase_order_detail_set').get(
                     pk=storeTransaction.purchase_order_header_id)
                 for purchaseOrderDetail in purchaseOrderHeader.purchase_order_detail_set.all():
-                    purchaseOrderDetail.delivered_quantity = 0
-                    purchaseOrderDetail.delivered_amount = 0
-                    purchaseOrderDetail.delivered_gst_percentage = 0
-                    purchaseOrderDetail.delivered_amount_with_gst = 0
-                    purchaseOrderDetail.updated_at = datetime.now()
-                    purchaseOrderDetail.save()
+                    storeTransactionDetail = models.Store_Transaction_Detail.objects.filter(store_transaction_header_id=storeTransaction.id, item_id=purchaseOrderDetail.item_id).first()
+                    if storeTransactionDetail is not None:
+                        purchaseOrderDetail.delivered_quantity -= storeTransactionDetail.quantity
+                        purchaseOrderDetail.delivered_amount -= storeTransactionDetail.quantity * purchaseOrderDetail.delivered_rate
+                        purchaseOrderDetail.delivered_gst_percentage = purchaseOrderDetail.delivered_gst_percentage
+                        purchaseOrderDetail.delivered_amount_with_gst -= (storeTransactionDetail.quantity * purchaseOrderDetail.delivered_rate) + (storeTransactionDetail.quantity * purchaseOrderDetail.delivered_rate * purchaseOrderDetail.delivered_gst_percentage / 100)
+                        purchaseOrderDetail.updated_at = datetime.now()
+                        purchaseOrderDetail.save()
                 for storeTransactionDetail in storeTransaction.store_transaction_detail_set.all():
                     storeItem = models.Store_Item.objects.filter(item_id=storeTransactionDetail.item_id,
                                                                  store_id=storeTransactionDetail.store_id).first()
