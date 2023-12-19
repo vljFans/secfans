@@ -98,22 +98,33 @@
             <span>Bill Of Material</span></a>
         </li>
         {% endif %}
-        {% if request.user.is_superuser == 1 or 'view_purchase_order,view_store_transaction'|get_session_permission:request is not None %}
+        {% if request.user.is_superuser == 1 or 'view_purchase_order'|get_session_permission:request is not None %}
         <li
-          class="{% if request.path == '/purchase-order-list' or request.path == '/store-transaction-list' %}open active{% endif %}">
+          class="{% if request.path == '/purchase-order-list' %}open active{% endif %}">
           <a href="javascript:void(0)"><i data-feather="download"></i>
             <span>Purchase</span><i class="accordion-icon fa fa-angle-left"></i>
           </a>
           <ul class="sub-menu"
-            style="display: {% if request.path == '/purchase-order-list' or request.path == '/store-transaction-list' %}block{% else %}none{% endif %};">
+            style="display: {% if request.path == '/purchase-order-list' %}block{% else %}none{% endif %};">
             {% if request.user.is_superuser == 1 or 'view_purchase_order'|get_session_permission:request is not None %}
             <li class="{% if request.path == '/purchase-order-list' %}active{% endif %}">
               <a href="{% url 'superuser:purchaseOrderList' %}">Purchase Order</a>
             </li>
             {% endif %}
+          </ul>
+        </li>
+        {% endif %}
+        {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
+        <li
+          class="{% if request.path == '/store-transaction-list' %}open active{% endif %}">
+          <a href="javascript:void(0)"><i data-feather="wind"></i>
+            <span>Material-Inbound</span><i class="accordion-icon fa fa-angle-left"></i>
+          </a>
+          <ul class="sub-menu"
+            style="display: {% if request.path == '/store-transaction-list' %}block{% else %}none{% endif %};">
             {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
             <li class="{% if request.path == '/store-transaction-list' %}active{% endif %}">
-              <a href="{% url 'superuser:storeTransactionList' %}">Store Transaction</a>
+              <a href="{% url 'superuser:storeTransactionList' %}">Material Receipt (GRN)</a>
             </li>
             {% endif %}
           </ul>

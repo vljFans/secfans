@@ -765,7 +765,7 @@
                                         <input type="text" onkeyup="checkMaxMin(this)" readonly
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="amount_with_gst" min="0.01" class="form-control amount_with_gst"
-                                            value="${((response.page_items[index].quantity - response.page_items[index].delivered_quantity)*response.page_items[index].rate)*(1+(response.page_items[index].gst_percentage / 100))}" placeholder="0.00" required>
+                                            value="${(((response.page_items[index].quantity - response.page_items[index].delivered_quantity)*response.page_items[index].rate)*(1+(response.page_items[index].gst_percentage / 100))).toFixed(2)}" placeholder="0.00" required>
                                     </div>
                                     <div class="col-md-1 mb-3">
                                         <label>Store <span class="required-indicator">*</span></label>

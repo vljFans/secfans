@@ -690,8 +690,8 @@ def storeItemEdit(request, id):
 @login_required
 def storeTransactionList(request):
     context.update({
-        'page_title': "Store Transaction List",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}, {'name': "List"}]
+        'page_title': "Material Receipt",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Receipt", 'url': reverse('superuser:storeTransactionList')}, {'name': "List"}]
     })
     return render(request, 'portal/Store Transaction/list.html', context)
 
