@@ -3041,10 +3041,9 @@ def storeTransactionEdit(request):
     og_storeTransactionHeader = models.Store_Transaction.objects.get(
         pk=data['id'])
     og_purchase_order_id = og_storeTransactionHeader.purchase_order_header_id
-    og_store_transaction_details = models.Store_Transaction_Detail.objects.filter(
-        store_transaction_header=og_storeTransactionHeader)
-    updated_purchase_order_id = int(
-        data['purchase_order_header_id']) if data['purchase_order_header_id'] else None
+    og_store_transaction_details = models.Store_Transaction_Detail.objects.filter(store_transaction_header=og_storeTransactionHeader)
+    updated_purchase_order_id = int(data['purchase_order_header_id']) if data['purchase_order_header_id'] else None
+
     try:
         with transaction.atomic():
             storeTransactionHeader = models.Store_Transaction.objects.get(
@@ -3089,7 +3088,7 @@ def storeTransactionEdit(request):
                                 updated_purchase_order_detail.delivered_amount -= ( (og_store_transaction_detail.quantity-updated_store_transaction_detail.quantity)*updated_purchase_order_detail.delivered_rate)
                                 updated_purchase_order_detail.delivered_amount_with_gst -= ( ( (og_store_transaction_detail.quantity-updated_store_transaction_detail.quantity)*updated_purchase_order_detail.delivered_rate )* (1+ (updated_purchase_order_detail.delivered_gst_percentage/100)) )
                                 updated_purchase_order_detail.save()
-                                
+
                                 # Purchase Order Header Delivery Status Update
                                 purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related(
                                     'purchase_order_detail_set').get(pk=updated_purchase_order_id)
@@ -3151,7 +3150,7 @@ def storeTransactionEdit(request):
                                         og_store_item.on_hand_qty -= og_store_transaction_detail.quantity
                                         og_store_item.closing_qty -= og_store_transaction_detail.quantity
                                         og_store_item.save()
-                               
+
                             # Store Transaction Detail is not there
                             else:
 
@@ -3439,7 +3438,100 @@ def storeTransactionEdit(request):
 
                 # AFTER: Without Purchase order
                 else:
-                    print("5")
+
+                    old_item_list = [d['item_id'] for d in og_store_transaction_details.values('item_id')]
+                    new_item_list = [int(x) for x in data.getlist('item_id')]
+
+                    updated_item_list=list(set(old_item_list)&set(new_item_list))
+                    added_item_list=list(set(new_item_list)-set(old_item_list))
+                    removed_item_list=list(set(old_item_list)-set(new_item_list))
+
+                    for item_id in updated_item_list:
+                        index = data.getlist('item_id').index(str(item_id))
+                        og_store_transaction_detail = og_store_transaction_details.filter(item_id=int(data.getlist('item_id')[index])).first()
+
+                        # Store Item Update for Same store
+                        if og_store_transaction_details.get(item_id=int(data.getlist('item_id')[index])).store_id == int(data.getlist('store_id')[index]):
+                            updated_storeItem = models.Store_Item.objects.filter(item_id=int(data.getlist('item_id')[index]), store_id=int(data.getlist('store_id')[index])).first()
+                            updated_storeItem.on_hand_qty -= (og_store_transaction_detail.quantity - Decimal(data.getlist('item_quantity')[index]) )
+                            updated_storeItem.on_hand_qty -= (og_store_transaction_detail.quantity - Decimal(data.getlist('item_quantity')[index]) )
+                            updated_storeItem.save()
+
+                        # Store Item Update for Different store
+                        else:
+                            # Update old StoreItem, removal of quantity of old StoreItem
+                            old_storeItem = models.Store_Item.objects.filter(item_id=og_store_transaction_detail.item_id,store_id=og_store_transaction_detail.store_id).first()
+                            old_storeItem.on_hand_qty -= og_store_transaction_detail.quantity
+                            old_storeItem.on_hand_qty -= og_store_transaction_detail.quantity
+                            old_storeItem.save()
+
+                            # Update new StoreItem
+                            updated_storeItem = models.Store_Item.objects.filter(item_id=int(data.getlist('item_id')[index]), store_id=int(data.getlist('store_id')[index])).first()
+                            if updated_storeItem is None:
+                                new_storeItem = models.Store_Item()
+                                new_storeItem.opening_qty = Decimal(request.POST.getlist('item_quantity')[index])
+                                new_storeItem.on_hand_qty = Decimal(request.POST.getlist('item_quantity')[index])
+                                new_storeItem.closing_qty = Decimal(request.POST.getlist('item_quantity')[index])
+                                new_storeItem.item_id = int(data.getlist('item_id')[index])
+                                new_storeItem.store_id = int(data.getlist('store_id')[index])
+                                new_storeItem.save()
+                            else:
+                                updated_storeItem.on_hand_qty += Decimal(request.POST.getlist('item_quantity')[index])
+                                updated_storeItem.closing_qty += Decimal(request.POST.getlist('item_quantity')[index])
+                                updated_storeItem.updated_at = datetime.now()
+                                updated_storeItem.save()
+
+                        # Store Transaction Detail Update
+                        updated_store_transaction_detail = models.Store_Transaction_Detail.objects.filter(store_transaction_header=og_storeTransactionHeader, item_id=int(data.getlist('item_id')[index])).first()
+                        updated_store_transaction_detail.quantity = Decimal(data.getlist('item_quantity')[index])
+                        updated_store_transaction_detail.amount = Decimal(data.getlist('item_price')[index])
+                        updated_store_transaction_detail.amount_with_gst = Decimal(data.getlist('amount_with_gst')[index])
+                        updated_store_transaction_detail.store_id = int(data.getlist('store_id')[index])
+                        updated_store_transaction_detail.save()
+
+                    for item_id in added_item_list:
+                        index = data.getlist('item_id').index(str(item_id))
+
+                        # Creating new store transaction detail
+                        new_store_transaction_detail = models.Store_Transaction_Detail()
+                        new_store_transaction_detail.store_transaction_header_id = og_storeTransactionHeader.id
+                        new_store_transaction_detail.item_id = int(data.getlist('item_id')[index])
+                        new_store_transaction_detail.store_id = int(data.getlist('store_id')[index])
+                        new_store_transaction_detail.quantity = Decimal(data.getlist('item_quantity')[index])
+                        new_store_transaction_detail.rate = Decimal(data.getlist('rate')[index])
+                        new_store_transaction_detail.amount = Decimal(data.getlist('item_price')[index])
+                        new_store_transaction_detail.gst_percentage = Decimal(data.getlist('gst_percentage')[index])
+                        new_store_transaction_detail.amount_with_gst = Decimal(data.getlist('amount_with_gst')[index])
+
+                        new_store_transaction_detail.save()
+
+                        # Store Item Creation/Updation
+                        storeItem = models.Store_Item.objects.filter(item_id=int(data.getlist('item_id')[index]), store_id=int(data.getlist('store_id')[index])).first()
+                        if storeItem is None:
+                            storeItem = models.Store_Item()
+                            storeItem.opening_qty = Decimal(data.getlist('item_quantity')[index])
+                            storeItem.on_hand_qty = Decimal(data.getlist('item_quantity')[index])
+                            storeItem.closing_qty = Decimal(data.getlist('item_quantity')[index])
+                            storeItem.item_id = int(data.getlist('item_id')[index])
+                            storeItem.store_id = int(data.getlist('store_id')[index])
+                            storeItem.save()
+                        else:
+                            storeItem.on_hand_qty += Decimal(data.getlist('item_quantity')[index])
+                            storeItem.closing_qty += Decimal(data.getlist('item_quantity')[index])
+                            storeItem.save()
+
+                    for item_id in removed_item_list:
+                        og_store_transaction_detail = og_store_transaction_details.filter(item_id=item_id).first()
+
+                        # Update old StoreItem, removal of quantity of old StoreItem
+                        old_storeItem = models.Store_Item.objects.filter(item_id=item_id,store_id=og_store_transaction_detail.store_id).first()
+                        old_storeItem.on_hand_qty -= og_store_transaction_detail.quantity
+                        old_storeItem.on_hand_qty -= og_store_transaction_detail.quantity
+                        old_storeItem.save()
+
+                        # Store Transaction Detail Delete
+                        removed_store_transaction_detail = models.Store_Transaction_Detail.objects.filter(store_transaction_header=og_storeTransactionHeader, item_id=int(data.getlist('item_id')[index])).first()
+                        removed_store_transaction_detail.delete()
 
         transaction.commit()
         context.update({
