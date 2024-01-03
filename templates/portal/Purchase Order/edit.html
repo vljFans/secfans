@@ -478,12 +478,12 @@
     });
 
     $(document).on('change', '#discount_type', function () {
-        if ($(this).val() == 0) {
+        if ($(this).val() == 'no_discount') {
             $('.discount_value_display').hide();
             $('#discount_value').removeAttr('required');
             $('#discount_value').removeAttr('max');
             $('#discount_value').val('');
-        } else if ($(this).val() == 1) {
+        } else if ($(this).val() == 'percentage') {
             $('.discount_value_display').show();
             $('#discount_value').attr('required', 'required');
             $('#discount_value').attr('max', '100');

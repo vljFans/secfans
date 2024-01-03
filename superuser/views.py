@@ -750,3 +750,5 @@ def storeTransactionView(request, id):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}, {'name': "View"}]
     })
     return render(request, 'portal/Store Transaction/view.html', context)
+
+##Test Case
