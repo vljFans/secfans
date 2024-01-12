@@ -202,6 +202,7 @@
                 'Authorization': getCookieValue("accessToken")
             },
             success: function (response) {
+                
                 structure_html = getStructureHtml(response.page_items, '')
                 $('.bill_of_material_details').html(structure_html);
                 $('.accordion').accordion({

@@ -2032,6 +2032,7 @@ def storeAdd(request):
             store.contact_no = request.POST['contact_no']
             store.contact_email = request.POST['contact_email']
             store.manager_name = request.POST['manager_name']
+            store.vendor_id = request.POST['vendor_id'] if 'vendor_id' in request.POST.keys() else None
             store.save()
         transaction.commit()
         context.update({
@@ -2078,6 +2079,7 @@ def storeEdit(request):
             store.contact_no = request.POST['contact_no']
             store.contact_email = request.POST['contact_email']
             store.manager_name = request.POST['manager_name']
+            store.vendor_id = request.POST['vendor_id'] if 'vendor_id' in request.POST.keys() else None
             store.updated_at = datetime.now()
             store.save()
         transaction.commit()
@@ -2471,7 +2473,7 @@ def purchaseOrderAdd(request):
     if not request.POST['vendor_id'] or not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['quotation_number'] or not request.POST['quotation_date'] or not request.POST['total_amount']:
         context.update({
             'status': 581,
-            'message': "Vendor/Order NUmber/Order Date/Quotation Number/Quotation Date/Total Amount has not been provided."
+            'message': "Vendor/Order Number/Order Date/Quotation Number/Quotation Date/Total Amount has not been provided."
         })
         return JsonResponse(context)
     try:
@@ -2540,7 +2542,7 @@ def purchaseOrderEdit(request):
     if not request.POST['vendor_id'] or not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['quotation_number'] or not request.POST['quotation_date'] or not request.POST['total_amount']:
         context.update({
             'status': 583,
-            'message': "Vendor/Order NUmber/Order Date/Quotation Number/Quotation Date/Total Amount has not been provided."
+            'message': "Vendor/Order Number/Order Date/Quotation Number/Quotation Date/Total Amount has not been provided."
         })
         return JsonResponse(context)
     try:
@@ -3616,3 +3618,188 @@ def storeTransactionDetails(request):
             'message': "Please Provide Header Id.",
         })
     return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def jobOrderList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
+    if id is not None and id != "":
+        jobOrder = list(models.Job_Order.objects.filter(pk=id)[:1].values('pk', 'order_number', 'total_amount', 'source_store__name', 'destination_store__name'))
+        context.update({
+            'status': 200,
+            'message': "Job Order Fetched Successfully.",
+            'page_items': jobOrder,
+        })
+    else:
+        if keyword is not None and keyword != "":
+            jobOrders = purchaseOrders.filter(order_number__icontains=keyword).filter(status=1, deleted=0)
+        jobOrders = list(purchaseOrders.values('pk', 'order_number', 'total_amount', 'source_store__name', 'destination_store__name'))
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Job Orders Fetched Successfully.",
+                'page_items': jobOrders,
+            })
+            return JsonResponse(context)
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(jobOrders, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Job Orders Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'per_page': per_page,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def jobOrderAdd(request):
+    context = {}
+    if not request.POST['order_number'] or not request.POST['total_amount']:
+        context.update({
+            'status': 589,
+            'message': "Order Number/Total Amount has not been provided."
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            jobOrderHeader = models.Job_Order()
+            jobOrderHeader.order_number = request.POST['order_number']
+            jobOrderHeader.total_amount = request.POST['total_amount']
+            jobOrderHeader.save()
+
+            job_order_details = []
+            for index in range( len(request.POST.getlist('quantity')) ):
+                job_order_details.append(
+                    models.Job_Order_Detail(
+                        job_order_header_id=jobOrderHeader.id,
+                        item_id=request.POST.getlist('item_id')[index] if request.POST.getlist('item_id')[index] else None,
+                        bill_of_material_id=request.POST.getlist('bill_of_material_id')[index] if request.POST.getlist('bill_of_material_id')[index] else None,
+                        source_store_id=request.POST.getlist('source_store_id')[index],
+                        destination_store_id=request.POST.getlist('destination_store_id')[index],
+                        quantity=request.POST.getlist('quantity')[index],
+                        rate=request.POST.getlist('rate')[index],
+                        amount=request.POST.getlist('price')[index],
+                    )
+                )
+            models.Job_Order_Detail.objects.bulk_create(job_order_details)
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Job Order Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 590,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def jobOrderEdit(request):
+    context = {}
+    if not request.POST['order_number'] or not request.POST['total_amount']:
+        context.update({
+            'status': 591,
+            'message': "Order Number/Total Amount has not been provided."
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            jobOrderHeader = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=request.POST['id'])
+            jobOrderHeader.order_number = request.POST['order_number']
+            jobOrderHeader.total_amount = request.POST['total_amount']
+            jobOrderHeader.updated_at = datetime.now()
+            jobOrderHeader.save()
+            jobOrderHeader.job_order_detail_set.all().delete()
+
+            purchase_order_details = []
+            for index, elem in enumerate(request.POST.getlist('quantity')):
+                purchase_order_details.append(
+                    models.Purchase_Order_Detail(
+                        job_order_header_id=jobOrderHeader.id,
+                        item_id=request.POST.getlist('item_id')[index] if request.POST.getlist('item_id')[index] else None,
+                        bill_of_material_id=request.POST.getlist('bill_of_material_id')[index] if request.POST.getlist('bill_of_material_id')[index] else None,
+                        source_store_id=request.POST.getlist('source_store_id')[index],
+                        destination_store_id=request.POST.getlist('destination_store_id')[index],
+                        quantity=request.POST.getlist('quantity')[index],
+                        rate=request.POST.getlist('rate')[index],
+                        amount=request.POST.getlist('price')[index],
+                    )
+                )
+            models.Purchase_Order_Detail.objects.bulk_create(purchase_order_details)
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Purchase Order Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 592,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def jobOrderDelete(request):
+    context = {}
+    jobOrder = models.Job_Order.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            jobOrder.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Job Order Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 593,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def jobOrderDetails(request):
+    context = {}
+    header_id = request.GET.get('header_id', None)
+    if header_id is not None and header_id != "":
+        header_detail = list(models.Job_Order.objects.filter(id=header_id).values('pk', 'order_number', 'total_amount'))
+        orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id).values('pk', 'job_order_header_id', 'job_order_header__order_number', 'parent_detail_id', 'item_id', 'bill_of_material_id', 'rate', 'quantity', 'amount'))
+        context.update({
+            'status': 200,
+            'message': "Job Order Details Fetched Successfully.",
+            'header_detail': header_detail,
+            'page_items': orderDetails,
+        })
+    else:
+        context.update({
+            'status': 594,
+            'message': "Please Provide Header Id.",
+        })
+    return JsonResponse(context)
+

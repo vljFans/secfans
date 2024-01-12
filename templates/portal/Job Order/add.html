@@ -62,38 +62,32 @@
                     <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
                         <div class="form-row">
                             <div class="col-md-4 mb-3">
-                                <label>Vendor <span class="required-indicator">*</span></label>
-                                <div class="input-group">
-                                    <select class="custom-select selectpicker" id="vendor_id" name="vendor_id" required>
-                                        <option value="">Choose...</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
                                 <label>Order Number <span class="required-indicator">*</span></label>
                                 <input type="text" id="order_number" name="order_number" class="form-control"
                                     placeholder="Order Number" required>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label>Order Date <span class="required-indicator">*</span></label>
-                                <input type="date" name="order_date" class="form-control" placeholder="Order Date"
-                                    required>
+                                <label>Source Store <span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="source_store_id" name="source_store_id" required>
+                                        <option value=""></option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Quotation Number <span class="required-indicator">*</span></label>
-                                <input type="text" name="quotation_number" class="form-control"
-                                    placeholder="Quotation Number" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Quotation Date <span class="required-indicator">*</span></label>
-                                <input type="date" name="quotation_date" class="form-control"
-                                    placeholder="Quotation Date" required>
+                            <div class="col-md-4 mb-3">
+                                <label>Destination store <span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="destination_store_id" name="destination_store_id" required>
+                                        <option value=""></option>
+                                    </select>
+                                </div>
                             </div>
 
                             <div class="col-md-12">
                                 <div class="form-row content_parent">
-                                    <div class="col-md-3 mb-3">
-                                        <label>Item <span class="required-indicator">*</span></label>
+                                    <input type="hidden" name="parent_job_order_detail_id" value="0">
+                                    <div class="col-md-5 mb-3">
+                                        <label>Item/BOM <span class="required-indicator">*</span></label>
                                         <div class="input-group">
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
                                                 <option value="">Choose...</option>
@@ -107,7 +101,7 @@
                                             name="rate" min="0.01" class="form-control rate"
                                             placeholder="0.00" required>
                                     </div>
-                                    <div class="col-md-1 mb-3">
+                                    <div class="col-md-2 mb-3">
                                         <label>Quantity <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
@@ -116,25 +110,12 @@
                                     </div>
                                     <div class="col-md-2 mb-3">
                                         <label>Price <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                        <input type="text" onkeyup="checkMaxMin(this)" disabled
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="item_price" min="0.01" class="form-control item_price"
                                             placeholder="0.00" required>
                                     </div>
-                                    <div class="col-md-1 mb-3">
-                                        <label>GST %<span class="required-indicator">*</span></label>
-                                        <input type="text" name="gst_percentage" class="form-control gst_percentage" readonly
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            max="100" min="0.00" placeholder="0%">
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Price With GST <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="amount_with_gst" min="0.01" class="form-control amount_with_gst"
-                                            placeholder="0.00" required>
-                                    </div>
-                                    <div class="col-md-1 mb-4 text-center ">
+                                    <div class="col-md-1 mb-4 text-center">
                                         <button type="button" class="btn add_btn mt-1"><i
                                                 class="fa fa-plus"></i></button>
                                     </div>
@@ -143,79 +124,6 @@
                             <div class="add_more_content col-md-12">
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label>Reference Number</label>
-                                <input type="text" name="reference_number" class="form-control"
-                                    placeholder="Drawing/Specification/Sample Ref Number">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Business Terms</label>
-                                <input type="text" name="business_terms" class="form-control"
-                                    placeholder="Business Terms">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Excise Duty %</label>
-                                <input type="text" value="0" name="excise_duty_percentage" class="form-control"
-                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    onkeyup="checkMaxMin(this)" id="excise_duty_percentage" max="100" min="0.00" placeholder="0%">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Insurance</label>
-                                <input type="text" value="0" name="insurance" class="form-control"
-                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    onkeyup="checkMaxMin(this)" id="insurance" min="0.00" placeholder="₹0.00">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Octroi</label>
-                                <input type="text" value="0" name="octroi" class="form-control"
-                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    onkeyup="checkMaxMin(this)" id="octroi" min="0.00" placeholder="₹0.00">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Freight</label>
-                                <input type="text" value="0" name="freight" class="form-control"
-                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    onkeyup="checkMaxMin(this)" id="freight" min="0.00" placeholder="₹0.00">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Packing<span class="required-indicator">*</span></label>
-                                <input type="text" name="packing" class="form-control" placeholder="Packing" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Payment Terms<span class="required-indicator">*</span></label>
-                                <input type="text" name="payment_terms" class="form-control" placeholder="Payment Terms"
-                                    required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Delivery Schedule<span class="required-indicator">*</span></label>
-                                <input type="text" name="delivery_schedule" class="form-control"
-                                    placeholder="Delivery Schedule" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Delivery At<span class="required-indicator">*</span></label>
-                                <input type="text" name="delivery_at" class="form-control" placeholder="Delivery At"
-                                    required>
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label>Notes</label>
-                                <textarea name="notes" rows="5" class="form-control" placeholder="Note"></textarea>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Discount Type <span class="required-indicator">*</span></label>
-                                <select name="discount_type" id="discount_type" class="selectpicker form-control"
-                                    required data-live-search="true">
-                                    <option value="no_discount">No Discount</option>
-                                    <option value="percentage">Percentage</option>
-                                    <option value="flat">Flat</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3 discount_value_display" style="display: none;">
-                                <label>Discount Value<span class="required-indicator">*</span></label>
-                                <input type="text" name="discount_value" id="discount_value" class="form-control"
-                                    value="0" onkeyup="checkMaxMin(this)"
-                                    onkeypress="return (event.charCode >=45 &&  event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)">
-                            </div>
-                            <input type="hidden" name="discounted_value" id="discounted_value" class="form-control" value="0">
                             <div class="col-md-6 mb-3">
                                 <label>Total Amount <span class="required-indicator">*</span></label>
                                 <input type="text" name="total_amount" class="form-control" placeholder="Total Amount"
@@ -257,13 +165,125 @@
     })();
 </script>
 <script>
+    var item_options_text = ``;
+    var item_options_used_name = [];
     $('.selectpicker').select2({
-        placeholder: ''
+        placeholder: '',
+        templateResult: function(option) {
+            if(option.element){
+                if((option.element).hasAttribute('hidden')){
+                    return null
+                }
+                else{
+                    var $element = $(option.element);
+                    var $wrapper = $('<span></span>');
+                    $wrapper.addClass($element[0].className);
+                    $wrapper.text(option.text);
+                    return $wrapper;
+                }
+            }
+            else{
+                return option.text
+            }
+        }
     });
+
+    function renderItemDropdown(){
+        $('.item_id').each(function(){
+            let selected_item_name=$(this).find(":selected").text()
+            $(this).children("option").each(function(index, element){
+                if($(this).text!==selected_item_name && item_options_used_name.includes($(this).text()) ){
+                    $(this).prop("hidden",true)
+                }
+                else{
+                    $(this).prop("hidden",false)
+                }
+            })
+        })
+    }
+
+    function update_item_options_used_name(){
+        item_options_used_name=[]
+        $('.item_id').each(function(){
+            item_options_used_name.push($(this).find(":selected").text())
+        }); 
+    }
+
+    function calculateTotalAmount() {
+        total_amount = 0;
+        $('.item_price').each(function () {
+            if ($(this).val() != "") {
+                total_amount += parseFloat($(this).val());
+            }
+        });
+        $("#total_amount").val((total_amount).toFixed(2));
+    }
+
+    function checkMaxMin(element) {
+            if ($(element).val() == "") {
+                $(element).val($(element).attr('min'));
+            } else {
+                if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
+                    $(element).val($(element).attr('max'));
+                }
+                if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
+                    $(element).val($(element).attr('min'));
+                }
+            }
+        }
+    
+    function bill_of_material_structure(content_parent, bom_id, bom_structure){
+        // element.after(
+        //     `
+        //     <div class="form-row content_child">
+        //         <div class="col-md-1 mb-3"></div>
+        //         <div class="col-md-4 mb-3">
+        //             <label>Item/BOM <span class="required-indicator">*</span></label>
+        //             <div class="input-group">
+        //                 <select class="custom-select selectpicker item_id" name="item_id" required>
+        //                     <option value="">Choose...</option>
+        //                 </select>
+        //             </div>
+        //         </div>
+        //         <div class="col-md-2 mb-3">
+        //             <label>Rate <span class="required-indicator">*</span></label>
+        //             <input type="text" onkeyup="checkMaxMin(this)"
+        //                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+        //                 name="rate" min="0.01" class="form-control rate"
+        //                 placeholder="0.00" required>
+        //         </div>
+        //         <div class="col-md-2 mb-3">
+        //             <label>Quantity <span class="required-indicator">*</span></label>
+        //             <input type="text" onkeyup="checkMaxMin(this)"
+        //                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+        //                 name="item_quantity" min="0.0001" class="form-control item_quantity"
+        //                 placeholder="Quantity" required>
+        //         </div>
+        //         <div class="col-md-2 mb-3">
+        //             <label>Price <span class="required-indicator">*</span></label>
+        //             <input type="text" onkeyup="checkMaxMin(this)" disabled
+        //                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+        //                 name="item_price" min="0.01" class="form-control item_price"
+        //                 placeholder="0.00" required>
+        //         </div>
+        //         <div class="col-md-1 mb-4 text-center">
+        //             <button type="button" class="btn add_btn mt-1"><i
+        //                     class="fa fa-plus"></i></button>
+        //         </div>
+        //     </div>
+        //     `
+        // );
+        console.log(bom_structure);
+        let content_child=`
+        <div class="form-row content_child">
+            <p>AAA</p>
+        </div>`
+        content_parent.append(content_child)
+    }
 
     $(document).ready(function () {
         $.ajax({
-            url: "{% url 'api:vendorList' %}?find_all=1",
+            url: "{% url 'api:storeList' %}?find_all=1",
             type: 'GET',
             data: ({}),
             headers: {
@@ -271,11 +291,12 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    var vendor_options_text = `<option value="">Choose...</option>`;
+                    var store_options_text = `<option value=""></option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
-                        vendor_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                        store_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
-                    $('#vendor_id').html(vendor_options_text);
+                    $('#source_store_id').html(store_options_text);
+                    $('#destination_store_id').html(store_options_text);
                 } else {
                     alert(response.message);
                 }
@@ -294,14 +315,38 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    item_options_text = `<option value="">Choose...</option>`;
+                    item_options_text += `<option value="">Choose item</option><option value="a" class="l1" disabled>Item</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
-                        item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                        item_options_text += `<option class="l2 item" value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
-                    $('.item_id').html(item_options_text);
+                    // $('.item_id').html(item_options_text);
                 } else {
                     alert(response.message);
                 }
+            },
+            complete : function(response){
+                $.ajax({
+                    url: "{% url 'api:billOfMaterialList' %}?find_all=1",
+                    type: 'GET',
+                    data: ({}),
+                    headers: {
+                        'Authorization': getCookieValue("accessToken")
+                    },
+                    success: function (response2) {
+                        if (response2.status == 200) {
+                            item_options_text += `<option value="">Choose BOM</option><option value="b" class="l1" disabled>Bill of material</option>`;
+                            for (let index = 0; index < response2.page_items.length; index++) {
+                                item_options_text += `<option class="l2 bom" value="${response2.page_items[index].pk}">${response2.page_items[index].name}</option>`;
+                            }
+                            $('.item_id').html(item_options_text);
+                        } else {
+                            alert(response2.message);
+                        }
+                    },
+                    error: function (error) {
+                        $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                    }
+                });
             },
             error: function (error) {
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
@@ -309,29 +354,38 @@
         });
     });
 
-    $(document).on('change', '#vendor_id', function () {
-        vendor_id = $(this).val();
-        $.ajax({
-            url: "{% url 'api:vendorList' %}?id=" + vendor_id,
-            type: 'GET',
-            data: ({}),
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                if (response.status == 200) {
-                    $('#order_number').val(response.page_items[0].next_purchase_order_number);
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+    $(document).on('change', '#source_store_id', function () {
+        var source_store_id = $('#source_store_id').val();
+        var destination_store_options = $('#destination_store_id').children();
+        destination_store_options.each( function(index){
+            if( $(this).val()===source_store_id){
+                $(this).attr("hidden",true)
             }
-        });
+            else{
+                if($(this).attr("hidden")==="hidden"){
+                    $(this).removeAttr("hidden")
+                }
+            }
+        })
+    });
+
+    $(document).on('change', '#destination_store_id', function () {
+        var destination_store_id = $('#destination_store_id').val();
+        var source_store_options = $('#source_store_id').children();
+        source_store_options.each( function(){
+            if( $(this).val()===destination_store_id){
+                $(this).attr("hidden",true)
+            }
+            else{
+                if($(this).attr("hidden")==="hidden"){
+                    $(this).removeAttr("hidden")
+                }
+            }
+        })
     });
 
     $(document).on('change', '.item_id', function () {
+        // console.log(item_options_used_name);
         let element = $(this);
         let item_count = 0;
         $('.item_id').each(function () {
@@ -349,31 +403,94 @@
             alert("Item already added in the list.");
             calculateTotalAmount();
         } else {
+            let item_or_bom=$(this).find(":selected").attr("class").substring(3)
+            // console.log($(this).find(":selected").text())
             item_id = element.val();
             if (item_id != null && item_id != "") {
-                $.ajax({
-                    url: "{% url 'api:itemList' %}?id=" + item_id,
-                    type: 'GET',
-                    data: ({}),
-                    headers: {
-                        'Authorization': getCookieValue("accessToken")
-                    },
-                    success: function (response) {
-                        if (response.status == 200) {
-                            element.parents('.content_parent').find('.item_quantity').val(1);
-                            element.parents('.content_parent').find('.rate').val(response.page_items[0].price);
-                            element.parents('.content_parent').find('.item_price').val(response.page_items[0].price);
-                            element.parents('.content_parent').find('.gst_percentage').val(response.page_items[0].item_type__gst_percentage);
-                            element.parents('.content_parent').find('.amount_with_gst').val((parseFloat(response.page_items[0].price) + (parseFloat(response.page_items[0].price) * parseFloat(response.page_items[0].item_type__gst_percentage) / 100)).toFixed(2));
-                        } else {
-                            alert(response.message);
+                if(item_or_bom==="item"){
+                    $.ajax({
+                        url: "{% url 'api:itemList' %}?id=" + item_id,
+                        type: 'GET',
+                        data: ({}),
+                        headers: {
+                            'Authorization': getCookieValue("accessToken")
+                        },
+                        success: function (response) {
+                            if (response.status == 200) {
+
+                                var callbacks = $.Callbacks();
+                                callbacks.add(update_item_options_used_name);
+                                callbacks.fire();
+                                callbacks.add(renderItemDropdown);
+                                callbacks.fire();
+
+                                element.parents('.content_parent').find('.item_quantity').val(1);
+                                element.parents('.content_parent').find('.rate').val(response.page_items[0].price);
+                                element.parents('.content_parent').find('.item_price').val(response.page_items[0].price);    
+                            } 
+                            else {
+                                alert(response.message);
+                            }
+                            calculateTotalAmount();
+                        },
+                        error: function (error) {
+                            $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
                         }
-                        calculateTotalAmount();
-                    },
-                    error: function (error) {
-                        $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-                    }
-                });
+                    });
+                }
+                if(item_or_bom==="bom"){
+                    $.ajax({
+                        url: "{% url 'api:billOfMaterialList' %}?id=" + item_id,
+                        type: 'GET',
+                        data: ({}),
+                        headers: {
+                            'Authorization': getCookieValue("accessToken")
+                        },
+                        success: function (response) {
+                            if (response.status == 200) {
+
+                                var callbacks = $.Callbacks();
+                                callbacks.add(update_item_options_used_name);
+                                callbacks.fire();
+                                callbacks.add(renderItemDropdown);
+                                callbacks.fire();
+
+                                element.parents('.content_parent').find('.item_quantity').val(1);
+                                element.parents('.content_parent').find('.rate').val(response.page_items[0].price);
+                                element.parents('.content_parent').find('.item_price').val(response.page_items[0].price);    
+                            } 
+                            else {
+                                alert(response.message);
+                            }
+                            calculateTotalAmount();
+                        },
+                        complete: function(response){
+                            $.ajax({
+                                url: "{% url 'api:getBillOfMaterialStructure'%}?bom_id=" + item_id,
+                                type: 'GET',
+                                data: ({}),
+                                headers: {
+                                    'Authorization': getCookieValue("accessToken")
+                                },
+                                success: function (response) {
+                                    if (response.status == 200) {
+                                        bill_of_material_structure(element.closest(".content_parent"), item_id, response.page_items.structure)
+                                    } 
+                                    else {
+                                        alert(response.message);
+                                    }
+                                },
+                                error: function (error) {
+                                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                                }
+                            });
+                        },
+                        error: function (error) {
+                            $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                        }
+                    });
+                }
+                
             }
         }
     });
@@ -416,42 +533,12 @@
 
         calculateTotalAmount();
     });
-
-    function calculateTotalAmount() {
-        total_amount = 0;
-        $('.amount_with_gst').each(function () {
-            if ($(this).val() != "") {
-                total_amount += parseFloat($(this).val());
-            }
-        });
-
-        if ($("#discount_type").val() == 'percentage') {
-            discounted_value = total_amount * ($("#discount_value").val() / 100);
-        } else if ($("#discount_type").val() == 'flat') {
-            discounted_value = $("#discount_value").val();
-        } else {
-            $("#discount_value").val(0);
-            discounted_value = 0;
-        }
-        $("#discounted_value").val(discounted_value);
-        total_amount -= discounted_value;
-
-        excise_duty_percentage = $('#excise_duty_percentage').val();
-        insurance = $('#insurance').val();
-        octroi = $('#octroi').val();
-        freight = $('#freight').val();
-
-        total_amount += (parseFloat(insurance) + parseFloat(octroi) + parseFloat(freight));
-
-        total_amount = total_amount + (total_amount * parseFloat(excise_duty_percentage) / 100)
-
-        $("#total_amount").val((total_amount).toFixed(2));
-    }
-
+  
     $(document).on('click', '.add_btn', function () {
         $('.add_more_content').append(`<div class="form-row content_parent">
-                                    <div class="col-md-3 mb-3">
-                                        <label>Item <span class="required-indicator">*</span></label>
+                                    <input type="hidden" name="parent_job_order_detail_id" value="0">
+                                    <div class="col-md-5 mb-3">
+                                        <label>Item/BOM <span class="required-indicator">*</span></label>
                                         <div class="input-group">
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
                                                 ${item_options_text}
@@ -465,7 +552,7 @@
                                             name="rate" min="0.01" class="form-control rate"
                                             placeholder="0.00" required>
                                     </div>
-                                    <div class="col-md-1 mb-3">
+                                    <div class="col-md-2 mb-3">
                                         <label>Quantity <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
@@ -474,22 +561,9 @@
                                     </div>
                                     <div class="col-md-2 mb-3">
                                         <label>Price <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                        <input type="text" onkeyup="checkMaxMin(this)" disabled
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="item_price" min="0.01" class="form-control item_price"
-                                            placeholder="0.00" required>
-                                    </div>
-                                    <div class="col-md-1 mb-3">
-                                        <label>GST %<span class="required-indicator">*</span></label>
-                                        <input type="text" name="gst_percentage" class="form-control gst_percentage" readonly
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            max="100" min="0.00" placeholder="0%">
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Price With GST <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="amount_with_gst" min="0.01" class="form-control amount_with_gst"
                                             placeholder="0.00" required>
                                     </div>
                                     <div class="col-md-1 mb-4 text-center ">
@@ -497,13 +571,32 @@
                                     </div>
                                 </div>`);
         $('.selectpicker').select2({
-            placeholder: ''
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element){
+                    if((option.element).hasAttribute('hidden')){
+                        return null
+                    }
+                    else{
+                        var $element = $(option.element);
+                        var $wrapper = $('<span></span>');
+                        $wrapper.addClass($element[0].className);
+                        $wrapper.text(option.text);
+                        return $wrapper;
+                    }
+                }
+                else{
+                    return option.text
+                }
+            }
         });
+        renderItemDropdown();
     });
 
     $(document).on('click', '.remove_btn', function () {
         $(this).parents().closest('.content_parent').remove();
         calculateTotalAmount();
+        renderItemDropdown();
     });
 
     $(document).on('change', '#discount_type', function () {
@@ -545,19 +638,7 @@
         calculateTotalAmount();
     });
 
-    function checkMaxMin(element) {
-        if ($(element).val() == "") {
-            $(element).val($(element).attr('min'));
-        } else {
-            if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
-                $(element).val($(element).attr('max'));
-            }
-            if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
-                $(element).val($(element).attr('min'));
-            }
-        }
-    }
-
+    
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
         $('.submit-btn').text('Submitting...');
@@ -593,5 +674,6 @@
             }
         });
     });
+
 </script>
 {% endblock %}

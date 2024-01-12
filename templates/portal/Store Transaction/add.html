@@ -220,10 +220,79 @@
         }
     });
 
+    $(document).ready(function () {
+        $.ajax({
+            url: "{% url 'api:vendorList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    vendor_options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        vendor_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $('#vendor_id').html(vendor_options_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+        $.ajax({
+            url: "{% url 'api:itemList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    item_options = response.page_items;
+                    item_options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $('.item_id').html(item_options_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+        $.ajax({
+            url: "{% url 'api:storeList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    store_options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        store_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $('.store_id').html(store_options_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    });
+
     function renderItemDropdown(){
         $('.item_id').each(function(){
             let selected_item_pk=$(this).val()
-            console.log(this)
             $(this).children("option").each(function(index, element){
                 if( $(this).val()!==selected_item_pk && item_options_used_pk.includes($(this).val()) ){
                     $(this).prop("hidden",true)
@@ -235,12 +304,18 @@
         })
     }
 
+    function update_item_options_used_pk(){
+        item_options_used_pk=[]
+        $('.item_id').each(function(){
+            item_options_used_pk.push($(this).val())
+        }); 
+    }
+
     $(document).on('change', '#with_purchase_order', function () {
         purchase_order_type = $(this).val();
         if (parseInt(purchase_order_type) == 1) {
             $('.purchase_order_type_content').show();
             $('#purchase_order_header_id').attr('required', 'required');
-        } else {
             $('.purchase_order_type_content').hide();
             $('#purchase_order_header_id').val("")
             $('#purchase_order_header_id').removeAttr('required');
@@ -312,77 +387,7 @@
             }
         });
     });
-
-    $(document).ready(function () {
-        $.ajax({
-            url: "{% url 'api:vendorList' %}?find_all=1",
-            type: 'GET',
-            data: ({}),
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                if (response.status == 200) {
-                    vendor_options_text = `<option value="">Choose...</option>`;
-                    for (let index = 0; index < response.page_items.length; index++) {
-                        vendor_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
-                    }
-                    $('#vendor_id').html(vendor_options_text);
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });
-        $.ajax({
-            url: "{% url 'api:itemList' %}?find_all=1",
-            type: 'GET',
-            data: ({}),
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                if (response.status == 200) {
-                    item_options = response.page_items;
-                    item_options_text = `<option value="">Choose...</option>`;
-                    for (let index = 0; index < response.page_items.length; index++) {
-                        item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
-                    }
-                    $('.item_id').html(item_options_text);
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });
-        $.ajax({
-            url: "{% url 'api:storeList' %}?find_all=1",
-            type: 'GET',
-            data: ({}),
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                if (response.status == 200) {
-                    store_options_text = `<option value="">Choose...</option>`;
-                    for (let index = 0; index < response.page_items.length; index++) {
-                        store_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
-                    }
-                    $('.store_id').html(store_options_text);
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });
-    });
-
+ 
     $(document).on('change', '#vendor_id', function () {
         let vendor_id = $(this).val();
         $.ajax({
@@ -635,8 +640,13 @@
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        item_options_used_pk.push(response.page_items[0].pk.toString())
-                        renderItemDropdown();
+
+                        var callbacks = $.Callbacks();
+                        callbacks.add(update_item_options_used_pk);
+                        callbacks.fire();
+                        callbacks.add(renderItemDropdown);
+                        callbacks.fire();
+                        
                         element.parents('.content_parent').find('.item_quantity').val(1);
                         element.parents('.content_parent').find('.rate').val(response.page_items[0].price);
                         element.parents('.content_parent').find('.item_price').val(response.page_items[0].price);
@@ -649,7 +659,7 @@
             });
         }
     });
-
+    
     $(document).on('keyup change', '.item_quantity', function () {
         item_quantity = $(this).val();
         rate = $(this).parents(".content_parent").find('.rate').val();

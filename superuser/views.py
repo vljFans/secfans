@@ -492,11 +492,13 @@ def storeAdd(request):
 @login_required
 def storeEdit(request, id):
     store = models.Store.objects.get(pk=id)
+    vendors = models.Vendor.objects.all()
     countries = models.Country.objects.all()
     states = models.State.objects.filter(country_id=store.country_id)
     cities = models.City.objects.filter(state_id=store.state_id)
     context.update({
         'store': store,
+        'vendors': vendors,
         'countries': countries,
         'states': states,
         'cities': cities,
@@ -750,3 +752,46 @@ def storeTransactionView(request, id):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}, {'name': "View"}]
     })
     return render(request, 'portal/Store Transaction/view.html', context)
+
+
+@login_required
+def jobOrderList(request):
+    context.update({
+        'page_title': "Job Order List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Job Order/list.html', context)
+
+
+@login_required
+def jobOrderAdd(request):
+    context.update({
+        'page_title': "Job Order Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Job Order/add.html', context)
+
+
+@login_required
+def jobOrderEdit(request, id):
+    jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
+    stores = models.Store.objects.filter(status=1, deleted=0)
+    context.update({
+        'jobOrder': jobOrder,
+        'stores': stores,
+        'page_title': "Job Order Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Job Order/edit.html', context)
+
+
+@login_required
+def jobOrderView(request, id):
+    jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
+    context.update({
+        'purchaseOrder': jobOrder,
+        'page_title': "Job Order View",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "View"}]
+    })
+    return render(request, 'portal/Job Order/view.html', context)
+

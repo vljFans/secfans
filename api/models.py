@@ -343,18 +343,16 @@ class Item(models.Model):
 class Store(models.Model):
     name = models.CharField(max_length=60, blank=False, null=False)
     address = models.CharField(max_length=60, blank=False, null=False)
-    country = models.ForeignKey(
-        Country, on_delete=models.CASCADE, blank=True, null=True)
-    state = models.ForeignKey(
-        State, on_delete=models.CASCADE, blank=True, null=True)
-    city = models.ForeignKey(
-        City, on_delete=models.CASCADE, blank=True, null=True)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True)
+    state = models.ForeignKey(State, on_delete=models.CASCADE, blank=True, null=True)
+    city = models.ForeignKey(City, on_delete=models.CASCADE, blank=True, null=True)
     pin = models.CharField(max_length=6, validators=[RegexValidator(
         '^[0-9]{6}$', _('Invalid Pin Number'))], blank=True, null=True)
     contact_name = models.CharField(max_length=50, blank=True, null=True)
     contact_no = models.CharField(max_length=15, blank=True, null=True)
     contact_email = models.CharField(max_length=100, blank=True, null=True)
     manager_name = models.CharField(max_length=50, blank=True, null=True)
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -565,3 +563,45 @@ class Store_Transaction_Detail(models.Model):
         managed = True
         db_table = 'store_transaction_details'
         verbose_name_plural = 'store_transaction_details'
+
+
+class Job_Order(models.Model):
+    order_number = models.CharField(max_length=50, blank=True, null=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.order_number
+
+    class Meta:
+        managed = True
+        db_table = 'job_order_headers'
+        verbose_name_plural = 'job_order_headers'
+
+
+class Job_Order_Detail(models.Model):
+    job_order_header = models.ForeignKey(Job_Order, on_delete=models.CASCADE)
+    parent_job_order_detail_id=models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
+    bill_of_material = models.ForeignKey(Bill_Of_Material, on_delete=models.CASCADE, blank=True, null=True)
+    source_store = models.ForeignKey(Store, on_delete=models.CASCADE, blank=True, null=True, related_name='source_store')
+    destination_store = models.ForeignKey(Store, on_delete=models.CASCADE, blank=True, null=True, related_name='destination_store')
+    quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.job_order_header.order_number
+
+    class Meta:
+        managed = True
+        db_table = 'job_order_details'
+        verbose_name_plural = 'job_order_details'
+
