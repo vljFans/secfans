@@ -108,7 +108,7 @@
             style="display: {% if request.path == '/purchase-order-list' %}block{% else %}none{% endif %};">
             {% if request.user.is_superuser == 1 or 'view_purchase_order'|get_session_permission:request is not None %}
             <li class="{% if request.path == '/purchase-order-list' %}active{% endif %}">
-              <a href="{% url 'superuser:purchaseOrderList' %}">Purchase Orders</a>
+              <a href="{% url 'superuser:purchaseOrderList' %}">Purchase Order</a>
             </li>
             {% endif %}
           </ul>
