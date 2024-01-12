@@ -147,7 +147,7 @@
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index];
                         tbody_text += `<tr>
-                                <td>${((response.total_pages - 1) * response.per_page) +  index + 1}</td>
+                                <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
                                 <td>${element.name}</td>
                                 <td>${element.address}</td>
                                 <td>${element.contact_name}</td>

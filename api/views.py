@@ -2250,10 +2250,11 @@ def billOfMaterialAdd(request):
             billOfMaterialHeader.uom_id = request.POST['uom_id']
             billOfMaterialHeader.quantity = 1
             billOfMaterialHeader.price = request.POST['total_amount']
-            billOfMaterialHeader.is_final = 1
             billOfMaterialHeader.level = request.POST['level']
             billOfMaterialHeader.save()
-
+            if len(models.Bill_Of_Material_Detail.objects.filter(bom_level_id=billOfMaterialHeader.id)) == 0:
+                billOfMaterialHeader.is_final = 1
+                billOfMaterialHeader.save()
             bill_of_material_details = []
             for index, elem in enumerate(request.POST.getlist('bom_level_id')):
                 billOfMaterialDetail = models.Bill_Of_Material.objects.get(
@@ -2307,10 +2308,12 @@ def billOfMaterialEdit(request):
             billOfMaterialHeader.uom_id = request.POST['uom_id']
             billOfMaterialHeader.quantity = 1
             billOfMaterialHeader.price = request.POST['total_amount']
-            billOfMaterialHeader.is_final = 1
             billOfMaterialHeader.level = request.POST['level']
             billOfMaterialHeader.updated_at = datetime.now()
             billOfMaterialHeader.save()
+            if len(models.Bill_Of_Material_Detail.objects.filter(bom_level_id=billOfMaterialHeader.id)) == 0:
+                billOfMaterialHeader.is_final = 1
+                billOfMaterialHeader.save()
             billOfMaterialHeader.bill_of_material_detail_set.all().delete()
             bill_of_material_details = []
             for index, elem in enumerate(request.POST.getlist('bom_level_id')):
