@@ -400,7 +400,7 @@ class Bill_Of_Material(models.Model):
         Uom, on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    is_final = models.SmallIntegerField(default=1)
+    is_final = models.SmallIntegerField(default=0)
     level = models.SmallIntegerField(default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
