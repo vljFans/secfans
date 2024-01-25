@@ -62,7 +62,7 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                {% if request.user.is_superuser == 1 or 'add_item_color'|get_session_permission:request is not None %}
+                                {% if request.user.is_superuser == 1 or 'add_bill_of_material'|get_session_permission:request is not None %}
                                 <a href="{% url 'superuser:billOfMaterialAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
                                 {% endif %}
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
@@ -140,7 +140,7 @@
                         const element = page_items[index];
                         tbody_text += `<tr>
                                 <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
-                                <td>${element.name}</td>
+                                <td>${element.bom_item__name}</td>
                                 <td>${element.uom__name}</td>
                                 <td>${element.price}</td>
                                 <td>
@@ -200,7 +200,7 @@
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:itemColorList' %}");
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:billOfMaterialList' %}");
                     } else {
                         alert(response.message);
                     }

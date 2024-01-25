@@ -7,6 +7,7 @@ from django.template.loader import render_to_string
 from django.db.models import Q
 from api import models
 import environ
+import json
 import os
 from sec import settings
 env = environ.Env()
@@ -519,7 +520,9 @@ def billOfMaterialList(request):
 
 @login_required
 def billOfMaterialAdd(request):
+    bom_items_id_list = list(models.Bill_Of_Material.objects.all().values_list('bom_item_id', flat=True))
     context.update({
+        'bom_items_id_list': bom_items_id_list,
         'page_title': "Bill Of Material Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Bill Of Material", 'url': reverse('superuser:billOfMaterialList')}, {'name': "Add"}]
     })
@@ -528,14 +531,14 @@ def billOfMaterialAdd(request):
 
 @login_required
 def billOfMaterialEdit(request, id):
-    billOfMaterial = models.Bill_Of_Material.objects.prefetch_related(
-        'bill_of_material_detail_set').get(pk=id)
-    bomLevels = models.Bill_Of_Material.objects.filter(
-        level__lte=billOfMaterial.level - 1).filter(status=1, deleted=0)
+    billOfMaterial = models.Bill_Of_Material.objects.prefetch_related('bill_of_material_detail_set').get(pk=id)
+    bom_items_id_list = list(models.Bill_Of_Material.objects.filter(level__lte=billOfMaterial.level - 1).values_list('bom_item_id', flat=True))
+    bomLevels = models.Bill_Of_Material.objects.filter(level__lte=billOfMaterial.level - 1).filter(status=1, deleted=0)
     items = models.Item.objects.filter(status=1, deleted=0)
     uoms = models.Uom.objects.filter(status=1, deleted=0)
     context.update({
         'billOfMaterial': billOfMaterial,
+        'bom_items_id_list': bom_items_id_list,
         'bomLevels': bomLevels,
         'items': items,
         'uoms': uoms,
@@ -547,7 +550,7 @@ def billOfMaterialEdit(request, id):
 
 def getStructureOfBOM(bom_id):
     billOfMaterial = list(models.Bill_Of_Material.objects.filter(pk=bom_id)[
-                          :1].values('pk', 'name', 'uom__name', 'quantity', 'price'))[0]
+                          :1].values('pk', 'bom_item_name', 'uom__name', 'quantity', 'price'))[0]
     childBOMS = models.Bill_Of_Material_Detail.objects.filter(
         status=1, deleted=0, bill_of_material_header_id=bom_id)
     id_lists = []
@@ -765,7 +768,12 @@ def jobOrderList(request):
 
 @login_required
 def jobOrderAdd(request):
+    item_id_n_bom_id={}
+    for bom in models.Bill_Of_Material.objects.all():
+        item_id_n_bom_id[str(bom.bom_item_id)]=bom.id
+    bom_items_id_list = list(models.Bill_Of_Material.objects.all().values_list('bom_item_id', flat=True))
     context.update({
+        'item_id_n_bom_id':json.dumps(item_id_n_bom_id),
         'page_title': "Job Order Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "Add"}]
     })

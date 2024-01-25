@@ -393,9 +393,9 @@ class Store_Item(models.Model):
 
 
 class Bill_Of_Material(models.Model):
-    name = models.CharField(max_length=250, blank=True, null=True)
-    uom = models.ForeignKey(
-        Uom, on_delete=models.CASCADE, blank=True, null=True)
+    bom_item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
+    # name = models.CharField(max_length=250, blank=True, null=True)
+    uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     is_final = models.SmallIntegerField(default=0)
@@ -406,7 +406,7 @@ class Bill_Of_Material(models.Model):
     updated_at = models.DateTimeField(default=now)
 
     def __str__(self):
-        return self.name
+        return self.bom_item.name
 
     class Meta:
         managed = True
@@ -415,16 +415,11 @@ class Bill_Of_Material(models.Model):
 
 
 class Bill_Of_Material_Detail(models.Model):
-    bill_of_material_header = models.ForeignKey(
-        Bill_Of_Material, on_delete=models.CASCADE, blank=True, null=True)
-    item = models.ForeignKey(
-        Item, on_delete=models.CASCADE, blank=True, null=True)
-    bom_level = models.ForeignKey(
-        Bill_Of_Material, related_name="bomLevel", on_delete=models.CASCADE, blank=True, null=True)
-    quantity = models.DecimalField(
-        max_digits=10, decimal_places=5, default=0)
-    price = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0)
+    bill_of_material_header = models.ForeignKey(Bill_Of_Material, on_delete=models.CASCADE, blank=True, null=True)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
+    bom_level = models.ForeignKey(Bill_Of_Material, related_name="bomLevel", on_delete=models.CASCADE, blank=True, null=True)
+    quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -567,7 +562,9 @@ class Store_Transaction_Detail(models.Model):
 
 class Job_Order(models.Model):
     order_number = models.CharField(max_length=50, blank=True, null=True)
+    order_date = models.DateField(blank=True, null=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    notes = models.TextField(blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -584,11 +581,8 @@ class Job_Order(models.Model):
 
 class Job_Order_Detail(models.Model):
     job_order_header = models.ForeignKey(Job_Order, on_delete=models.CASCADE)
-    parent_job_order_detail_id=models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
     bill_of_material = models.ForeignKey(Bill_Of_Material, on_delete=models.CASCADE, blank=True, null=True)
-    source_store = models.ForeignKey(Store, on_delete=models.CASCADE, blank=True, null=True, related_name='source_store')
-    destination_store = models.ForeignKey(Store, on_delete=models.CASCADE, blank=True, null=True, related_name='destination_store')
     quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -605,3 +599,23 @@ class Job_Order_Detail(models.Model):
         db_table = 'job_order_details'
         verbose_name_plural = 'job_order_details'
 
+
+class Job_Order_Detail_Sent(models.Model):
+    job_order_detail = models.ForeignKey(Job_Order_Detail, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
+    bill_of_material = models.ForeignKey(Bill_Of_Material, on_delete=models.CASCADE, blank=True, null=True)
+    quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.job_order_detail.job_order_header.order_number
+
+    class Meta:
+        managed = True
+        db_table = 'job_order_detail_sent'
+        verbose_name_plural = 'job_order_detail_sent'
