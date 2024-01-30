@@ -803,3 +803,21 @@ def jobOrderView(request, id):
     })
     return render(request, 'portal/Job Order/view.html', context)
 
+#--- developed by saswata
+@login_required
+def materialIssueListView(request):
+    context.update({
+        'page_title': "Material Issue List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueListView')}, {'name': "List"}]
+    })
+    return render(request, 'portal/material_issue/list.html', context)
+
+@login_required
+def materialIssueAdd(request):
+    context.update({
+        'page_title': " Material Issue Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueListView')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/material_issue/add.html', context)
+
+
