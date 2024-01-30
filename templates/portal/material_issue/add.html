@@ -8,7 +8,7 @@
 {% block content %}
 <!-- main wrapper div content -->
 <div class="wrapper">
-    
+
     <!--================================-->
     <!-- Breadcrumb Start -->
     <!--================================-->
@@ -56,37 +56,37 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- end upper header -->
                 <!-- main form  -->
                 <div class="card-body">
                     <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
                         <div class="form-row">
                             <div class="col-md-4 mb-3">
-                                <div class="col-md-4 mb-3">
-                                    <label>Job Order No<span class="required-indicator">*</span></label>
-                                    <div class="input-group">
-                                        <select class="custom-select selectpicker item_id" name="item_id" required>
-                                            <option value="">Choose...</option>
-                                        </select>
-                                    </div>
+                                <label>Job Order No<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="job_Order_id" name="job_Order_id" required>
+                                        <option value="">Choose...</option>
+                                    </select>
                                 </div>
-                                <div class="col-md-4 mb-3">
-                                    <label>Order Date <span class="required-indicator">*</span></label>
-                                    <input type="date" name="order_date" class="form-control" placeholder="Order Date" required>
-                                </div>
-
-                                <div class="col-md-4 mb-3">
-                                    <label>Store<span class="required-indicator">*</span></label>
-                                        <div class="input-group">
-                                            <select class="custom-select selectpicker item_id" name="item_id" required>
-                                                <option value="">Choose...</option>
-                                            </select>
-                                        </div>
-                                </div>
-
-
                             </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Issue Date <span class="required-indicator">*</span></label>
+                                <input type="date" name="order_date" class="form-control" placeholder="Order Date"
+                                    required>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label>Store<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="store_id" name="store_id" required>
+                                        <option value="">Choose...</option>
+                                    </select>
+                                </div>
+                            </div>
+
+
+
                         </div>
                     </form>
                 </div>
@@ -103,6 +103,85 @@
 {% block js %}
 <!-- script -->
 <script>
+    var item_options_text = ``;
+    var item_options_used_pk = [];
+    var itemsData;
+     $(document).ready(function () {
+        $.ajax({
+            url: "{% url 'api:jobOrderList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    // itemsData=response.page_items
+                    item_options_text += `<option value="">Choose item</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].order_number}</option>`;
+                    }
+                    $('#job_Order_id').html(item_options_text);
+                    $('.selectpicker').select2({
+                        placeholder: '',
+                        templateResult: function(option) {
+                            if(option.element && (option.element).hasAttribute('hidden')){
+                                return null;
+                            }
+                            return option.text;
+                        }
+                    });
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+
+
+     });
+
+     $(document).ready(function () {
+        $.ajax({
+            url: "{% url 'api:storeList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    // itemsData=response.page_items
+                    item_options_text += `<option value="">Choose item</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $('#store_id').html(item_options_text);
+                    $('.selectpicker').select2({
+                        placeholder: '',
+                        templateResult: function(option) {
+                            if(option.element && (option.element).hasAttribute('hidden')){
+                                return null;
+                            }
+                            return option.text;
+                        }
+                    });
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+
+
+     });
+
 
 </script>
 
