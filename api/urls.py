@@ -102,4 +102,10 @@ urlpatterns = [
     path('store-transaction-edit', views.storeTransactionEdit, name='storeTransactionEdit'),
     path('store-transaction-delete', views.storeTransactionDelete, name='storeTransactionDelete'),
     path('store-transaction-details', views.storeTransactionDetails, name='storeTransactionDetails'),
+
+    path('job-order-list', views.jobOrderList, name='jobOrderList'),
+    path('job-order-add', views.jobOrderAdd, name='jobOrderAdd'),
+    path('job-order-edit', views.jobOrderEdit, name='jobOrderEdit'),
+    path('job-order-delete', views.jobOrderDelete, name='jobOrderDelete'),
+    path('job-order-details', views.jobOrderDetails, name='jobOrderDetails'),
 ]

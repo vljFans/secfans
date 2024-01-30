@@ -176,9 +176,6 @@
                 }
             }
         });
-    })
-
-    $(document).ready(function () {
         $.ajax({
             url: "{% url 'api:itemList' %}?find_all=1",
             type: 'GET',
@@ -201,9 +198,6 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
-    });
-
-    $(document).ready(function () {
         $.ajax({
             url: "{% url 'api:storeList' %}?find_all=1",
             type: 'GET',
@@ -226,7 +220,8 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
-    });
+
+    })
 
     function checkMaxMin(element) {
         if ($(element).val() == "") {

@@ -18,3 +18,14 @@
 .colorpicker-alpha {
     display: none !important;
 }
+
+.content_child{
+    border: 1px solid black;            
+    border-radius: 5px; 
+    /* max-width: 83%; */
+    margin: auto;
+    /* margin-left: 20px; */
+    /* margin-left: 20px;
+    margin-right: 20px;
+    margin-bottom: 20px; */
+  }

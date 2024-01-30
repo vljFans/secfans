@@ -66,14 +66,23 @@
                 <div class="card-body">
                     <form id="edit_form" class="needs-validation" novalidate>
                         <input type="hidden" id="id" name="id" value="{{billOfMaterial.id}}">
+                        <input type="hidden" id="bom_item_id" name="bom_item_id" value="{{billOfMaterial.bom_item_id}}">
+                        <input type="hidden" id="level" name="level" value="{{billOfMaterial.level}}">
                         <div class="form-row">
                             <div class="col-md-6 mb-3">
-                                <label>Name <span class="required-indicator">*</span></label>
-                                <input type="text" value="{{billOfMaterial.name}}" name="name" class="form-control" placeholder="Name" required>
+                                <label>Name<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker bom_item_id" name="bom_item_id" required disabled>
+                                        <option value="">Choose...</option>
+                                        {% for item in items %}
+                                            <option value="{{item.pk}}" {% if item.id == billOfMaterial.bom_item_id %}selected{% endif %}>{{item.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Level <span class="required-indicator">*</span></label>
-                                <input type="text" name="level" class="form-control" placeholder="Level"
+                                <input type="text" name="level" class="form-control" placeholder="Level" disabled
                                     required id="bom_level_level" onkeyup="checkMaxMin(this)" value="{{billOfMaterial.level}}" min="1"
                                     onkeypress="return (event.charCode >=45 &&  event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)">
                             </div>
@@ -83,7 +92,7 @@
                             <div class="col-md-2 mb-3">
                                 <label>Type <span class="required-indicator">*</span>{{forloop.counter}}</label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker type_id" name="type_id" required>
+                                    <select class="custom-select selectpicker type_id" name="type_id" required  >
                                         <option value="">Choose...</option>
                                         <option value="item" {% if detail.item_id is not None %}selected{% endif %}>Item</option>
                                         <option value="bom_level" {% if detail.bom_level_id is not None %}selected{% endif %}>BOM Level</option>
@@ -135,7 +144,7 @@
                                         <select class="custom-select selectpicker bom_level_id" name="bom_level_id" required>
                                             <option value="">Choose...</option>
                                             {% for each in bomLevels %}
-                                            <option value="{{each.pk}}" {% if each.id == detail.bom_level_id %}selected{% endif %}>{{each.name}}</option>
+                                                <option value="{{each.pk}}" {% if each.id == detail.bom_level_id %}selected{% endif %}>{{each.bom_item.name}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -227,7 +236,95 @@
     })();
 </script>
 <script>
+    $('.selectpicker').select2({
+        placeholder: '',
+        templateResult: function(option) {
+            if(option.element && (option.element).hasAttribute('hidden')){
+                return null;
+            }
+            return option.text;
+        }
+    });
+    
+    var bom_item_options_text = ``;
+    var item_options_text = ``;
+    var bom_level_options_text = ``;
+
+    var item_options_used_pk = [];
+    var bom_options_used_pk = [];
+    
+    function update_all_options_used_pk(){
+        item_options_used_pk=[]
+        $('.item_id').each(function(){
+            item_options_used_pk.push($(this).val())
+        });
+        item_options_used_pk.push($(".bom_item_id").val())
+        
+        bom_options_used_pk=[]
+        $('.bom_level_id').each(function(){
+            if($(this).val()!==""){
+                bom_options_used_pk.push($(this).val())
+            }
+        });
+    }
+
+    function renderDropdowns(){
+        $('.item_id').each(function(){
+            let selected_item_pk=$(this).val()
+            $(this).children("option").each(function(index, element){
+                if( $(this).val()!==selected_item_pk && item_options_used_pk.includes($(this).val()) ){
+                    $(this).prop("hidden",true)
+                }
+                else{
+                    $(this).prop("hidden",false)
+                }
+            })
+        })
+
+        $('.bom_level_id').each(function(){
+            let selected_bom_pk=$(this).val()
+            $(this).children("option").each(function(index, element){
+                if( $(this).val()!==selected_bom_pk && bom_options_used_pk.includes($(this).val()) ){
+                    $(this).prop("hidden",true)
+                }
+                else{
+                    $(this).prop("hidden",false)
+                }
+            })
+        })
+    }
+
+    function callback(){
+        var callbacks = $.Callbacks();
+        callbacks.add(update_all_options_used_pk);
+        callbacks.fire();
+        callbacks.add(renderDropdowns);
+        callbacks.fire();
+        
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });
+    }
+
+
     $(document).ready(function () {
+
+        $(".item_id").each(function(){
+            item_options_used_pk.push($(this).val())
+        })
+
+        $(".bom_level_id").each(function(){
+            bom_options_used_pk.push($(this).val())
+        })
+
+        $(".item_id").find("option[value='{{billOfMaterial.bom_item_id}}']").remove()
+
         $.ajax({
             url: "{% url 'api:itemList' %}?find_all=1",
             type: 'GET',
@@ -239,6 +336,9 @@
                 if (response.status == 200) {
                     item_options_text = `<option value="">Choose...</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
+                        if(response.page_items[index].pk===Number("{{billOfMaterial.bom_item_id}}")){
+                            continue;
+                        }
                         item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
                 } else {
@@ -249,10 +349,8 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
-    });
-
-    $(document).ready(function () {
-        level = {{billOfMaterial.level}} - 1;
+        
+        level = Number("{{billOfMaterial.level}}") - 1;
         $.ajax({
             url: "{% url 'api:billOfMaterialList' %}?find_all=1&level=" + level,
             type: 'GET',
@@ -274,34 +372,45 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
-    });
-
     
-    $(document).on('change', '.bom_level_level', function () {
-        level = $(this).val() - 1;
-        $.ajax({
-            url: "{% url 'api:billOfMaterialList' %}?find_all=1&level="+level,
-            type: 'GET',
-            data: ({}),
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                if (response.status == 200) {
-                    bom_level_options_text = `<option value="">Choose...</option>`;
-                    for (let index = 0; index < response.page_items.length; index++) {
-                        bom_level_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
-                    }
-                    $('.bom_level_id').html(bom_level_options_text);
-                } else {
-                    alert(response.message);
+        callback()
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
                 }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                return option.text;
             }
         });
+
     });
+    
+    // $(document).on('change', '.bom_level_level', function () {
+    //     level = $(this).val() - 1;
+    //     $.ajax({
+    //         url: "{% url 'api:billOfMaterialList' %}?find_all=1&level="+level,
+    //         type: 'GET',
+    //         data: ({}),
+    //         headers: {
+    //             'Authorization': getCookieValue("accessToken")
+    //         },
+    //         success: function (response) {
+    //             if (response.status == 200) {
+    //                 bom_level_options_text = `<option value="">Choose...</option>`;
+    //                 for (let index = 0; index < response.page_items.length; index++) {
+    //                     bom_level_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+    //                 }
+    //                 $('.bom_level_id').html(bom_level_options_text);
+    //             } else {
+    //                 alert(response.message);
+    //             }
+    //         },
+    //         error: function (error) {
+    //             $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+    //         }
+    //     });
+    // });
 
     $(document).ready(function () {
         $.ajax({
@@ -332,70 +441,86 @@
         type_name = element.val();
         parent = $(this).parents('.content_parent')
         content_parent_index = $('.content_parent').index(parent);
-        if (type_name == 'bom_level') {
-            $(element).parents().closest('.content_parent').find('.type_content').html(`<div class="col-md-3 mb-3">
-                                    <label>BOM Level <span class="required-indicator">*</span></label>
-                                    <div class="input-group">
-                                        <select class="custom-select selectpicker bom_level_id" name="bom_level_id" required>
-                                            ${bom_level_options_text}
-                                        </select>
+        function fn(){
+            if (type_name == 'bom_level') {
+                $(element).parents().closest('.content_parent').find('.type_content').html(`<div class="col-md-3 mb-3">
+                                        <label>BOM Level <span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker bom_level_id" name="bom_level_id" required>
+                                                ${bom_level_options_text}
+                                            </select>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label>Unit Price <span class="required-indicator">*</span></label>
-                                    <input type="text" onkeyup="checkMaxMin(this)" readonly
-                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                        name="bom_level_unit_price" min="0.01" class="form-control bom_level_unit_price" placeholder="0.00" required>
-                                </div>
-                                <div class="col-md-2 mb-3">
-                                    <label>Quantity <span class="required-indicator">*</span></label>
-                                    <input type="text" onkeyup="checkMaxMin(this)"
-                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                        name="bom_level_quantity" min="0.0001" class="form-control bom_level_quantity" placeholder="Quantity" required>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label>Price <span class="required-indicator">*</span></label>
-                                    <input type="text" onkeyup="checkMaxMin(this)"
-                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                        name="bom_level_price" min="0.01" class="form-control bom_level_price" placeholder="0.00" required>
-                                </div>
-                                <div class="col-md-1 mb-4 text-center ">
-                                    ${content_parent_index > 0 ? '<button type="button" class="btn remove_btn mt-1"><i class="fa fa-minus"></i></button>' : '<button type="button" class="btn add_btn mt-1"><i class="fa fa-plus"></i></button>'}
-                                </div>`)
-        } else if (type_name == 'item') {
-            $(element).parents().closest('.content_parent').find('.type_content').html(`<div class="col-md-3 mb-3">
-                                    <label>Item <span class="required-indicator">*</span></label>
-                                    <div class="input-group">
-                                        <select class="custom-select selectpicker item_id" name="item_id" required>
-                                            ${item_options_text}
-                                        </select>
+                                    <div class="col-md-3 mb-3">
+                                        <label>Unit Price <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="bom_level_unit_price" min="0.01" class="form-control bom_level_unit_price" placeholder="0.00" required>
                                     </div>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label>Unit Price <span class="required-indicator">*</span></label>
-                                    <input type="text" onkeyup="checkMaxMin(this)" readonly
-                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                        name="item_unit_price" min="0.01" class="form-control item_unit_price" placeholder="0.00" required>
-                                </div>
-                                <div class="col-md-2 mb-3">
-                                    <label>Quantity <span class="required-indicator">*</span></label>
-                                    <input type="text" onkeyup="checkMaxMin(this)"
-                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                        name="item_quantity" min="0.0001" class="form-control item_quantity" placeholder="Quantity" required>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label>Price <span class="required-indicator">*</span></label>
-                                    <input type="text" onkeyup="checkMaxMin(this)"
-                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                        name="item_price" min="0.01" class="form-control item_price" placeholder="0.00" required>
-                                </div>
-                                <div class="col-md-1 mb-4 text-center ">
-                                    ${content_parent_index > 0 ? '<button type="button" class="btn remove_btn mt-1"><i class="fa fa-minus"></i></button>' : '<button type="button" class="btn add_btn mt-1"><i class="fa fa-plus"></i></button>'}
-                                </div>`)
+                                    <div class="col-md-2 mb-3">
+                                        <label>Quantity <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="bom_level_quantity" min="0.0001" class="form-control bom_level_quantity" placeholder="Quantity" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label>Price <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="bom_level_price" min="0.01" class="form-control bom_level_price" placeholder="0.00" required>
+                                    </div>
+                                    <div class="col-md-1 mb-4 text-center ">
+                                        ${content_parent_index > 0 ? '<button type="button" class="btn remove_btn mt-1"><i class="fa fa-minus"></i></button>' : '<button type="button" class="btn add_btn mt-1"><i class="fa fa-plus"></i></button>'}
+                                    </div>`)
+            } else if (type_name == 'item') {
+                $(element).parents().closest('.content_parent').find('.type_content').html(`<div class="col-md-3 mb-3">
+                                        <label>Item <span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker item_id" name="item_id" required>
+                                                ${item_options_text}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label>Unit Price <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="item_unit_price" min="0.01" class="form-control item_unit_price" placeholder="0.00" required>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>Quantity <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="item_quantity" min="0.0001" class="form-control item_quantity" placeholder="Quantity" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label>Price <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="item_price" min="0.01" class="form-control item_price" placeholder="0.00" required>
+                                    </div>
+                                    <div class="col-md-1 mb-4 text-center ">
+                                        ${content_parent_index > 0 ? '<button type="button" class="btn remove_btn mt-1"><i class="fa fa-minus"></i></button>' : '<button type="button" class="btn add_btn mt-1"><i class="fa fa-plus"></i></button>'}
+                                    </div>`)
+            }
         }
+        var callbacks_ = $.Callbacks();
+        callbacks_.add(fn);
+        callbacks_.fire();
+        callbacks_.add(callback);
+        callbacks_.fire();
+       
         $('.selectpicker').select2({
-            placeholder: ''
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
         });
+
+
     });
 
     $(document).on('change', '.item_id', function () {
@@ -411,9 +536,21 @@
                 },
                 success: function (response) {
                     if (response.status == 200) {
+                        callback()
                         element.parents('.content_parent').find('.item_quantity').val(1);
                         element.parents('.content_parent').find('.item_unit_price').val(response.page_items[0].price);
                         element.parents('.content_parent').find('.item_price').val(response.page_items[0].price);
+
+                        $('.selectpicker').select2({
+                            placeholder: '',
+                            templateResult: function(option) {
+                                if(option.element && (option.element).hasAttribute('hidden')){
+                                    return null;
+                                }
+                                return option.text;
+                            }
+                        });
+                        
                     } else {
                         alert(response.message);
                     }
@@ -439,6 +576,7 @@
                 },
                 success: function (response) {
                     if (response.status == 200) {
+                        callback()
                         element.parents('.content_parent').find('.bom_level_quantity').val(1);
                         element.parents('.content_parent').find('.bom_level_unit_price').val(response.page_items[0].price);
                         element.parents('.content_parent').find('.bom_level_price').val(response.page_items[0].price);
@@ -446,6 +584,15 @@
                         alert(response.message);
                     }
                     calculateTotalAmount();
+                    $('.selectpicker').select2({
+                        placeholder: '',
+                        templateResult: function(option) {
+                            if(option.element && (option.element).hasAttribute('hidden')){
+                                return null;
+                            }
+                            return option.text;
+                        }
+                    });     
                 },
                 error: function (error) {
                     $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
@@ -554,14 +701,31 @@
                                     </div>
                                 </div>
                             </div>`);
+        callback()
         $('.selectpicker').select2({
-            placeholder: ''
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
         });
     });
 
     $(document).on('click', '.remove_btn', function () {
         $(this).parents().closest('.content_parent').remove();
         calculateTotalAmount();
+        callback()
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });
     });
 
     $(document).on('submit', '#edit_form', function (e) {

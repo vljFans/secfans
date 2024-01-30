@@ -136,6 +136,30 @@
                                 <textarea name="address" required class="form-control" rows="3"
                                     placeholder="Address">{{store.address}}</textarea>
                             </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Store Type<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="store_type"
+                                        name="store_type" required>
+                                        <option value="1" {% if store.vendor_id %}selected{% endif %} >Vendor Store</option>
+                                        <option value="0" {% if not store.vendor_id %}selected{% endif %} >Inhouse Store</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="vendor_content">
+                                    <label>Vendor Name<span class="required-indicator">*</span></label>
+                                    <div class="input-group">
+                                        <select class="custom-select selectpicker" id="vendor_id" name="vendor_id" required>
+                                            {% for vendor in vendors %}
+                                                <option {% if vendor.id == store.vendor_id %}selected{% endif %} value="{{vendor.id}}">
+                                                    {{vendor.name}}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         {% if request.user.is_superuser == 1 or 'change_item'|get_session_permission:request is not None%}
                         <button class="btn btn-success submit-btn" type="submit">Submit</button>
@@ -174,6 +198,29 @@
     $('.selectpicker').select2({
         placeholder: ''
     });
+
+    $('#vendor_id').select2({
+        placeholder: "Select vendor"
+    });
+
+    $(document).ready(function () {
+        if ("{{store.vendor_id}}"==="None"){
+            $(".vendor_content").hide()
+        }
+    })
+
+    $(document).on('change', '#store_type', function () {
+        if($(this).val()==="1"){
+            $(".vendor_content").show()
+            $("#vendor_id").val("{{store.vendor_id}}").trigger("change");
+            $('#vendor_id').attr('required', 'required');
+        }
+        else{
+            $("#vendor_id").val('').trigger('change')
+            $(".vendor_content").hide()
+            $("#vendor_id").removeAttr("required")
+        }
+    })
 
     $(document).on('change', '#country_id', function () {
         let country_id = $(this).val();
