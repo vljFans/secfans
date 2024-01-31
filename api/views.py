@@ -3810,46 +3810,6 @@ def jobOrderDelete(request):
     return JsonResponse(context)
 
 
-<<<<<<< HEAD
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def jobOrderDetails(request):
-    context = {}
-    header_id = request.GET.get('header_id', None)
-    if header_id is not None and header_id != "":
-        header_detail = list(models.Job_Order.objects.filter(id=header_id).values('pk', 'order_number', 'total_amount'))
-        orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id).values('pk', 'job_order_header_id', 'job_order_header__order_number', 'parent_detail_id', 'item_id', 'bill_of_material_id', 'rate', 'quantity', 'amount'))
-        context.update({
-            'status': 200,
-            'message': "Job Order Details Fetched Successfully.",
-            'header_detail': header_detail,
-            'page_items': orderDetails,
-        })
-    else:
-        context.update({
-            'status': 594,
-            'message': "Please Provide Header Id.",
-        })
-    return JsonResponse(context)
-@api_view(['GET','POST'])
-@permission_classes([IsAuthenticated])
-def materialIssueDetails(request):
-    context = {}
-    id = request.GET.get('id', None)
-    find_all = request.GET.get('find_all', None)
-    keyword = request.GET.get('keyword', None)
-    job_Order_header_id = request.GET.get('job_Order_id',None)
-    store_id = request.GET.get('store_id',None)
-    header_detail_res = list(models.Job_Order_Detail.objects.filter(job_order_header=job_Order_header_id).values('pk'))
-    print(header_detail_res)
-    context.update({
-        'status': 200,
-        'page_items': header_detail_res
-    })
-   
-    return JsonResponse(context)
-
-=======
 # @api_view(['GET'])
 # @permission_classes([IsAuthenticated])
 # def jobOrderDetails(request):
@@ -3871,4 +3831,21 @@ def materialIssueDetails(request):
 #         })
 #     return JsonResponse(context)
 #
->>>>>>> 880bb6ae0ac7670110f122f22f9b2725ec5704e9
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
+def materialIssueDetails(request):
+    context = {}
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
+    job_Order_header_id = request.GET.get('job_Order_id',None)
+    store_id = request.GET.get('store_id',None)
+    header_detail_res = list(models.Job_Order_Detail.objects.filter(job_order_header=job_Order_header_id).values('pk'))
+    print(header_detail_res)
+    context.update({
+        'status': 200,
+        'page_items': header_detail_res
+    })
+   
+    return JsonResponse(context)
+

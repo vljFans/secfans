@@ -107,13 +107,9 @@ urlpatterns = [
     path('job-order-add', views.jobOrderAdd, name='jobOrderAdd'),
     path('job-order-edit', views.jobOrderEdit, name='jobOrderEdit'),
     path('job-order-delete', views.jobOrderDelete, name='jobOrderDelete'),
-<<<<<<< HEAD
     path('job-order-details', views.jobOrderDetails, name='jobOrderDetails'),
 
     path('material-issue-details', views.materialIssueDetails, name='materialIssueDetails'),
 
-
-=======
     # path('job-order-details', views.jobOrderDetails, name='jobOrderDetails'),
->>>>>>> 880bb6ae0ac7670110f122f22f9b2725ec5704e9
 ]
