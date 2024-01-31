@@ -95,5 +95,5 @@ urlpatterns = [
     path('job-order-list', views.jobOrderList, name='jobOrderList'),
     path('job-order-add', views.jobOrderAdd, name='jobOrderAdd'),
     path('job-order-edit/<int:id>', views.jobOrderEdit, name='jobOrderEdit'),
-    path('job-order-view/<int:id>', views.jobOrderView, name='jobOrderView'),
+    # path('job-order-view/<int:id>', views.jobOrderView, name='jobOrderView'),
 ]

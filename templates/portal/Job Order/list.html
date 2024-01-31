@@ -97,7 +97,8 @@
                                     <th>#</th>
                                     <th>Order Number</th>
                                     <th>Order Date</th>
-                                    <th>Total Price</th>
+                                    <th>Manufacturing type</th>
+                                    <th>Job Description</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -140,7 +141,8 @@
                                 <td>${((response.total_pages - 1) * response.per_page) +  index + 1}</td>
                                 <td>${element.order_number}</td>
                                 <td>${element.order_date}</td>
-                                <td>₹${element.total_amount}</td>
+                                <td>${element.manufacturing_type} manufacturing</td>
+                                <td>${element.notes}</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'change_job_order'|get_session_permission:request is not None %}
                                 <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
