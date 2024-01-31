@@ -62,7 +62,17 @@
                 <div class="card-body">
                     <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
                         <div class="form-row">
-                            <div class="col-md-4 mb-3">
+
+                            <div class="col-md-2 mb-3">
+                                <label>Store<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="store_id" name="store_id" required>
+                                        <option value="">Choose...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-2 mb-3 test ">
                                 <label>Job Order No<span class="required-indicator">*</span></label>
                                 <div class="input-group">
                                     <select class="custom-select selectpicker" id="job_Order_id" name="job_Order_id" required>
@@ -70,19 +80,58 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-4 mb-3">
+
+                            <div class="col-md-2 mb-3">
+                                <label>vendor <span class="required-indicator">*</span></label>
+                                <input type="text" name="vendor_name" class="form-control" placeholder=""
+                                    readonly>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label>Material Issue No <span class="required-indicator">*</span></label>
+                                <input type="text" name="material_issue_no_name" class="form-control" placeholder="material issue no"
+                                    required>
+                            </div>
+
+                            <div class="col-md-2 mb-3">
                                 <label>Issue Date <span class="required-indicator">*</span></label>
                                 <input type="date" name="order_date" class="form-control" placeholder="Order Date"
                                     required>
                             </div>
 
-                            <div class="col-md-4 mb-3">
-                                <label>Store<span class="required-indicator">*</span></label>
-                                <div class="input-group">
-                                    <select class="custom-select selectpicker" id="store_id" name="store_id" required>
-                                        <option value="">Choose...</option>
-                                    </select>
+                            <div class="col-md-12" id="table_form">
+                                <div class="form-row content_parent">
+                                    <div class="col-md-5 mb-3">
+                                        <label>Item<span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker item_id" name="item_id" required>
+                                                <option value="">Choose...</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
+                                        <label>Actual quantity <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="rate" min="0.01" class="form-control rate"
+                                            placeholder="0.00" disabled>
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
+                                        <label>quantity sent <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="rate" min="0.01" class="form-control rate"
+                                            placeholder="0.00" required>
+                                    </div>
+
+                                    <div class="col-md-1 btn-group mb-4 text-center">
+                                        <button type="button" class="btn add_btn m-1">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
                                 </div>
+                                
                             </div>
 
 
@@ -103,10 +152,11 @@
 {% block js %}
 <!-- script -->
 <script>
-    var item_options_text = ``;
+    
     var item_options_used_pk = [];
     var itemsData;
-     $(document).ready(function () {
+    $(document).ready(function () {
+        var item_options_text = ``;
         $.ajax({
             url: "{% url 'api:jobOrderList' %}?find_all=1",
             type: 'GET',
@@ -145,10 +195,12 @@
      });
 
      $(document).ready(function () {
+        var item_options_text = ``;
         $.ajax({
-            url: "{% url 'api:storeList' %}?find_all=1",
+            url: "{% url 'api:storeList' %}?test_all=1",
             type: 'GET',
-            data: ({}),
+            data: ({
+            }),
             headers: {
                 'Authorization': getCookieValue("accessToken")
             },
@@ -179,9 +231,33 @@
             }
         });
 
+        $(document).ready(function(){
+            $(document).on('mouseenter','.test',function(){
+                if( $('select#store_id option:selected').val() =="" ){
+                    alert("please select store")
+                }
+            
+            });
+       
+        })
 
-     });
+    });
 
+
+</script>
+
+<script>
+
+    $(document).ready(function(){
+        $(document).on('change','#job_Order_id',function(){
+            var store_id = $('select#store_id option:selected').val()
+            var job_Order_id = $('select#job_Order_id option:selected').val()
+            console.log(store_id,job_Order_id);
+        });
+       
+    })
+    
+    
 
 </script>
 

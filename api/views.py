@@ -3645,7 +3645,7 @@ def storeTransactionDetails(request):
     return JsonResponse(context)
 
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 def jobOrderList(request):
     context = {}
@@ -3829,5 +3829,14 @@ def jobOrderDetails(request):
             'status': 594,
             'message': "Please Provide Header Id.",
         })
+    return JsonResponse(context)
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
+def materialIssueDetails(request):
+    context = {}
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
+   
     return JsonResponse(context)
 
