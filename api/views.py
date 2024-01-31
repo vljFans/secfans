@@ -3837,6 +3837,14 @@ def materialIssueDetails(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
+    job_Order_header_id = request.GET.get('job_Order_id',None)
+    store_id = request.GET.get('store_id',None)
+    header_detail_res = list(models.Job_Order_Detail.objects.filter(job_order_header=job_Order_header_id).values('pk'))
+    print(header_detail_res)
+    context.update({
+        'status': 200,
+        'page_items': header_detail_res
+    })
    
     return JsonResponse(context)
 

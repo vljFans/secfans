@@ -99,38 +99,7 @@
                             </div>
 
                             <div class="col-md-12" id="table_form">
-                                <div class="form-row content_parent">
-                                    <div class="col-md-5 mb-3">
-                                        <label>Item<span class="required-indicator">*</span></label>
-                                        <div class="input-group">
-                                            <select class="custom-select selectpicker item_id" name="item_id" required>
-                                                <option value="">Choose...</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-2 mb-3">
-                                        <label>Actual quantity <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="rate" min="0.01" class="form-control rate"
-                                            placeholder="0.00" disabled>
-                                    </div>
-
-                                    <div class="col-md-2 mb-3">
-                                        <label>quantity sent <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="rate" min="0.01" class="form-control rate"
-                                            placeholder="0.00" required>
-                                    </div>
-
-                                    <div class="col-md-1 btn-group mb-4 text-center">
-                                        <button type="button" class="btn add_btn m-1">
-                                            <i class="fa fa-plus"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                                
                                 
                             </div>
 
@@ -155,6 +124,9 @@
     
     var item_options_used_pk = [];
     var itemsData;
+
+    //for job order no
+
     $(document).ready(function () {
         var item_options_text = ``;
         $.ajax({
@@ -194,10 +166,11 @@
 
      });
 
+     //for store no
      $(document).ready(function () {
         var item_options_text = ``;
         $.ajax({
-            url: "{% url 'api:storeList' %}?test_all=1",
+            url: "{% url 'api:storeList' %}?find_all=1",
             type: 'GET',
             data: ({
             }),
@@ -243,6 +216,18 @@
 
     });
 
+    //for item 
+    
+
+    $(document).ready(function(){
+            $(document).on('mouseenter','.test',function(){
+                if( $('select#store_id option:selected').val() =="" ){
+                    alert("please select store")
+                }
+            
+            });
+       
+        })
 
 </script>
 
@@ -253,11 +238,177 @@
             var store_id = $('select#store_id option:selected').val()
             var job_Order_id = $('select#job_Order_id option:selected').val()
             console.log(store_id,job_Order_id);
+            $.ajax({
+            url: "{% url 'api:materialIssueDetails' %}",
+            type: 'GET',
+            data: ({
+                'store_id':store_id,
+                'job_Order_id' : job_Order_id
+            }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    if(response.page_items.length>0){
+                        alert("value found")
+                    }
+                    else{
+
+                    var text_inp = `<div class="form-row content_parent">
+                                    <div class="col-md-5 mb-3">
+                                        <label>Item<span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker item_id" name="item_id" required>
+                                                <option value="">Choose...</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
+                                        <label>Actual quantity <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="rate" min="0.01" class="form-control rate"
+                                            placeholder="0.00" disabled>
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
+                                        <label>quantity sent <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="rate" min="0.01" class="form-control rate"
+                                            placeholder="0.00" required>
+                                    </div>
+
+                                    <div class="col-md-1 btn-group mb-4 text-center">
+                                        <button type="button" class="btn add_btn m-1">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>`
+
+                            $('#table_form').append(text_inp);
+                            $('.selectpicker').select2({
+                                placeholder: '',
+                                templateResult: function(option) {
+                                    if(option.element && (option.element).hasAttribute('hidden')){
+                                        return null;
+                                    }
+                                    return option.text;
+                                }
+                            });
+                    }
+                    
+                } 
+                else {
+                    alert("res not found");
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+
         });
        
-    })
+    });
+
+    $(document).ready(function(){
+        $(document).on('click','.add_btn',function(){
+            var text_inp = `<div class="form-row content_parent">
+                                    <div class="col-md-5 mb-3">
+                                        <label>Item<span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker item_id" name="item_id" required>
+                                                <option value="">Choose...</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
+                                        <label>Actual quantity <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="rate" min="0.01" class="form-control rate"
+                                            placeholder="0.00" disabled>
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
+                                        <label>quantity sent <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="rate" min="0.01" class="form-control rate"
+                                            placeholder="0.00" required>
+                                    </div>
+
+                                    <div class="col-md-1 btn-group mb-4 text-center">
+                                        <button type="button" class="btn remove_btn m-1">
+                                            <i class="fa fa-minus"></i>
+                                        </button>
+                                    </div>
+                                </div>`
+
+                            $('#table_form').append(text_inp);
+                            $('.selectpicker').select2({
+                                placeholder: '',
+                                templateResult: function(option) {
+                                    if(option.element && (option.element).hasAttribute('hidden')){
+                                        return null;
+                                    }
+                                    return option.text;
+                                }
+                            });
+        });
+        itemLists()
+
+        $(document).on('click', '.remove_btn', function () {
+        $(this).parents().closest('.content_parent').remove();
+    });
+    });
     
-    
+    function itemLists(){
+        $(document).ready(function () {
+        var item_options_text = ``;
+        $.ajax({
+            url: "{% url 'api:itemList' %}?find_all=1",
+            type: 'GET',
+            data: ({
+            }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    // itemsData=response.page_items
+                    item_options_text += `<option value="">Choose item</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $('.item_id').html(item_options_text);
+                    $('.selectpicker').select2({
+                        placeholder: '',
+                        templateResult: function(option) {
+                            if(option.element && (option.element).hasAttribute('hidden')){
+                                return null;
+                            }
+                            return option.text;
+                        }
+                    });
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+
+       
+
+    });
+    }
 
 </script>
 
