@@ -14,6 +14,7 @@ from django.http import JsonResponse
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.hashers import make_password, check_password
 from datetime import datetime
+from django.utils.timezone import now
 from openpyxl import Workbook
 from django.db import transaction
 from django.db.models import Q
@@ -715,8 +716,8 @@ def customerList(request):
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
     if id is not None and id != "":
-        customer = list(models.Customer.objects.filter(pk=id)[:1].values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk',
-                        'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
+        customer = list(models.Customer.objects.filter(pk=id)[:1].values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk',
+                        'country__name', 'state__name', 'city', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
         context.update({
             'status': 200,
             'message': "Customer Fetched Successfully.",
@@ -724,11 +725,11 @@ def customerList(request):
         })
     else:
         if keyword is not None and keyword != "":
-            customers = list(models.Customer.objects.filter(Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(contact_no__icontains=keyword) | Q(customer_type__name__icontains=keyword) | Q(pin__icontains=keyword) | Q(city__name__icontains=keyword)).filter(
-                status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
+            customers = list(models.Customer.objects.filter(Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(contact_no__icontains=keyword) | Q(customer_type__name__icontains=keyword) | Q(pin__icontains=keyword) | Q(city__icontains=keyword)).filter(
+                status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'country__name', 'state__name', 'city', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
         else:
-            customers = list(models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk',
-                             'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
+            customers = list(models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk',
+                             'country__name', 'state__name', 'city', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -760,7 +761,7 @@ def customerList(request):
 @permission_classes([IsAuthenticated])
 def customerAdd(request):
     context = {}
-    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['landmark'] or not request.POST['pin'] or not request.POST['customer_type_id'] or not request.POST['kyc_type_id'] or not request.POST['kyc_detail'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
+    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['landmark'] or not request.POST['pin'] or not request.POST['customer_type_id'] or not request.POST['kyc_type_id'] or not request.POST['kyc_detail'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city']:
         context.update({
             'status': 524,
             'message': "Name/Contact Name/Contact Email/Contact No/Landmark/Pin/Customer Type/KYC Type/KYC Detail/Address/Country/State/City has not been provided."
@@ -800,7 +801,7 @@ def customerAdd(request):
             customer.address = request.POST['address']
             customer.country_id = request.POST['country_id']
             customer.state_id = request.POST['state_id']
-            customer.city_id = request.POST['city_id']
+            customer.city = request.POST['city']
             customer.save()
 
             if 'photo' in request.FILES.keys():
@@ -847,7 +848,7 @@ def customerAdd(request):
 @permission_classes([IsAuthenticated])
 def customerEdit(request):
     context = {}
-    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['landmark'] or not request.POST['pin'] or not request.POST['customer_type_id'] or not request.POST['kyc_type_id'] or not request.POST['kyc_detail'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
+    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['landmark'] or not request.POST['pin'] or not request.POST['customer_type_id'] or not request.POST['kyc_type_id'] or not request.POST['kyc_detail'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city']:
         context.update({
             'status': 527,
             'message': "Name/Contact Name/Contact Email/Contact No/Landmark/Pin/Customer Type/KYC Type/KYC Detail/Address/Country/State/City has not been provided."
@@ -887,7 +888,7 @@ def customerEdit(request):
             customer.address = request.POST['address']
             customer.country_id = request.POST['country_id']
             customer.state_id = request.POST['state_id']
-            customer.city_id = request.POST['city_id']
+            customer.city = request.POST['city']
             customer.updated_at = datetime.now()
             customer.save()
 
@@ -958,7 +959,7 @@ def customerExport(request):
     keyword = request.GET.get('keyword')
     if keyword is not None and keyword != "":
         page_items = models.Customer.objects.filter(Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(email__icontains=keyword) | Q(
-            phone__icontains=keyword) | Q(customer_type__name__icontains=keyword) | Q(pin__icontains=keyword) | Q(city__name__icontains=keyword)).filter(status=1, deleted=0)
+            phone__icontains=keyword) | Q(customer_type__name__icontains=keyword) | Q(pin__icontains=keyword) | Q(city__icontains=keyword)).filter(status=1, deleted=0)
     else:
         page_items = models.Customer.objects.filter(status=1, deleted=0)
 
@@ -3653,7 +3654,7 @@ def jobOrderList(request):
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
     if id is not None and id != "":
-        jobOrder = list(models.Job_Order.objects.filter(pk=id)[:1].values('pk', 'order_number', 'order_date', 'total_amount'))
+        jobOrder = list(models.Job_Order.objects.filter(pk=id)[:1].values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor', 'with_item', 'notes'))
         context.update({
             'status': 200,
             'message': "Job Order Fetched Successfully.",
@@ -3663,7 +3664,7 @@ def jobOrderList(request):
         jobOrders = models.Job_Order.objects.filter(status=1, deleted=0)
         if keyword is not None and keyword != "":
             jobOrders = jobOrders.filter(order_number__icontains=keyword).filter(status=1, deleted=0)
-        jobOrders = list(jobOrders.values('pk', 'order_number', 'order_date', 'total_amount'))
+        jobOrders = list(jobOrders.values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor', 'with_item', 'notes'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -3696,32 +3697,31 @@ def jobOrderList(request):
 @permission_classes([IsAuthenticated])
 def jobOrderAdd(request):
     context = {}
-    if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['total_amount']:
+    if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['manufacturing_type'] or not request.POST['notes']:
         context.update({
             'status': 589,
-            'message': "Order Number/Total Amount has not been provided."
+            'message': "Order Number/Order Date/Manufacturing Type/Notes has not been provided."
         })
         return JsonResponse(context)
     try:
         with transaction.atomic():
             jobOrderHeader = models.Job_Order()
             jobOrderHeader.order_number = request.POST['order_number']
-            jobOrderHeader.order_number = request.POST['order_date']
-            jobOrderHeader.total_amount = request.POST['total_amount']
+            jobOrderHeader.order_date = request.POST['order_date']
+            jobOrderHeader.manufacturing_type = request.POST['manufacturing_type']
+            if 'vendor_id' in request.POST:
+                jobOrderHeader.vendor_id = request.POST['vendor_id']
+            if 'with_item' in request.POST:
+                jobOrderHeader.with_item = eval(request.POST['with_item'])
+            jobOrderHeader.notes = request.POST['notes']
             jobOrderHeader.save()
 
             job_order_details = []
-            for index in range( len(request.POST.getlist('quantity')) ):
+            for item_id in request.POST.getlist('item_id'):
                 job_order_details.append(
                     models.Job_Order_Detail(
                         job_order_header_id=jobOrderHeader.id,
-                        item_id=request.POST.getlist('item_id')[index] if request.POST.getlist('item_id')[index] else None,
-                        bill_of_material_id=request.POST.getlist('bill_of_material_id')[index] if request.POST.getlist('bill_of_material_id')[index] else None,
-                        source_store_id=request.POST.getlist('source_store_id')[index],
-                        destination_store_id=request.POST.getlist('destination_store_id')[index],
-                        quantity=request.POST.getlist('quantity')[index],
-                        rate=request.POST.getlist('rate')[index],
-                        amount=request.POST.getlist('price')[index],
+                        item_id=int(item_id)
                     )
                 )
             models.Job_Order_Detail.objects.bulk_create(job_order_details)
@@ -3743,37 +3743,37 @@ def jobOrderAdd(request):
 @permission_classes([IsAuthenticated])
 def jobOrderEdit(request):
     context = {}
-    if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['total_amount']:
+    if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['manufacturing_type'] or not request.POST['notes']:
         context.update({
-            'status': 591,
-            'message': "Order Number/Total Amount has not been provided."
+            'status': 589,
+            'message': "Order Number/Order Date/Manufacturing Type/Notes has not been provided."
         })
         return JsonResponse(context)
     try:
         with transaction.atomic():
             jobOrderHeader = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=request.POST['id'])
             jobOrderHeader.order_number = request.POST['order_number']
-            jobOrderHeader.order_number = request.POST['order_date']
-            jobOrderHeader.total_amount = request.POST['total_amount']
-            jobOrderHeader.updated_at = datetime.now()
+            jobOrderHeader.order_date = request.POST['order_date']
+            jobOrderHeader.manufacturing_type = request.POST['manufacturing_type']
+            if 'vendor_id' in request.POST:
+                jobOrderHeader.vendor_id = request.POST['vendor_id']
+            if 'with_item' in request.POST:
+                jobOrderHeader.with_item = eval(request.POST['with_item'])
+            else:
+                jobOrderHeader.with_item = False
+            jobOrderHeader.notes = request.POST['notes']
+            jobOrderHeader.updated_at = now()
             jobOrderHeader.save()
             jobOrderHeader.job_order_detail_set.all().delete()
-
-            purchase_order_details = []
-            for index, elem in enumerate(request.POST.getlist('quantity')):
-                purchase_order_details.append(
-                    models.Purchase_Order_Detail(
+            job_order_details = []
+            for item_id in request.POST.getlist('item_id'):
+                job_order_details.append(
+                    models.Job_Order_Detail(
                         job_order_header_id=jobOrderHeader.id,
-                        item_id=request.POST.getlist('item_id')[index] if request.POST.getlist('item_id')[index] else None,
-                        bill_of_material_id=request.POST.getlist('bill_of_material_id')[index] if request.POST.getlist('bill_of_material_id')[index] else None,
-                        source_store_id=request.POST.getlist('source_store_id')[index],
-                        destination_store_id=request.POST.getlist('destination_store_id')[index],
-                        quantity=request.POST.getlist('quantity')[index],
-                        rate=request.POST.getlist('rate')[index],
-                        amount=request.POST.getlist('price')[index],
+                        item_id=int(item_id)
                     )
                 )
-            models.Purchase_Order_Detail.objects.bulk_create(purchase_order_details)
+            models.Job_Order_Detail.objects.bulk_create(job_order_details)
         transaction.commit()
         context.update({
             'status': 200,
@@ -3810,6 +3810,7 @@ def jobOrderDelete(request):
     return JsonResponse(context)
 
 
+<<<<<<< HEAD
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def jobOrderDetails(request):
@@ -3848,3 +3849,26 @@ def materialIssueDetails(request):
    
     return JsonResponse(context)
 
+=======
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def jobOrderDetails(request):
+#     context = {}
+#     header_id = request.GET.get('header_id', None)
+#     if header_id is not None and header_id != "":
+#         header_detail = list(models.Job_Order.objects.filter(id=header_id).values('pk', 'order_number', 'total_amount'))
+#         orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id).values('pk', 'job_order_header_id', 'job_order_header__order_number', 'parent_detail_id', 'item_id', 'bill_of_material_id', 'rate', 'quantity', 'amount'))
+#         context.update({
+#             'status': 200,
+#             'message': "Job Order Details Fetched Successfully.",
+#             'header_detail': header_detail,
+#             'page_items': orderDetails,
+#         })
+#     else:
+#         context.update({
+#             'status': 594,
+#             'message': "Please Provide Header Id.",
+#         })
+#     return JsonResponse(context)
+#
+>>>>>>> 880bb6ae0ac7670110f122f22f9b2725ec5704e9

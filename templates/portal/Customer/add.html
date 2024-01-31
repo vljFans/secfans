@@ -71,9 +71,11 @@
                                     required>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label>Contact Email <span class="required-indicator">*</span></label>
+                                <label>Contact Email 
+                                    <!-- <span class="required-indicator">*</span> -->
+                                </label>
                                 <input type="email" name="contact_email" class="form-control"
-                                    placeholder="Contact Email" required>
+                                    placeholder="Contact Email">
                                 <div class="invalid-feedback">Enter a valid email.</div>
                             </div>
                             <div class="col-md-4 mb-3">
@@ -135,11 +137,12 @@
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label>City <span class="required-indicator">*</span></label>
-                                <div class="input-group">
+                                <input type="text" name="city" class="form-control" placeholder="City" required>
+                                <!-- <div class="input-group">
                                     <select class="custom-select selectpicker" id="city_id" name="city_id" required>
                                         <option value="">Choose...</option>
                                     </select>
-                                </div>
+                                </div> -->
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label>Pin <span class="required-indicator">*</span></label>
@@ -275,27 +278,27 @@
         });
     });
 
-    $(document).on('change', '#state_id', function () {
-        let state_id = $(this).val();
-        $.ajax({
-            url: "{% url 'api:getStateCities' %}",
-            type: 'post',
-            data: ({ state_id: state_id, csrfmiddlewaretoken: '{{csrf_token}}' }),
-            success: function (response) {
-                if (response.status == 200) {
-                    page_items = JSON.parse(response.page_items);
-                    var options_text = `<option value="">Select City</option>`;
-                    for (let index = 0; index < page_items.length; index++) {
-                        const element = page_items[index].fields;
-                        options_text += `<option value="${page_items[index].pk}">${element.name}</option>`;
-                    }
-                    $("#city_id").html(options_text);
-                } else {
-                    alert(response.message);
-                }
-            },
-        });
-    });
+    // $(document).on('change', '#state_id', function () {
+    //     let state_id = $(this).val();
+    //     $.ajax({
+    //         url: "{% url 'api:getStateCities' %}",
+    //         type: 'post',
+    //         data: ({ state_id: state_id, csrfmiddlewaretoken: '{{csrf_token}}' }),
+    //         success: function (response) {
+    //             if (response.status == 200) {
+    //                 page_items = JSON.parse(response.page_items);
+    //                 var options_text = `<option value="">Select City</option>`;
+    //                 for (let index = 0; index < page_items.length; index++) {
+    //                     const element = page_items[index].fields;
+    //                     options_text += `<option value="${page_items[index].pk}">${element.name}</option>`;
+    //                 }
+    //                 $("#city_id").html(options_text);
+    //             } else {
+    //                 alert(response.message);
+    //             }
+    //         },
+    //     });
+    // });
 
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();

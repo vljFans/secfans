@@ -208,7 +208,7 @@
                                 <textarea name="notes" rows="5" class="form-control" placeholder="Note">{{storeTransaction.notes}}</textarea>
                             </div>
                         </div>
-                        {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
+                        {% if request.user.is_superuser == 1 or 'edit_store_transaction'|get_session_permission:request is not None %}
                         <button onclick="return confirm('Please check the form again before submitting. It can not be changed')" class="btn btn-success submit-btn" type="submit">Submit</button>
                         {% endif %}
                     </form>

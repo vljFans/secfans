@@ -618,8 +618,7 @@ def purchaseOrderAdd(request):
 
 @login_required
 def purchaseOrderEdit(request, id):
-    purchaseOrder = models.Purchase_Order.objects.prefetch_related(
-        'purchase_order_detail_set').get(pk=id)
+    purchaseOrder = models.Purchase_Order.objects.prefetch_related('purchase_order_detail_set').get(pk=id)
     vendors = models.Vendor.objects.filter(status=1, deleted=0)
     items = models.Item.objects.filter(status=1, deleted=0)
     context.update({
@@ -768,12 +767,13 @@ def jobOrderList(request):
 
 @login_required
 def jobOrderAdd(request):
-    item_id_n_bom_id={}
-    for bom in models.Bill_Of_Material.objects.all():
-        item_id_n_bom_id[str(bom.bom_item_id)]=bom.id
-    bom_items_id_list = list(models.Bill_Of_Material.objects.all().values_list('bom_item_id', flat=True))
+    # item_id_n_bom_id={}
+    # for bom in models.Bill_Of_Material.objects.all():
+    #     item_id_n_bom_id[str(bom.bom_item_id)]=bom.id
+    # bom_items_id_list = list(models.Bill_Of_Material.objects.all().values_list('bom_item_id', flat=True))
+
     context.update({
-        'item_id_n_bom_id':json.dumps(item_id_n_bom_id),
+        # 'item_id_n_bom_id':json.dumps(item_id_n_bom_id),
         'page_title': "Job Order Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "Add"}]
     })
@@ -784,15 +784,20 @@ def jobOrderAdd(request):
 def jobOrderEdit(request, id):
     jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
     stores = models.Store.objects.filter(status=1, deleted=0)
+    vendors = models.Vendor.objects.filter(status=1, deleted=0)
+    items = models.Item.objects.filter(status=1, deleted=0)
     context.update({
         'jobOrder': jobOrder,
-        'stores': stores,
+        # 'stores': stores,
+        'items': items,
+        'vendors': vendors,
         'page_title': "Job Order Edit",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "Edit"}]
     })
     return render(request, 'portal/Job Order/edit.html', context)
 
 
+<<<<<<< HEAD
 @login_required
 def jobOrderView(request, id):
     jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
@@ -821,3 +826,15 @@ def materialIssueAdd(request):
     return render(request, 'portal/material_issue/add.html', context)
 
 
+=======
+# @login_required
+# def jobOrderView(request, id):
+#     jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
+#     context.update({
+#         'purchaseOrder': jobOrder,
+#         'page_title': "Job Order View",
+#         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "View"}]
+#     })
+#     return render(request, 'portal/Job Order/view.html', context)
+#
+>>>>>>> 880bb6ae0ac7670110f122f22f9b2725ec5704e9

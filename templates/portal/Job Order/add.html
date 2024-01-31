@@ -62,72 +62,31 @@
                     <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
                         <div class="form-row">
                             <div class="col-md-4 mb-3">
-                                <label>Order Number <span class="required-indicator">*</span></label>
+                                <label>Job Order Number <span class="required-indicator">*</span></label>
                                 <input type="text" id="order_number" name="order_number" class="form-control"
                                     placeholder="Order Number" required>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label>Order Date <span class="required-indicator">*</span></label>
+                                <label>Job Order Date <span class="required-indicator">*</span></label>
                                 <input type="date" name="order_date" class="form-control" placeholder="Order Date" required>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <!-- <label>Destination store <span class="required-indicator">*</span></label>
+                                <label>Manufacturing type<span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker" id="destination_store_id" name="destination_store_id" required>
+                                    <select class="custom-select selectpicker manufacturing_type" data-placeholder="Select manufacturing type" name="manufacturing_type" required>
                                         <option value=""></option>
+                                        <option value="Self">Self Manufacturing</option>
+                                        <option value="Third party">Third party manufacturing</option>
                                     </select>
-                                </div> -->
-                            </div>
-
-                            <div class="col-md-12">
-                                <div class="form-row content_parent">
-                                    <div class="col-md-5 mb-3">
-                                        <label>Item<span class="required-indicator">*</span></label>
-                                        <div class="input-group">
-                                            <select class="custom-select selectpicker item_id" name="item_id" required>
-                                                <option value="">Choose...</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Rate <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="rate" min="0.01" class="form-control rate"
-                                            placeholder="0.00" required>
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Quantity <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="item_quantity" min="0.0001" class="form-control item_quantity" style="padding-left: 10px;"
-                                            placeholder="Quantity" required >
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Price <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)" disabled
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="item_price" min="0.01" class="form-control item_price"
-                                            placeholder="0.00" required>
-                                    </div>
-                                    <div class="col-md-1 btn-group mb-4 text-center">
-                                        <button type="button" class="btn expand_btn m-1">
-                                            <i class="fa fa-expand"></i>
-                                        </button>
-                                        <button type="button" class="btn add_btn m-1">
-                                            <i class="fa fa-plus"></i>
-                                        </button>
-                                    </div>
                                 </div>
                             </div>
-                            <div class="add_more_content col-md-12">
+
+                            <div class="col-md-12 mb-3 form-row third_party">
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label>Total Amount <span class="required-indicator">*</span></label>
-                                <input type="text" name="total_amount" class="form-control" placeholder="Total Amount"
-                                    required id="total_amount" onkeyup="checkMaxMin(this)"
-                                    onkeypress="return (event.charCode >=45 &&  event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)">
+                            <div class="col-md-12 mb-3">
+                                <label>Job Description<span class="required-indicator">*</span></label>
+                                <textarea name="notes" rows="5" class="form-control" placeholder="Job Description" required></textarea>
                             </div>
                         </div>
                         {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
@@ -164,6 +123,7 @@
     })();
 </script>
 <script>
+    var vendor_options_text;
     var item_options_text = ``;
     var item_options_used_pk = [];
     var itemsData;
@@ -218,184 +178,29 @@
         });
     }
 
-    function calculateTotalAmount() {
-        total_amount = 0;
-        $('.item_price').each(function () {
-            if ($(this).val() != "") {
-                total_amount += parseFloat($(this).val());
+    $(document).ready(function () {
+
+        $.ajax({
+            url: "{% url 'api:vendorList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    vendor_options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        vendor_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
-        $("#total_amount").val((total_amount).toFixed(2));
-    }
-
-    function checkMaxMin(element) {
-            if ($(element).val() == "") {
-                $(element).val($(element).attr('min'));
-            } else {
-                if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
-                    $(element).val($(element).attr('max'));
-                }
-                if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
-                    $(element).val($(element).attr('min'));
-                }
-            }
-        }
-    
-    function bill_of_material_structure(content_parent, bom_item_id){
-        content_parent.find(".content_child").remove();
-        let item_id_n_bom_id=JSON.parse("{{item_id_n_bom_id|escapejs}}")
-        if(item_id_n_bom_id[bom_item_id])
-        {
-            $.ajax({
-                url: "{% url 'api:getBillOfMaterialStructure'%}?bom_id="+item_id_n_bom_id[bom_item_id],
-                type: 'GET',
-                data: ({}),
-                headers: {
-                    'Authorization': getCookieValue("accessToken")
-                },
-                success: function (response) {
-                    if (response.status == 200) {
-                        bom_structure_details=response.page_items["structure"]
-                        console.log(bom_structure_details)
-                        let content_child=`<div class="content_child col-md-12 pl-4 pr-5 pt-3 mb-4" style="max-width:93%;" hidden>`
-                        
-                        bom_structure_details.forEach(e1 => {
-
-                            if(e1["item"]){
-                                let pk=e1["item"]["pk"]
-                                let name=e1["item"]["name"]
-                                let rate=e1["item"]["price"]
-                                let quantity=parseFloat(e1["quantity"])
-                                let price=parseFloat(e1["price"])
-                                content_child+=`
-                                    <div class="form-row job_order_detail_sent">
-                                        <input type="hidden" name="jods_item_id_${bom_item_id}"  value="${pk}">
-                                        <div class="col-md-5 mb-3">
-                                            <label>Item<span class="required-indicator">*</span></label>
-                                            <input type="text" id="item_name" name="jods_name_${bom_item_id}" class="form-control" value="${name}" required readonly>
-                                        </div>
-                                        <div class="col-md-2 mb-3">
-                                            <label>Rate <span class="required-indicator">*</span></label>
-                                            <input type="text" name="jods_rate_${bom_item_id}" class="form-control bom_structure_rate" value="${rate}" readonly required>
-                                        </div>
-                                        <input type="hidden" name="jods_quantity_per_unit_${bom_item_id}" class="bom_structure_quantity_per_unit" value="${quantity}">
-                                        <div class="col-md-2 mb-3">
-                                            <label>Quantity <span class="required-indicator">*</span></label>
-                                            <input type="text" onkeyup="checkMaxMin(this)" max="${quantity}" onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                                name="jods_quantity_${bom_item_id}" min="0.0001" class="form-control bom_structure_quantity" style="padding-left: 10px;" value="${quantity}" required >
-                                        </div>
-                                        <div class="col-md-2 mb-3">
-                                            <label>Price <span class="required-indicator">*</span></label>
-                                            <input type="text" onkeyup="checkMaxMin(this)" readonly 
-                                                name="jods_price_${bom_item_id}" min="0.01" class="form-control bom_structure_item_price"
-                                                value="${price}" required>
-                                        </div>
-                                        <div class="col-md-1 btn-group mb-4 text-center">
-                                            <span style="width: 22px;margin-left: 45px;"></span>
-                                            <button type="button" class="btn bom_structure_remove_btn m-1">
-                                                <i class="fa fa-minus"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                `
-                            
-                            }
-
-                            if(e1===bom_structure_details[bom_structure_details.length-1]){
-                                bom_structure_details.forEach(e2 => {
-                                    if(e2["bom"]){
-                                        let pk=e2["bom"]["bom_item_id"]
-                                        let name=e2["bom"]["bom_item__name"]
-                                        let rate=e2["bom"]["price"]
-                                        let quantity=parseFloat(e2["quantity"])
-                                        let price=parseFloat(e2["price"])
-                                        content_child+=`
-                                            <div class="form-row job_order_detail_sent">
-                                                <input type="hidden" class="bom_structure_bom_item_id" name="jods_item_id_${bom_item_id}"  value="${pk}">
-                                                <div class="col-md-5 mb-3">
-                                                    <label>Item<span class="required-indicator">*</span></label>
-                                                    <input type="text" id="item_name" name="jods_name_${bom_item_id}" class="form-control" value="${name}" required readonly>
-                                                </div>
-                                                <div class="col-md-2 mb-3">
-                                                    <label>Rate <span class="required-indicator">*</span></label>
-                                                    <input type="text" name="jods_rate_${bom_item_id}" class="form-control bom_structure_rate" value="${rate}" readonly required>
-                                                </div>
-                                                <input type="hidden" name="jods_quantity_per_unit_${bom_item_id}" class="bom_structure_quantity_per_unit" value="${quantity}">
-                                                <div class="col-md-2 mb-3">
-                                                    <label>Quantity <span class="required-indicator">*</span></label>
-                                                    <input type="text" onkeyup="checkMaxMin(this)" max="${quantity}" onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                                        name="jods_quantity_${bom_item_id}" min="0.0001" class="form-control bom_structure_quantity" style="padding-left: 10px;" value="${quantity}" required >
-                                                </div>
-                                                <div class="col-md-2 mb-3">
-                                                    <label>Price <span class="required-indicator">*</span></label>
-                                                    <input type="text" onkeyup="checkMaxMin(this)" readonly 
-                                                        name="jods_price_${bom_item_id}" min="0.01" class="form-control bom_structure_item_price"
-                                                        value="${price}" required>
-                                                </div>
-                                                <div class="col-md-1 btn-group mb-4 text-center">
-                                                    <button type="button" class="btn bom_structure_edit_btn m-1">
-                                                        <i class="fa fa-pencil"></i>
-                                                    </button>
-                                                    <button type="button" class="btn bom_structure_remove_btn m-1">
-                                                        <i class="fa fa-minus"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        `
-                                    
-                                    }
-                                });
-                            }
-
-                        });
-
-                        
-                        content_child+=`</div>`
-                        content_parent.append(content_child)
-                    } 
-                    else {
-                        alert(response.message);
-                    }
-                },
-                complete: function(response){
-                    if (content_parent.find('i').hasClass('fa-compress')){
-                        content_parent.find(".content_child").attr("hidden",false)
-                    }
-                },
-                error: function (error) {
-                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-                }
-            });
-        }
-        else{
-            content_parent.children(".content_child").remove()
-        }
-    }
-
-    $(document).ready(function () {
-        // $.ajax({
-        //     url: "{% url 'api:storeList' %}?find_all=1",
-        //     type: 'GET',
-        //     data: ({}),
-        //     headers: {
-        //         'Authorization': getCookieValue("accessToken")
-        //     },
-        //     success: function (response) {
-        //         if (response.status == 200) {
-        //             var store_options_text = `<option value=""></option>`;
-        //             for (let index = 0; index < response.page_items.length; index++) {
-        //                 store_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
-        //             }
-        //             $('#source_store_id').html(store_options_text);
-        //             $('#destination_store_id').html(store_options_text);
-        //         } else {
-        //             alert(response.message);
-        //         }
-        //     },
-        //     error: function (error) {
-        //         $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-        //     }
-        // });
 
         $.ajax({
             url: "{% url 'api:itemList' %}?find_all=1",
@@ -406,12 +211,10 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    // itemsData=response.page_items
                     item_options_text += `<option value="">Choose item</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
                         item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
-                    $('.item_id').html(item_options_text);
                     $('.selectpicker').select2({
                         placeholder: '',
                         templateResult: function(option) {
@@ -432,377 +235,119 @@
         });
     });
 
-    // $(document).on('change', '#source_store_id', function () {
-    //     var source_store_id = $('#source_store_id').val();
-    //     var destination_store_options = $('#destination_store_id').children();
-    //     destination_store_options.each( function(index){
-    //         if( $(this).val()===source_store_id){
-    //             $(this).attr("hidden",true)
-    //         }
-    //         else{
-    //             if($(this).attr("hidden")==="hidden"){
-    //                 $(this).removeAttr("hidden")
-    //             }
-    //         }
-    //     })
-    // });
+    $(document).on('change', '.manufacturing_type', function(){
+        if($(this).val()==="Self"){
+            $(".third_party").empty()
+        }
+        if($(this).val()==="Third party"){
 
-    // $(document).on('change', '#destination_store_id', function () {
-    //     var destination_store_id = $('#destination_store_id').val();
-    //     var source_store_options = $('#source_store_id').children();
-    //     source_store_options.each( function(){
-    //         if( $(this).val()===destination_store_id){
-    //             $(this).attr("hidden",true)
-    //         }
-    //         else{
-    //             if($(this).attr("hidden")==="hidden"){
-    //                 $(this).removeAttr("hidden")
-    //             }
-    //         }
-    //     })
-    // });
-
-    $(document).on('change', '.item_id', function () {
-        let element = $(this);
-        let item_count = 0;
-
-        bill_of_material_structure($(this).parents(".content_parent"), element.val())
-
-
-        $(this).closest('.content_parent').find('.item_id').each(function () {
-            if ($(this).val() == element.val()) {
-                item_count += 1;
-            }
-        })
-        if (item_count > 1) {
-            element.val("");
-            element.parents('.content_parent').find('.item_quantity').val("");
-            element.parents('.content_parent').find('.rate').val("");
-            element.parents('.content_parent').find('.item_price').val("");
-            element.parents('.content_parent').find('.gst_percentage').val("");
-            element.parents('.content_parent').find('.amount_with_gst').val("");
-            alert("Item already added in the list.");
-            calculateTotalAmount();
-        } 
-        else {
-            item_id = element.val();
-            if (item_id != null && item_id != "") {
-                $.ajax({
-                        url: "{% url 'api:itemList' %}?id=" + item_id,
-                        type: 'GET',
-                        data: ({}),
-                        headers: {
-                            'Authorization': getCookieValue("accessToken")
-                        },
-                        success: function (response) {
-                            if (response.status == 200) {
-                                callback();
-                                console.log()
-                                element.parents('.content_parent').find('.item_quantity').val(1);
-                                element.parents('.content_parent').find('.rate').val(response.page_items[0].price);
-                                element.parents('.content_parent').find('.item_price').val(response.page_items[0].price);    
-                            } 
-                            else {
-                                alert(response.message);
-                            }
-                            calculateTotalAmount();
-                        },
-                        error: function (error) {
-                            $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-                        }
-                    });
-                
-            }
+            $(".third_party").html(`
+                <div class="col-md-4 mb-3">
+                    <label>Vendor<span class="required-indicator">*</span></label>
+                    <div class="input-group">
+                        <select class="custom-select selectpicker vendor_id" data-placeholder="Select Vendor" name="vendor_id" required>
+                            ${vendor_options_text}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>With/Without item<span class="required-indicator">*</span></label>
+                    <div class="input-group">
+                        <select class="custom-select selectpicker with_item" data-placeholder="Choose" name="with_item" required>
+                            <option value=""></option>
+                            <option value="True">With item</option>
+                            <option value="False">Without item</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                </div>
+                <div class="col-md-12 mb-3 form-row items">
+                </div>
+            `)
+        }
+        $('.selectpicker').select2({
+            placeholder: '',
+        });
+    })
+    
+    $(document).on('change', '.with_item', function(){
+    
+        if($(this).val()==="False"){
+            $(".items").empty()
         }
 
-    });
+        if($(this).val()==="True"){
 
-    $(document).on('keyup change', '.item_quantity', function () {
-        item_quantity = $(this).val();
-        rate = $(this).parents(".content_parent").find('.rate').val();
-
-        item_price = (parseFloat(item_quantity) * parseFloat(rate)).toFixed(2);
-        $(this).parents(".content_parent").find('.item_price').val(item_price);
-
-        calculateTotalAmount();
+            $(".items").html(`
+                <div class="col-md-12 mb-3 form-row item">
+                    <div class="col-md-4 mb-3">
+                        <label>Item<span class="required-indicator">*</span></label>
+                        <div class="input-group">
+                            <select class="custom-select selectpicker item_id" name="item_id" required>
+                                ${item_options_text}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-1 mb-4 text-center ">
+                        <button type="button" class="btn add_btn mt-1">
+                            <i class="fa fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            `)
+        }
         
-        $(this).closest('.content_parent').find('.content_child').find('.job_order_detail_sent').each( function(){
-            let max_quantity=item_quantity*$(this).find('.bom_structure_quantity_per_unit').val()
-            $(this).find('.bom_structure_quantity').attr("max",max_quantity)
-            $(this).find('.bom_structure_quantity').val(max_quantity)
-            $(this).find('.bom_structure_quantity').trigger("change")
-        })
-
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });
+        callback()
+    })
+    
+    $(document).on('change', '.item_id', function () {
+        callback();
     });
 
-    $(document).on('keyup change', '.bom_structure_quantity', function () {
-        let rate = $(this).parents().closest(".job_order_detail_sent").find('.bom_structure_rate').val();
-        let price = (parseFloat($(this).val()) * parseFloat(rate)).toFixed(2);
-
-        $(this).parents().closest(".job_order_detail_sent").find('.bom_structure_item_price').val(price);
-        
-        $(this).closest('.job_order_detail_sent').find('.content_child').find('.job_order_detail_sent').each( function(){
-            let max_quantity=item_quantity*$(this).find('.bom_structure_quantity_per_unit').val()
-            $(this).find('.bom_structure_quantity').attr("max",max_quantity)
-            $(this).find('.bom_structure_quantity').val(max_quantity)
-            $(this).find('.bom_structure_quantity').trigger("change")
-        })
-
-    });
-
-    $(document).on('keyup change', '.rate', function () {
-        rate = $(this).val();
-        item_quantity = $(this).parents(".content_parent").find('.item_quantity').val();
-
-        item_price = (parseFloat(item_quantity) * parseFloat(rate)).toFixed(2);
-        $(this).parents(".content_parent").find('.item_price').val(item_price);
-
-        calculateTotalAmount();
-    });
-  
     $(document).on('click', '.add_btn', function () {
-        $('.add_more_content').append(`<div class="form-row content_parent">
-                                    <div class="col-md-5 mb-3">
-                                        <label>Item<span class="required-indicator">*</span></label>
-                                        <div class="input-group">
-                                            <select class="custom-select selectpicker item_id" name="item_id" required>
-                                                ${item_options_text}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Rate <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="rate" min="0.01" class="form-control rate"
-                                            placeholder="0.00" required>
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Quantity <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="item_quantity" min="0.0001" class="form-control item_quantity"
-                                            placeholder="Quantity" required>
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Price <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)" disabled
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="item_price" min="0.01" class="form-control item_price"
-                                            placeholder="0.00" required>
-                                    </div>
-                                    <div class="col-md-1 btn-group mb-4 text-center">
-                                        <button type="button" class="btn expand_btn m-1">
-                                            <i class="fa fa-expand"></i></button>
-                                            <button type="button" class="btn remove_btn m-1">
-                                                <i class="fa fa-minus"></i>
-                                            </button>
-                                    </div>
-                                </div>`
-                                );
+        $(".items").append(`
+                <div class="col-md-12 mb-3 form-row item">
+                    <div class="col-md-4 mb-3">
+                        <label>Item<span class="required-indicator">*</span></label>
+                        <div class="input-group">
+                            <select class="custom-select selectpicker item_id" name="item_id" required>
+                                ${item_options_text}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-1 mb-4 text-center ">
+                        <button type="button" class="btn remove_btn mt-1">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+            `)
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });  
         callback();
     });
 
     $(document).on('click', '.remove_btn', function () {
-        $(this).parents().closest('.content_parent').remove();
-        calculateTotalAmount();
+        $(this).closest('.item').remove();
         callback();
     });
-
-    $(document).on('change', '#discount_type', function () {
-        if ($(this).val() == 'no_discount') {
-            $('.discount_value_display').hide();
-            $('#discount_value').removeAttr('required');
-            $('#discount_value').removeAttr('max');
-            $('#discount_value').val('');
-        } else if ($(this).val() == 'percentage') {
-            $('.discount_value_display').show();
-            $('#discount_value').attr('required', 'required');
-            $('#discount_value').attr('max', '100');
-            $('#discount_value').val('');
-        } else {
-            $('.discount_value_display').show();
-            $('#discount_value').attr('required', 'required');
-            $('#discount_value').removeAttr('max');
-            $('#discount_value').val('');
-        }
-    });
-
-    $(document).on('keyup change', '#discount_value', function () {
-        calculateTotalAmount();
-    });
-
-    $(document).on('keyup change', '#excise_duty_percentage', function () {
-        calculateTotalAmount();
-    });
-
-    $(document).on('keyup change', '#insurance', function () {
-        calculateTotalAmount();
-    });
-
-    $(document).on('keyup change', '#octroi', function () {
-        calculateTotalAmount();
-    });
-
-    $(document).on('keyup change', '#freight', function () {
-        calculateTotalAmount();
-    });
-    
-    $(document).on('click', '.expand_btn', function() {
-        if ($(this).find('i').hasClass('fa-expand')) {
-            $(this).html('<i class="fa fa-compress"></i>');
-            $(this).parents().closest('.content_parent').children('.content_child').attr("hidden",false);
-        } 
-        else {
-            $(this).html('<i class="fa fa-expand"></i>');
-            $(this).parents().closest('.content_parent').children('.content_child').attr("hidden",true);
-        }
-    })
-
-    $(document).on('click', '.bom_structure_remove_btn', function () {
-        $(this).closest('.job_order_detail_sent').remove();
-    });
-
-    $(document).on('click', '.bom_structure_edit_btn', function(){
-        let job_order_detail_sent=$(this).closest('.job_order_detail_sent')
-        
-        if(job_order_detail_sent.find(".content_child").length){
-            job_order_detail_sent.find(".content_child").remove()
-            job_order_detail_sent.children().eq(2).children().show()
-            job_order_detail_sent.children().eq(5).children().show()
-        }
-        else{
-
-            let bom_item_id=job_order_detail_sent.find(".bom_structure_bom_item_id").val()
-            let item_id_n_bom_id=JSON.parse("{{item_id_n_bom_id|escapejs}}")
-
-
-            $.ajax({
-                    url: "{% url 'api:getBillOfMaterialStructure'%}?bom_id="+item_id_n_bom_id[bom_item_id],
-                    type: 'GET',
-                    data: ({}),
-                    headers: {
-                        'Authorization': getCookieValue("accessToken")
-                    },
-                    success: function (response) {
-                        if (response.status == 200) {
-                            job_order_detail_sent.children().eq(2).children().hide()
-                            job_order_detail_sent.children().eq(5).children().hide()
-
-                            let bom_structure_details=response.page_items["structure"]
-                            let parent_max_width=parseFloat(job_order_detail_sent.closest('.content_child').css('max-width'))
-                            let child_max_width=Math.floor((parent_max_width**2)/100).toString()+"%"
-                            let content_child=`<div class="content_child col-md-12 pl-4 pr-5 pt-3 mb-4" style="max-width:${child_max_width};">`
-                            
-                            bom_structure_details.forEach(e1 => {
-
-                                if(e1["item"]){
-                                    let pk=e1["item"]["pk"]
-                                    let name=e1["item"]["name"]
-                                    let rate=e1["item"]["price"]
-                                    let quantity=parseFloat(e1["quantity"])
-                                    let price=parseFloat(e1["price"])
-                                    content_child+=`
-                                        <div class="form-row job_order_detail_sent">
-                                            <input type="hidden" name="jods_item_id_${bom_item_id}"  value="${pk}">
-                                            <div class="col-md-5 mb-3">
-                                                <label>Item<span class="required-indicator">*</span></label>
-                                                <input type="text" id="item_name" name="jods_name_${bom_item_id}" class="form-control" value="${name}" required readonly>
-                                            </div>
-                                            <div class="col-md-2 mb-3">
-                                                <label>Rate <span class="required-indicator">*</span></label>
-                                                <input type="text" name="jods_rate_${bom_item_id}" class="form-control bom_structure_rate" value="${rate}" readonly required>
-                                            </div>
-                                            <input type="hidden" name="jods_quantity_per_unit_${bom_item_id}" class="bom_structure_quantity_per_unit" value="${quantity}">
-                                            <div class="col-md-2 mb-3">
-                                                <label>Quantity <span class="required-indicator">*</span></label>
-                                                <input type="text" onkeyup="checkMaxMin(this)" max="${quantity}" onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                                    name="jods_quantity_${bom_item_id}" min="0.0001" class="form-control bom_structure_quantity" style="padding-left: 10px;" value="${quantity}" required >
-                                            </div>
-                                            <div class="col-md-2 mb-3">
-                                                <label>Price <span class="required-indicator">*</span></label>
-                                                <input type="text" onkeyup="checkMaxMin(this)" readonly 
-                                                    name="jods_price_${bom_item_id}" min="0.01" class="form-control bom_structure_item_price"
-                                                    value="${price}" required>
-                                            </div>
-                                            <div class="col-md-1 btn-group mb-4 text-center">
-                                                <span style="width: 22px;margin-left: 45px;"></span>
-                                                <button type="button" class="btn bom_structure_remove_btn m-1">
-                                                    <i class="fa fa-minus"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    `
-                                
-                                }
-
-                                if(e1===bom_structure_details[bom_structure_details.length-1]){
-                                    bom_structure_details.forEach(e2 => {
-                                        if(e2["bom"]){
-                                            let pk=e2["bom"]["bom_item_id"]
-                                            let name=e2["bom"]["bom_item__name"]
-                                            let rate=e2["bom"]["price"]
-                                            let quantity=parseFloat(e2["quantity"])
-                                            let price=parseFloat(e2["price"])
-                                            content_child+=`
-                                                <div class="form-row job_order_detail_sent">
-                                                    <input type="hidden" name="jods_item_id_${bom_item_id}"  value="${pk}">
-                                                    <div class="col-md-5 mb-3">
-                                                        <label>Item<span class="required-indicator">*</span></label>
-                                                        <input type="text" id="item_name" name="jods_name_${bom_item_id}" class="form-control" value="${name}" required readonly>
-                                                    </div>
-                                                    <div class="col-md-2 mb-3">
-                                                        <label>Rate <span class="required-indicator">*</span></label>
-                                                        <input type="text" name="jods_rate_${bom_item_id}" class="form-control bom_structure_rate" value="${rate}" readonly required>
-                                                    </div>
-                                                    <input type="hidden" name="jods_quantity_per_unit_${bom_item_id}" class="bom_structure_quantity_per_unit" value="${quantity}">
-                                                    <div class="col-md-2 mb-3">
-                                                        <label>Quantity <span class="required-indicator">*</span></label>
-                                                        <input type="text" onkeyup="checkMaxMin(this)" max="${quantity}" onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                                            name="jods_quantity_${bom_item_id}" min="0.0001" class="form-control bom_structure_quantity" style="padding-left: 10px;" value="${quantity}" required >
-                                                    </div>
-                                                    <div class="col-md-2 mb-3">
-                                                        <label>Price <span class="required-indicator">*</span></label>
-                                                        <input type="text" onkeyup="checkMaxMin(this)" readonly 
-                                                            name="jods_price_${bom_item_id}" min="0.01" class="form-control bom_structure_item_price"
-                                                            value="${price}" required>
-                                                    </div>
-                                                    <div class="col-md-1 btn-group mb-4 text-center">
-                                                        <button type="button" class="btn bom_structure_edit_btn m-1">
-                                                            <i class="fa fa-pencil"></i>
-                                                        </button>
-                                                        <button type="button" class="btn bom_structure_remove_btn m-1">
-                                                            <i class="fa fa-minus"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            `
-                                        
-                                        }
-                                    });
-                                }
-
-                            });
-
-                            
-                            content_child+=`</div>`
-                            job_order_detail_sent.append(content_child)
-                        } 
-                        else {
-                            alert(response.message);
-                        }
-                    },
-                    // complete: function(response){
-                    //     if (content_parent.find('i').hasClass('fa-compress')){
-                    //         content_parent.find(".content_child").attr("hidden",false)
-                    //     }
-                    // },
-                    error: function (error) {
-                        $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-                    }
-                });
-        }   
-    })
 
     $(document).on('submit', '#create_form', function (e) {
             e.preventDefault();
@@ -814,7 +359,7 @@
                 evalScripts: true,
                 contentType: false,
                 processData: false,
-                url: "{% url 'api:purchaseOrderAdd' %}",
+                url: "{% url 'api:jobOrderAdd' %}",
                 data: formData,
                 headers: {
                     'Authorization': getCookieValue("accessToken")
@@ -823,7 +368,7 @@
                     $('.submit-btn').text('Submitting...');
                     $('.submit-btn').prop('disabled', false);
                     if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:purchaseOrderList' %}");
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:jobOrderList' %}");
                     } else {
                         alert(response.message);
                     }

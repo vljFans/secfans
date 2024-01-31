@@ -95,10 +95,14 @@ urlpatterns = [
     path('job-order-list', views.jobOrderList, name='jobOrderList'),
     path('job-order-add', views.jobOrderAdd, name='jobOrderAdd'),
     path('job-order-edit/<int:id>', views.jobOrderEdit, name='jobOrderEdit'),
+<<<<<<< HEAD
     path('job-order-view/<int:id>', views.jobOrderView, name='jobOrderView'),
 
     # material issue url --- developed by saswata
     path('material-issue-list',views.materialIssueListView , name = 'materialIssueListView'),
 
     path('material-issue-add',views.materialIssueAdd , name = 'materialIssueAdd')
+=======
+    # path('job-order-view/<int:id>', views.jobOrderView, name='jobOrderView'),
+>>>>>>> 880bb6ae0ac7670110f122f22f9b2725ec5704e9
 ]
