@@ -107,9 +107,9 @@ urlpatterns = [
     path('job-order-add', views.jobOrderAdd, name='jobOrderAdd'),
     path('job-order-edit', views.jobOrderEdit, name='jobOrderEdit'),
     path('job-order-delete', views.jobOrderDelete, name='jobOrderDelete'),
-    path('job-order-details', views.jobOrderDetails, name='jobOrderDetails'),
+    #path('job-order-details', views.jobOrderDetails, name='jobOrderDetails'),
 
     path('material-issue-details', views.materialIssueDetails, name='materialIssueDetails'),
+    path('get-actual-quantity', views.getActualQuantity, name='getActualQuantity'),
 
-    # path('job-order-details', views.jobOrderDetails, name='jobOrderDetails'),
 ]

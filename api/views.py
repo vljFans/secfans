@@ -3655,6 +3655,8 @@ def jobOrderList(request):
     keyword = request.GET.get('keyword', None)
     if id is not None and id != "":
         jobOrder = list(models.Job_Order.objects.filter(pk=id)[:1].values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor', 'with_item', 'notes'))
+        # print(list(models.Job_Order.objects.prefetch_related('job_order_detail_set').filter(pk=id)[:1].values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor', 'with_item', 'notes')))
+        # print(models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id))
         context.update({
             'status': 200,
             'message': "Job Order Fetched Successfully.",
@@ -3840,8 +3842,9 @@ def materialIssueDetails(request):
     keyword = request.GET.get('keyword', None)
     job_Order_header_id = request.GET.get('job_Order_id',None)
     store_id = request.GET.get('store_id',None)
-    header_detail_res = list(models.Job_Order_Detail.objects.filter(job_order_header=job_Order_header_id).values('pk'))
-    print(header_detail_res)
+    header_detail_res = list(models.Job_Order_Detail.objects.filter(job_order_header=job_Order_header_id).values('pk','item_id','item__name','job_order_header__vendor__name'))
+    
+    # print(header_detail_res)
     context.update({
         'status': 200,
         'page_items': header_detail_res
@@ -3849,3 +3852,15 @@ def materialIssueDetails(request):
    
     return JsonResponse(context)
 
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
+def getActualQuantity(request):
+    context = {}
+    item_id = request.GET.get('item_id',None)
+    store_id = request.GET.get('store_id',None)
+    store_item = models.Store_Item.objects.get(store_id=int(store_id), item_id=int(item_id))
+    context.update({
+        'status': 200,
+        'on_hand_qty_res': store_item.on_hand_qty
+    })
+    return JsonResponse(context)

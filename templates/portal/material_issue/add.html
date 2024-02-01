@@ -81,9 +81,9 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-2 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label>vendor <span class="required-indicator">*</span></label>
-                                <input type="text" name="vendor_name" class="form-control" placeholder=""
+                                <input type="text" id="vendor_name" name="vendor_name" class="form-control" placeholder=""
                                     readonly>
                             </div>
                             <div class="col-md-2 mb-3">
@@ -204,15 +204,7 @@
             }
         });
 
-        $(document).ready(function(){
-            $(document).on('mouseenter','.test',function(){
-                if( $('select#store_id option:selected').val() =="" ){
-                    alert("please select store")
-                }
-            
-            });
        
-        })
 
     });
 
@@ -234,11 +226,27 @@
 <script>
 
     $(document).ready(function(){
+        $(document).on('change','#store_id' , function(){
+            // console.log('230',$('select#job_Order_id option:selected').val())
+            if( $('select#job_Order_id option:selected').val() != "" ){ 
+                callMaterialIssue()
+                }
+           
+        })
+
         $(document).on('change','#job_Order_id',function(){
-            var store_id = $('select#store_id option:selected').val()
-            var job_Order_id = $('select#job_Order_id option:selected').val()
-            console.log(store_id,job_Order_id);
-            $.ajax({
+            // console.log("241")
+            callMaterialIssue()
+
+        });
+       
+    });
+
+    function callMaterialIssue(){
+        // console.log("246")
+        var store_id = $('select#store_id option:selected').val()
+        var job_Order_id = $('select#job_Order_id option:selected').val()
+        $.ajax({
             url: "{% url 'api:materialIssueDetails' %}",
             type: 'GET',
             data: ({
@@ -251,7 +259,44 @@
             success: function (response) {
                 if (response.status == 200) {
                     if(response.page_items.length>0){
-                        alert("value found")
+                        $('#vendor_name').val(response.page_items[0].job_order_header__vendor__name) //job_order_header__vendor__name
+                        $('#table_form').html(`<p></p>`);
+                        for(let index=0 ; index<response.page_items.length; index++){
+                             var text_inp = `<div class="form-row content_parent">
+                                    <div class="col-md-4 mb-3">
+                                        <label>Item<span class="required-indicator">*</span></label>
+                                        <input type="hidden" class="item_id" name="item_id" value="${response.page_items[index].item_id}"">
+                                        <input type="text" class="form-control item_name" name="item_name" value="${response.page_items[index].item__name}"  readonly required>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label>Actual quantity <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="actual_quantity" min="0.01" class="form-control actual_quantity"
+                                            placeholder="0.00" readonly>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label>quantity sent <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="quantity_sent" min="0.01" class="form-control quantity_sent"
+                                            placeholder="0.00" required>
+                                    </div>
+                                </div>`
+                            $('#table_form').append(text_inp);
+                            $('.selectpicker').select2({
+                                placeholder: '',
+                                templateResult: function(option) {
+                                    if(option.element && (option.element).hasAttribute('hidden')){
+                                        return null;
+                                    }
+                                    return option.text;
+                                }
+                            });
+                        }
+                        
                     }
                     else{
 
@@ -269,15 +314,15 @@
                                         <label>Actual quantity <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="rate" min="0.01" class="form-control rate"
-                                            placeholder="0.00" disabled>
+                                            name="actual_quantity" min="0.01" class="form-control actual_quantity"
+                                            placeholder="0.00" readonly>
                                     </div>
 
                                     <div class="col-md-2 mb-3">
                                         <label>quantity sent <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="rate" min="0.01" class="form-control rate"
+                                            name="quantity_sent" min="0.01" class="form-control quantity_sent"
                                             placeholder="0.00" required>
                                     </div>
 
@@ -288,16 +333,9 @@
                                     </div>
                                 </div>`
 
-                            $('#table_form').append(text_inp);
-                            $('.selectpicker').select2({
-                                placeholder: '',
-                                templateResult: function(option) {
-                                    if(option.element && (option.element).hasAttribute('hidden')){
-                                        return null;
-                                    }
-                                    return option.text;
-                                }
-                            });
+                            $('#table_form').html(text_inp);
+                            itemLists();
+                            
                     }
                     
                 } 
@@ -305,14 +343,42 @@
                     alert("res not found");
                 }
             },
+            complete: function(response){
+                $("#table_form").children(".content_parent").each(function(){
+                    let actual_quantity_element=$(this).find(".actual_quantity")
+                    let item_id=$(this).find(".item_id").val()
+                    let store_id=$("#store_id").val()  
+                    if(item_id && store_id){
+                        $.ajax({
+                        url: "{% url 'api:getActualQuantity' %}?",
+                        type: 'GET',
+                        data: ({
+                            'item_id':item_id,
+                            'store_id':store_id
+                        }),
+                        headers: {
+                            'Authorization': getCookieValue("accessToken")
+                        },
+                        success: function (response) {
+                            if (response.status == 200) {
+                                console.log(actual_quantity_element.val(response.on_hand_qty_res));
+                            } 
+                            else {
+                                alert(response.message);
+                            }
+                        },
+                        error: function (error) {
+                        $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                    }
+                });
+                    }   
+                })
+            },
             error: function (error) {
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
-
-        });
-       
-    });
+    }
 
     $(document).ready(function(){
         $(document).on('click','.add_btn',function(){
@@ -330,15 +396,15 @@
                                         <label>Actual quantity <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="rate" min="0.01" class="form-control rate"
-                                            placeholder="0.00" disabled>
+                                            name="actual_quantity" min="0.01" class="form-control actual_quantity"
+                                            placeholder="0.00" readonly>
                                     </div>
 
                                     <div class="col-md-2 mb-3">
                                         <label>quantity sent <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="rate" min="0.01" class="form-control rate"
+                                            name="quantity_sent" min="0.01" class="form-control quantity_sent"
                                             placeholder="0.00" required>
                                     </div>
 
@@ -349,7 +415,9 @@
                                     </div>
                                 </div>`
 
-                            $('#table_form').append(text_inp);
+                                $('#table_form').append(text_inp);
+            itemLists();
+            
                             $('.selectpicker').select2({
                                 placeholder: '',
                                 templateResult: function(option) {
@@ -360,7 +428,6 @@
                                 }
                             });
         });
-        itemLists()
 
         $(document).on('click', '.remove_btn', function () {
         $(this).parents().closest('.content_parent').remove();
@@ -408,7 +475,13 @@
        
 
     });
+
+    $(document).on('change','.item_id',function(){
+        console.log($('select.item_id option:selected').val());
+        console.log($(this).closest('.content_parent').find('.quantity_sent').val());
+    })
     }
+
 
 </script>
 
