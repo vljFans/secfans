@@ -293,6 +293,7 @@
 
     function renderItemDropdown(){
         $('.item_id').each(function(){
+            console.log("store transaction 296");
             let selected_item_pk=$(this).val()
             $(this).children("option").each(function(index, element){
                 if( $(this).val()!==selected_item_pk && item_options_used_pk.includes($(this).val()) ){

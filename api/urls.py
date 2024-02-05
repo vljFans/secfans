@@ -111,5 +111,6 @@ urlpatterns = [
 
     path('material-issue-details', views.materialIssueDetails, name='materialIssueDetails'),
     path('get-actual-quantity', views.getActualQuantity, name='getActualQuantity'),
+    path('material-issue-Add', views.materialIssueAdd, name='materialIssueAdd'),
 
 ]

@@ -2912,7 +2912,11 @@ def storeTransactionList(request):
             storeTransactions = models.Store_Transaction.objects.filter(
                 status=1, deleted=0)
         if transaction_type_id is not None and transaction_type_id != "":
-            storeTransactions = storeTransactions.filter(
+            if keyword is not None and keyword != "":
+                storeTransactions = storeTransactions.filter(Q(vendor__name__icontains=keyword) | Q(transaction_number__icontains=keyword) | Q(
+                transaction_date__icontains=keyword) | Q(total_amount__icontains=keyword)).filter(status=1, deleted=0)
+            else:
+                storeTransactions = storeTransactions.filter(
                 transaction_type_id=transaction_type_id)
         if keyword is not None and keyword != "":
             storeTransactions = storeTransactions.filter(Q(vendor__name__icontains=keyword) | Q(transaction_number__icontains=keyword) | Q(
@@ -3833,6 +3837,8 @@ def jobOrderDelete(request):
 #         })
 #     return JsonResponse(context)
 #
+
+#for material issue --- developed by saswata
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 def materialIssueDetails(request):
@@ -3842,7 +3848,7 @@ def materialIssueDetails(request):
     keyword = request.GET.get('keyword', None)
     job_Order_header_id = request.GET.get('job_Order_id',None)
     store_id = request.GET.get('store_id',None)
-    header_detail_res = list(models.Job_Order_Detail.objects.filter(job_order_header=job_Order_header_id).values('pk','item_id','item__name','job_order_header__vendor__name'))
+    header_detail_res = list(models.Job_Order_Detail.objects.filter(job_order_header=job_Order_header_id).values('pk','item_id','item__name','job_order_header__vendor__name','job_order_header__vendor_id'))
     
     # print(header_detail_res)
     context.update({
@@ -3852,15 +3858,121 @@ def materialIssueDetails(request):
    
     return JsonResponse(context)
 
+
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 def getActualQuantity(request):
     context = {}
     item_id = request.GET.get('item_id',None)
     store_id = request.GET.get('store_id',None)
-    store_item = models.Store_Item.objects.get(store_id=int(store_id), item_id=int(item_id))
-    context.update({
-        'status': 200,
-        'on_hand_qty_res': store_item.on_hand_qty
-    })
+    #print( "item_id:",item_id , " " ,"store_id:",store_id)
+    
+    try:
+        store_item = models.Store_Item.objects.get(store_id=int(store_id), item_id=int(item_id))
+        #print(store_item)
+        context.update({
+            'status': 200,
+            'on_hand_qty_res': store_item.on_hand_qty
+        })
+    except:
+        context.update({
+            'status': 200,
+            'on_hand_qty_res': '0.00'
+        })
+    
+    return JsonResponse(context)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def materialIssueAdd(request):
+    context = {}
+    message = "Data Saved"
+    try:
+        vendor_id = request.POST['vendor_id'] if request.POST['vendor_id'] else null
+
+        meterial_issue_type = models.Transaction_Type.objects.get(name = 'Material Issue')
+    
+        item_id = request.POST.getlist('item_id')
+
+        #print( meterial_issue_type.id,type(int(vendor_id)))
+        
+        #store_Item_of_vendor = list(models.Store_Item.objects.filter(store__vendor_id=vendor_id))
+        
+    
+
+        store_transaction_header_insert = models.Store_Transaction(
+                                        vendor_id = int(vendor_id),
+                                        transaction_type_id = meterial_issue_type.id,
+                                        transaction_number = request.POST['material_issue_no_name'],
+                                        transaction_date = request.POST['issue_date'],
+                                        notes = 'material issue',
+                                        status = 1,
+                                        deleted = 0        
+                                    )
+        store_transaction_header_insert.save()
+        store_transaction_header_id = store_transaction_header_insert.id
+
+        #print(store_transaction_id)
+
+        for index in  range (0,len(item_id)):
+            store_transaction_detail_insert = models.Store_Transaction_Detail(
+                store_transaction_header_id = store_transaction_header_id,
+                item_id = item_id[index],
+                store_id = request.POST['store_id'],
+                quantity = request.POST.getlist('quantity_sent')[index],
+                status = 1,
+                deleted = 0
+            )
+            store_transaction_detail_insert.save()
+            if(vendor_id):
+                #print("hello")
+                try:
+                    #if store item present for that particular vendor
+                    store_Item_of_vendor = models.Store_Item.objects.get(store__vendor_id=vendor_id, item_id = item_id[index])  
+                    with transaction.atomic():
+                        store_Item_of_vendor.on_hand_qty = float(store_Item_of_vendor.on_hand_qty) + float(request.POST.getlist('quantity_sent')[index])
+                        store_Item_of_vendor.closing_qty = float(store_Item_of_vendor.closing_qty) + float(request.POST.getlist('quantity_sent')[index])
+                        store_Item_of_vendor.updated_at = datetime.now()
+                        store_Item_of_vendor.save()
+                except:
+                    #if store item not present for that particular vendor
+                    store_id_vendor = models.Store.objects.get(vendor_id=vendor_id)
+                    store_Item_of_vendor_insert = models.Store_Item(
+                        item_id = item_id[index],
+                        store_id = store_id_vendor.id,
+                        opening_qty = request.POST.getlist('quantity_sent')[index],
+                        on_hand_qty = request.POST.getlist('quantity_sent')[index],
+                        closing_qty = request.POST.getlist('quantity_sent')[index],
+                        status = 1,
+                        deleted = 0,
+                        created_at =  datetime.now(),
+                        updated_at = datetime.now()
+                    )
+                    store_Item_of_vendor_insert.save()
+            try:
+                with transaction.atomic():
+                    store_item_for_in_house = models.Store_Item.objects.get(store_id=request.POST['store_id'], item_id = item_id[index]) 
+                    store_item_for_in_house.on_hand_qty = float(store_item_for_in_house.on_hand_qty) - float(request.POST.getlist('quantity_sent')[index])
+                    store_item_for_in_house.closing_qty = float(store_item_for_in_house.closing_qty) - float(request.POST.getlist('quantity_sent')[index])
+                    store_item_for_in_house.updated_at = datetime.now()
+                    store_item_for_in_house.save()
+
+            except Exception :
+                message = "Not save due to no data found"
+        context.update({
+            'status': 200,
+            'message': message       
+         })
+
+
+        
+        #print(store_Item_of_vendor_id)
+    except Exception:
+        context.update({
+            'status': 200,
+            'message': message       
+
+        })
+    print(message)
+
     return JsonResponse(context)

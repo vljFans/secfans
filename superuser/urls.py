@@ -99,5 +99,13 @@ urlpatterns = [
      # material issue url --- developed by saswata
     path('material-issue-list',views.materialIssueListView , name = 'materialIssueListView'),
 
-    path('material-issue-add',views.materialIssueAdd , name = 'materialIssueAdd')
+    path('material-issue-add',views.materialIssueAdd , name = 'materialIssueAdd'),
+
+    path('material-issue-edit/<int:id>',views.materialIssueEdit , name = 'materialIssueEdit'),
+
+    path('material-issue-view/<int:id>',views.materialIssueView , name = 'materialIssueView')
+
+
+
+
 ]
