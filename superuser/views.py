@@ -838,7 +838,7 @@ def materialIssueView(request,id):
 def returnMaterialListView(id,type_id):
     context = {}
     material_issue = models.Store_Transaction.objects.filter(pk=id).values('pk','transaction_number','transaction_date','vendor_id','vendor__name','transaction_type_id','job_order__order_number')
-    material_issue_details = list(models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = id).values('pk','item_id', 'item__name','store_id','store__name','quantity','item__'))
+    material_issue_details = list(models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = id).values('pk','item_id', 'item__name','store_id','store__name','quantity'))
     if(type_id == 1):
         context.update({
             'material_issue' :  material_issue,
