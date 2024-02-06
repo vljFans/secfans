@@ -380,6 +380,8 @@
             complete: function(response){
                 $("#table_form").children(".content_parent").each(function(){
                     let actual_quantity_element=$(this).find(".actual_quantity")
+                    let quantity_sent_element = $(this).find('.quantity_sent')
+                    console.log(quantity_sent_element);
                     let item_id=$(this).find(".item_id").val()
                     let store_id=$("#store_id").val()  
                     if(item_id && store_id){
@@ -396,6 +398,7 @@
                         success: function (response) {
                             if (response.status == 200) {
                                 actual_quantity_element.val(response.on_hand_qty_res);
+                                quantity_sent_element.attr('max',response.on_hand_qty_res)
                             } 
                             else {
                                 alert(response.message);
@@ -555,6 +558,8 @@
         //console.log(selected_item_pk);
         let store_id =  $('select#store_id option:selected').val()
         let actual_quantitys = $(this).closest('.content_parent').find('.actual_quantity')
+        let quantity_sents = $(this).closest('.content_parent').find('.quantity_sent')
+        console.log(quantity_sents.html());
         $.ajax({
                         url: "{% url 'api:getActualQuantity' %}?",
                         type: 'GET',
@@ -568,6 +573,7 @@
                         success: function (response) {
                             if (response.status == 200) {
                                 actual_quantitys.val(response.on_hand_qty_res)
+                                quantity_sents.attr('max',response.on_hand_qty_res)
                             } 
                             else {
                                 alert(response.message);
