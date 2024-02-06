@@ -14,6 +14,7 @@ from django.http import JsonResponse
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.hashers import make_password, check_password
 from datetime import datetime
+from django.utils.timezone import now
 from openpyxl import Workbook
 from django.db import transaction
 from django.db.models import Q
@@ -715,8 +716,8 @@ def customerList(request):
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
     if id is not None and id != "":
-        customer = list(models.Customer.objects.filter(pk=id)[:1].values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk',
-                        'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
+        customer = list(models.Customer.objects.filter(pk=id)[:1].values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk',
+                        'country__name', 'state__name', 'city', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
         context.update({
             'status': 200,
             'message': "Customer Fetched Successfully.",
@@ -724,11 +725,11 @@ def customerList(request):
         })
     else:
         if keyword is not None and keyword != "":
-            customers = list(models.Customer.objects.filter(Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(contact_no__icontains=keyword) | Q(customer_type__name__icontains=keyword) | Q(pin__icontains=keyword) | Q(city__name__icontains=keyword)).filter(
-                status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
+            customers = list(models.Customer.objects.filter(Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(contact_no__icontains=keyword) | Q(customer_type__name__icontains=keyword) | Q(pin__icontains=keyword) | Q(city__icontains=keyword)).filter(
+                status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'country__name', 'state__name', 'city', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
         else:
-            customers = list(models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk',
-                             'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
+            customers = list(models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk',
+                             'country__name', 'state__name', 'city', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -760,7 +761,7 @@ def customerList(request):
 @permission_classes([IsAuthenticated])
 def customerAdd(request):
     context = {}
-    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['landmark'] or not request.POST['pin'] or not request.POST['customer_type_id'] or not request.POST['kyc_type_id'] or not request.POST['kyc_detail'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
+    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['landmark'] or not request.POST['pin'] or not request.POST['customer_type_id'] or not request.POST['kyc_type_id'] or not request.POST['kyc_detail'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city']:
         context.update({
             'status': 524,
             'message': "Name/Contact Name/Contact Email/Contact No/Landmark/Pin/Customer Type/KYC Type/KYC Detail/Address/Country/State/City has not been provided."
@@ -800,7 +801,7 @@ def customerAdd(request):
             customer.address = request.POST['address']
             customer.country_id = request.POST['country_id']
             customer.state_id = request.POST['state_id']
-            customer.city_id = request.POST['city_id']
+            customer.city = request.POST['city']
             customer.save()
 
             if 'photo' in request.FILES.keys():
@@ -847,7 +848,7 @@ def customerAdd(request):
 @permission_classes([IsAuthenticated])
 def customerEdit(request):
     context = {}
-    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['landmark'] or not request.POST['pin'] or not request.POST['customer_type_id'] or not request.POST['kyc_type_id'] or not request.POST['kyc_detail'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
+    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['landmark'] or not request.POST['pin'] or not request.POST['customer_type_id'] or not request.POST['kyc_type_id'] or not request.POST['kyc_detail'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city']:
         context.update({
             'status': 527,
             'message': "Name/Contact Name/Contact Email/Contact No/Landmark/Pin/Customer Type/KYC Type/KYC Detail/Address/Country/State/City has not been provided."
@@ -887,7 +888,7 @@ def customerEdit(request):
             customer.address = request.POST['address']
             customer.country_id = request.POST['country_id']
             customer.state_id = request.POST['state_id']
-            customer.city_id = request.POST['city_id']
+            customer.city = request.POST['city']
             customer.updated_at = datetime.now()
             customer.save()
 
@@ -958,7 +959,7 @@ def customerExport(request):
     keyword = request.GET.get('keyword')
     if keyword is not None and keyword != "":
         page_items = models.Customer.objects.filter(Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(email__icontains=keyword) | Q(
-            phone__icontains=keyword) | Q(customer_type__name__icontains=keyword) | Q(pin__icontains=keyword) | Q(city__name__icontains=keyword)).filter(status=1, deleted=0)
+            phone__icontains=keyword) | Q(customer_type__name__icontains=keyword) | Q(pin__icontains=keyword) | Q(city__icontains=keyword)).filter(status=1, deleted=0)
     else:
         page_items = models.Customer.objects.filter(status=1, deleted=0)
 
@@ -1805,7 +1806,7 @@ def itemList(request):
 @permission_classes([IsAuthenticated])
 def itemAdd(request):
     context = {}
-    if not request.POST['name'] or not request.POST['uom_id'] or not request.POST['item_type_id'] or not request.POST['price']:
+    if not request.POST['name'] or not request.POST['uom_id'] or not request.POST['item_type_id']:
         context.update({
             'status': 566,
             'message': "Name/UOM/Item Type/Price has not been provided."
@@ -1825,7 +1826,8 @@ def itemAdd(request):
             item.name = request.POST['name']
             item.uom_id = request.POST['uom_id']
             item.item_type_id = request.POST['item_type_id']
-            item.price = request.POST['price']
+            if request.POST['price']:
+                item.price = request.POST['price']
             item.save()
         transaction.commit()
         context.update({
@@ -2032,6 +2034,7 @@ def storeAdd(request):
             store.contact_no = request.POST['contact_no']
             store.contact_email = request.POST['contact_email']
             store.manager_name = request.POST['manager_name']
+            store.vendor_id = request.POST['vendor_id'] if 'vendor_id' in request.POST.keys() else None
             store.save()
         transaction.commit()
         context.update({
@@ -2078,6 +2081,7 @@ def storeEdit(request):
             store.contact_no = request.POST['contact_no']
             store.contact_email = request.POST['contact_email']
             store.manager_name = request.POST['manager_name']
+            store.vendor_id = request.POST['vendor_id'] if 'vendor_id' in request.POST.keys() else None
             store.updated_at = datetime.now()
             store.save()
         transaction.commit()
@@ -2176,9 +2180,18 @@ def billOfMaterialList(request):
     find_all = request.GET.get('find_all', None)
     level = request.GET.get('level', None)
     keyword = request.GET.get('keyword', None)
+    item_id = request.GET.get('item_id', None)
     if id is not None and id != "":
         billOfMaterial = list(models.Bill_Of_Material.objects.filter(
-            pk=id)[:1].values('pk', 'name', 'uom__name', 'quantity', 'price'))
+            pk=id)[:1].values('pk', 'bom_item__name', 'uom__name', 'quantity', 'price'))
+        context.update({
+            'status': 200,
+            'message': "Bill Of Material Fetched Successfully.",
+            'page_items': billOfMaterial,
+        })
+    if item_id is not None and item_id != "":
+        billOfMaterial = list(models.Bill_Of_Material.objects.filter(
+            pk=id)[:1].values('pk', 'bom_item__name', 'uom__name', 'quantity', 'price'))
         context.update({
             'status': 200,
             'message': "Bill Of Material Fetched Successfully.",
@@ -2187,14 +2200,14 @@ def billOfMaterialList(request):
     else:
         if keyword is not None and keyword != "":
             billOfMaterials = models.Bill_Of_Material.objects.filter(
-                Q(name__icontains=keyword) | Q(uom__name__icontains=keyword) | Q(price__icontains=keyword)).filter(status=1, deleted=0)
+                Q(bom_item__name__icontains=keyword) | Q(uom__name__icontains=keyword) | Q(price__icontains=keyword)).filter(status=1, deleted=0)
         else:
             billOfMaterials = models.Bill_Of_Material.objects.filter(
                 status=1, deleted=0)
         if level is not None:
             billOfMaterials = billOfMaterials.filter(level__lte=level)
         billOfMaterials = list(billOfMaterials.values(
-            'pk', 'name', 'uom__name', 'quantity', 'price'))
+            'pk', 'bom_item__name', 'uom__name', 'quantity', 'price'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -2227,31 +2240,35 @@ def billOfMaterialList(request):
 @permission_classes([IsAuthenticated])
 def billOfMaterialAdd(request):
     context = {}
-    if not request.POST['name'] or not request.POST['uom_id'] or not request.POST['total_amount'] or not request.POST['level']:
+    if not request.POST['bom_item_id'] or not request.POST['uom_id'] or not request.POST['total_amount'] or not request.POST['level']:
         context.update({
             'status': 573,
-            'message': "Name/UOM/Total Amount/Level has not been provided."
+            'message': "BOM Item/UOM/Total Amount/Level has not been provided."
         })
         return JsonResponse(context)
     exist_data = models.Bill_Of_Material.objects.filter(
-        name__iexact=request.POST['name'], level=request.POST['level']).filter(deleted=0)
+        bom_item_id=request.POST['bom_item_id'], level=request.POST['level']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 574,
-            'message': "Bill Of Material with this name and level already exists.",
+            'message': "Bill Of Material with this item as BOM and level already exists.",
         })
         return JsonResponse(context)
     try:
         with transaction.atomic():
             billOfMaterialHeader = models.Bill_Of_Material()
-            billOfMaterialHeader.name = request.POST['name']
+            billOfMaterialHeader.bom_item_id = request.POST['bom_item_id']
             billOfMaterialHeader.uom_id = request.POST['uom_id']
             billOfMaterialHeader.quantity = 1
             billOfMaterialHeader.price = request.POST['total_amount']
-            billOfMaterialHeader.is_final = 1
             billOfMaterialHeader.level = request.POST['level']
             billOfMaterialHeader.save()
-
+            if len(models.Bill_Of_Material_Detail.objects.filter(bom_level_id=billOfMaterialHeader.id)) == 0:
+                billOfMaterialHeader.is_final = 1
+                billOfMaterialHeader.save()
+            bom_item=models.Item.objects.get(pk=billOfMaterialHeader.bom_item_id)
+            bom_item.price=billOfMaterialHeader.price
+            bom_item.save()
             bill_of_material_details = []
             for index, elem in enumerate(request.POST.getlist('bom_level_id')):
                 billOfMaterialDetail = models.Bill_Of_Material.objects.get(
@@ -2261,10 +2278,13 @@ def billOfMaterialAdd(request):
                 bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
                                                 bom_level_id=elem, quantity=request.POST.getlist('bom_level_quantity')[index], price=request.POST.getlist('bom_level_price')[index]))
             for index, elem in enumerate(request.POST.getlist('item_id')):
-                bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
-                                                item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
-            models.Bill_Of_Material_Detail.objects.bulk_create(
-                bill_of_material_details)
+                bill_of_material_details.append(models.Bill_Of_Material_Detail(
+                    bill_of_material_header_id=billOfMaterialHeader.id,
+                    item_id=elem,
+                    quantity=request.POST.getlist('item_quantity')[index],
+                    price=request.POST.getlist('item_price')[index])
+                )
+            models.Bill_Of_Material_Detail.objects.bulk_create(bill_of_material_details)
         transaction.commit()
         context.update({
             'status': 200,
@@ -2283,37 +2303,46 @@ def billOfMaterialAdd(request):
 @permission_classes([IsAuthenticated])
 def billOfMaterialEdit(request):
     context = {}
-    if not request.POST['name'] or not request.POST['uom_id'] or not request.POST['total_amount'] or not request.POST['level']:
+    if not request.POST['bom_item_id'] or not request.POST['uom_id'] or not request.POST['total_amount'] or not request.POST['level']:
         context.update({
             'status': 576,
-            'message': "Name/UOM/Total Amount/Level has not been provided."
+            'message': "BOM Item/UOM/Total Amount/Level has not been provided."
         })
         return JsonResponse(context)
     exist_data = models.Bill_Of_Material.objects.filter(
-        name__iexact=request.POST['name'], level=request.POST['level']).exclude(pk=request.POST['id']).filter(deleted=0)
+        bom_item_id=request.POST['bom_item_id'], level=request.POST['level']).exclude(pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:
         context.update({
             'status': 577,
-            'message': "Bill Of Material with this name already exists.",
+            'message': "Bill Of Material with this item as bom already exists.",
         })
         return JsonResponse(context)
     try:
         with transaction.atomic():
             billOfMaterialHeader = models.Bill_Of_Material.objects.prefetch_related(
                 'bill_of_material_detail_set').get(pk=request.POST['id'])
-            billOfMaterialHeader.name = request.POST['name']
+            billOfMaterialHeader.bom_item_id = request.POST['bom_item_id']
             billOfMaterialHeader.uom_id = request.POST['uom_id']
             billOfMaterialHeader.quantity = 1
             billOfMaterialHeader.price = request.POST['total_amount']
-            billOfMaterialHeader.is_final = 1
             billOfMaterialHeader.level = request.POST['level']
             billOfMaterialHeader.updated_at = datetime.now()
             billOfMaterialHeader.save()
+            bom_item = models.Item.objects.get(pk=billOfMaterialHeader.bom_item_id)
+            bom_item.price = billOfMaterialHeader.price
+            bom_item.save()
+
+            for bom_detail in models.Bill_Of_Material_Detail.objects.filter(bom_level_id=request.POST['id']):
+                bom_detail.price=float(bom_detail.quantity) * float(request.POST['total_amount'])
+                bom_detail.save()
+
+            if len(models.Bill_Of_Material_Detail.objects.filter(bom_level_id=billOfMaterialHeader.id)) == 0:
+                billOfMaterialHeader.is_final = 1
+                billOfMaterialHeader.save()
             billOfMaterialHeader.bill_of_material_detail_set.all().delete()
             bill_of_material_details = []
             for index, elem in enumerate(request.POST.getlist('bom_level_id')):
-                billOfMaterialDetail = models.Bill_Of_Material.objects.get(
-                    pk=elem)
+                billOfMaterialDetail = models.Bill_Of_Material.objects.get(pk=elem)
                 billOfMaterialDetail.is_final = 0
                 billOfMaterialDetail.save()
                 bill_of_material_details.append(models.Bill_Of_Material_Detail(bill_of_material_header_id=billOfMaterialHeader.id,
@@ -2361,8 +2390,7 @@ def billOfMaterialDelete(request):
 
 
 def getStructureOfBOM(bom_id):
-    billOfMaterial = list(models.Bill_Of_Material.objects.filter(pk=bom_id)[
-                          :1].values('pk', 'name', 'uom__name', 'quantity', 'price'))[0]
+    billOfMaterial = list(models.Bill_Of_Material.objects.filter(pk=bom_id)[:1].values('pk', 'bom_item_id' , 'bom_item__name', 'uom__name', 'quantity', 'price'))[0]
     childBOMS = models.Bill_Of_Material_Detail.objects.filter(
         status=1, deleted=0, bill_of_material_header_id=bom_id).order_by('bom_level_id')
     id_lists = []
@@ -2471,7 +2499,7 @@ def purchaseOrderAdd(request):
     if not request.POST['vendor_id'] or not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['quotation_number'] or not request.POST['quotation_date'] or not request.POST['total_amount']:
         context.update({
             'status': 581,
-            'message': "Vendor/Order NUmber/Order Date/Quotation Number/Quotation Date/Total Amount has not been provided."
+            'message': "Vendor/Order Number/Order Date/Quotation Number/Quotation Date/Total Amount has not been provided."
         })
         return JsonResponse(context)
     try:
@@ -2540,7 +2568,7 @@ def purchaseOrderEdit(request):
     if not request.POST['vendor_id'] or not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['quotation_number'] or not request.POST['quotation_date'] or not request.POST['total_amount']:
         context.update({
             'status': 583,
-            'message': "Vendor/Order NUmber/Order Date/Quotation Number/Quotation Date/Total Amount has not been provided."
+            'message': "Vendor/Order Number/Order Date/Quotation Number/Quotation Date/Total Amount has not been provided."
         })
         return JsonResponse(context)
     try:
@@ -3616,3 +3644,190 @@ def storeTransactionDetails(request):
             'message': "Please Provide Header Id.",
         })
     return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def jobOrderList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
+    if id is not None and id != "":
+        jobOrder = list(models.Job_Order.objects.filter(pk=id)[:1].values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor', 'with_item', 'notes'))
+        context.update({
+            'status': 200,
+            'message': "Job Order Fetched Successfully.",
+            'page_items': jobOrder,
+        })
+    else:
+        jobOrders = models.Job_Order.objects.filter(status=1, deleted=0)
+        if keyword is not None and keyword != "":
+            jobOrders = jobOrders.filter(order_number__icontains=keyword).filter(status=1, deleted=0)
+        jobOrders = list(jobOrders.values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor', 'with_item', 'notes'))
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Job Orders Fetched Successfully.",
+                'page_items': jobOrders,
+            })
+            return JsonResponse(context)
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(jobOrders, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Job Orders Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'per_page': per_page,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def jobOrderAdd(request):
+    context = {}
+    if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['manufacturing_type'] or not request.POST['notes']:
+        context.update({
+            'status': 589,
+            'message': "Order Number/Order Date/Manufacturing Type/Notes has not been provided."
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            jobOrderHeader = models.Job_Order()
+            jobOrderHeader.order_number = request.POST['order_number']
+            jobOrderHeader.order_date = request.POST['order_date']
+            jobOrderHeader.manufacturing_type = request.POST['manufacturing_type']
+            if 'vendor_id' in request.POST:
+                jobOrderHeader.vendor_id = request.POST['vendor_id']
+            if 'with_item' in request.POST:
+                jobOrderHeader.with_item = eval(request.POST['with_item'])
+            jobOrderHeader.notes = request.POST['notes']
+            jobOrderHeader.save()
+
+            job_order_details = []
+            for item_id in request.POST.getlist('item_id'):
+                job_order_details.append(
+                    models.Job_Order_Detail(
+                        job_order_header_id=jobOrderHeader.id,
+                        item_id=int(item_id)
+                    )
+                )
+            models.Job_Order_Detail.objects.bulk_create(job_order_details)
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Job Order Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 590,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def jobOrderEdit(request):
+    context = {}
+    if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['manufacturing_type'] or not request.POST['notes']:
+        context.update({
+            'status': 589,
+            'message': "Order Number/Order Date/Manufacturing Type/Notes has not been provided."
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            jobOrderHeader = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=request.POST['id'])
+            jobOrderHeader.order_number = request.POST['order_number']
+            jobOrderHeader.order_date = request.POST['order_date']
+            jobOrderHeader.manufacturing_type = request.POST['manufacturing_type']
+            if 'vendor_id' in request.POST:
+                jobOrderHeader.vendor_id = request.POST['vendor_id']
+            if 'with_item' in request.POST:
+                jobOrderHeader.with_item = eval(request.POST['with_item'])
+            else:
+                jobOrderHeader.with_item = False
+            jobOrderHeader.notes = request.POST['notes']
+            jobOrderHeader.updated_at = now()
+            jobOrderHeader.save()
+            jobOrderHeader.job_order_detail_set.all().delete()
+            job_order_details = []
+            for item_id in request.POST.getlist('item_id'):
+                job_order_details.append(
+                    models.Job_Order_Detail(
+                        job_order_header_id=jobOrderHeader.id,
+                        item_id=int(item_id)
+                    )
+                )
+            models.Job_Order_Detail.objects.bulk_create(job_order_details)
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Job Order Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 592,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def jobOrderDelete(request):
+    context = {}
+    jobOrder = models.Job_Order.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            jobOrder.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Job Order Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 593,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def jobOrderDetails(request):
+#     context = {}
+#     header_id = request.GET.get('header_id', None)
+#     if header_id is not None and header_id != "":
+#         header_detail = list(models.Job_Order.objects.filter(id=header_id).values('pk', 'order_number', 'total_amount'))
+#         orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id).values('pk', 'job_order_header_id', 'job_order_header__order_number', 'parent_detail_id', 'item_id', 'bill_of_material_id', 'rate', 'quantity', 'amount'))
+#         context.update({
+#             'status': 200,
+#             'message': "Job Order Details Fetched Successfully.",
+#             'header_detail': header_detail,
+#             'page_items': orderDetails,
+#         })
+#     else:
+#         context.update({
+#             'status': 594,
+#             'message': "Please Provide Header Id.",
+#         })
+#     return JsonResponse(context)
+#

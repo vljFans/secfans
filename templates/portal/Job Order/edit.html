@@ -1,0 +1,441 @@
+{% extends 'portal/base.html' %}
+{% load static %}
+{% load template_func %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<div class="wrapper">
+    <!--================================-->
+    <!-- Breadcrumb Start -->
+    <!--================================-->
+    <div class="pageheader pd-t-25 pd-b-35">
+        <div class="d-flex justify-content-between">
+            <div class="clearfix">
+                <div class="pd-t-5 pd-b-5">
+                    <h1 class="pd-0 mg-0 tx-20 tx-dark">{{parent_page_title}} {{page_title}}</h1>
+                </div>
+                <div class="breadcrumb pd-0 mg-0">
+                    {% for breadcrumb in breadcrumbs %}
+                    {% if forloop.counter != breadcrumbs|length %}
+                    <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                    {% else %}
+                    <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Breadcrumb End -->
+    <!--================================-->
+    <!-- Form Element Start -->
+    <!--================================-->
+    <div class="row row-xs clearfix">
+        <div class="col-md-12 col-lg-12">
+            {% if messages %}
+            {% for message in messages %}
+            {% if forloop.counter == messages|length %}
+            <div class="{{ message.tags }} success-msg-txt" style="height: 30px; text-align: center;">{{ message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            <div class="error-msg-txt" style="height: 30px; text-align: center;"></div>
+            <div class="card mg-b-30">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-header-title tx-13 mb-0">{{parent_page_title}} {{page_title}}</h6>
+                        </div>
+                        <div class="text-right">
+                            <div class="d-flex">
+                                <a href="{% url 'superuser:itemList' %}" class="mr-3"><i
+                                        class="fa fa-step-backward"></i></a>
+                                <a href="" class="mr-3"><i class="ti-reload"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
+                        <input type="hidden" id="id" name="id" value="{{jobOrder.id}}">
+                        <div class="form-row">
+                            <div class="col-md-4 mb-3">
+                                <label>Job Order Number <span class="required-indicator">*</span></label>
+                                <input type="text"  id="order_number" name="order_number" class="form-control"
+                                    value="{{jobOrder.order_number}}" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Job Order Date <span class="required-indicator">*</span></label>
+                                <input type="date" name="order_date" class="form-control" value="{{jobOrder.order_date|date:'Y-m-d'}}" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Manufacturing type<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker manufacturing_type" data-placeholder="Select manufacturing type" name="manufacturing_type" required>
+                                        <option value=""></option>
+                                        <option value="Self" {% if jobOrder.manufacturing_type == 'Self' %}selected{% endif %} >Self Manufacturing</option>
+                                        <option value="Third party" {% if jobOrder.manufacturing_type == 'Third party' %}selected{% endif %} >Third party manufacturing</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12 mb-3 form-row third_party">
+                                {% if jobOrder.manufacturing_type == 'Third party' %}
+                                    <div class="col-md-4 mb-3">
+                                        <label>Vendor<span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker vendor_id" data-placeholder="Select Vendor" name="vendor_id" required>
+                                                <option value="">Choose...</option>
+                                                {% for vendor in vendors %}
+                                                <option {% if jobOrder.vendor_id == vendor.pk %}selected{% endif %} value="{{vendor.pk}}">{{vendor.name}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label>With/Without item<span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker with_item" data-placeholder="Choose" name="with_item" required>
+                                                <option value=""></option>
+                                                <option value="True" {% if jobOrder.with_item == 'True' %}selected{% endif %} >With item</option>
+                                                <option value="False" {% if jobOrder.with_item == 'False' %}selected{% endif %} >Without item</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                    </div>
+                                    <div class="col-md-12 mb-3 form-row items">
+                                        {% if jobOrder.with_item == 'True' %}
+                                            {% for jobOrderDetail in jobOrder.job_order_detail_set.all %}
+                                                <div class="col-md-12 form-row item">
+                                                    <div class="col-md-4 mb-3">
+                                                        <label>Item <span class="required-indicator">*</span></label>
+                                                        <div class="input-group">
+                                                            <select class="custom-select selectpicker item_id" data-placeholder="Select item" name="item_id" required>
+                                                                <option value="">Choose...</option>
+                                                                {% for item in items %}
+                                                                <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-1 mb-4 text-center ">
+                                                        {% if forloop.counter == 1 %}
+                                                        <button type="button" class="btn add_btn mt-1"><i class="fa fa-plus"></i></button>
+                                                        {% else %}
+                                                        <button type="button" class="btn remove_btn mt-1"><i class="fa fa-minus"></i></button>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-12 mb-3">
+                                <label>Job Description<span class="required-indicator">*</span></label>
+                                <textarea name="notes" rows="5" class="form-control" placeholder="Job Description" required>{{jobOrder.notes}}</textarea>
+                            </div>
+                        </div>
+                        {% if request.user.is_superuser == 1 or 'edit_item'|get_session_permission:request is not None %}
+                        <button class="btn btn-success submit-btn" type="submit">Submit</button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Form Element End -->
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+<script>
+    var vendor_options_text;
+    var item_options_text = ``;
+    var item_options_used_pk = [];
+    var itemsData;
+
+    $('.selectpicker').select2({
+        placeholder: '',
+        templateResult: function(option) {
+            if(option.element && (option.element).hasAttribute('hidden')){
+                return null;
+            }
+            return option.text;
+        }
+    });
+
+    function renderItemDropdown(){
+        // console.log(item_options_used_pk)
+        $('.item_id').each(function(){
+            let selected_item_id=$(this).val()
+            $(this).children("option").each(function(index, element){
+                if($(this).val()!==selected_item_id && item_options_used_pk.includes($(this).val()) ){
+                    $(this).prop("hidden",true)
+                }
+                else{
+                    $(this).prop("hidden",false)
+                }
+            })
+        })
+    }
+
+    function update_item_options_used_pk(){
+        item_options_used_pk=[]
+        $('.item_id').each(function(){
+            item_options_used_pk.push($(this).val())
+        }); 
+    }
+
+    function callback(){
+        var callbacks = $.Callbacks();
+        callbacks.add(update_item_options_used_pk);
+        callbacks.fire();
+        callbacks.add(renderItemDropdown);
+        callbacks.fire();
+        
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        callback()
+
+        $.ajax({
+            url: "{% url 'api:vendorList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    vendor_options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        vendor_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+
+        $.ajax({
+            url: "{% url 'api:itemList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    item_options_text += `<option value="">Choose item</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $('.selectpicker').select2({
+                        placeholder: '',
+                        templateResult: function(option) {
+                            if(option.element && (option.element).hasAttribute('hidden')){
+                                return null;
+                            }
+                            return option.text;
+                        }
+                    });
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    });
+
+    $(document).on('change', '.manufacturing_type', function(){
+        if($(this).val()==="Self"){
+            $(".third_party").empty()
+        }
+        if($(this).val()==="Third party"){
+
+            $(".third_party").html(`
+                <div class="col-md-4 mb-3">
+                    <label>Vendor<span class="required-indicator">*</span></label>
+                    <div class="input-group">
+                        <select class="custom-select selectpicker vendor_id" data-placeholder="Select Vendor" name="vendor_id" required>
+                            ${vendor_options_text}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>With/Without item<span class="required-indicator">*</span></label>
+                    <div class="input-group">
+                        <select class="custom-select selectpicker with_item" data-placeholder="Choose" name="with_item" required>
+                            <option value=""></option>
+                            <option value="True">With item</option>
+                            <option value="False">Without item</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                </div>
+                <div class="col-md-12 mb-3 form-row items">
+                </div>
+            `)
+        }
+        $('.selectpicker').select2({
+            placeholder: '',
+        });
+    })
+    
+    $(document).on('change', '.with_item', function(){
+    
+        if($(this).val()==="False"){
+            $(".items").empty()
+        }
+
+        if($(this).val()==="True"){
+
+            $(".items").html(`
+                <div class="col-md-12 mb-3 form-row item">
+                    <div class="col-md-4 mb-3">
+                        <label>Item<span class="required-indicator">*</span></label>
+                        <div class="input-group">
+                            <select class="custom-select selectpicker item_id" name="item_id" required>
+                                ${item_options_text}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-1 mb-4 text-center ">
+                        <button type="button" class="btn add_btn mt-1">
+                            <i class="fa fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            `)
+        }
+        
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });
+        callback()
+    })
+    
+    $(document).on('change', '.item_id', function () {
+        callback();
+    });
+
+    $(document).on('click', '.add_btn', function () {
+        $(".items").append(`
+                <div class="col-md-12 mb-3 form-row item">
+                    <div class="col-md-4 mb-3">
+                        <label>Item<span class="required-indicator">*</span></label>
+                        <div class="input-group">
+                            <select class="custom-select selectpicker item_id" name="item_id" required>
+                                ${item_options_text}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-1 mb-4 text-center ">
+                        <button type="button" class="btn remove_btn mt-1">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+            `)
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });  
+        callback();
+    });
+
+    $(document).on('click', '.remove_btn', function () {
+        $(this).closest('.item').remove();
+        callback();
+    });
+
+    $(document).on('submit', '#create_form', function (e) {
+            e.preventDefault();
+            $('.submit-btn').text('Submitting...');
+            $('.submit-btn').prop('disabled', true);
+            var formData = new FormData(create_form);
+            $.ajax({
+                type: "POST",
+                evalScripts: true,
+                contentType: false,
+                processData: false,
+                url: "{% url 'api:jobOrderEdit' %}",
+                data: formData,
+                headers: {
+                    'Authorization': getCookieValue("accessToken")
+                },
+                success: function (response) {
+                    $('.submit-btn').text('Submitting...');
+                    $('.submit-btn').prop('disabled', false);
+                    if (response.status == 200) {
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:jobOrderList' %}");
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function (error) {
+                    $('.submit-btn').text('Submitting...');
+                    $('.submit-btn').prop('disabled', false);
+                    // locationAfterMessageStore(error.responseJSON.detail, 'error');
+                    $('.success-msg-txt').text("");
+                    $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
+                    $('.error-msg-txt').addClass('text-danger');
+                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                }
+            });
+        });
+</script>
+{% endblock %}

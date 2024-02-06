@@ -210,6 +210,7 @@
     var item_options = [];
     var item_options_used_pk = [];
     var store_options_text = ``;
+    
     $('.selectpicker').select2({
         placeholder: '',
         templateResult: function(option) {
@@ -218,99 +219,6 @@
             }
             return option.text;
         }
-    });
-
-    function renderItemDropdown(){
-        $('.item_id').each(function(){
-            let selected_item_pk=$(this).val()
-            console.log(this)
-            $(this).children("option").each(function(index, element){
-                if( $(this).val()!==selected_item_pk && item_options_used_pk.includes($(this).val()) ){
-                    $(this).prop("hidden",true)
-                }
-                else{
-                    $(this).prop("hidden",false)
-                }
-            })
-        })
-    }
-
-    $(document).on('change', '#with_purchase_order', function () {
-        purchase_order_type = $(this).val();
-        if (parseInt(purchase_order_type) == 1) {
-            $('.purchase_order_type_content').show();
-            $('#purchase_order_header_id').attr('required', 'required');
-        } else {
-            $('.purchase_order_type_content').hide();
-            $('#purchase_order_header_id').val("")
-            $('#purchase_order_header_id').removeAttr('required');
-            purchase_details = `<div class="form-row content_parent">
-                                    <div class="col-md-3 mb-3">
-                                        <label>Item <span class="required-indicator">*</span></label>
-                                        <div class="input-group">
-                                            <select class="custom-select selectpicker item_id" name="item_id" required>
-                                                ${item_options_text}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-1 mb-3">
-                                        <label>Rate <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="rate" min="0.01" class="form-control rate"
-                                            placeholder="0.00" required>
-                                    </div>
-                                    <div class="col-md-1 mb-3">
-                                        <label>Quantity <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="item_quantity" min="0.0001" class="form-control item_quantity"
-                                            placeholder="Quantity" required>
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Price <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="item_price" min="0.01" class="form-control item_price"
-                                            placeholder="0.00" required>
-                                    </div>
-                                    <div class="col-md-1 mb-3">
-                                        <label>GST %<span class="required-indicator">*</span></label>
-                                        <input type="text" name="gst_percentage" class="form-control gst_percentage" readonly
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            max="100" min="0.00" placeholder="0%">
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Price With GST <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="amount_with_gst" min="0.01" class="form-control amount_with_gst"
-                                            placeholder="0.00" required>
-                                    </div>
-                                    <div class="col-md-1 mb-3">
-                                        <label>Store <span class="required-indicator">*</span></label>
-                                        <div class="input-group">
-                                            <select class="custom-select selectpicker store_id" name="store_id" required>
-                                                ${store_options_text}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-1 mb-4 text-center ">
-                                        <button type="button" class="btn add_item mt-1"><i class="fa fa-plus"></i></button>
-                                    </div>
-                                </div>`;
-            $(".purchase_order_details").html(purchase_details);
-            $("#total_amount").val(0);
-        }
-        $('.selectpicker').select2({
-            placeholder: '',
-            templateResult: function(option) {
-                if(option.element && (option.element).hasAttribute('hidden')){
-                    return null;
-                }
-                return option.text;
-            }
-        });
     });
 
     $(document).ready(function () {
@@ -383,6 +291,104 @@
         });
     });
 
+    function renderItemDropdown(){
+        $('.item_id').each(function(){
+            let selected_item_pk=$(this).val()
+            $(this).children("option").each(function(index, element){
+                if( $(this).val()!==selected_item_pk && item_options_used_pk.includes($(this).val()) ){
+                    $(this).prop("hidden",true)
+                }
+                else{
+                    $(this).prop("hidden",false)
+                }
+            })
+        })
+    }
+
+    function update_item_options_used_pk(){
+        item_options_used_pk=[]
+        $('.item_id').each(function(){
+            item_options_used_pk.push($(this).val())
+        }); 
+    }
+
+    $(document).on('change', '#with_purchase_order', function () {
+        purchase_order_type = $(this).val();
+        if (parseInt(purchase_order_type) == 1) {
+            $('.purchase_order_type_content').show();
+            $('#purchase_order_header_id').attr('required', 'required');
+            $('.purchase_order_type_content').hide();
+            $('#purchase_order_header_id').val("")
+            $('#purchase_order_header_id').removeAttr('required');
+            purchase_details = `<div class="form-row content_parent">
+                                    <div class="col-md-3 mb-3">
+                                        <label>Item <span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker item_id" name="item_id" required>
+                                                ${item_options_text}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 mb-3">
+                                        <label>Rate <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="rate" min="0.01" class="form-control rate"
+                                            placeholder="0.00" required>
+                                    </div>
+                                    <div class="col-md-1 mb-3">
+                                        <label>Quantity <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="item_quantity" min="0.0001" class="form-control item_quantity"
+                                            placeholder="Quantity" required>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>Price <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="item_price" min="0.01" class="form-control item_price"
+                                            placeholder="0.00" required>
+                                    </div>
+                                    <div class="col-md-1 mb-3">
+                                        <label>GST %<span class="required-indicator">*</span></label>
+                                        <input type="text" name="gst_percentage" class="form-control gst_percentage" readonly
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            max="100" min="0.00" placeholder="0%">
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>Price With GST <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="amount_with_gst" min="0.01" class="form-control amount_with_gst"
+                                            placeholder="0.00" required>
+                                    </div>
+                                    <div class="col-md-1 mb-3">
+                                        <label>Store <span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker store_id" name="store_id" required>
+                                                ${store_options_text}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 mb-4 text-center ">
+                                        <button type="button" class="btn add_item mt-1"><i class="fa fa-plus"></i></button>
+                                    </div>
+                                </div>`;
+            $(".purchase_order_details").html(purchase_details);
+            $("#total_amount").val(0);
+        }
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });
+    });
+ 
     $(document).on('change', '#vendor_id', function () {
         let vendor_id = $(this).val();
         $.ajax({
@@ -635,8 +641,13 @@
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        item_options_used_pk.push(response.page_items[0].pk.toString())
-                        renderItemDropdown();
+
+                        var callbacks = $.Callbacks();
+                        callbacks.add(update_item_options_used_pk);
+                        callbacks.fire();
+                        callbacks.add(renderItemDropdown);
+                        callbacks.fire();
+                        
                         element.parents('.content_parent').find('.item_quantity').val(1);
                         element.parents('.content_parent').find('.rate').val(response.page_items[0].price);
                         element.parents('.content_parent').find('.item_price').val(response.page_items[0].price);
@@ -649,7 +660,7 @@
             });
         }
     });
-
+    
     $(document).on('keyup change', '.item_quantity', function () {
         item_quantity = $(this).val();
         rate = $(this).parents(".content_parent").find('.rate').val();

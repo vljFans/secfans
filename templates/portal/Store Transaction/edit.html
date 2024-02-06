@@ -208,7 +208,7 @@
                                 <textarea name="notes" rows="5" class="form-control" placeholder="Note">{{storeTransaction.notes}}</textarea>
                             </div>
                         </div>
-                        {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
+                        {% if request.user.is_superuser == 1 or 'edit_store_transaction'|get_session_permission:request is not None %}
                         <button onclick="return confirm('Please check the form again before submitting. It can not be changed')" class="btn btn-success submit-btn" type="submit">Submit</button>
                         {% endif %}
                     </form>
@@ -263,6 +263,13 @@
                 }
             })
         })
+    }
+
+    function update_item_options_used_pk(){
+        item_options_used_pk=[]
+        $('.item_id').each(function(){
+            item_options_used_pk.push($(this).val())
+        }); 
     }
 
     $(document).ready(function () {
@@ -823,8 +830,13 @@
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        item_options_used_pk.push(response.page_items[0].pk.toString())
-                        renderItemDropdown();
+                        
+                        var callbacks = $.Callbacks();
+                        callbacks.add(update_item_options_used_pk);
+                        callbacks.fire();
+                        callbacks.add(renderItemDropdown);
+                        callbacks.fire();
+
                         element.parents('.content_parent').find('.item_quantity').val(1);
                         element.parents('.content_parent').find('.rate').val(response.page_items[0].price);
                         element.parents('.content_parent').find('.item_price').val(response.page_items[0].price);

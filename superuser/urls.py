@@ -91,4 +91,9 @@ urlpatterns = [
     path('store-transaction-add', views.storeTransactionAdd, name='storeTransactionAdd'),
     path('store-transaction-edit/<int:id>', views.storeTransactionEdit, name='storeTransactionEdit'),
     path('store-transaction-view/<int:id>', views.storeTransactionView, name='storeTransactionView'),
+
+    path('job-order-list', views.jobOrderList, name='jobOrderList'),
+    path('job-order-add', views.jobOrderAdd, name='jobOrderAdd'),
+    path('job-order-edit/<int:id>', views.jobOrderEdit, name='jobOrderEdit'),
+    # path('job-order-view/<int:id>', views.jobOrderView, name='jobOrderView'),
 ]
