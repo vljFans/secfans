@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, Permission
 from .managers import UserManager
 from django.utils.timezone import now
+from datetime import datetime
 from django.core.validators import RegexValidator
 from django.utils.text import gettext_lazy as _
 
@@ -187,16 +188,13 @@ class KYC_Type(models.Model):
 
 class Customer(models.Model):
     name = models.CharField(max_length=50, blank=True, null=True)
-    customer_type = models.ForeignKey(
-        Customer_Type, on_delete=models.CASCADE, blank=True, null=True)
+    customer_type = models.ForeignKey(Customer_Type, on_delete=models.CASCADE, blank=True, null=True)
     landmark = models.CharField(max_length=50, blank=True, null=True)
     address = models.CharField(max_length=100, blank=True, null=True)
-    country = models.ForeignKey(
-        Country, on_delete=models.CASCADE, blank=True, null=True)
-    state = models.ForeignKey(
-        State, on_delete=models.CASCADE, blank=True, null=True)
-    city = models.ForeignKey(
-        City, on_delete=models.CASCADE, blank=True, null=True)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True)
+    state = models.ForeignKey(State, on_delete=models.CASCADE, blank=True, null=True)
+    # city = models.ForeignKey(City, on_delete=models.CASCADE, blank=True, null=True)
+    city = models.CharField(max_length=50, blank=True, null=True)
     pin = models.CharField(max_length=6, blank=True, null=True)
     contact_no = models.CharField(max_length=15, blank=True, null=True)
     contact_no_std = models.CharField(max_length=15, blank=True, null=True)
@@ -563,7 +561,10 @@ class Store_Transaction_Detail(models.Model):
 class Job_Order(models.Model):
     order_number = models.CharField(max_length=50, blank=True, null=True)
     order_date = models.DateField(blank=True, null=True)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    manufacturing_type = models.CharField(max_length=20, choices=[("Self","Self"), ("Third party","Third party")], blank=True, null=True)
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True)
+    with_item = models.CharField(max_length=20, choices=[("True", True), ("False", False)], blank=True,null=True)
+    # total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     notes = models.TextField(blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
@@ -582,14 +583,14 @@ class Job_Order(models.Model):
 class Job_Order_Detail(models.Model):
     job_order_header = models.ForeignKey(Job_Order, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
-    bill_of_material = models.ForeignKey(Bill_Of_Material, on_delete=models.CASCADE, blank=True, null=True)
-    quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
-    rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    # bill_of_material = models.ForeignKey(Bill_Of_Material, on_delete=models.CASCADE, blank=True, null=True)
+    # quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    # rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    # amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
-    created_at = models.DateTimeField(default=now)
-    updated_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(default=now())
+    updated_at = models.DateTimeField(default=now())
 
     def __str__(self):
         return self.job_order_header.order_number
@@ -600,22 +601,22 @@ class Job_Order_Detail(models.Model):
         verbose_name_plural = 'job_order_details'
 
 
-class Job_Order_Detail_Sent(models.Model):
-    job_order_detail = models.ForeignKey(Job_Order_Detail, on_delete=models.CASCADE)
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
-    bill_of_material = models.ForeignKey(Bill_Of_Material, on_delete=models.CASCADE, blank=True, null=True)
-    quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
-    rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    status = models.SmallIntegerField(default=1)
-    deleted = models.BooleanField(default=0)
-    created_at = models.DateTimeField(default=now)
-    updated_at = models.DateTimeField(default=now)
-
-    def __str__(self):
-        return self.job_order_detail.job_order_header.order_number
-
-    class Meta:
-        managed = True
-        db_table = 'job_order_detail_sent'
-        verbose_name_plural = 'job_order_detail_sent'
+# class Job_Order_Detail_Sent(models.Model):
+#     job_order_detail = models.ForeignKey(Job_Order_Detail, on_delete=models.CASCADE)
+#     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
+#     bill_of_material = models.ForeignKey(Bill_Of_Material, on_delete=models.CASCADE, blank=True, null=True)
+#     quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+#     rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+#     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+#     status = models.SmallIntegerField(default=1)
+#     deleted = models.BooleanField(default=0)
+#     created_at = models.DateTimeField(default=now)
+#     updated_at = models.DateTimeField(default=now)
+#
+#     def __str__(self):
+#         return self.job_order_detail.job_order_header.order_number
+#
+#     class Meta:
+#         managed = True
+#         db_table = 'job_order_detail_sent'
+#         verbose_name_plural = 'job_order_detail_sent'
