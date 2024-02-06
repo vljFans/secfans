@@ -152,7 +152,7 @@
                         const element = page_items[index];
                         tbody_text += `<tr>
                                 <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
-                                <td>${element.name}</td>
+                                <td class="customer_table">${element.name}</td>
                                 <td>
                                     ${element.photo != null ?
                                         `<img src="${element.photo}" class="img-responsive" width="80" height="80">`
@@ -160,7 +160,7 @@
                                         ``
                                     }
                                 </td>
-                                <td>${element.contact_name}</td>
+                                <td class="customer_table">${element.contact_name}</td>
                                 <td>${element.contact_no}</td>
                                 <td>${element.contact_email}</td>
                                 <td>${element.customer_type__name}</td>
