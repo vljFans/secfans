@@ -310,7 +310,7 @@
 
                                     <div class="col-md-4 mb-3">
                                         <label>quantity sent <span class="required-indicator">*</span></label>
-                                        <input type="text"
+                                        <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="quantity_sent" min="0.01" class="form-control quantity_sent"
                                             placeholder="0.00" required>
@@ -346,7 +346,7 @@
 
                                     <div class="col-md-2 mb-3">
                                         <label>quantity sent <span class="required-indicator">*</span></label>
-                                        <input type="text"
+                                        <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="quantity_sent" min="0.01" class="form-control quantity_sent"
                                             placeholder="0.00" required>
@@ -478,7 +478,7 @@
 
                                     <div class="col-md-2 mb-3">
                                         <label>quantity sent <span class="required-indicator">*</span></label>
-                                        <input type="text" 
+                                        <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="quantity_sent" min="0.01" class="form-control quantity_sent"
                                             placeholder="0.00" required>
@@ -586,6 +586,19 @@
         
         
     });
+
+    function checkMaxMin(element) {
+        if ($(element).val() == "") {
+            $(element).val($(element).attr('min'));
+        } else {
+            if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
+                $(element).val($(element).attr('max'));
+            }
+            if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
+                $(element).val($(element).attr('min'));
+            }
+        }
+    }
 
 
 </script>

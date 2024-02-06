@@ -2901,6 +2901,7 @@ def storeItemExport(request):
 @permission_classes([IsAuthenticated])
 def storeTransactionList(request):
     context = {}
+    print( request.GET)
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
