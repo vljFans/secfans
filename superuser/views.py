@@ -843,6 +843,7 @@ def returnMaterialListView(id,type_id):
         context.update({
             'material_issue' :  material_issue,
             'store_name': material_issue_details[0]['store__name'],
+            'store_id' : material_issue_details[0]['store_id'],
             'material_issue_details':  material_issue_details,
             'page_title': " Material Issue edit",
             'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueListView')}, {'name': "Edit"}]

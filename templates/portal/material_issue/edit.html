@@ -61,7 +61,11 @@
                             
                             <div class="col-md-2 mb-3">
                                 <label>Store<span class="required-indicator">*</span></label>
+                                <input type="hidden" id="store_transact_head_pk" name="store_transact_head_pk" class="form-control"  value="{{obj.pk}}"
+                                    readonly>
                                 <input type="text" id="store_name" name="store_name" class="form-control"  value="{{store_name}}"
+                                    readonly>
+                                    <input type="hidden" id="store_id" name="store_id" class="form-control"  value="{{store_id}}"
                                     readonly>
                             </div>
                             
@@ -88,7 +92,7 @@
 
                             <div class="col-md-2 mb-3">
                                 <label>Issue Date <span class="required-indicator">*</span></label>
-                                <input type="date" name="issue_date" class="form-control" value="{{obj.transaction_date}}"
+                                <input type="date" name="issue_date" class="form-control" value="{{obj.transaction_date|date:'Y-m-d'}}"
                                 readonly>
                             </div>
 
@@ -104,17 +108,21 @@
 
                                     <div class="col-md-4 mb-3">
                                         <label>quantity issued<span class="required-indicator">*</span></label>
+                                        <input type="hidden"
+                                            name="quantity_sent"  class="form-control quantity_sent" value="{{obj1.quantity}}"
+                                            >
                                         <input type="text"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="quantity_sent" min="0.01" class="form-control quantity_sent" value="{{obj1.quantity}}"
+                                            name="quantity_issue" min="0.01" class="form-control quantity_issue" value="{{obj1.quantity}}"
                                             placeholder="0.00" required>
+                                            
                                     </div>
                                 </div>
 
                                 {% endfor %}
                                 
                             </div>
-                            <div class="col-md-12" id="submit" hidden>
+                            <div class="col-md-12" id="submit" >
                                 <button  class="btn btn-success submit-btn" type="submit">Submit</button>
                             </div>
                             {% endfor %}
@@ -153,7 +161,45 @@
     })();
 </script>
 <script>
-   
+   $(document).ready(function(){
+    $(document).on('submit', '#create_form', function (e) {
+        e.preventDefault();
+        $('.submit-btn').text('Submitting...');
+        $('.submit-btn').prop('disabled', true);
+        var formData = new FormData(create_form);
+        $.ajax({
+            type: "POST",
+            evalScripts: true,
+            contentType: false,
+            processData: false,
+            url: "{% url 'api:materialIssueEditAdd' %}",
+            data: formData,
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', false);
+                if (response.status == 200) {
+                    console.log(response.message);
+                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialIssueListView' %}");
+                    
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', false);
+                // locationAfterMessageStore(error.responseJSON.detail, 'error');
+                $('.success-msg-txt').text("");
+                $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
+                $('.error-msg-txt').addClass('text-danger');
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    });
+   });
 
 </script>
 

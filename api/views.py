@@ -1960,6 +1960,7 @@ def storeList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
+    print(request.GET)
     if id is not None and id != "":
         store = list(models.Store.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'address', 'contact_name', 'contact_no', 'contact_email', 'manager_name', 'pin', 'city__name', 'state__name', 'country__name'))
@@ -1982,7 +1983,16 @@ def storeList(request):
                 'page_items': stores,
             })
             return JsonResponse(context)
-
+        if find_all is not None and int(find_all)==2:
+            #only inhouse stores
+            stores = list(models.Store.objects.filter(status=1, deleted=0,vendor_id=None).values('pk', 'name', 'address', 'contact_name',
+                          'contact_no', 'contact_email', 'manager_name', 'pin', 'city__name', 'state__name', 'country__name'))
+            context.update({
+                'status': 200,
+                'message': "Stores Fetched Successfully.",
+                'page_items': stores,
+            })
+            return JsonResponse(context)
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
         current_page = request.GET.get('current_page', 1)
@@ -3849,11 +3859,12 @@ def materialIssueDetails(request):
     job_Order_header_id = request.GET.get('job_Order_id',None)
     store_id = request.GET.get('store_id',None)
     header_detail_res = list(models.Job_Order_Detail.objects.filter(job_order_header=job_Order_header_id).values('pk','item_id','item__name','job_order_header__vendor__name','job_order_header__vendor_id'))
-    
-    # print(header_detail_res)
+    job_order_head = list(models.Job_Order.objects.filter(pk=job_Order_header_id).values('pk','vendor_id','vendor__name'))
+    print(header_detail_res)
     context.update({
         'status': 200,
-        'page_items': header_detail_res
+        'page_items': header_detail_res,
+        'job_order_head': job_order_head
     })
    
     return JsonResponse(context)
@@ -3887,32 +3898,42 @@ def getActualQuantity(request):
 def materialIssueAdd(request):
     context = {}
     message = "Data Saved"
+    # print(req)
     try:
-        vendor_id = request.POST['vendor_id'] if request.POST['vendor_id'] else null
-
+      
+        
+      
         meterial_issue_type = models.Transaction_Type.objects.get(name = 'Material Issue')
+       
     
         item_id = request.POST.getlist('item_id')
+
+        vendor_id = request.POST.get('vendor_id', None) 
+
+        
 
         #print( meterial_issue_type.id,type(int(vendor_id)))
         
         #store_Item_of_vendor = list(models.Store_Item.objects.filter(store__vendor_id=vendor_id))
         
-    
+        
 
         store_transaction_header_insert = models.Store_Transaction(
-                                        vendor_id = int(vendor_id),
+                                        vendor_id = vendor_id  ,
                                         transaction_type_id = meterial_issue_type.id,
                                         transaction_number = request.POST['material_issue_no_name'],
                                         transaction_date = request.POST['issue_date'],
                                         notes = 'material issue',
-                                        status = 1,
-                                        deleted = 0        
+                                        job_order_id = request.POST['job_Order_id']     
                                     )
-        store_transaction_header_insert.save()
-        store_transaction_header_id = store_transaction_header_insert.id
 
-        #print(store_transaction_id)
+      
+
+        store_transaction_header_insert.save()
+
+        store_transaction_header_id = store_transaction_header_insert.id
+     
+
 
         for index in  range (0,len(item_id)):
             store_transaction_detail_insert = models.Store_Transaction_Detail(
@@ -3925,7 +3946,7 @@ def materialIssueAdd(request):
             )
             store_transaction_detail_insert.save()
             if(vendor_id):
-                #print("hello")
+                # print("hello")
                 try:
                     #if store item present for that particular vendor
                     store_Item_of_vendor = models.Store_Item.objects.get(store__vendor_id=vendor_id, item_id = item_id[index])  
@@ -3934,6 +3955,7 @@ def materialIssueAdd(request):
                         store_Item_of_vendor.closing_qty = float(store_Item_of_vendor.closing_qty) + float(request.POST.getlist('quantity_sent')[index])
                         store_Item_of_vendor.updated_at = datetime.now()
                         store_Item_of_vendor.save()
+                        print("3940")
                 except:
                     #if store item not present for that particular vendor
                     store_id_vendor = models.Store.objects.get(vendor_id=vendor_id)
@@ -3950,6 +3972,7 @@ def materialIssueAdd(request):
                     )
                     store_Item_of_vendor_insert.save()
             try:
+               
                 with transaction.atomic():
                     store_item_for_in_house = models.Store_Item.objects.get(store_id=request.POST['store_id'], item_id = item_id[index]) 
                     store_item_for_in_house.on_hand_qty = float(store_item_for_in_house.on_hand_qty) - float(request.POST.getlist('quantity_sent')[index])
@@ -3958,7 +3981,7 @@ def materialIssueAdd(request):
                     store_item_for_in_house.save()
 
             except Exception :
-                message = "Not save due to no data found"
+                message = "Not save due to INternal Error"
         context.update({
             'status': 200,
             'message': message       
@@ -3973,6 +3996,59 @@ def materialIssueAdd(request):
             'message': message       
 
         })
-    print(message)
+    # print(message)
 
     return JsonResponse(context)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def materialIssueEditAdd(request):
+    context = {}
+    message = 'Data updated sucessfully'
+    try:
+        vendor_id = request.POST.get('vendor_id',None)
+        item_id = request.POST.getlist('item_id')
+        print(request.POST)
+        store_transact_id = request.POST['store_transact_head_pk']
+
+        for index in range(0,len(item_id)):
+            if(vendor_id):
+                print("4005")
+                with transaction.atomic():
+                    store_item_vendor_update = models.Store_Item.objects.get(store__vendor_id = vendor_id , item_id=item_id[index])
+                    print(store_item_vendor_update)
+                    store_item_vendor_update.on_hand_qty = (float(store_item_vendor_update.on_hand_qty)- float(request.POST.getlist('quantity_sent')[0])) +float(request.POST.getlist('quantity_issue')[0])
+                    print("4013")
+                    store_item_vendor_update.closing_qty =(float(store_item_vendor_update.closing_qty)- float(request.POST.getlist('quantity_sent')[0])) + float(request.POST.getlist('quantity_issue')[0])
+                    store_item_vendor_update.updated_at =  datetime.now()
+                    store_item_vendor_update.save()
+            
+            try:
+                with transaction.atomic():
+                    store_transaction_deat_update = models.Store_Transaction_Detail.objects.get(store_transaction_header_id=store_transact_id,item_id= item_id[index] )
+                    store_transaction_deat_update.quantity = request.POST.getlist('quantity_issue')[index]
+                    store_transaction_deat_update.updated_at = datetime.now()
+                    store_transaction_deat_update.save()
+                with transaction.atomic():
+                    store_item_update = models.Store_Item.objects.get(store_id = request.POST['store_id'] , item_id=item_id[index])
+                    store_item_update.on_hand_qty = (float(store_item_update.on_hand_qty)+ float(request.POST.getlist('quantity_sent')[0])) - float(request.POST.getlist('quantity_issue')[0])
+                    store_item_update.closing_qty =(float(store_item_update.closing_qty)+ float(request.POST.getlist('quantity_sent')[0])) - float(request.POST.getlist('quantity_issue')[0])
+                    store_item_update.updated_at =  datetime.now()
+                    store_item_update.save()
+   
+            except Exception:
+                message:"data not updated"
+        context.update({
+            'status': 200,
+            'message': message      
+        })    
+            
+           
+    except Exception:
+       context.update({
+            'status': 400,
+            'message': "server error"      
+        })  
+    return JsonResponse(context)
+
+
