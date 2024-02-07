@@ -807,3 +807,56 @@ def jobOrderEdit(request, id):
 #     })
 #     return render(request, 'portal/Job Order/view.html', context)
 #
+#--- developed by saswata
+@login_required
+def materialIssueListView(request):
+    context.update({
+        'page_title': "Material Issue List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueListView')}, {'name': "List"}]
+    })
+    return render(request, 'portal/material_issue/list.html', context)
+
+@login_required
+def materialIssueAdd(request):
+    context.update({
+        'page_title': " Material Issue Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueListView')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/material_issue/add.html', context)
+
+@login_required
+def materialIssueEdit(request,id):
+    context = returnMaterialListView(id,1)
+
+    return render(request, 'portal/material_issue/edit.html', context)
+@login_required
+def materialIssueView(request,id):
+    context = returnMaterialListView(id,2)
+
+    return render(request, 'portal/material_issue/edit.html', context)
+
+def returnMaterialListView(id,type_id):
+    context = {}
+    material_issue = models.Store_Transaction.objects.filter(pk=id).values('pk','transaction_number','transaction_date','vendor_id','vendor__name','transaction_type_id','job_order__order_number')
+    material_issue_details = list(models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = id).values('pk','item_id', 'item__name','store_id','store__name','quantity'))
+    if(type_id == 1):
+        context.update({
+            'material_issue' :  material_issue,
+            'store_name': material_issue_details[0]['store__name'],
+            'store_id' : material_issue_details[0]['store_id'],
+            'material_issue_details':  material_issue_details,
+            'page_title': " Material Issue edit",
+            'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueListView')}, {'name': "Edit"}]
+        })
+    else:
+        context.update({
+            'material_issue' :  material_issue,
+            'store_name': material_issue_details[0]['store__name'],
+            'material_issue_details':  material_issue_details,
+            'page_title': " Material Issue view",
+            'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueListView')}, {'name': "view"}]
+        })
+
+    return context
+    
+
