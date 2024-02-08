@@ -1960,7 +1960,7 @@ def storeList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    print(request.GET)
+    #print(request.GET)
     if id is not None and id != "":
         store = list(models.Store.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'address', 'contact_name', 'contact_no', 'contact_email', 'manager_name', 'pin', 'city__name', 'state__name', 'country__name'))
@@ -1976,6 +1976,7 @@ def storeList(request):
         else:
             stores = list(models.Store.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'contact_name',
                           'contact_no', 'contact_email', 'manager_name', 'pin', 'city__name', 'state__name', 'country__name'))
+        #find all 1 for feteching all the value in stores (vendor+inhouse)
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -2901,7 +2902,7 @@ def storeItemExport(request):
 @permission_classes([IsAuthenticated])
 def storeTransactionList(request):
     context = {}
-    print( request.GET)
+    #print( request.GET)
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
@@ -3861,11 +3862,12 @@ def materialIssueDetails(request):
     store_id = request.GET.get('store_id',None)
     header_detail_res = list(models.Job_Order_Detail.objects.filter(job_order_header=job_Order_header_id).values('pk','item_id','item__name','job_order_header__vendor__name','job_order_header__vendor_id'))
     job_order_head = list(models.Job_Order.objects.filter(pk=job_Order_header_id).values('pk','vendor_id','vendor__name'))
-    print(header_detail_res)
+    print(job_order_head,"saswata")
     context.update({
         'status': 200,
-        'page_items': header_detail_res,
-        'job_order_head': job_order_head
+        'job_order_head': job_order_head,
+        'page_items': header_detail_res
+        
     })
    
     return JsonResponse(context)
@@ -3899,9 +3901,11 @@ def getActualQuantity(request):
 def materialIssueAdd(request):
     context = {}
     message = "Data Saved"
+    count = 0
     # print(req)
     try:
-      
+        print("hi", count)
+        count += 1
         
       
         meterial_issue_type = models.Transaction_Type.objects.get(name = 'Material Issue')
@@ -3911,31 +3915,37 @@ def materialIssueAdd(request):
 
         vendor_id = request.POST.get('vendor_id', None) 
 
-        
+        print(request.POST)
 
         #print( meterial_issue_type.id,type(int(vendor_id)))
         
         #store_Item_of_vendor = list(models.Store_Item.objects.filter(store__vendor_id=vendor_id))
         
         
+        # print("3923")
 
+        # print("(1) ",vendor_id)
+        # print("(2) ",meterial_issue_type.id)
+        # print("(3) ",int(request.POST['material_issue_no_name']))
+        # print("(4) ",request.POST['issue_date'])
+        # print("(5) ",request.POST['job_Order_id'])
         store_transaction_header_insert = models.Store_Transaction(
                                         vendor_id = vendor_id  ,
                                         transaction_type_id = meterial_issue_type.id,
-                                        transaction_number = request.POST['material_issue_no_name'],
+                                        transaction_number = int(request.POST['material_issue_no_name']),
                                         transaction_date = request.POST['issue_date'],
                                         notes = 'material issue',
                                         job_order_id = request.POST['job_Order_id']     
                                     )
 
-      
-
         store_transaction_header_insert.save()
+
+        #print("3937")
 
         store_transaction_header_id = store_transaction_header_insert.id
      
 
-
+        #print("3940")
         for index in  range (0,len(item_id)):
             store_transaction_detail_insert = models.Store_Transaction_Detail(
                 store_transaction_header_id = store_transaction_header_id,
@@ -3947,7 +3957,7 @@ def materialIssueAdd(request):
             )
             store_transaction_detail_insert.save()
             if(vendor_id):
-                # print("hello")
+                # #print("hello")
                 try:
                     #if store item present for that particular vendor
                     store_Item_of_vendor = models.Store_Item.objects.get(store__vendor_id=vendor_id, item_id = item_id[index])  
@@ -3956,7 +3966,7 @@ def materialIssueAdd(request):
                         store_Item_of_vendor.closing_qty = float(store_Item_of_vendor.closing_qty) + float(request.POST.getlist('quantity_sent')[index])
                         store_Item_of_vendor.updated_at = datetime.now()
                         store_Item_of_vendor.save()
-                        print("3940")
+                        #print("3961")
                 except:
                     #if store item not present for that particular vendor
                     store_id_vendor = models.Store.objects.get(vendor_id=vendor_id)
@@ -3980,7 +3990,7 @@ def materialIssueAdd(request):
                     store_item_for_in_house.closing_qty = float(store_item_for_in_house.closing_qty) - float(request.POST.getlist('quantity_sent')[index])
                     store_item_for_in_house.updated_at = datetime.now()
                     store_item_for_in_house.save()
-
+                # #print("3985")
             except Exception :
                 message = "Not save due to INternal Error"
         context.update({
@@ -3990,14 +4000,14 @@ def materialIssueAdd(request):
 
 
         
-        #print(store_Item_of_vendor_id)
+        ##print(store_Item_of_vendor_id)
     except Exception:
         context.update({
-            'status': 200,
-            'message': message       
+            'status': 404,
+            'message': "server error"       
 
         })
-    # print(message)
+    # #print(message)
 
     return JsonResponse(context)
 
@@ -4009,7 +4019,7 @@ def materialIssueEditAdd(request):
     try:
         vendor_id = request.POST.get('vendor_id',None)
         item_id = request.POST.getlist('item_id')
-        print(request.POST)
+        #print(request.POST)
         store_transact_id = request.POST['store_transact_head_pk']
 
         for index in range(0,len(item_id)):
@@ -4017,9 +4027,9 @@ def materialIssueEditAdd(request):
                 print("4005")
                 with transaction.atomic():
                     store_item_vendor_update = models.Store_Item.objects.get(store__vendor_id = vendor_id , item_id=item_id[index])
-                    print(store_item_vendor_update)
+                    #print(store_item_vendor_update)
                     store_item_vendor_update.on_hand_qty = (float(store_item_vendor_update.on_hand_qty)- float(request.POST.getlist('quantity_sent')[0])) +float(request.POST.getlist('quantity_issue')[0])
-                    print("4013")
+                    #print("4013")
                     store_item_vendor_update.closing_qty =(float(store_item_vendor_update.closing_qty)- float(request.POST.getlist('quantity_sent')[0])) + float(request.POST.getlist('quantity_issue')[0])
                     store_item_vendor_update.updated_at =  datetime.now()
                     store_item_vendor_update.save()
@@ -4039,6 +4049,7 @@ def materialIssueEditAdd(request):
    
             except Exception:
                 message:"data not updated"
+        #print("4046")
         context.update({
             'status': 200,
             'message': message      

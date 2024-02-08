@@ -90,13 +90,13 @@
                             </div>
                             <div class="col-md-2 mb-3">
                                 <label>Material Issue No <span class="required-indicator">*</span></label>
-                                <input type="text" name="material_issue_no_name" class="form-control" placeholder="material issue no"
+                                <input type="text" name="material_issue_no_name" class="form-control material_issue_no_name" placeholder="material issue no"
                                 required>
                             </div>
 
                             <div class="col-md-2 mb-3">
                                 <label>Issue Date <span class="required-indicator">*</span></label>
-                                <input type="date" name="issue_date" class="form-control" placeholder="Order Date"
+                                <input type="date" name="issue_date" class="form-control issue_date" placeholder="Order Date"
                                 required>
                             </div>
 
@@ -251,6 +251,7 @@
     $(document).ready(function(){
         $(document).on('change','#store_id' , function(){
             // console.log('230',$('select#job_Order_id option:selected').val())
+            $('#table_form').html(`<p></p>`)
             if( $('select#job_Order_id option:selected').val() != "" ){ 
                 callMaterialIssue()
                 }
@@ -259,6 +260,9 @@
 
         $(document).on('change','#job_Order_id',function(){
             // console.log("241")
+            $(this).parents().closest('.form-row').find('.content_parent').remove();
+            $(this).parents().closest('.form-row').find('.material_issue_no_name').val("");
+            $(this).parents().closest('.form-row').find('.issue_date').val("");
             callMaterialIssue()
 
         });
@@ -270,6 +274,8 @@
         // console.log("246")
         var store_id = $('select#store_id option:selected').val()
         var job_Order_id = $('select#job_Order_id option:selected').val()
+        $('#vendor_name').val("")
+        $('.vendor_id').val("")
         $.ajax({
             url: "{% url 'api:materialIssueDetails' %}",
             type: 'GET',
@@ -283,14 +289,12 @@
             success: function (response) {
                 if (response.status == 200) {
                     $('#submit').removeAttr('hidden')
+                    var vendId =0 
+                    $('#vendor_name').val(response.job_order_head[0].vendor__name) //job_order_header__vendor__name
+                    vendId = response.job_order_head[0].vendor_id
+                    // console.log(vendId,"saswata")
+                    $('.vendor_id').val(vendId)
                     if(response.page_items.length>0){
-                        $('#vendor_name').val(response.job_order_head[0].vendor__name) //job_order_header__vendor__name
-                        var vendId =0 
-                        if(response.page_items[0].job_order_header__vendor_id){
-                            vendId = response.job_order_head[0].vendor__name
-                        }
-                        console.log(vendId,"saswata")
-                        $('.vendor_id').val(vendId)
                         $('#table_form').html(`<p></p>`);
                         for(let index=0 ; index<response.page_items.length; index++){
                              var text_inp = `<div class="form-row content_parent">
@@ -381,7 +385,7 @@
                 $("#table_form").children(".content_parent").each(function(){
                     let actual_quantity_element=$(this).find(".actual_quantity")
                     let quantity_sent_element = $(this).find('.quantity_sent')
-                    console.log(quantity_sent_element);
+                    // console.log(quantity_sent_element);
                     let item_id=$(this).find(".item_id").val()
                     let store_id=$("#store_id").val()  
                     if(item_id && store_id){
@@ -418,6 +422,8 @@
 
         $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
+        e.stopImmediatePropagation();
+        console.log("426");
         $('.submit-btn').text('Submitting...');
         $('.submit-btn').prop('disabled', true);
         var formData = new FormData(create_form);
@@ -436,7 +442,7 @@
                 $('.submit-btn').text('Submitting...');
                 $('.submit-btn').prop('disabled', false);
                 if (response.status == 200) {
-                    console.log(response.message);
+                    // alert(response.message);
                     locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialIssueListView' %}");
                     
                 } else {
@@ -453,6 +459,7 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
+    
     });
     }
 
@@ -559,7 +566,7 @@
         let store_id =  $('select#store_id option:selected').val()
         let actual_quantitys = $(this).closest('.content_parent').find('.actual_quantity')
         let quantity_sents = $(this).closest('.content_parent').find('.quantity_sent')
-        console.log(quantity_sents.html());
+        // console.log(quantity_sents.html());
         $.ajax({
                         url: "{% url 'api:getActualQuantity' %}?",
                         type: 'GET',
