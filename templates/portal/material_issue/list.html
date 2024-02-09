@@ -120,7 +120,7 @@
 {% block js %}
 <script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
-    function getJobOrderList(keyword) {
+    function getMaterialIssuedList(keyword) {
         console.log("123")
         $.ajax({
             type: "GET",
@@ -174,13 +174,13 @@
 
     }
     $(document).ready(function () {
-        console.log("168");
-        getJobOrderList(keyword)
+        // console.log("168");
+        getMaterialIssuedList(keyword)
     });
 
     $(document).on('keyup', '#search', function () {
         keyword = $(this).val();
-        getJobOrderList(keyword)
+        getMaterialIssuedList(keyword)
     })
 
     $(document).on('click', '#delete-btn', function () {
