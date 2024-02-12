@@ -2976,6 +2976,7 @@ def storeTransactionAdd(request):
     try:
         with transaction.atomic():
             store_transaction_count = models.Store_Transaction.objects.all().count()
+            print(store_transaction_count)
             storeTransactionHeader = models.Store_Transaction()
             storeTransactionHeader.vendor_id = request.POST['vendor_id']
             storeTransactionHeader.transaction_type_id = request.POST['transaction_type_id']
@@ -2987,7 +2988,7 @@ def storeTransactionAdd(request):
             storeTransactionHeader.transaction_date = request.POST['transaction_date']
             storeTransactionHeader.total_amount = request.POST['total_amount']
             storeTransactionHeader.notes = request.POST['notes']
-            storeTransactionHeader.save()
+            # storeTransactionHeader.save()
 
             order_details = []
             for index, elem in enumerate(request.POST.getlist('item_id')):
@@ -3018,15 +3019,15 @@ def storeTransactionAdd(request):
                     storeItem.item_id = elem
                     storeItem.store_id = request.POST.getlist('store_id')[
                         index]
-                    storeItem.save()
+                    # storeItem.save()
                 else:
                     storeItem.on_hand_qty += Decimal(
                         request.POST.getlist('item_quantity')[index])
                     storeItem.closing_qty += Decimal(
                         request.POST.getlist('item_quantity')[index])
                     storeItem.updated_at = datetime.now()
-                    storeItem.save()
-            models.Store_Transaction_Detail.objects.bulk_create(order_details)
+                    # storeItem.save()
+            # models.Store_Transaction_Detail.objects.bulk_create(order_details)
             if request.POST['with_purchase_order'] != "" and int(request.POST['with_purchase_order']) != 0:
                 for index, elem in enumerate(request.POST.getlist('detail_id')):
                     purchaseOrderItem = models.Purchase_Order_Detail.objects.get(
@@ -3042,7 +3043,7 @@ def storeTransactionAdd(request):
                     purchaseOrderItem.delivered_amount_with_gst += Decimal(
                         request.POST.getlist('amount_with_gst')[index])
                     purchaseOrderItem.updated_at = datetime.now()
-                    purchaseOrderItem.save()
+                    # purchaseOrderItem.save()
                 purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related(
                     'purchase_order_detail_set').get(pk=request.POST['purchase_order_header_id'])
                 flag = True
@@ -3055,7 +3056,7 @@ def storeTransactionAdd(request):
                 else:
                     purchaseOrderHeader.delivery_status = 2
                 purchaseOrderHeader.updated_at = datetime.now()
-                purchaseOrderHeader.save()
+                # purchaseOrderHeader.save()
         transaction.commit()
         context.update({
             'status': 200,
