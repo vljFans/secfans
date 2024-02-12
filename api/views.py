@@ -2967,6 +2967,8 @@ def storeTransactionList(request):
 @permission_classes([IsAuthenticated])
 def storeTransactionAdd(request):
     context = {}
+    check1 = 0
+    check2 = 0
     if not request.POST['vendor_id'] or not request.POST['transaction_date'] or not request.POST['total_amount']:
         context.update({
             'status': 586,
@@ -2974,89 +2976,137 @@ def storeTransactionAdd(request):
         })
         return JsonResponse(context)
     try:
+        inspect = request.POST.getlist('inspect')
+        # print("2980")
         with transaction.atomic():
-            store_transaction_count = models.Store_Transaction.objects.all().count()
-            print(store_transaction_count)
-            storeTransactionHeader = models.Store_Transaction()
-            storeTransactionHeader.vendor_id = request.POST['vendor_id']
-            storeTransactionHeader.transaction_type_id = request.POST['transaction_type_id']
-            if (request.POST['purchase_order_header_id']):
-                storeTransactionHeader.purchase_order_header_id = request.POST[
-                    'purchase_order_header_id']
-            storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
-                "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
-            storeTransactionHeader.transaction_date = request.POST['transaction_date']
-            storeTransactionHeader.total_amount = request.POST['total_amount']
-            storeTransactionHeader.notes = request.POST['notes']
-            # storeTransactionHeader.save()
+            if "1" in inspect:
 
-            order_details = []
-            for index, elem in enumerate(request.POST.getlist('item_id')):
-                order_details.append(
-                    models.Store_Transaction_Detail(
-                        store_transaction_header_id=storeTransactionHeader.id,
-                        item_id=elem,
-                        store_id=request.POST.getlist('store_id')[index],
-                        quantity=request.POST.getlist('item_quantity')[index],
-                        rate=request.POST.getlist('rate')[index],
-                        amount=request.POST.getlist('item_price')[index],
-                        gst_percentage=request.POST.getlist(
-                            'gst_percentage')[index],
-                        amount_with_gst=request.POST.getlist(
-                            'amount_with_gst')[index]
-                    )
-                )
-                storeItem = models.Store_Item.objects.filter(
-                    item_id=elem, store_id=request.POST.getlist('store_id')[index]).first()
-                if storeItem is None:
-                    storeItem = models.Store_Item()
-                    storeItem.opening_qty = Decimal(
-                        request.POST.getlist('item_quantity')[index])
-                    storeItem.on_hand_qty = Decimal(
-                        request.POST.getlist('item_quantity')[index])
-                    storeItem.closing_qty = Decimal(
-                        request.POST.getlist('item_quantity')[index])
-                    storeItem.item_id = elem
-                    storeItem.store_id = request.POST.getlist('store_id')[
-                        index]
-                    # storeItem.save()
-                else:
-                    storeItem.on_hand_qty += Decimal(
-                        request.POST.getlist('item_quantity')[index])
-                    storeItem.closing_qty += Decimal(
-                        request.POST.getlist('item_quantity')[index])
-                    storeItem.updated_at = datetime.now()
-                    # storeItem.save()
-            # models.Store_Transaction_Detail.objects.bulk_create(order_details)
-            if request.POST['with_purchase_order'] != "" and int(request.POST['with_purchase_order']) != 0:
-                for index, elem in enumerate(request.POST.getlist('detail_id')):
-                    purchaseOrderItem = models.Purchase_Order_Detail.objects.get(
-                        pk=elem)
-                    purchaseOrderItem.delivered_quantity += Decimal(
-                        request.POST.getlist('item_quantity')[index])
-                    purchaseOrderItem.delivered_rate = Decimal(
-                        request.POST.getlist('rate')[index])
-                    purchaseOrderItem.delivered_amount += Decimal(
-                        request.POST.getlist('item_price')[index])
-                    purchaseOrderItem.delivered_gst_percentage = Decimal(
-                        request.POST.getlist('gst_percentage')[index])
-                    purchaseOrderItem.delivered_amount_with_gst += Decimal(
-                        request.POST.getlist('amount_with_gst')[index])
-                    purchaseOrderItem.updated_at = datetime.now()
-                    # purchaseOrderItem.save()
-                purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related(
-                    'purchase_order_detail_set').get(pk=request.POST['purchase_order_header_id'])
-                flag = True
-                for purchaseOrderDetail in purchaseOrderHeader.purchase_order_detail_set.all():
-                    if Decimal(purchaseOrderDetail.quantity) > Decimal(purchaseOrderDetail.delivered_quantity):
-                        flag = False
-                        break
-                if flag == True:
-                    purchaseOrderHeader.delivery_status = 3
-                else:
-                    purchaseOrderHeader.delivery_status = 2
-                purchaseOrderHeader.updated_at = datetime.now()
-                # purchaseOrderHeader.save()
+                # print("2983")
+
+                grn_inspection_transaction_count = models.Grn_Inspection_Transaction.objects.all().count()
+                grnTransactionheader = models.Grn_Inspection_Transaction()
+                
+                # print("2987")
+                grnTransactionheader.vendor_id = request.POST['vendor_id']
+                grnTransactionheader.transaction_type_id = request.POST['transaction_type_id']
+                grnTransactionheader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(5))
+                grnTransactionheader.transaction_date = request.POST['transaction_date']
+                grnTransactionheader.total_amount = request.POST['total_amount']
+                grnTransactionheader.notes = request.POST['notes']
+
+                # grnTransactionheader.save()
+                # print("2993")
+
+                order_details = []
+                for index, elem in enumerate(request.POST.getlist('item_id')):
+                    if inspect[index] == "1":
+                        print("check1:",check1)
+                        check1 +=1
+                        order_details.append(
+                            models.Grn_Inspection_Transaction_Detail(
+                                grn_inspection_transaction_header_id= grnTransactionheader.id,
+                                item_id=elem,
+                                store_id=request.POST.getlist('store_id')[index],
+                                quantity=request.POST.getlist('item_quantity')[index],
+                                rate=request.POST.getlist('rate')[index],
+                                amount=request.POST.getlist('item_price')[index]
+                            )
+                        )
+                        # print("3010")
+                # models.Grn_Inspection_Transaction_Detail.objects.bulk_create(order_details)
+
+
+
+            if "0" in inspect:
+                # print("3016")
+                store_transaction_count = models.Store_Transaction.objects.all().count()
+                # print(store_transaction_count,"2979")
+                storeTransactionHeader = models.Store_Transaction()
+                storeTransactionHeader.vendor_id = request.POST['vendor_id']
+                storeTransactionHeader.transaction_type_id = request.POST['transaction_type_id']
+                if (request.POST['purchase_order_header_id']):
+                    storeTransactionHeader.purchase_order_header_id = request.POST[
+                        'purchase_order_header_id']
+                storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
+                storeTransactionHeader.transaction_date = request.POST['transaction_date']
+                storeTransactionHeader.total_amount = request.POST['total_amount']
+                storeTransactionHeader.notes = request.POST['notes']
+                # storeTransactionHeader.save()
+
+                # print("3031")
+
+                order_details = []
+                for index, elem in enumerate(request.POST.getlist('item_id')):
+                    if inspect[index] == "0":
+                        print("check2:",check2)
+                        check2 +=1
+                        order_details.append(
+                            models.Store_Transaction_Detail(
+                                store_transaction_header_id=storeTransactionHeader.id,
+                                item_id=elem,
+                                store_id=request.POST.getlist('store_id')[index],
+                                quantity=request.POST.getlist('item_quantity')[index],
+                                rate=request.POST.getlist('rate')[index],
+                                amount=request.POST.getlist('item_price')[index],
+                                gst_percentage=request.POST.getlist(
+                                    'gst_percentage')[index],
+                                amount_with_gst=request.POST.getlist(
+                                    'amount_with_gst')[index]
+                            )
+                        )
+                        storeItem = models.Store_Item.objects.filter(
+                            item_id=elem, store_id=request.POST.getlist('store_id')[index]).first()
+                        if storeItem is None:
+                            storeItem = models.Store_Item()
+                            storeItem.opening_qty = Decimal(
+                                request.POST.getlist('item_quantity')[index])
+                            storeItem.on_hand_qty = Decimal(
+                                request.POST.getlist('item_quantity')[index])
+                            storeItem.closing_qty = Decimal(
+                                request.POST.getlist('item_quantity')[index])
+                            storeItem.item_id = elem
+                            storeItem.store_id = request.POST.getlist('store_id')[
+                                index]
+                            # storeItem.save()
+                        else:
+                            storeItem.on_hand_qty += Decimal(
+                                request.POST.getlist('item_quantity')[index])
+                            storeItem.closing_qty += Decimal(
+                                request.POST.getlist('item_quantity')[index])
+                            storeItem.updated_at = datetime.now()
+                            # storeItem.save()
+                # models.Store_Transaction_Detail.objects.bulk_create(order_details)
+                if request.POST['with_purchase_order'] != "" and int(request.POST['with_purchase_order']) != 0:
+                    for index, elem in enumerate(request.POST.getlist('detail_id')):
+                        purchaseOrderItem = models.Purchase_Order_Detail.objects.get(
+                            pk=elem)
+                        purchaseOrderItem.delivered_quantity += Decimal(
+                            request.POST.getlist('item_quantity')[index])
+                        purchaseOrderItem.delivered_rate = Decimal(
+                            request.POST.getlist('rate')[index])
+                        purchaseOrderItem.delivered_amount += Decimal(
+                            request.POST.getlist('item_price')[index])
+                        purchaseOrderItem.delivered_gst_percentage = Decimal(
+                            request.POST.getlist('gst_percentage')[index])
+                        purchaseOrderItem.delivered_amount_with_gst += Decimal(
+                            request.POST.getlist('amount_with_gst')[index])
+                        purchaseOrderItem.updated_at = datetime.now()
+                        # purchaseOrderItem.save()
+                    purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related(
+                        'purchase_order_detail_set').get(pk=request.POST['purchase_order_header_id'])
+                    flag = True
+                    for purchaseOrderDetail in purchaseOrderHeader.purchase_order_detail_set.all():
+                        if Decimal(purchaseOrderDetail.quantity) > Decimal(purchaseOrderDetail.delivered_quantity):
+                            flag = False
+                            break
+                    if flag == True:
+                        purchaseOrderHeader.delivery_status = 3
+                    else:
+                        purchaseOrderHeader.delivery_status = 2
+                    purchaseOrderHeader.updated_at = datetime.now()
+                    # purchaseOrderHeader.save()
         transaction.commit()
         context.update({
             'status': 200,
