@@ -704,7 +704,7 @@ def storeTransactionList(request):
 def storeTransactionAdd(request):
     context.update({
         'transaction_type': "1",
-        'page_title': "Store Transaction Add",
+        'page_title': "Material Receipt Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}, {'name': "Add"}]
     })
     return render(request, 'portal/Store Transaction/add.html', context)
@@ -833,7 +833,7 @@ def materialIssueEdit(request,id):
 def materialIssueView(request,id):
     context = returnMaterialListView(id,2)
 
-    return render(request, 'portal/material_issue/edit.html', context)
+    return render(request, 'portal/material_issue/view.html', context)
 
 def returnMaterialListView(id,type_id):
     context = {}

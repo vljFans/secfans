@@ -93,7 +93,7 @@
                             </div>
                             <div class="purchase_order_details col-md-12">
                                 <div class="form-row content_parent">
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-2 mb-3">
                                         <label>Item <span class="required-indicator">*</span></label>
                                         <div class="input-group">
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
@@ -141,6 +141,17 @@
                                             <select class="custom-select selectpicker store_id" name="store_id" required>
                                                 <option value="">Choose...</option>
                                             </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 mb-3">
+                                        
+                                        <div class="custom-control custom-checkbox inspect">
+                                            <input type="checkbox" class="custom-control-input "
+                                                 value="0" onclick="check(this)" id="inspect">
+                                                <label class="custom-control-label" for="inspect">
+                                                    Inspects
+                                                </label>
+                                                <input type="hidden" name="inspect" class="insc" value="0">
                                         </div>
                                     </div>
                                     <div class="col-md-1 mb-4 text-center ">
@@ -322,7 +333,7 @@
             $('#purchase_order_header_id').val("")
             $('#purchase_order_header_id').removeAttr('required');
             purchase_details = `<div class="form-row content_parent">
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-2 mb-3">
                                         <label>Item <span class="required-indicator">*</span></label>
                                         <div class="input-group">
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
@@ -370,6 +381,16 @@
                                             <select class="custom-select selectpicker store_id" name="store_id" required>
                                                 ${store_options_text}
                                             </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 mb-3">
+                                        <div class="custom-control custom-checkbox inspect">
+                                            <input type="checkbox" class="custom-control-input "
+                                                 value="0" onclick="check(this)">
+                                                <label class="custom-control-label">
+                                                Inspect
+                                            </label>
+                                            <input type="hidden" name="inspect" class="insc" value="0">
                                         </div>
                                     </div>
                                     <div class="col-md-1 mb-4 text-center ">
@@ -408,7 +429,7 @@
                         }
                         $("#purchase_order_header_id").html(options_text);
                         purchase_details = `<div class="form-row content_parent">
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-2 mb-3">
                                         <label>Item <span class="required-indicator">*</span></label>
                                         <div class="input-group">
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
@@ -456,6 +477,16 @@
                                             <select class="custom-select selectpicker store_id" name="store_id" required>
                                                 ${store_options_text}
                                             </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 mb-3">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input inspect"
+                                                 id="inspect0" value="0" onclick="check(this)">
+                                                <label class="custom-control-label" for="inspect0">
+                                                Inspect
+                                            </label><br>
+                                            <input type="hidden" name="inspect" class="insc" value="0">
                                         </div>
                                     </div>
                                     <div class="col-md-1 mb-4 text-center ">
@@ -471,7 +502,7 @@
                         $('.purchase_order_type_content').hide();
                         $('#purchase_order_header_id').removeAttr('required');
                         purchase_details = `<div class="form-row content_parent">
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-2 mb-3">
                                         <label>Item <span class="required-indicator">*</span></label>
                                         <div class="input-group">
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
@@ -519,6 +550,16 @@
                                             <select class="custom-select selectpicker store_id" name="store_id" required>
                                                 ${store_options_text}
                                             </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 mb-3">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input inspect"
+                                                 id="inspect1" value="0" onclick="check(this)">
+                                                <label class="custom-control-label" for="inspect1">
+                                                Inspect
+                                            </label><br>
+                                            <input type="hidden" name="inspect" class="insc" value="0">
                                         </div>
                                     </div>
                                     <div class="col-md-1 mb-4 text-center ">
@@ -550,7 +591,7 @@
 
     $(document).on('click', '.add_item', function () {
         $('.add_more_content').append(`<div class="form-row content_parent">
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-2 mb-3">
                                         <label>Item <span class="required-indicator">*</span></label>
                                         <div class="input-group">
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
@@ -598,6 +639,16 @@
                                             <select class="custom-select selectpicker store_id" name="store_id" required>
                                                 ${store_options_text}
                                             </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 mb-3">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input inspect"
+                                                 id ="inspect2" value="0" onclick="check(this)">
+                                                <label class="custom-control-label" for="inspect2">
+                                                Inspect
+                                            </label>
+                                            <input type="hidden" name="inspect" class="insc" value="0">
                                         </div>
                                     </div>
                                     <div class="col-md-1 mb-4 text-center ">
@@ -735,7 +786,7 @@
                     for (let index = 0; index < response.page_items.length; index++) {
                         if ((response.page_items[index].quantity - response.page_items[index].delivered_quantity) > 0) {
                             purchase_details += `<div class="form-row content_parent">
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-2 mb-3">
                                         <label>Item <span class="required-indicator">*</span></label>
                                         <div class="input-group">
                                             <select class="custom-select selectpicker item_id" name="item_id" required disabled>
@@ -785,6 +836,16 @@
                                             <select class="custom-select selectpicker store_id" name="store_id" required>
                                                 ${store_options_text}
                                             </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 mb-3">
+                                        <div class="custom-control custom-checkbox inspect">
+                                            <input type="checkbox" class="custom-control-input "
+                                                 id ="inspect${response.page_items[index].quantity}" value="0" onclick="check(this)" >
+                                            <label class="custom-control-label" for="inspect${response.page_items[index].quantity}">
+                                                Inspect
+                                            </label><br>
+                                            <input type="hidden" name="inspect" class="insc" value="0">
                                         </div>
                                     </div>
                                     <div class="col-md-1 mb-4 text-center ">
@@ -848,5 +909,29 @@
             }
         });
     });
+
+    // $(document).on('click touchstart','#inspect', function () {
+    //     if ($(this).prop('checked') == true) {
+    //         $('.edit-role').find('input[type=checkbox]').each(function () {
+    //             this.checked = true;
+    //         });
+    //     } else {
+    //         $('.edit-role').find('input[type=checkbox]').each(function () {
+    //             this.checked = false;
+    //         });
+    //     }
+    // });
+        function check(element){
+            console.log($(element).parent().closest('.inspect').find('.insc').val());
+            if($(element).val() === "0"){
+                $(element).val("1")
+                $(element).parent().closest('.inspect').find('.insc').val("1")
+            }
+           else{
+            $(element).val("0")
+            $(element).parent().closest('.inspect').find('.insc').val("0")
+           }
+        }
+    
 </script>
 {% endblock %}
