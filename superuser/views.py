@@ -833,7 +833,7 @@ def materialIssueEdit(request,id):
 def materialIssueView(request,id):
     context = returnMaterialListView(id,2)
 
-    return render(request, 'portal/material_issue/edit.html', context)
+    return render(request, 'portal/material_issue/view.html', context)
 
 def returnMaterialListView(id,type_id):
     context = {}
