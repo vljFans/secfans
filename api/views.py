@@ -2691,6 +2691,151 @@ def purchaseOrderDetails(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def transactionTypeList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
+    if id is not None and id != "":
+        transactionType = list(models.Transaction_Type.objects.filter(pk=id)[:1].values('pk', 'name'))
+        context.update({
+            'status': 200,
+            'message': "Transaction Type Fetched Successfully.",
+            'page_items': transactionType,
+        })
+    else:
+        if keyword is not None and keyword != "":
+            transactionTypes = list(models.Transaction_Type.objects.filter(
+                name__icontains=keyword, status=1, deleted=0).values('pk', 'name'))
+        else:
+            transactionTypes = list(models.Transaction_Type.objects.filter(
+                status=1, deleted=0).values('pk', 'name'))
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Transaction Types Fetched Successfully.",
+                'page_items': transactionTypes,
+            })
+            return JsonResponse(context)
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(transactionTypes, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Transaction Types Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'per_page': per_page,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def transactionTypeAdd(request):
+    context = {}
+    if not request.POST['name']:
+        context.update({
+            'status': 531,
+            'message': "Name has not been provided."
+        })
+        return JsonResponse(context)
+    exist_data = models.Transaction_Type.objects.filter(
+        name=request.POST['name']).filter(deleted=0)
+    if len(exist_data) > 0:
+        context.update({
+            'status': 532,
+            'message': "Transaction Type with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            transactionType = models.Transaction_Type()
+            transactionType.name = request.POST['name']
+            transactionType.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Transaction Type Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 533,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def transactionTypeEdit(request):
+    context = {}
+    if not request.POST['name']:
+        context.update({
+            'status': 534,
+            'message': "Name has not been provided."
+        })
+        return JsonResponse(context)
+    exist_data = models.Transaction_Type.objects.filter(
+        name=request.POST['name']).exclude(pk=request.POST['id']).filter(deleted=0)
+    if len(exist_data) > 0:
+        context.update({
+            'status': 535,
+            'message': "Transaction Type with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            transactionType = models.Transaction_Type.objects.get(pk=request.POST['id'])
+            transactionType.name = request.POST['name']
+            transactionType.updated_at = datetime.now()
+            transactionType.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Transaction Type Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 536,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def transactionTypeDelete(request):
+    context = {}
+    transactionType = models.Transaction_Type.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            transactionType.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Transaction Type Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 537,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def storeItemList(request):
     context = {}
     id = request.GET.get('id', None)
@@ -3927,28 +4072,22 @@ def getActualQuantity(request):
     
     return JsonResponse(context)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def materialIssueAdd(request):
     context = {}
     message = "Data Saved"
-    # count = 0
-    # print(req)
+    print(request.POST)
     try:
-        # print("hi", count)
-        # count += 1
-        
-      
-        meterial_issue_type = models.Transaction_Type.objects.get(name = 'MIS')
-       
-    
+        material_issue_type = models.Transaction_Type.objects.get(name = 'MIS')
         item_id = request.POST.getlist('item_id')
         vendor_id = request.POST.get('vendor_id', None)
         #store_Item_of_vendor = list(models.Store_Item.objects.filter(store__vendor_id=vendor_id))
         store_transaction_header_insert = models.Store_Transaction(
                                         vendor_id = vendor_id  ,
                                         transaction_type_id = material_issue_type.id,
-                                        transaction_number = int(request.POST['material_issue_no_name']),
+                                        transaction_number = request.POST['material_issue_no_name'],
                                         transaction_date = request.POST['issue_date'],
                                         notes = 'material issue',
                                         job_order_id = request.POST['job_Order_id']     
@@ -4013,6 +4152,7 @@ def materialIssueAdd(request):
 
     return JsonResponse(context)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def materialIssueEditAdd(request):
@@ -4046,7 +4186,7 @@ def materialIssueEditAdd(request):
                     store_item_update.save()
    
             except Exception:
-                message:"data not updated"
+                message="data not updated"
 
         context.update({
             'status': 200,

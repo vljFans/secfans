@@ -90,8 +90,7 @@
                             </div>
                             <div class="col-md-2 mb-3">
                                 <label>Material Issue No <span class="required-indicator">*</span></label>
-                                <input type="text" name="material_issue_no_name" class="form-control material_issue_no_name" placeholder="material issue no"
-                                required>
+                                <input type="text" name="material_issue_no_name" class="form-control material_issue_no_name" placeholder="material issue no" readonly required>
                             </div>
 
                             <div class="col-md-2 mb-3">
@@ -151,6 +150,8 @@
     //for job order no
 
     $(document).ready(function () {
+        
+        //for job order no
         var item_options_text = ``;
         $.ajax({
             url: "{% url 'api:jobOrderList' %}?find_all=1",
@@ -187,10 +188,7 @@
         });
 
 
-     });
-
-     //for store no
-     $(document).ready(function () {
+        //for store no
         var store_options_text = ``;
         $.ajax({
             url: "{% url 'api:storeList' %}?find_all=2",
@@ -227,22 +225,19 @@
             }
         });
 
-       
-
-    });
-
-    //for item 
+        
+        //for item 
+        $(document).on('mouseenter','.test',function(){
+            if( $('select#store_id option:selected').val() =="" ){
+                alert("please select store")
+            }
+        });
     
 
-    $(document).ready(function(){
-            $(document).on('mouseenter','.test',function(){
-                if( $('select#store_id option:selected').val() =="" ){
-                    alert("please select store")
-                }
-            
-            });
-       
-        })
+        //for material issue no
+        
+    
+    });
 
 </script>
 

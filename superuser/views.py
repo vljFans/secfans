@@ -659,6 +659,35 @@ def purchaseOrderPrint(request, id):
 
 
 @login_required
+def transactionTypeList(request):
+    context.update({
+        'page_title': "Transaction Type List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Transaction Type ", 'url': reverse('superuser:transactionTypeList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Transaction Type/list.html', context)
+
+
+@login_required
+def transactionTypeAdd(request):
+    context.update({
+        'page_title': "Transaction Type Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Transaction Type ", 'url': reverse('superuser:transactionTypeList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Transaction Type/add.html', context)
+
+
+@login_required
+def transactionTypeEdit(request, id):
+    transactionType = models.Transaction_Type.objects.get(pk=id)
+    context.update({
+        'transactionType': transactionType,
+        'page_title': "Transaction Type Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Transaction Type ", 'url': reverse('superuser:transactionTypeList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Transaction Type/edit.html', context)
+
+
+@login_required
 def storeItemList(request):
     context.update({
         'page_title': "Store Item List",
@@ -796,6 +825,7 @@ def jobOrderEdit(request, id):
     })
     return render(request, 'portal/Job Order/edit.html', context)
 
+
 # @login_required
 # def jobOrderView(request, id):
 #     jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
@@ -808,6 +838,7 @@ def jobOrderEdit(request, id):
 #
 #--- developed by saswata
 
+
 @login_required
 def materialIssueListView(request):
     context.update({
@@ -816,13 +847,16 @@ def materialIssueListView(request):
     })
     return render(request, 'portal/Material Issue/list.html', context)
 
+
 @login_required
 def materialIssueAdd(request):
+
     context.update({
         'page_title': " Material Issue Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueListView')}, {'name': "Add"}]
     })
     return render(request, 'portal/Material Issue/add.html', context)
+
 
 @login_required
 def materialIssueEdit(request,id):
@@ -830,11 +864,13 @@ def materialIssueEdit(request,id):
 
     return render(request, 'portal/Material Issue/edit.html', context)
 
+
 @login_required
 def materialIssueView(request,id):
     context = returnMaterialListView(id,2)
 
     return render(request, 'portal/Material Issue/view.html', context)
+
 
 def returnMaterialListView(id,type_id):
     context = {}
