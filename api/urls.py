@@ -115,5 +115,9 @@ urlpatterns = [
 
     path('material-issue-edit-Add', views.materialIssueEditAdd, name='materialIssueEditAdd'),
 
+    path('grn-inspection-transaction-list', views.getGrnInspectionTransaction, name='getGrnInspectionTransaction'),
+
+    # path('grn-inspection-list-Add', views.getGrnInspection, name='getGrnInspection'),
+
 
 ]

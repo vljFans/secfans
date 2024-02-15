@@ -3962,7 +3962,7 @@ def materialIssueAdd(request):
         # count += 1
         
       
-        meterial_issue_type = models.Transaction_Type.objects.get(name = 'MIS')
+        material_issue_type = models.Transaction_Type.objects.get(name = 'MIS')
        
     
         item_id = request.POST.getlist('item_id')
@@ -3971,7 +3971,7 @@ def materialIssueAdd(request):
 
         print(request.POST)
 
-        #print( meterial_issue_type.id,type(int(vendor_id)))
+        #print( material_issue_type.id,type(int(vendor_id)))
         
         #store_Item_of_vendor = list(models.Store_Item.objects.filter(store__vendor_id=vendor_id))
         
@@ -3979,13 +3979,13 @@ def materialIssueAdd(request):
         # print("3923")
 
         # print("(1) ",vendor_id)
-        # print("(2) ",meterial_issue_type.id)
+        # print("(2) ",material_issue_type.id)
         # print("(3) ",int(request.POST['material_issue_no_name']))
         # print("(4) ",request.POST['issue_date'])
         # print("(5) ",request.POST['job_Order_id'])
         store_transaction_header_insert = models.Store_Transaction(
                                         vendor_id = vendor_id  ,
-                                        transaction_type_id = meterial_issue_type.id,
+                                        transaction_type_id = material_issue_type.id,
                                         transaction_number = int(request.POST['material_issue_no_name']),
                                         transaction_date = request.POST['issue_date'],
                                         notes = 'material issue',
@@ -4117,4 +4117,24 @@ def materialIssueEditAdd(request):
         })  
     return JsonResponse(context)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getGrnInspectionTransaction(request):
+    context = {}
+    #print( "item_id:",item_id , " " ,"store_id:",store_id)
+    
+    try:
+        grn_Ins = list(models.Grn_Inspection_Transaction.objects.get(status = 1 , deleted =0).values('pk','transaction_type','purchase_order_header','transaction_number','transaction_date','status'))
+        #print(store_item)
+        context.update({
+            'status': 200,
+            'on_hand_qty_res': store_item.on_hand_qty
+        })
+    except:
+        context.update({
+            'status': 200,
+            'on_hand_qty_res': '0.00'
+        })
+    
+    return JsonResponse(context)
 
