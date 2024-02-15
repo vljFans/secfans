@@ -796,7 +796,6 @@ def jobOrderEdit(request, id):
     })
     return render(request, 'portal/Job Order/edit.html', context)
 
-
 # @login_required
 # def jobOrderView(request, id):
 #     jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
@@ -808,13 +807,14 @@ def jobOrderEdit(request, id):
 #     return render(request, 'portal/Job Order/view.html', context)
 #
 #--- developed by saswata
+
 @login_required
 def materialIssueListView(request):
     context.update({
         'page_title': "Material Issue List",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueListView')}, {'name': "List"}]
     })
-    return render(request, 'portal/material_issue/list.html', context)
+    return render(request, 'portal/Material Issue/list.html', context)
 
 @login_required
 def materialIssueAdd(request):
@@ -822,18 +822,19 @@ def materialIssueAdd(request):
         'page_title': " Material Issue Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueListView')}, {'name': "Add"}]
     })
-    return render(request, 'portal/material_issue/add.html', context)
+    return render(request, 'portal/Material Issue/add.html', context)
 
 @login_required
 def materialIssueEdit(request,id):
     context = returnMaterialListView(id,1)
 
-    return render(request, 'portal/material_issue/edit.html', context)
+    return render(request, 'portal/Material Issue/edit.html', context)
+
 @login_required
 def materialIssueView(request,id):
     context = returnMaterialListView(id,2)
 
-    return render(request, 'portal/material_issue/view.html', context)
+    return render(request, 'portal/Material Issue/view.html', context)
 
 def returnMaterialListView(id,type_id):
     context = {}
