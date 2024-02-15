@@ -2991,6 +2991,9 @@ def storeTransactionAdd(request):
                 grnTransactionheader.transaction_type_id = request.POST['transaction_type_id']
                 grnTransactionheader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                     "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(5))
+                if (request.POST['purchase_order_header_id']):
+                    grnTransactionheader.purchase_order_header_id = request.POST[
+                        'purchase_order_header_id']
                 grnTransactionheader.transaction_date = request.POST['transaction_date']
                 grnTransactionheader.total_amount = request.POST['total_amount']
                 grnTransactionheader.notes = request.POST['notes']
