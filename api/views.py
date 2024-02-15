@@ -3955,14 +3955,14 @@ def getActualQuantity(request):
 def materialIssueAdd(request):
     context = {}
     message = "Data Saved"
-    count = 0
+    # count = 0
     # print(req)
     try:
-        print("hi", count)
-        count += 1
+        # print("hi", count)
+        # count += 1
         
       
-        meterial_issue_type = models.Transaction_Type.objects.get(name = 'Material Issue')
+        meterial_issue_type = models.Transaction_Type.objects.get(name = 'MIS')
        
     
         item_id = request.POST.getlist('item_id')
