@@ -2983,6 +2983,9 @@ def storeTransactionAdd(request):
                 grnTransactionheader.transaction_type_id = request.POST['transaction_type_id']
                 grnTransactionheader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                     "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(5))
+                if (request.POST['purchase_order_header_id']):
+                    grnTransactionheader.purchase_order_header_id = request.POST[
+                        'purchase_order_header_id']
                 grnTransactionheader.transaction_date = request.POST['transaction_date']
                 grnTransactionheader.total_amount = request.POST['total_amount']
                 grnTransactionheader.notes = request.POST['notes']
@@ -3929,12 +3932,16 @@ def getActualQuantity(request):
 def materialIssueAdd(request):
     context = {}
     message = "Data Saved"
-    count = 0
+    # count = 0
+    # print(req)
     try:
-        count += 1
-        print("AAAAA")
-        material_issue_type = models.Transaction_Type.objects.get(name = 'Material Issue')
-        print("AAAAA")
+        # print("hi", count)
+        # count += 1
+        
+      
+        meterial_issue_type = models.Transaction_Type.objects.get(name = 'MIS')
+       
+    
         item_id = request.POST.getlist('item_id')
         vendor_id = request.POST.get('vendor_id', None)
         #store_Item_of_vendor = list(models.Store_Item.objects.filter(store__vendor_id=vendor_id))
