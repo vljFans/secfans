@@ -5,7 +5,7 @@ from django.utils.timezone import now
 from datetime import datetime
 from django.core.validators import RegexValidator
 from django.utils.text import gettext_lazy as _
-
+import django
 
 class Role(models.Model):
     name = models.CharField(max_length=50)
@@ -513,9 +513,6 @@ class Transaction_Type(models.Model):
         verbose_name_plural = 'transaction_types'
 
 
-
-
-
 class Job_Order(models.Model):
     order_number = models.CharField(max_length=50, blank=True, null=True)
     order_date = models.DateField(blank=True, null=True)
@@ -526,8 +523,8 @@ class Job_Order(models.Model):
     notes = models.TextField(blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
-    created_at = models.DateTimeField(default=now)
-    updated_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(default=django.utils.timezone.now)
+    updated_at = models.DateTimeField(default=django.utils.timezone.now)
     def __str__(self):
         return self.order_number
 
@@ -547,8 +544,8 @@ class Job_Order_Detail(models.Model):
 
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
-    created_at = models.DateTimeField(default=now())
-    updated_at = models.DateTimeField(default=now())
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
 
     def __str__(self):
         return self.job_order_header.order_number
@@ -578,6 +575,8 @@ class Job_Order_Detail(models.Model):
 #         managed = True
 #         db_table = 'job_order_detail_sent'
 #         verbose_name_plural = 'job_order_detail_sent'
+
+
 class Store_Transaction(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True)
     transaction_type = models.ForeignKey(Transaction_Type, on_delete=models.CASCADE, blank=True, null=True)
@@ -590,7 +589,7 @@ class Store_Transaction(models.Model):
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
     updated_at = models.DateTimeField(default=now)
-    job_order =  models.ForeignKey(Job_Order, on_delete=models.CASCADE, blank=True, null=True)
+    job_order = models.ForeignKey(Job_Order, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return self.transaction_number
@@ -622,6 +621,7 @@ class Store_Transaction_Detail(models.Model):
         managed = True
         db_table = 'store_transaction_details'
         verbose_name_plural = 'store_transaction_details'
+
 
 class Grn_Inspection_Transaction(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True)

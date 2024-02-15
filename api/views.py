@@ -1960,7 +1960,6 @@ def storeList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    #print(request.GET)
     if id is not None and id != "":
         store = list(models.Store.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'address', 'contact_name', 'contact_no', 'contact_email', 'manager_name', 'pin', 'city__name', 'state__name', 'country__name'))
@@ -2692,6 +2691,151 @@ def purchaseOrderDetails(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def transactionTypeList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
+    if id is not None and id != "":
+        transactionType = list(models.Transaction_Type.objects.filter(pk=id)[:1].values('pk', 'name'))
+        context.update({
+            'status': 200,
+            'message': "Transaction Type Fetched Successfully.",
+            'page_items': transactionType,
+        })
+    else:
+        if keyword is not None and keyword != "":
+            transactionTypes = list(models.Transaction_Type.objects.filter(
+                name__icontains=keyword, status=1, deleted=0).values('pk', 'name'))
+        else:
+            transactionTypes = list(models.Transaction_Type.objects.filter(
+                status=1, deleted=0).values('pk', 'name'))
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Transaction Types Fetched Successfully.",
+                'page_items': transactionTypes,
+            })
+            return JsonResponse(context)
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(transactionTypes, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Transaction Types Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'per_page': per_page,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def transactionTypeAdd(request):
+    context = {}
+    if not request.POST['name']:
+        context.update({
+            'status': 531,
+            'message': "Name has not been provided."
+        })
+        return JsonResponse(context)
+    exist_data = models.Transaction_Type.objects.filter(
+        name=request.POST['name']).filter(deleted=0)
+    if len(exist_data) > 0:
+        context.update({
+            'status': 532,
+            'message': "Transaction Type with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            transactionType = models.Transaction_Type()
+            transactionType.name = request.POST['name']
+            transactionType.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Transaction Type Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 533,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def transactionTypeEdit(request):
+    context = {}
+    if not request.POST['name']:
+        context.update({
+            'status': 534,
+            'message': "Name has not been provided."
+        })
+        return JsonResponse(context)
+    exist_data = models.Transaction_Type.objects.filter(
+        name=request.POST['name']).exclude(pk=request.POST['id']).filter(deleted=0)
+    if len(exist_data) > 0:
+        context.update({
+            'status': 535,
+            'message': "Transaction Type with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            transactionType = models.Transaction_Type.objects.get(pk=request.POST['id'])
+            transactionType.name = request.POST['name']
+            transactionType.updated_at = datetime.now()
+            transactionType.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Transaction Type Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 536,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def transactionTypeDelete(request):
+    context = {}
+    transactionType = models.Transaction_Type.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            transactionType.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Transaction Type Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 537,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def storeItemList(request):
     context = {}
     id = request.GET.get('id', None)
@@ -2902,7 +3046,6 @@ def storeItemExport(request):
 @permission_classes([IsAuthenticated])
 def storeTransactionList(request):
     context = {}
-    #print( request.GET)
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
@@ -2977,16 +3120,10 @@ def storeTransactionAdd(request):
         return JsonResponse(context)
     try:
         inspect = request.POST.getlist('inspect')
-        # print("2980")
         with transaction.atomic():
             if "1" in inspect:
-
-                # print("2983")
-
                 grn_inspection_transaction_count = models.Grn_Inspection_Transaction.objects.all().count()
                 grnTransactionheader = models.Grn_Inspection_Transaction()
-                
-                # print("2987")
                 grnTransactionheader.vendor_id = request.POST['vendor_id']
                 grnTransactionheader.transaction_type_id = request.POST['transaction_type_id']
                 grnTransactionheader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
@@ -2997,14 +3134,11 @@ def storeTransactionAdd(request):
                 grnTransactionheader.transaction_date = request.POST['transaction_date']
                 grnTransactionheader.total_amount = request.POST['total_amount']
                 grnTransactionheader.notes = request.POST['notes']
-
                 grnTransactionheader.save()
-                # print("2993")
 
                 order_details = []
                 for index, elem in enumerate(request.POST.getlist('item_id')):
                     if inspect[index] == "1":
-                        print("check1:",check1)
                         check1 +=1
                         order_details.append(
                             models.Grn_Inspection_Transaction_Detail(
@@ -3016,15 +3150,10 @@ def storeTransactionAdd(request):
                                 amount=request.POST.getlist('item_price')[index]
                             )
                         )
-                        # print("3010")
                 models.Grn_Inspection_Transaction_Detail.objects.bulk_create(order_details)
 
-
-
             if "0" in inspect:
-                # print("3016")
                 store_transaction_count = models.Store_Transaction.objects.all().count()
-                # print(store_transaction_count,"2979")
                 storeTransactionHeader = models.Store_Transaction()
                 storeTransactionHeader.vendor_id = request.POST['vendor_id']
                 storeTransactionHeader.transaction_type_id = request.POST['transaction_type_id']
@@ -3037,13 +3166,9 @@ def storeTransactionAdd(request):
                 storeTransactionHeader.total_amount = request.POST['total_amount']
                 storeTransactionHeader.notes = request.POST['notes']
                 storeTransactionHeader.save()
-
-                # print("3031")
-
                 order_details = []
                 for index, elem in enumerate(request.POST.getlist('item_id')):
                     if inspect[index] == "0":
-                        print("check2:",check2)
                         check2 +=1
                         order_details.append(
                             models.Store_Transaction_Detail(
@@ -3725,8 +3850,6 @@ def jobOrderList(request):
     keyword = request.GET.get('keyword', None)
     if id is not None and id != "":
         jobOrder = list(models.Job_Order.objects.filter(pk=id)[:1].values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor', 'with_item', 'notes'))
-        # print(list(models.Job_Order.objects.prefetch_related('job_order_detail_set').filter(pk=id)[:1].values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor', 'with_item', 'notes')))
-        # print(models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id))
         context.update({
             'status': 200,
             'message': "Job Order Fetched Successfully.",
@@ -3905,6 +4028,8 @@ def jobOrderDelete(request):
 #
 
 #for material issue --- developed by saswata
+
+
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 def materialIssueDetails(request):
@@ -3916,7 +4041,6 @@ def materialIssueDetails(request):
     store_id = request.GET.get('store_id',None)
     header_detail_res = list(models.Job_Order_Detail.objects.filter(job_order_header=job_Order_header_id).values('pk','item_id','item__name','job_order_header__vendor__name','job_order_header__vendor_id'))
     job_order_head = list(models.Job_Order.objects.filter(pk=job_Order_header_id).values('pk','vendor_id','vendor__name'))
-    print(job_order_head,"saswata")
     context.update({
         'status': 200,
         'job_order_head': job_order_head,
@@ -3933,11 +4057,9 @@ def getActualQuantity(request):
     context = {}
     item_id = request.GET.get('item_id',None)
     store_id = request.GET.get('store_id',None)
-    #print( "item_id:",item_id , " " ,"store_id:",store_id)
     
     try:
         store_item = models.Store_Item.objects.get(store_id=int(store_id), item_id=int(item_id))
-        #print(store_item)
         context.update({
             'status': 200,
             'on_hand_qty_res': store_item.on_hand_qty
@@ -3950,56 +4072,28 @@ def getActualQuantity(request):
     
     return JsonResponse(context)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def materialIssueAdd(request):
     context = {}
     message = "Data Saved"
-    # count = 0
-    # print(req)
+    print(request.POST)
     try:
-        # print("hi", count)
-        # count += 1
-        
-      
         material_issue_type = models.Transaction_Type.objects.get(name = 'MIS')
-       
-    
         item_id = request.POST.getlist('item_id')
-
-        vendor_id = request.POST.get('vendor_id', None) 
-
-        print(request.POST)
-
-        #print( material_issue_type.id,type(int(vendor_id)))
-        
+        vendor_id = request.POST.get('vendor_id', None)
         #store_Item_of_vendor = list(models.Store_Item.objects.filter(store__vendor_id=vendor_id))
-        
-        
-        # print("3923")
-
-        # print("(1) ",vendor_id)
-        # print("(2) ",material_issue_type.id)
-        # print("(3) ",int(request.POST['material_issue_no_name']))
-        # print("(4) ",request.POST['issue_date'])
-        # print("(5) ",request.POST['job_Order_id'])
         store_transaction_header_insert = models.Store_Transaction(
                                         vendor_id = vendor_id  ,
                                         transaction_type_id = material_issue_type.id,
-                                        transaction_number = int(request.POST['material_issue_no_name']),
+                                        transaction_number = request.POST['material_issue_no_name'],
                                         transaction_date = request.POST['issue_date'],
                                         notes = 'material issue',
                                         job_order_id = request.POST['job_Order_id']     
                                     )
-
         store_transaction_header_insert.save()
-
-        #print("3937")
-
         store_transaction_header_id = store_transaction_header_insert.id
-     
-
-        #print("3940")
         for index in  range (0,len(item_id)):
             store_transaction_detail_insert = models.Store_Transaction_Detail(
                 store_transaction_header_id = store_transaction_header_id,
@@ -4009,9 +4103,9 @@ def materialIssueAdd(request):
                 status = 1,
                 deleted = 0
             )
+
             store_transaction_detail_insert.save()
             if(vendor_id):
-                # #print("hello")
                 try:
                     #if store item present for that particular vendor
                     store_Item_of_vendor = models.Store_Item.objects.get(store__vendor_id=vendor_id, item_id = item_id[index])  
@@ -4020,7 +4114,6 @@ def materialIssueAdd(request):
                         store_Item_of_vendor.closing_qty = float(store_Item_of_vendor.closing_qty) + float(request.POST.getlist('quantity_sent')[index])
                         store_Item_of_vendor.updated_at = datetime.now()
                         store_Item_of_vendor.save()
-                        #print("3961")
                 except:
                     #if store item not present for that particular vendor
                     store_id_vendor = models.Store.objects.get(vendor_id=vendor_id)
@@ -4044,26 +4137,21 @@ def materialIssueAdd(request):
                     store_item_for_in_house.closing_qty = float(store_item_for_in_house.closing_qty) - float(request.POST.getlist('quantity_sent')[index])
                     store_item_for_in_house.updated_at = datetime.now()
                     store_item_for_in_house.save()
-                # #print("3985")
             except Exception :
-                message = "Not save due to INternal Error"
+                message = "Not saved due to Internal Error"
         context.update({
             'status': 200,
             'message': message       
          })
-
-
-        
-        ##print(store_Item_of_vendor_id)
     except Exception:
         context.update({
             'status': 404,
             'message': "server error"       
 
         })
-    # #print(message)
 
     return JsonResponse(context)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -4073,17 +4161,13 @@ def materialIssueEditAdd(request):
     try:
         vendor_id = request.POST.get('vendor_id',None)
         item_id = request.POST.getlist('item_id')
-        #print(request.POST)
         store_transact_id = request.POST['store_transact_head_pk']
 
         for index in range(0,len(item_id)):
             if(vendor_id):
-                print("4005")
                 with transaction.atomic():
                     store_item_vendor_update = models.Store_Item.objects.get(store__vendor_id = vendor_id , item_id=item_id[index])
-                    #print(store_item_vendor_update)
                     store_item_vendor_update.on_hand_qty = (float(store_item_vendor_update.on_hand_qty)- float(request.POST.getlist('quantity_sent')[0])) +float(request.POST.getlist('quantity_issue')[0])
-                    #print("4013")
                     store_item_vendor_update.closing_qty =(float(store_item_vendor_update.closing_qty)- float(request.POST.getlist('quantity_sent')[0])) + float(request.POST.getlist('quantity_issue')[0])
                     store_item_vendor_update.updated_at =  datetime.now()
                     store_item_vendor_update.save()
@@ -4102,8 +4186,8 @@ def materialIssueEditAdd(request):
                     store_item_update.save()
    
             except Exception:
-                message:"data not updated"
-        #print("4046")
+                message="data not updated"
+
         context.update({
             'status': 200,
             'message': message      

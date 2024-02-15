@@ -91,6 +91,11 @@ urlpatterns = [
     path('purchase-order-delete', views.purchaseOrderDelete, name='purchaseOrderDelete'),
     path('purchase-order-details', views.purchaseOrderDetails, name='purchaseOrderDetails'),
 
+    path('transaction-type -list', views.transactionTypeList, name='transactionTypeList'),
+    path('transaction-type -add', views.transactionTypeAdd, name='transactionTypeAdd'),
+    path('transaction-type -edit', views.transactionTypeEdit, name='transactionTypeEdit'),
+    path('transaction-type -delete', views.transactionTypeDelete, name='transactionTypeDelete'),
+
     path('store-item-list', views.storeItemList, name='storeItemList'),
     path('store-item-add', views.storeItemAdd, name='storeItemAdd'),
     path('store-item-edit', views.storeItemEdit, name='storeItemEdit'),

@@ -148,14 +148,11 @@
             {% endif %}
           </ul>
         </li>
-        <!-- mateial issue list view -->
-        <li>
-          <a href="{% url 'superuser:materialIssueListView' %}"><i data-feather="shopping-bag"></i>
-            <span>Material Issued</span>
-          </a>
-          
-        </li>
         {% endif %}
+        <li class="{% if request.path == '/material-issue-list' %}open active{% endif %}">
+          <a href="{% url 'superuser:materialIssueListView' %}"><i data-feather="printer"></i>
+            <span>Material Issue</span></a>
+        </li>
         <!-- <li class="mg-l-20-force mg-t-25-force menu-elements">Elements</li>
         <li>
           <a href="javascript:void(0)"><i data-feather="underline"></i>

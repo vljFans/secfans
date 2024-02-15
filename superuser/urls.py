@@ -83,6 +83,10 @@ urlpatterns = [
     path('purchase-order-view/<int:id>', views.purchaseOrderView, name='purchaseOrderView'),
     path('purchase-order-print/<int:id>', views.purchaseOrderPrint, name='purchaseOrderPrint'),
 
+    path('transaction-type-list', views.transactionTypeList, name='transactionTypeList'),
+    path('transaction-type-add', views.transactionTypeAdd, name='transactionTypeAdd'),
+    path('transaction-type-edit/<int:id>', views.transactionTypeEdit, name='transactionTypeEdit'),
+
     path('store-item-list', views.storeItemList, name='storeItemList'),
     path('store-item-add', views.storeItemAdd, name='storeItemAdd'),
     path('store-item-edit/<int:id>', views.storeItemEdit, name='storeItemEdit'),
@@ -96,14 +100,12 @@ urlpatterns = [
     path('job-order-add', views.jobOrderAdd, name='jobOrderAdd'),
     path('job-order-edit/<int:id>', views.jobOrderEdit, name='jobOrderEdit'),
     # path('job-order-view/<int:id>', views.jobOrderView, name='jobOrderView'),
-     # material issue url --- developed by saswata
-    path('material-issue-list',views.materialIssueListView , name = 'materialIssueListView'),
 
-    path('material-issue-add',views.materialIssueAdd , name = 'materialIssueAdd'),
-
-    path('material-issue-edit/<int:id>',views.materialIssueEdit , name = 'materialIssueEdit'),
-
-    path('material-issue-view/<int:id>',views.materialIssueView , name = 'materialIssueView'),
+    # material issue url --- developed by saswata
+    path('material-issue-list',views.materialIssueListView, name='materialIssueListView'),
+    path('material-issue-add',views.materialIssueAdd, name='materialIssueAdd'),
+    path('material-issue-edit/<int:id>',views.materialIssueEdit, name='materialIssueEdit'),
+    path('material-issue-view/<int:id>',views.materialIssueView, name='materialIssueView'),
 
     path('grn-inspection-list',views.grnInspectionListView , name = 'grnInspectionListView'),
 
