@@ -350,7 +350,7 @@ class Store(models.Model):
     contact_no = models.CharField(max_length=15, blank=True, null=True)
     contact_email = models.CharField(max_length=100, blank=True, null=True)
     manager_name = models.CharField(max_length=50, blank=True, null=True)
-    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True)
+    vendor = models.OneToOneField(Vendor, on_delete=models.CASCADE, blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)

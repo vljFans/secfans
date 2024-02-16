@@ -124,7 +124,7 @@
         console.log("123")
         $.ajax({
             type: "GET",
-            url: "{% url 'api:storeTransactionList' %}?transaction_type_id=1&keyword="+keyword,
+            url: "{% url 'api:storeTransactionList' %}?keyword=" + keyword+"&transaction_type=MIS",
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -189,14 +189,14 @@
         if (window.confirm('Are you sure to delete ' + name + '?')) {
             $.ajax({
                 type: "POST",
-                url: "{% url 'api:jobOrderDelete' %}",
+                url: "{% url 'api:storeTransactionDelete' %}",
                 data: ({ id: id }),
                 headers: {
                     'Authorization': getCookieValue("accessToken"),
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:jobOrderList' %}");
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialIssueList' %}");
                     } else {
                         alert(response.message);
                     }

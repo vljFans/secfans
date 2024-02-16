@@ -124,7 +124,7 @@
     function getStoreTransactionList(keyword) {
         $.ajax({
             type: "GET",
-            url: "{% url 'api:storeTransactionList' %}?keyword=" + keyword,
+            url: "{% url 'api:storeTransactionList' %}?keyword="+keyword+"&transaction_type=GRN",
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
                 'Authorization': getCookieValue("accessToken")
