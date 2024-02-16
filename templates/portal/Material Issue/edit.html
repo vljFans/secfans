@@ -173,7 +173,7 @@
             evalScripts: true,
             contentType: false,
             processData: false,
-            url: "{% url 'api:materialIssueEditAdd' %}",
+            url: "{% url 'api:materialIssueEdit' %}",
             data: formData,
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -183,7 +183,7 @@
                 $('.submit-btn').prop('disabled', false);
                 if (response.status == 200) {
                     console.log(response.message);
-                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialIssueListView' %}");
+                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialIssueList' %}");
                     
                 } else {
                     alert(response.message);

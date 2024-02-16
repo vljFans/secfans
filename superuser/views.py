@@ -483,7 +483,9 @@ def storeList(request):
 
 @login_required
 def storeAdd(request):
+    vendors = models.Vendor.objects.all().exclude(id__in=list(models.Store.objects.filter(vendor_id__isnull=False).values_list("vendor_id", flat="True")))
     context.update({
+        'vendors':vendors,
         'page_title': "Store Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store", 'url': reverse('superuser:storeList')}, {'name': "Add"}]
     })
@@ -841,10 +843,10 @@ def jobOrderEdit(request, id):
 
 
 @login_required
-def materialIssueListView(request):
+def materialIssueList(request):
     context.update({
         'page_title': "Material Issue List",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueListView')}, {'name': "List"}]
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueList')}, {'name': "List"}]
     })
     return render(request, 'portal/Material Issue/list.html', context)
 
@@ -854,7 +856,7 @@ def materialIssueAdd(request):
 
     context.update({
         'page_title': " Material Issue Add",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueListView')}, {'name': "Add"}]
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueList')}, {'name': "Add"}]
     })
     return render(request, 'portal/Material Issue/add.html', context)
 
@@ -880,12 +882,12 @@ def returnMaterialListView(id,type_id):
     material_issue_details = list(models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = id).values('pk','item_id', 'item__name','store_id','store__name','quantity'))
     if(type_id == 1):
         context.update({
-            'material_issue' :  material_issue,
+            'material_issue':  material_issue,
             'store_name': material_issue_details[0]['store__name'],
             'store_id' : material_issue_details[0]['store_id'],
             'material_issue_details':  material_issue_details,
             'page_title': " Material Issue edit",
-            'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueListView')}, {'name': "Edit"}]
+            'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueList')}, {'name': "Edit"}]
         })
     else:
         context.update({
@@ -893,7 +895,7 @@ def returnMaterialListView(id,type_id):
             'store_name': material_issue_details[0]['store__name'],
             'material_issue_details':  material_issue_details,
             'page_title': " Material Issue view",
-            'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueListView')}, {'name': "view"}]
+            'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueList')}, {'name': "view"}]
         })
 
     return context
