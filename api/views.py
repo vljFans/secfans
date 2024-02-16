@@ -4242,7 +4242,7 @@ def getGrnDetailisInsTransaction(request):
                 'store__name',
                 'quantity'
             ))
-        print(grn_Ins_Det)
+        # print(grn_Ins_Det)
         context ={
             'status':200,
             'page_items': grn_Ins_Det
@@ -4260,8 +4260,49 @@ def getGrnDetailisInsTransaction(request):
 @permission_classes([IsAuthenticated])
 def addGrnDetailisInsTransaction(request):
     context = {}
+    # print(request.POST)
 
-    print(request.POSTpo)
+    # ins_done = 0  if '' in request.POST.getlist('accp_quantity') else 1
+
+    ins_par_done = 0 if not all(request.POST.getlist('accp_quantity')) else 1 #if ins_par_done is 0 means all item is not inspected may be inspection happned paritally
+
+
+    # ins_no
+
+    try:
+        if any(request.POST.getlist('accp_quantity')):
+            print("4274")
+
+            with transaction.atomic():
+                print("4277")
+                grn_ins_head = models.Grn_Inspection_Transaction.objects.get(pk = request.POST['insTraId'])
+                grn_ins_head.ins_done = 1
+                print(grn_ins_head.ins_done)
+                grn_ins_head.ins_par_done = ins_par_done
+                print("4282")
+                grn_ins_head.save()
+                
+                print("4284")
+
+                for index in  range(0,len(request.POST.getlist('accp_quantity'))):
+                    print("4285")
+                    if request.POST.getlist('accp_quantity')[index] != '':
+                        print("4287",request.POST.getlist('det_id')[index])
+                        grn_ins_det = models.Grn_Inspection_Transaction_Detail.objects.get(pk =request.POST.getlist('det_id')[index])
+                        print("4292")
+                        grn_ins_det.ins_done = 1
+                        grn_ins_det.accepted_quantity  = request.POST.getlist('accp_quantity')[index]
+                        grn_ins_det.reject_quantity = request.POST.getlist('rej_quantity')[index] 
+                        grn_ins_det.inspection_date = request.POST['issue_date']
+                        grn_ins_det.updated_at = datetime.now()
+                        grn_ins_det.save()
+                        print("4295")
+            
+
+                transaction.commit()
+    except:
+        print("error")
+
 
     return JsonResponse(context)
 

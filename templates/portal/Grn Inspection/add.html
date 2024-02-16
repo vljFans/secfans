@@ -226,6 +226,7 @@
                    for(let index=0 ; response.page_items.length>index ; index++){
                     console.log(index);
                         tbody_text += `<div class="form-row content_parent">
+                                        <input type="hidden" name="det_id" value="${response.page_items[index].pk}">
                                         <div class="col-md-2 mb-3">
                                             <label>Item <span class="required-indicator">*</span></label>
                                             <input type="text"  readonly
@@ -246,14 +247,14 @@
                                                 value="${response.page_items[index].quantity }" readonly>
                                         </div>
                                         <div class="col-md-2 mb-3">
-                                            <label>Accepted Quantity<span class="required-indicator">*</span></label>
+                                            <label>Accepted Quantity</label>
                                             <input type="text" onkeyup="checkMaxMin(this)" 
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                 name="accp_quantity" min="0.00" max = "${response.page_items[index].quantity}" class="form-control accp_quantity"
-                                                placeholder="0.00" required>
+                                                placeholder="0.00" >
                                         </div>
                                         <div class="col-md-2 mb-3">
-                                            <label> Rejected Quantiy<span class="required-indicator">*</span></label>
+                                            <label> Rejected Quantiy</label>
                                             <input type="text" name="rej_quantity" class="form-control rej_quantity" readonly
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                 max="${response.page_items[index].quantity}" min="0.00" placeholder="0.00">
