@@ -669,6 +669,7 @@ def transactionTypeList(request):
 
 @login_required
 def transactionTypeAdd(request):
+    
     context.update({
         'page_title': "Transaction Type Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Transaction Type ", 'url': reverse('superuser:transactionTypeList')}, {'name': "Add"}]

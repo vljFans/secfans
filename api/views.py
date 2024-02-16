@@ -4201,24 +4201,67 @@ def materialIssueEditAdd(request):
         })  
     return JsonResponse(context)
 
+#for grn inspetion--- developed by saswata
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getGrnInspectionTransaction(request):
     context = {}
-    #print( "item_id:",item_id , " " ,"store_id:",store_id)
-    
+    #print( "item_id:",item_id , " " ,"store_id:",store_id
     try:
-        grn_Ins = list(models.Grn_Inspection_Transaction.objects.get(status = 1 , deleted =0).values('pk','transaction_type','purchase_order_header','transaction_number','transaction_date','status'))
-        #print(store_item)
+        print("hi")
+        grn_Ins = list(models.Grn_Inspection_Transaction.objects.filter(status = 1 , deleted =0).values('pk','transaction_type','purchase_order_header','transaction_number','transaction_date','status'))
+        print(grn_Ins)
         context.update({
             'status': 200,
-            'on_hand_qty_res': store_item.on_hand_qty
+            'page_items': grn_Ins
         })
     except:
         context.update({
-            'status': 200,
-            'on_hand_qty_res': '0.00'
+            'status': 404,
+            'message': 'server error'
         })
     
+    return JsonResponse(context)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getGrnDetailisInsTransaction(request):
+    print(request.GET,"saswata")
+
+    try:
+        grn_Ins_Det = list(models.Grn_Inspection_Transaction_Detail.objects.filter(
+                grn_inspection_transaction_header_id = int(request.GET.get('insId')) 
+            ).values(
+                'pk',
+                'grn_inspection_transaction_header_id',
+                'grn_inspection_transaction_header__vendor_id',
+                'grn_inspection_transaction_header__vendor__name',
+                'item_id',
+                'item__name',
+                'store_id',
+                'store__name',
+                'quantity'
+            ))
+        print(grn_Ins_Det)
+        context ={
+            'status':200,
+            'page_items': grn_Ins_Det
+        }
+    except:
+        context ={
+        'status':404,
+        'message':'server error'
+        }
+
+
+    return JsonResponse(context)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def addGrnDetailisInsTransaction(request):
+    context = {}
+
+    print(request.POSTpo)
+
     return JsonResponse(context)
 

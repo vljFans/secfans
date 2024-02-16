@@ -83,7 +83,7 @@ urlpatterns = [
     path('purchase-order-view/<int:id>', views.purchaseOrderView, name='purchaseOrderView'),
     path('purchase-order-print/<int:id>', views.purchaseOrderPrint, name='purchaseOrderPrint'),
 
-    path('transaction-type-list', views.transactionTypeList, name='transactionTypeList'),
+    path('transaction-type-list-admin', views.transactionTypeList, name='transactionTypeList'),
     path('transaction-type-add', views.transactionTypeAdd, name='transactionTypeAdd'),
     path('transaction-type-edit/<int:id>', views.transactionTypeEdit, name='transactionTypeEdit'),
 
