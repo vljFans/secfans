@@ -4110,6 +4110,7 @@ def materialIssueAdd(request):
             storeTransactionHeader.save()
 
             store_transaction_details = []
+            store_items_add=[]
             for index, elem in enumerate(request.POST.getlist('item_id')):
                 store_transaction_details.append(
                     models.Store_Transaction_Detail(
@@ -4130,8 +4131,7 @@ def materialIssueAdd(request):
                         store_item.updated_at = datetime.now()
                         store_item.save()
 
-                    # If the item does not exist in vendor store
-
+                    # If the item does not exist in vendor store so new store item is being created
                     else:
                         store_items_add.append(
                             models.Store_Item(
@@ -4152,6 +4152,7 @@ def materialIssueAdd(request):
                 store_item.save()
 
             models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
+            models.Store_Item.objects.bulk_create(store_items_add)
 
         transaction.commit()
 
