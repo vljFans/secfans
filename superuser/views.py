@@ -671,6 +671,7 @@ def transactionTypeList(request):
 
 @login_required
 def transactionTypeAdd(request):
+    
     context.update({
         'page_title': "Transaction Type Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Transaction Type ", 'url': reverse('superuser:transactionTypeList')}, {'name': "Add"}]
@@ -873,6 +874,7 @@ def materialIssueView(request,id):
     return render(request, 'portal/Material Issue/view.html', context)
 
 
+@login_required
 def returnMaterialListView(id,type_id):
     context = {}
     material_issue = models.Store_Transaction.objects.filter(pk=id).values('pk','transaction_number','transaction_date','vendor_id','vendor__name','transaction_type_id','job_order__order_number')
@@ -896,6 +898,34 @@ def returnMaterialListView(id,type_id):
         })
 
     return context
+
+@login_required
+def grnInspectionListView(request):
+    context.update({
+        'page_title': "Grn Inspection List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Grn Inspection", 'url': reverse('superuser:grnInspectionListView')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Grn Inspection/list.html', context)
+    
+@login_required
+def grnInspectionAdd(request):
+    context.update({
+        'page_title': "Grn Inspection Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Grn Inspection", 'url': reverse('superuser:grnInspectionListView')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Grn Inspection/add.html', context)
+
+@login_required
+def grnInspectionEdit(request,id):
+    context = returnMaterialListView(id,1)
+
+    return render(request, 'portal/Grn Inspection/edit.html', context)
+
+@login_required
+def grnInspectionView(request,id):
+    context = returnMaterialListView(id,2)
+
+    return render(request, 'portal/Grn Inspection/view.html', context)
 
 
 @login_required

@@ -142,6 +142,9 @@
             <li class="{% if request.path == '/store-transaction-list' %}active{% endif %}">
               <a href="{% url 'superuser:storeTransactionList' %}">Material Receipt (GRN)</a>
             </li>
+            <li class="{% if request.path == '/store-transaction-list' %}active{% endif %}">
+              <a href="{% url 'superuser:grnInspectionListView' %}">GRN Inspection</a>
+            </li>
             {% endif %}
           </ul>
         </li>
