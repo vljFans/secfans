@@ -105,9 +105,12 @@ urlpatterns = [
     path('material-issue-list',views.materialIssueList, name='materialIssueList'),
     path('material-issue-add',views.materialIssueAdd, name='materialIssueAdd'),
     path('material-issue-edit/<int:id>',views.materialIssueEdit, name='materialIssueEdit'),
-    path('material-issue-view/<int:id>',views.materialIssueView, name='materialIssueView')
+    path('material-issue-view/<int:id>',views.materialIssueView, name='materialIssueView'),
 
-
+    path('material-return-list',views.materialReturnList, name='materialReturnList'),
+    # path('material-issue-add',views.materialIssueAdd, name='materialIssueAdd'),
+    # path('material-issue-edit/<int:id>',views.materialIssueEdit, name='materialIssueEdit'),
+    # path('material-issue-view/<int:id>',views.materialIssueView, name='materialIssueView'),
 
 
 ]

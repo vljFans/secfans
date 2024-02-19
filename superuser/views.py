@@ -852,7 +852,6 @@ def materialIssueList(request):
 
 @login_required
 def materialIssueAdd(request):
-
     context.update({
         'page_title': " Material Issue Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueList')}, {'name': "Add"}]
@@ -897,5 +896,12 @@ def returnMaterialListView(id,type_id):
         })
 
     return context
-    
 
+
+@login_required
+def materialReturnList(request):
+    context.update({
+        'page_title': "Material Return List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Return ", 'url': reverse('superuser:materialReturnList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Material Return/list.html', context)
