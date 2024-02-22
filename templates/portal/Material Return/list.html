@@ -62,8 +62,8 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
-                                <a href="{% url 'superuser:materialIssueAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
+                                {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
+                                <a href="{% url 'superuser:materialReturnAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
                                 {% endif %}
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                                 <!-- <div class="dropdown" data-toggle="dropdown">
@@ -95,7 +95,7 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Material Issue Number</th>
+                                    <th>Material Return Number</th>
                                     <th>Issue Date</th>
                                     <th>Action</th>
                                     
@@ -124,7 +124,7 @@
         console.log("123")
         $.ajax({
             type: "GET",
-            url: "{% url 'api:storeTransactionList' %}?keyword=" + keyword+"&transaction_type=MIS",
+            url: "{% url 'api:storeTransactionList' %}?keyword=" + keyword+"&transaction_type=MR",
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -132,8 +132,8 @@
             success: function (response) {
                 $('.error-msg-txt').text("");
                 if (response.status == 200) {
-                    edit_url = "{% url 'superuser:materialIssueEdit' 1 %}";
-                    view_url = "{% url 'superuser:materialIssueView' 1 %}";
+                    edit_url = "{% url 'superuser:materialReturnEdit' 1 %}";
+                    view_url = "{% url 'superuser:materialReturnView' 1 %}";
                     page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
@@ -196,7 +196,7 @@
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialIssueList' %}");
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialReturnList' %}");
                     } else {
                         alert(response.message);
                     }

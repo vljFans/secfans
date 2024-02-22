@@ -3834,7 +3834,7 @@ def storeTransactionDetails(request):
     if header_id is not None and header_id != "":
         header_detail = list(models.Store_Transaction.objects.filter(id=header_id).values('pk', 'transaction_number', 'transaction_date', 'total_amount',
                              'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name'))
-        orderDetails = list(models.Store_Transaction_Detail.objects.filter(purchase_order_header_id=header_id).values('pk', 'quantity', 'rate', 'amount', 'gst_percentage', 'amount_with_gst',
+        orderDetails = list(models.Store_Transaction_Detail.objects.filter(store_transaction_header_id=header_id).values('pk', 'quantity', 'rate', 'amount', 'gst_percentage', 'amount_with_gst',
                             'item_id', 'item__name', 'store_id', 'store__name', 'store_transaction_header_id', 'store_transaction_header__transaction_number', 'store_transaction_header__transaction_date'))
         context.update({
             'status': 200,
@@ -4081,6 +4081,53 @@ def getActualQuantity(request):
     return JsonResponse(context)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def materialIssueDetails(request):
+    context = {}
+    job_order_id = request.GET.get('job_order_id', None)
+    if job_order_id is not None and job_order_id != "" :
+        if models.Store_Transaction.objects.filter(job_order_id=job_order_id, transaction_type__name="MIS").exists():
+            material_issue = list(
+                models.Store_Transaction.objects.filter(job_order_id=job_order_id, transaction_type__name="MIS")[:1].values(
+                'id', 'vendor_id',
+                'vendor__name',
+                'transaction_type_id',
+                'transaction_type__name',
+                'transaction_number',
+                'transaction_date',
+                'job_order_id',
+                'job_order__order_number'
+                )
+            )
+            material_issue_details = list(
+                models.Store_Transaction_Detail.objects.filter(
+                    store_transaction_header_id=models.Store_Transaction.objects.get(job_order_id=job_order_id, transaction_type__name="MIS").id
+                ).values('pk',
+                         'store_transaction_header_id',
+                         'store_id',
+                         'store__name',
+                         'item_id',
+                         'item__name',
+                         'quantity',
+                         ))
+        else:
+            material_issue=material_issue_details=None
+
+        context.update({
+            'status': 200,
+            'message': "Material Issue Details Fetched Successfully.",
+            'material_issue': material_issue,
+            'material_issue_details': material_issue_details,
+        })
+    else:
+        context.update({
+            'status': 594,
+            'message': "Please Provide an Id.",
+        })
+    return JsonResponse(context)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def materialIssueAdd(request):
@@ -4145,7 +4192,7 @@ def materialIssueAdd(request):
 
                 # In house store items being reduced
                 in_house_store=models.Store.objects.get(id=request.POST['store_id'])
-                store_item = models.Store_Item.objects.get(store=in_house_store, item_id=int(elem))
+                store_item = models.Store_Item.objects.get(store=in_house_store, item_id=elem)
                 store_item.on_hand_qty -= Decimal(request.POST.getlist('quantity_sent')[index])
                 store_item.closing_qty -= Decimal(request.POST.getlist('quantity_sent')[index])
                 store_item.updated_at = datetime.now()
@@ -4175,28 +4222,35 @@ def materialIssueAdd(request):
 @permission_classes([IsAuthenticated])
 def materialIssueEdit(request):
     context = {}
+    if not request.POST['issue_date']:
+        context.update({
+            'status': 596,
+            'message': "Issue Date has not been provided."
+        })
+        return JsonResponse(context)
     try:
         with transaction.atomic():
             vendor_id = request.POST.get('vendor_id',None)
             item_id = request.POST.getlist('item_id')
-            store_transact_id = request.POST['store_transact_head_pk']
+            issue_date=request.POST['issue_date']
+            store_transaction_id = request.POST['id']
 
             for index in range(0,len(item_id)):
                 if(vendor_id):
-                    store_item_vendor_update = models.Store_Item.objects.get(store__vendor_id = vendor_id , item_id=item_id[index])
-                    store_item_vendor_update.on_hand_qty = (float(store_item_vendor_update.on_hand_qty)- float(request.POST.getlist('quantity_sent')[0])) +float(request.POST.getlist('quantity_issue')[0])
-                    store_item_vendor_update.closing_qty =(float(store_item_vendor_update.closing_qty)- float(request.POST.getlist('quantity_sent')[0])) + float(request.POST.getlist('quantity_issue')[0])
+                    store_item_vendor_update = models.Store_Item.objects.get(store_id = request.POST['store_id'] , item_id=item_id[index])
+                    store_item_vendor_update.on_hand_qty = (float(store_item_vendor_update.on_hand_qty)- float(request.POST.getlist('quantity_sent_og')[0])) +float(request.POST.getlist('quantity_sent')[0])
+                    store_item_vendor_update.closing_qty =(float(store_item_vendor_update.closing_qty)- float(request.POST.getlist('quantity_sent_og')[0])) + float(request.POST.getlist('quantity_sent')[0])
                     store_item_vendor_update.updated_at =  datetime.now()
                     store_item_vendor_update.save()
 
-                store_transaction_deat_update = models.Store_Transaction_Detail.objects.get(store_transaction_header_id=store_transact_id,item_id= item_id[index] )
-                store_transaction_deat_update.quantity = request.POST.getlist('quantity_issue')[index]
+                store_transaction_deat_update = models.Store_Transaction_Detail.objects.get(store_transaction_header_id=store_transaction_id,item_id= item_id[index])
+                store_transaction_deat_update.quantity = request.POST.getlist('quantity_sent')[index]
                 store_transaction_deat_update.updated_at = datetime.now()
                 store_transaction_deat_update.save()
 
                 store_item_update = models.Store_Item.objects.get(store_id = request.POST['store_id'] , item_id=item_id[index])
-                store_item_update.on_hand_qty = (float(store_item_update.on_hand_qty)+ float(request.POST.getlist('quantity_sent')[0])) - float(request.POST.getlist('quantity_issue')[0])
-                store_item_update.closing_qty =(float(store_item_update.closing_qty)+ float(request.POST.getlist('quantity_sent')[0])) - float(request.POST.getlist('quantity_issue')[0])
+                store_item_update.on_hand_qty = (float(store_item_update.on_hand_qty)+ float(request.POST.getlist('quantity_sent_og')[0])) - float(request.POST.getlist('quantity_sent')[0])
+                store_item_update.closing_qty =(float(store_item_update.closing_qty)+ float(request.POST.getlist('quantity_sent_og')[0])) - float(request.POST.getlist('quantity_sent')[0])
                 store_item_update.updated_at =  datetime.now()
                 store_item_update.save()
 
@@ -4208,7 +4262,7 @@ def materialIssueEdit(request):
 
     except Exception:
         context.update({
-            'status': 596,
+            'status': 597,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()
@@ -4219,9 +4273,7 @@ def materialIssueEdit(request):
 @permission_classes([IsAuthenticated])
 def getGrnInspectionTransaction(request):
     context = {}
-    #print( "item_id:",item_id , " " ,"store_id:",store_id
     try:
-        print("hi")
         grn_Ins = list(models.Grn_Inspection_Transaction.objects.filter(status = 1 , deleted =0).values('pk','transaction_type','purchase_order_header','transaction_number','transaction_date','status'))
         print(grn_Ins)
         context.update({
@@ -4319,3 +4371,69 @@ def addGrnDetailisInsTransaction(request):
 
     return JsonResponse(context)
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def materialReturnAdd(request):
+    context = {}
+    if not request.POST['reason'] or not request.POST['job_order_id']:
+        context.update({
+            'status': 531,
+            'message': "Reason/Job Order Id has not been provided."
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            store_transaction_count = models.Store_Transaction.objects.all().count()
+            material_issue=models.Store_Transaction.objects.get(transaction_type__name="MIS", job_order_id=request.POST['job_order_id'])
+            material_return=models.Store_Transaction()
+            if material_issue.vendor: material_return.vendor=material_issue.vendor
+            material_return.transaction_type=models.Transaction_Type.objects.get(name="MR")
+            material_return.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')
+                ).replace(
+                    "${AI_DIGIT_5}",str(store_transaction_count + 1).zfill(5)
+                )
+            material_return.transaction_date=datetime.now()
+            material_return.job_order=material_issue.job_order
+            # material_return.save()
+
+            in_house_store=models.Store_Transaction_Detail.objects.filter(store_transaction_header=material_issue).first().store
+            vendor_store=models.Store.objects.filter(vendor=material_issue.vendor).first()
+            store_transaction_details = []
+
+            for (item_id, previous_quantity, updated_quantity) in zip(request.POST.getlist('item_id'),request.POST.getlist('previous_quantity'),request.POST.getlist('updated_quantity')):
+                store_transaction_details.append(
+                    models.Store_Transaction_Detail(
+                        store_transaction_header=material_return,
+                        item_id=item_id,
+                        store=in_house_store,
+                        quantity=Decimal(updated_quantity)-Decimal(previous_quantity)
+                    )
+                )
+
+                vendor_store_item = models.Store_Item.objects.get(store=vendor_store, item_id=item_id)
+                vendor_store_item.on_hand_qty -= Decimal(previous_quantity)-Decimal(updated_quantity)
+                vendor_store_item.closing_qty -= Decimal(previous_quantity)-Decimal(updated_quantity)
+                vendor_store_item.updated_at = datetime.now()
+                vendor_store_item.save()
+
+                in_house_store_item = models.Store_Item.objects.get(store=in_house_store, item_id=elem)
+                in_house_store_item.on_hand_qty += Decimal(previous_quantity)-Decimal(updated_quantity)
+                in_house_store_item.closing_qty += Decimal(previous_quantity)-Decimal(updated_quantity)
+                in_house_store_item.updated_at = datetime.now()
+                in_house_store_item.save()
+
+            models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Material Return Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 533,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
