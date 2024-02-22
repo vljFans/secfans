@@ -62,8 +62,8 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
-                                <a href="{% url 'superuser:storeTransactionAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
+                                {% if request.user.is_superuser == 1 or 'add_transaction_type'|get_session_permission:request is not None %}
+                                <a href="{% url 'superuser:transactionTypeAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
                                 {% endif %}
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                                 <!-- <div class="dropdown" data-toggle="dropdown">
@@ -95,10 +95,7 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Vendor</th>
-                                    <th>Transaction Number</th>
-                                    <th>Transaction Date</th>
-                                    <th>Total Price</th>
+                                    <th>Transaction Type Name</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -121,10 +118,10 @@
 {% block js %}
 <script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
-    function getStoreTransactionList(keyword) {
+    function getTransactionTypeList(keyword) {
         $.ajax({
             type: "GET",
-            url: "{% url 'api:storeTransactionList' %}?keyword="+keyword+"&transaction_type=GRN",
+            url: "{% url 'api:transactionTypeList' %}?keyword=" + keyword,
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -132,28 +129,20 @@
             success: function (response) {
                 $('.error-msg-txt').text("");
                 if (response.status == 200) {
-                    view_url = "{% url 'superuser:storeTransactionView' 1 %}";
-                    edit_url = "{% url 'superuser:storeTransactionEdit' 1 %}";
+                    edit_url = "{% url 'superuser:transactionTypeEdit' 1 %}";
                     page_items = response.page_items;
-                    console.log(page_items)
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index];
                         tbody_text += `<tr>
                                 <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
-                                <td>${element.vendor__name}</td>
-                                <td>${element.transaction_number}</td>
-                                <td>${element.transaction_date}</td>
-                                <td>₹${element.total_amount}</td>
+                                <td>${element.name}</td>
                                 <td>
-                                {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
-                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'change_store_transaction'|get_session_permission:request is not None %}
+                                {% if request.user.is_superuser == 1 or 'change_transaction_type'|get_session_permission:request is not None %}
                                 <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
                                 {% endif %}
-                                {% if request.user.is_superuser == 1 or 'delete_store_transaction'|get_session_permission:request is not None %}
-                                <a id="delete-btn" data-id="${element.pk}" data-name="${element.transaction_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
+                                {% if request.user.is_superuser == 1 or 'delete_transaction_type'|get_session_permission:request is not None %}
+                                <a id="delete-btn" data-id="${element.pk}" data-name="${element.name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
                                 {% endif %}
                                 </td>
                             </tr>`;
@@ -180,12 +169,12 @@
 
     }
     $(document).ready(function () {
-        getStoreTransactionList(keyword)
+        getTransactionTypeList(keyword) 
     });
 
     $(document).on('keyup', '#search', function () {
         keyword = $(this).val();
-        getStoreTransactionList(keyword)
+        getTransactionTypeList(keyword); 
     })
 
     $(document).on('click', '#delete-btn', function () {
@@ -194,14 +183,14 @@
         if (window.confirm('Are you sure to delete ' + name + '?')) {
             $.ajax({
                 type: "POST",
-                url: "{% url 'api:storeTransactionDelete' %}",
+                url: "{% url 'api:transactionTypeDelete' %}",
                 data: ({ id: id }),
                 headers: {
                     'Authorization': getCookieValue("accessToken"),
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:storeTransactionList' %}");
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:transactionTypeList' %}");
                     } else {
                         alert(response.message);
                     }

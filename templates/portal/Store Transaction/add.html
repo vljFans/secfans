@@ -781,6 +781,7 @@
             },
             success: function (response) {
                 if (response.status == 200) {
+                    console.log("784");
                     var purchase_details = ``;
                     // var total_amount = response.header_detail[0].total_amount - response.header_detail[0].delivered_total_amount;
                     for (let index = 0; index < response.page_items.length; index++) {
@@ -841,8 +842,8 @@
                                     <div class="col-md-1 mb-3">
                                         <div class="custom-control custom-checkbox inspect">
                                             <input type="checkbox" class="custom-control-input "
-                                                 id ="inspect${response.page_items[index].quantity}" value="0" onclick="check(this)" >
-                                            <label class="custom-control-label" for="inspect${response.page_items[index].quantity}">
+                                                 id ="inspect${response.page_items[index].pk}" value="0" onclick="check(this)" >
+                                            <label class="custom-control-label" for="inspect${response.page_items[index].pk}">
                                                 Inspect
                                             </label><br>
                                             <input type="hidden" name="inspect" class="insc" value="0">
@@ -922,6 +923,7 @@
     //     }
     // });
         function check(element){
+            console.log($(element).parent().closest('.content_parent').html());
             console.log($(element).parent().closest('.inspect').find('.insc').val());
             if($(element).val() === "0"){
                 $(element).val("1")

@@ -1,0 +1,348 @@
+{% extends 'portal/base.html' %}
+{% load static %}
+{% load template_func %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<!-- main wrapper div content -->
+<div class="wrapper">
+
+    <!--================================-->
+    <!-- Breadcrumb Start -->
+    <!--================================-->
+    <div class="pageheader pd-t-25 pd-b-35">
+        <div class="d-flex justify-content-between">
+            <div class="clearfix">
+                <div class="pd-t-5 pd-b-5">
+                    <h1 class="pd-0 mg-0 tx-20 tx-dark">{{parent_page_title}} {{page_title}}</h1>
+                </div>
+                <div class="breadcrumb pd-0 mg-0">
+                    {% for breadcrumb in breadcrumbs %}
+                    {% if forloop.counter != breadcrumbs|length %}
+                    <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                    {% else %}
+                    <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row row-xs clearfix">
+        <div class="col-md-12 col-lg-12">
+            {% if messages %}
+            {% for message in messages %}
+            {% if forloop.counter == messages|length %}
+            <div class="{{ message.tags }} success-msg-txt" style="height: 30px; text-align: center;">{{ message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            <div class="card mg-b-30">
+                <!-- upper header of form -->
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-header-title tx-13 mb-0">{{parent_page_title}} {{page_title}}</h6>
+                        </div>
+                        <div class="text-right">
+                            <div class="d-flex">
+                                <a href="{% url 'superuser:itemList' %}" class="mr-3"><i
+                                        class="fa fa-step-backward"></i></a>
+                                <a href="" class="mr-3"><i class="ti-reload"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- end upper header -->
+                <!-- main form  -->
+                <div class="card-body">
+                    <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
+                        <div class="form-row">
+
+                            <div class="col-md-4 mb-3">
+                                <label>grn Transaction Number<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="insTraId" name="insTraId" required>
+                                        <option value="">Choose...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+
+                            <div class="col-md-4 mb-3">
+                                <label>vendor </label>
+                                <input type="text" id="vendor_name" name="vendor_name" class="form-control" placeholder=""
+                                    readonly >
+                                    <input type="hidden" class="vendor_id" name="vendor_id"  >
+                                
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label> Inspection Issue Date <span class="required-indicator">*</span></label>
+                                <input type="date" name="issue_date" class="form-control issue_date" placeholder="Order Date"
+                                required>
+                            </div>
+
+
+                            <div class="col-md-12" id="table_form">
+                                
+                            </div>
+                            <div class="col-md-12" id="submit" hidden>
+                                <button onclick="return confirm('Please check the form again before submitting. It can not be changed')" class="btn btn-success submit-btn" type="submit">Submit</button>
+                            </div>
+
+
+                        </div>
+                    </form>
+                </div>
+                <!-- end main form -->
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- end main wrapper div -->
+
+{% endblock %}
+
+{% block js %}
+<!-- script -->
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+<script>
+    
+    var item_options_used_pk = [];
+    var itemsData;
+
+    //for job order no
+
+    $(document).ready(function () {
+        var item_options_text = ``;
+        $.ajax({
+            url: "{% url 'api:getGrnInspectionTransaction' %}",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    // itemsData=response.page_items
+                    item_options_text += `<option value="">Choose item</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].transaction_number}</option>`;
+                    }
+                    $('#insTraId').html(item_options_text);
+                    $('.selectpicker').select2({
+                        placeholder: '',
+                        templateResult: function(option) {
+                            if(option.element && (option.element).hasAttribute('hidden')){
+                                return null;
+                            }
+                            return option.text;
+                        }
+                    });
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+
+
+     });
+
+    
+</script>
+
+<script>
+    var item_options_text
+    $(document).ready(function(){
+        $(document).on('change','#insTraId' , function(){
+            // console.log('230',$('select#job_Order_id option:selected').val())
+            $('#table_form').html(`<p></p>`)
+            if( $('select#job_Order_id option:selected').val() != "" ){ 
+                callMaterialIssue()
+                }
+           
+        })
+
+       
+        
+    });
+
+    function callMaterialIssue(){
+        // console.log("246")
+        var insId = $('select#insTraId option:selected').val()
+        console.log(insId);
+        $('#vendor_name').val("")
+        $('.vendor_id').val("")
+        $.ajax({
+            url: "{% url 'api:getGrnDetailisInsTransaction' %}?insId=" + insId,
+            type: 'GET',
+            data: ({
+            }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    $('#submit').removeAttr('hidden')
+                   if(response.page_items[0].grn_inspection_transaction_header__vendor_id){
+
+                       $('#vendor_name').val(response.page_items[0].grn_inspection_transaction_header__vendor__name)
+                       $('.vendor_id').val(response.page_items[0].grn_inspection_transaction_header__vendor_id)
+                   }
+                   else{
+                    $('#vendor_name').val("none")
+                    $('.vendor_id').val("0")
+                   }
+                   var tbody_text = ``;
+                   for(let index=0 ; response.page_items.length>index ; index++){
+                    console.log(index);
+                        tbody_text += `<div class="form-row content_parent">
+                                        <input type="hidden" name="det_id" value="${response.page_items[index].pk}">
+                                        <div class="col-md-2 mb-3">
+                                            <label>Item <span class="required-indicator">*</span></label>
+                                            <input type="text"  readonly
+                                                name="item_name"  class="form-control item_name"
+                                                value="${response.page_items[index].item__name}">
+                                        </div>
+                                        <input type="hidden" name="item_id" value="${response.page_items[index].item_id}">
+                                        <div class="col-md-2 mb-3">
+                                            <label>store <span class="required-indicator">*</span></label>
+                                            <input type="text" readonly
+                                                name="store_name" min="0.01" class="form-control store_name"
+                                                value="${response.page_items[index].store__name}">
+                                        </div>
+                                        <input type="hidden" name="store_id" value="${response.page_items[index].store_id}">
+                                        <div class="col-md-2 mb-3">
+                                            <label>Reciept Quantity <span class="required-indicator">*</span></label>
+                                            <input type="text" name="recp_quantity"  class="form-control recp_quantity"
+                                                value="${response.page_items[index].quantity }" readonly>
+                                        </div>
+                                        <div class="col-md-2 mb-3">
+                                            <label>Accepted Quantity</label>
+                                            <input type="text" onkeyup="checkMaxMin(this)" 
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="accp_quantity" min="0.00" max = "${response.page_items[index].quantity}" class="form-control accp_quantity"
+                                                placeholder="0.00" >
+                                        </div>
+                                        <div class="col-md-2 mb-3">
+                                            <label> Rejected Quantiy</label>
+                                            <input type="text" name="rej_quantity" class="form-control rej_quantity" readonly
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                max="${response.page_items[index].quantity}" min="0.00" placeholder="0.00">
+                                        </div>
+                                    </div>`
+
+                    }
+                    console.log(tbody_text);
+
+                    $('#table_form').html(tbody_text)
+                    
+                } 
+                else {
+                    alert("res not found");
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+
+        $(document).on('submit', '#create_form', function (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        console.log("426");
+        $('.submit-btn').text('Submitting...');
+        $('.submit-btn').prop('disabled', true);
+        var formData = new FormData(create_form);
+        console.log(formData.getAll('quantity_sent'))
+        $.ajax({
+            type: "POST",
+            evalScripts: true,
+            contentType: false,
+            processData: false,
+            url: "{% url 'api:addGrnDetailisInsTransaction' %}",
+            data: formData,
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', false);
+                if (response.status == 200) {
+                    alert(response.message);
+                    
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', false);
+                // locationAfterMessageStore(error.responseJSON.detail, 'error');
+                $('.success-msg-txt').text("");
+                $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
+                $('.error-msg-txt').addClass('text-danger');
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    
+    });
+    }
+
+  
+
+
+    function checkMaxMin(element) {
+        if ($(element).val() == "") {
+            $(element).val($(element).attr('min'));
+        } else {
+            if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
+                $(element).val($(element).attr('max'));
+            }
+            if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
+                $(element).val($(element).attr('min'));
+            }
+        }
+       console.log($(element).attr('class'));
+        if($(element).attr('class') == 'form-control accp_quantity'){
+
+            acc_quan = parseFloat($(element).val())
+            recp_quan= parseFloat( $(element).parent().closest('.content_parent').find('.recp_quantity').val())
+            rej_quan = recp_quan - acc_quan
+            $(element).parent().closest('.content_parent').find('.rej_quantity').val(rej_quan)
+        }
+    }
+
+
+</script>
+
+{% endblock js %}
