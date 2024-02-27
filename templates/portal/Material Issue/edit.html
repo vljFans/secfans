@@ -6,8 +6,12 @@
 {% endblock %}
 
 {% block content %}
-
+<!-- main wrapper div content -->
 <div class="wrapper">
+
+    <!--================================-->
+    <!-- Breadcrumb Start -->
+    <!--================================-->
     <div class="pageheader pd-t-25 pd-b-35">
         <div class="d-flex justify-content-between">
             <div class="clearfix">
@@ -45,100 +49,104 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                <a href="{% url 'superuser:itemList' %}" class="mr-3"><i
+                                <a href="{% url 'superuser:materialIssueList' %}" class="mr-3"><i
                                         class="fa fa-step-backward"></i></a>
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                             </div>
                         </div>
                     </div>
                 </div>
-                 <!-- end upper header -->
+
+                <!-- end upper header -->
                 <!-- main form  -->
                 <div class="card-body">
                     <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
+                        <input type="hidden" id="id" name="id" value="{{materialIssue.id}}">
                         <div class="form-row">
-                            {% for obj in material_issue %}
-                            
-                            <div class="col-md-2 mb-3">
+                            <div class="col-md-3 mb-3">
                                 <label>Store<span class="required-indicator">*</span></label>
-                                <input type="hidden" id="store_transact_head_pk" name="store_transact_head_pk" class="form-control"  value="{{obj.pk}}"
-                                    readonly>
-                                <input type="text" id="store_name" name="store_name" class="form-control"  value="{{store_name}}"
-                                    readonly>
-                                    <input type="hidden" id="store_id" name="store_id" class="form-control"  value="{{store_id}}"
-                                    readonly>
+                                <input type="text" id="store_name" name="store_name" class="form-control" value="{{store.name}}" readonly >
+                                <input type="hidden" id="store_id" name="store_id" value="{{store.id}}">
                             </div>
                             
-                            <div class="col-md-2 mb-3 test ">
+                            
+                            <div class="col-md-3 mb-3 test ">
                                 <label>Job Order No<span class="required-indicator">*</span></label>
-                                <input type="text" id="job_order_no" name="job_order_no" class="form-control"  value="{{obj.job_order__order_number}}"
-                                    readonly>
+                                <input type="text" id="job_order_order_no" name="job_order_order_no" class="form-control" value="{{jobOrder.order_number}}" readonly >
+                                <input type="hidden" id="job_order_id" name="job_order_id" value="{{jobOrder.id}}">
                             </div>
 
                             <div class="col-md-4 mb-3">
-                                <label>vendor <span class="required-indicator">*</span></label>
-                                <input type="text" id="vendor_name" name="vendor_name" class="form-control"  value="{{obj.vendor__name}}"
-                                    readonly>
-                                    <input type="hidden" class="vendor_id" name="vendor_id" value="{{obj.vendor_id}}" >
-                                
-                            </div>
-                            <div class="col-md-2 mb-3">
-                                <label>Material Issue No <span class="required-indicator">*</span></label>
-                                <input type="text" name="material_issue_no_name" class="form-control" value="{{obj.transaction_number}}"
-                                readonly>
-                                <input type="hidden" name="material_issue_no_id" class="form-control" value ="{{obj.pk}}" 
-                                readonly>
+                                <label>Vendor </label>
+                                <input type="text" id="vendor_name" name="vendor_name" class="form-control" value="{{vendor.name}}" readonly >
+                                <input type="hidden" id="vendor_id" name="vendor_id" value="{{vendor.id}}">
                             </div>
 
                             <div class="col-md-2 mb-3">
                                 <label>Issue Date <span class="required-indicator">*</span></label>
-                                <input type="date" name="issue_date" class="form-control" value="{{obj.transaction_date|date:'Y-m-d'}}"
-                                readonly>
+                                <input type="date" name="issue_date" class="form-control issue_date" value="{{materialIssue.transaction_date|date:'Y-m-d'}}" required>
                             </div>
 
                             <div class="col-md-12" id="table_form">
-                                {% for obj1 in  material_issue_details %}
+                                {% for materialIssueDetail in materialIssue.store_transaction_detail_set.all %}
                                 <div class="form-row content_parent">
-                                    <div class="col-md-4 mb-3">
+                                    <div class="col-md-5 mb-3">
                                         <label>Item<span class="required-indicator">*</span></label>
-                                        <input type="hidden" class="item_id" name="item_id" value="{{obj1.item_id}}">
-                                        <input type="text" class="form-control item_name" name="item_name" value="{{obj1.item__name}}"  readonly required>
+                                        <select class="custom-select selectpicker item_id" name="item_id" required {% if jobOrder.with_item == 'True' %}disabled{% endif %}>
+                                            <option value="">Choose...</option>
+                                            {% for item in items %}
+                                                <option {% if materialIssueDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
+                                            {% endfor %}
+                                        </select>
                                     </div>
 
-
-                                    <div class="col-md-4 mb-3">
-                                        <label>quantity issued<span class="required-indicator">*</span></label>
-                                        <input type="hidden"
-                                            name="quantity_sent"  class="form-control quantity_sent" value="{{obj1.quantity}}"
-                                            >
-                                        <input type="text"
+                                    <div class="col-md-3 mb-3">
+                                        <label>Actual quantity <span class="required-indicator">*</span></label>
+                                        <input type="text" 
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="quantity_issue" min="0.01" class="form-control quantity_issue" value="{{obj1.quantity}}"
-                                            placeholder="0.00"   onkeyup="checkMaxMin(this)" required>
-                                            
+                                            name="actual_quantity" min="0.01" class="form-control actual_quantity"
+                                            placeholder="0.00" readonly>
                                     </div>
-                                </div>
 
+                                    <div class="col-md-3 mb-3">
+                                        <label>Quantity Sent <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="quantity_sent" min="0.01" class="form-control quantity_sent"
+                                            value="{{materialIssueDetail.quantity}}" required>
+                                        <input type="hidden" name="quantity_sent_og" class="form-control quantity_sent_og" value="{{materialIssueDetail.quantity}}">
+                                    </div>
+
+                                    {% if jobOrder.with_item != 'True' %}
+                                        <div class="col-md-1 btn-group mb-4 text-center">
+                                            <button type="button" class="btn add_btn m-1">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                </div>
                                 {% endfor %}
-                                
                             </div>
-                            <div class="col-md-12" id="submit" >
-                                <button onclick="return confirm('Please check the form again before submitting. It can not be changed')" class="btn btn-success submit-btn" type="submit">Submit</button>
-                            </div>
-                            {% endfor %}
-                        
+
                         </div>
+                        {% if request.user.is_superuser == 1 or 'edit_store_transaction'|get_session_permission:request is not None %}
+                        <div id="submit">
+                            <button class="btn btn-success submit-btn" type="submit">Submit</button>
+                        </div>
+                        {% endif %}
                     </form>
                 </div>
+                <!-- end main form -->
             </div>
         </div>
     </div>
+
 </div>
+<!-- end main wrapper div -->
 
 {% endblock %}
 
 {% block js %}
-
 <!-- script -->
 <script>
     // Example starter JavaScript for disabling form submissions if there are invalid fields
@@ -161,10 +169,198 @@
     })();
 </script>
 <script>
-   $(document).ready(function(){
+    var item_options_text = ``;
+    var item_options_used_pk = [];
+
+    $('.selectpicker').select2({
+        placeholder: '',
+        templateResult: function(option) {
+            if(option.element && (option.element).hasAttribute('hidden')){
+                return null;
+            }
+            return option.text;
+        }
+    });
+
+    function renderItemDropdown(){
+        $('.item_id').each(function(){
+            let selected_item_id=$(this).val()
+            $(this).children("option").each(function(index, element){
+                if($(this).val()!==selected_item_id && item_options_used_pk.includes($(this).val()) ){
+                    $(this).prop("hidden",true)
+                }
+                else{
+                    $(this).prop("hidden",false)
+                }
+            })
+        })
+    }
+
+    function update_item_options_used_pk(){
+        item_options_used_pk=[]
+        $('.item_id').each(function(){
+            item_options_used_pk.push($(this).val())
+        }); 
+    }
+
+    function callback(){
+        var callbacks = $.Callbacks();
+        callbacks.add(update_item_options_used_pk);
+        callbacks.fire();
+        callbacks.add(renderItemDropdown);
+        callbacks.fire();
+        
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        
+        $.ajax({
+            url: "{% url 'api:itemList' %}?find_all=1",
+            type: 'GET',
+            data: ({
+            }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    // itemsData=response.page_items
+                    item_options_text += `<option value="">Choose item</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $('.selectpicker').select2({
+                        placeholder: '',
+                        templateResult: function(option) {
+                            if(option.element && (option.element).hasAttribute('hidden')){
+                                return null;
+                            }
+                            return option.text;
+                        }
+                    });
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+        fill_up_actual_quantity()
+    });
+    
+    $(document).on('change','.item_id',function(){
+        let selected_item_pk=$(this).val()
+        //console.log(selected_item_pk);
+        let store_id =  $('select#store_id option:selected').val()
+        let actual_quantitys = $(this).closest('.content_parent').find('.actual_quantity')
+        let quantity_sents = $(this).closest('.content_parent').find('.quantity_sent')
+        // console.log(quantity_sents.html());
+        $.ajax({
+            url: "{% url 'api:getActualQuantity' %}?",
+            type: 'GET',
+            data: ({
+                'item_id':selected_item_pk,
+                'store_id':store_id
+            }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    actual_quantitys.val(response.on_hand_qty_res)
+                    quantity_sents.attr('max',response.on_hand_qty_res)
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                        $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                    }
+        });
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });
+        callback()
+    });
+
+    $(document).on('click','.add_btn',function(){
+            var text_inp = `<div class="form-row content_parent">
+                                    <div class="col-md-5 mb-3">
+                                        <label>Item<span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker item_id" name="item_id" required>
+                                                ${item_options_text}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <label>Actual quantity <span class="required-indicator">*</span></label>
+                                        <input type="text" 
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="actual_quantity" min="0.01" class="form-control actual_quantity"
+                                            placeholder="0.00" readonly>
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <label>quantity sent <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="quantity_sent" min="0.01" class="form-control quantity_sent"
+                                            placeholder="0.00" required>
+                                    </div>
+
+                                    <div class="col-md-1 btn-group mb-4 text-center">
+                                        <button type="button" class="btn remove_btn m-1">
+                                            <i class="fa fa-minus"></i>
+                                        </button>
+                                    </div>
+                                </div>`
+
+            $('#table_form').append(text_inp);
+            $('.selectpicker').select2({
+                placeholder: '',
+                templateResult: function(option) {
+                    if(option.element && (option.element).hasAttribute('hidden')){
+                        return null;
+                    }
+                    return option.text;
+                }
+            });           
+            callback()     
+        });
+
+    $(document).on('click', '.remove_btn', function () {
+        $(this).parents().closest('.content_parent').remove();
+        callback()
+    });
+
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
+
+        $("#store_id").removeAttr('disabled')
+        $("#vendor_id").removeAttr('disabled')
+        $(".item_id").removeAttr('disabled')
+
         $('.submit-btn').text('Submitting...');
         $('.submit-btn').prop('disabled', true);
         var formData = new FormData(create_form);
@@ -173,7 +369,7 @@
             evalScripts: true,
             contentType: false,
             processData: false,
-            url: "{% url 'api:materialIssueEdit' %}",
+            url: "{% url 'api:materialIssueAdd' %}",
             data: formData,
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -182,7 +378,7 @@
                 $('.submit-btn').text('Submitting...');
                 $('.submit-btn').prop('disabled', false);
                 if (response.status == 200) {
-                    console.log(response.message);
+                    // alert(response.message);
                     locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialIssueList' %}");
                     
                 } else {
@@ -190,6 +386,10 @@
                 }
             },
             error: function (error) {
+                $(".#store_id").prop('disabled','true')
+                $(".#vendor_id").prop('disabled','true')
+                $(".item_id").removeAttr('disabled')
+
                 $('.submit-btn').text('Submitting...');
                 $('.submit-btn').prop('disabled', false);
                 // locationAfterMessageStore(error.responseJSON.detail, 'error');
@@ -199,10 +399,46 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
+    
     });
-   });
 
-   function checkMaxMin(element) {
+    function fill_up_actual_quantity(){
+        let store_id=$("#store_id").val()
+        
+        $("#table_form").children(".content_parent").each(function(){
+            let actual_quantity_element=$(this).find(".actual_quantity")
+            let quantity_sent_element = $(this).find('.quantity_sent')
+            let item_id=$(this).find(".item_id").val()
+            if(item_id && store_id){
+                $.ajax({
+                    url: "{% url 'api:getActualQuantity' %}?",
+                    type: 'GET',
+                    data: ({
+                        'item_id':item_id,
+                        'store_id':store_id
+                    }),
+                    headers: {
+                        'Authorization': getCookieValue("accessToken")
+                    },
+                    success: function (response) {
+                        console.log(response)
+                        if (response.status == 200) {
+                            actual_quantity_element.val(response.on_hand_qty_res);
+                            quantity_sent_element.attr('max',response.on_hand_qty_res)
+                        } 
+                        else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function (error) {
+                        $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                    }
+                });
+            }   
+        })
+    }
+
+    function checkMaxMin(element) {
         if ($(element).val() == "") {
             $(element).val($(element).attr('min'));
         } else {
@@ -214,6 +450,7 @@
             }
         }
     }
+
 
 </script>
 

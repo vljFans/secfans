@@ -91,10 +91,10 @@ urlpatterns = [
     path('purchase-order-delete', views.purchaseOrderDelete, name='purchaseOrderDelete'),
     path('purchase-order-details', views.purchaseOrderDetails, name='purchaseOrderDetails'),
 
-    path('transaction-type -list', views.transactionTypeList, name='transactionTypeList'),
-    path('transaction-type -add', views.transactionTypeAdd, name='transactionTypeAdd'),
-    path('transaction-type -edit', views.transactionTypeEdit, name='transactionTypeEdit'),
-    path('transaction-type -delete', views.transactionTypeDelete, name='transactionTypeDelete'),
+    path('transaction-type-list', views.transactionTypeList, name='transactionTypeList'),
+    path('transaction-type-add', views.transactionTypeAdd, name='transactionTypeAdd'),
+    path('transaction-type-edit', views.transactionTypeEdit, name='transactionTypeEdit'),
+    path('transaction-type-delete', views.transactionTypeDelete, name='transactionTypeDelete'),
 
     path('store-item-list', views.storeItemList, name='storeItemList'),
     path('store-item-add', views.storeItemAdd, name='storeItemAdd'),
@@ -116,12 +116,14 @@ urlpatterns = [
 
     # path('material-issue-details', views.materialIssueDetails, name='materialIssueDetails'),
     path('get-actual-quantity', views.getActualQuantity, name='getActualQuantity'),
-    path('material-issue-Add', views.materialIssueAdd, name='materialIssueAdd'),
-
-    path('material-issue-edit-Add', views.materialIssueEdit, name='materialIssueEdit'),
+    path('material-issue-add', views.materialIssueAdd, name='materialIssueAdd'),
+    path('material-issue-edit', views.materialIssueEdit, name='materialIssueEdit'),
+    path('material-issue-details', views.materialIssueDetails, name='materialIssueDetails'),
 
     path('grn-inspection-details-transaction', views.getGrnDetailisInsTransaction, name='getGrnDetailisInsTransaction'),
     path('grn-inspection-list-Add', views.addGrnDetailisInsTransaction, name='addGrnDetailisInsTransaction'),
     path('grn-inspection-head-list', views.grnInspectionHeaderList, name='grnInspectionHeaderList'), 
+
+    path('material-return-add', views.materialReturnAdd, name='materialReturnAdd'),
 
 ]

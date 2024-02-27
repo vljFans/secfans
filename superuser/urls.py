@@ -113,6 +113,10 @@ urlpatterns = [
     path('grn-inspection-view/<int:id>',views.grnInspectionView , name = 'grnInspectionView')
 
 
+    path('material-return-list',views.materialReturnList, name='materialReturnList'),
+    path('material-return-add',views.materialReturnAdd, name='materialReturnAdd'),
+    path('material-return-edit/<int:id>',views.materialReturnEdit, name='materialReturnEdit'),
+    path('material-return-view/<int:id>',views.materialReturnView, name='materialReturnView'),
 
 
 ]
