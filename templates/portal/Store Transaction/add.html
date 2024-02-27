@@ -336,7 +336,7 @@
             // $('#purchase_order_header_id').removeAttr('required');
             $('#purchase_order_header_id').removeAttr('disabled');
            
-        $("#total_amount").val(0);
+        
         }
 
         else{
@@ -413,6 +413,7 @@
                                     </div>
                                 </div>`;
         $(".purchase_order_details").html(purchase_details);
+        $("#total_amount").val(0);
       
         $('.selectpicker').select2({
             placeholder: '',
