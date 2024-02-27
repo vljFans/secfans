@@ -735,7 +735,7 @@ def storeTransactionList(request):
 @login_required
 def storeTransactionAdd(request):
     context.update({
-        'transaction_type': "1",
+        'transaction_type': "2",
         'page_title': "Material Receipt Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}, {'name': "Add"}]
     })

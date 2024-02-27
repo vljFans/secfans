@@ -335,7 +335,19 @@
             $('#purchase_order_header_id').val("")
             // $('#purchase_order_header_id').removeAttr('required');
             $('#purchase_order_header_id').removeAttr('disabled');
-            purchase_details = `<div class="form-row content_parent">
+           
+        $("#total_amount").val(0);
+        }
+
+        else{
+            // $('.purchase_order_type_content').hide();
+            $('#purchase_order_header_id').removeAttr('required');
+            $('#purchase_order_header_id').attr('disabled','true');
+            $('#purchase_order_header_id').val("")
+            
+        }
+
+        purchase_details = `<div class="form-row content_parent">
                                     <div class="col-md-2 mb-3">
                                         <label>Item <span class="required-indicator">*</span></label>
                                         <div class="input-group">
@@ -389,8 +401,8 @@
                                     <div class="col-md-1 mb-3">
                                         <div class="custom-control custom-checkbox inspect">
                                             <input type="checkbox" class="custom-control-input "
-                                                 value="0" onclick="check(this)">
-                                                <label class="custom-control-label">
+                                                 value="0" id="inspect4" onclick="check(this)">
+                                                <label class="custom-control-label" for="inspect4">
                                                 Inspect
                                             </label>
                                             <input type="hidden" name="inspect" class="insc" value="0">
@@ -400,16 +412,8 @@
                                         <button type="button" class="btn add_item mt-1"><i class="fa fa-plus"></i></button>
                                     </div>
                                 </div>`;
-            $(".purchase_order_details").html(purchase_details);
-            $("#total_amount").val(0);
-        }
-
-        else{
-            // $('.purchase_order_type_content').hide();
-            $('#purchase_order_header_id').removeAttr('required');
-            $('#purchase_order_header_id').attr('disabled','true');
-            $('#purchase_order_header_id').val("")
-        }
+        $(".purchase_order_details").html(purchase_details);
+      
         $('.selectpicker').select2({
             placeholder: '',
             templateResult: function(option) {
