@@ -961,7 +961,6 @@ def materialReturnAdd(request):
     job_orders= models.Job_Order.objects.filter(
         id__in=list(models.Store_Transaction.objects.filter(transaction_type__name="MIS").values_list('job_order', flat=True))
     )
-    print(job_orders)
     context.update({
         'job_orders': job_orders,
         'page_title': " Material Return Add",

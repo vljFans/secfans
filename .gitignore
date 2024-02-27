@@ -4,3 +4,4 @@ sec/.env
 */__pycache__/
 */migrations/
 manage.py
+sec/__init__.py

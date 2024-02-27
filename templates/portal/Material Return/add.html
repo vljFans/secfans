@@ -71,7 +71,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-6 mb-3 job_order_div"></div>
+                            <div class="col-md-6 mb-3 child_div"></div>
                             <div class="col-md-12 mb-3 issued_items_div"></div>
                         </div>
                         {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
@@ -119,40 +119,20 @@
 
     $(document).on('change', '#reason', function () {
         if ($(this).val()==="1"){
-            let e=$(this)
-            $.ajax({
-                url: "{% url 'api:jobOrderList' %}?find_all=1",
-                type: 'GET',
-                data: ({}),
-                headers: {
-                    'Authorization': getCookieValue("accessToken")
-                },
-                success: function (response) {
-                    if (response.status == 200) {
-                        let options_text=`
-                            <label>Job Order<span class="required-indicator">*</span></label>
-                            <div class="input-group">
-                                <select class="custom-select selectpicker job_order" name="job_order_id" required>
-                                    <option value="">Choose...</option>
-                                    {% for job_order in job_orders %}
-                                    <option value="{{job_order.id}}">{{job_order.order_number}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            
-                        `;
-                        e.closest(".form-row").find(".job_order_div").html(options_text);
-                        $('.selectpicker').select2({
-                            placeholder: '',
-                        });
-                    } 
-                    else {
-                        alert(response.message);
-                    }
-                },
-                error: function (error) {
-                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-                }
+            let options_text=`
+                <label>Job Order<span class="required-indicator">*</span></label>
+                <div class="input-group">
+                    <select class="custom-select selectpicker job_order" name="job_order_id" required>
+                        <option value="">Choose...</option>
+                        {% for job_order in job_orders %}
+                        <option value="{{job_order.id}}">{{job_order.order_number}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            `;
+            $(this).closest(".form-row").find(".child_div").html(options_text);
+            $('.selectpicker').select2({
+                placeholder: '',
             });
         }
         else{

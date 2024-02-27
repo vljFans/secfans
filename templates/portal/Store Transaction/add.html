@@ -169,7 +169,7 @@
                             </div> -->
                             <div class="col-md-6 mb-3">
                                 <label>Transaction Date <span class="required-indicator">*</span></label>
-                                <input type="date" name="transaction_date" class="form-control" placeholder="Transaction Date" required id="transaction_date">
+                                <input type="date" name="transaction_date" class="form-control" id="transaction_date" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Total Amount <span class="required-indicator">*</span></label>
@@ -233,6 +233,9 @@
     });
 
     $(document).ready(function () {
+
+        $("#transaction_date").val(new Date().toISOString().slice(0, 10))
+
         $.ajax({
             url: "{% url 'api:vendorList' %}?find_all=1",
             type: 'GET',
