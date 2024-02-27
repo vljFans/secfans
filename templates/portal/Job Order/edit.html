@@ -3,11 +3,6 @@
 {% load template_func %}
 
 {% block css %}
-<style>
-    .input-group-addon {
-        border-left: none;
-    }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -56,7 +51,7 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                <a href="{% url 'superuser:purchaseOrderList' %}" class="mr-3"><i
+                                <a href="{% url 'superuser:itemList' %}" class="mr-3"><i
                                         class="fa fa-step-backward"></i></a>
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                             </div>
@@ -64,184 +59,89 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <form id="edit_form" class="needs-validation" novalidate>
-                        <input type="hidden" id="id" name="id" value="{{purchaseOrder.id}}">
+                    <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
+                        <input type="hidden" id="id" name="id" value="{{jobOrder.id}}">
                         <div class="form-row">
                             <div class="col-md-4 mb-3">
-                                <label>Vendor <span class="required-indicator">*</span></label>
+                                <label>Job Order Number <span class="required-indicator">*</span></label>
+                                <input type="text"  id="order_number" name="order_number" class="form-control"
+                                    value="{{jobOrder.order_number}}" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Job Order Date <span class="required-indicator">*</span></label>
+                                <input type="date" name="order_date" class="form-control" value="{{jobOrder.order_date|date:'Y-m-d'}}" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Manufacturing type<span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker" id="vendor_id" name="vendor_id" required>
-                                        <option value="">Choose...</option>
-                                        {% for vendor in vendors %}
-                                        <option {% if purchaseOrder.vendor_id == vendor.pk %}selected{% endif %} value="{{vendor.pk}}">{{vendor.name}}</option>
-                                        {% endfor %}
+                                    <select class="custom-select selectpicker manufacturing_type" data-placeholder="Select manufacturing type" name="manufacturing_type" required>
+                                        <option value=""></option>
+                                        <option value="Self" {% if jobOrder.manufacturing_type == 'Self' %}selected{% endif %} >Self Manufacturing</option>
+                                        <option value="Third party" {% if jobOrder.manufacturing_type == 'Third party' %}selected{% endif %} >Third party manufacturing</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label>Order Number <span class="required-indicator">*</span></label>
-                                <input type="text" value="{{purchaseOrder.order_number}}" id="order_number" name="order_number" class="form-control" readonly
-                                    placeholder="Order Number" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label>Order Date <span class="required-indicator">*</span></label>
-                                <input type="date" value="{{purchaseOrder.order_date|date:'Y-m-d'}}" name="order_date" class="form-control" placeholder="Order Date"
-                                    required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Quotation Number <span class="required-indicator">*</span></label>
-                                <input type="text" value="{{purchaseOrder.quotation_number}}" name="quotation_number" class="form-control"
-                                    placeholder="Quotation Number" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Quotation Date <span class="required-indicator">*</span></label>
-                                <input type="date" value="{{purchaseOrder.quotation_date|date:'Y-m-d'}}" name="quotation_date" class="form-control"
-                                    placeholder="Quotation Date" required>
-                            </div>
 
-                            {% for orderDetail in purchaseOrder.purchase_order_detail_set.all %}
-                            <div class="col-md-12">
-                                <div class="form-row content_parent">
-                                    <div class="col-md-3 mb-3">
-                                        <label>Item <span class="required-indicator">*</span></label>
+                            <div class="col-md-12 mb-3 form-row third_party">
+                                {% if jobOrder.manufacturing_type == 'Third party' %}
+                                    <div class="col-md-4 mb-3">
+                                        <label>Vendor<span class="required-indicator">*</span></label>
                                         <div class="input-group">
-                                            <select class="custom-select selectpicker item_id" name="item_id" required>
+                                            <select class="custom-select selectpicker vendor_id" data-placeholder="Select Vendor" name="vendor_id" required>
                                                 <option value="">Choose...</option>
-                                                {% for item in items %}
-                                                <option {% if orderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
+                                                {% for vendor in vendors %}
+                                                <option {% if jobOrder.vendor_id == vendor.pk %}selected{% endif %} value="{{vendor.pk}}">{{vendor.name}}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Rate <span class="required-indicator">*</span></label>
-                                        <input type="text" value="{{orderDetail.rate}}" onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="rate" min="0.01" class="form-control rate"
-                                            placeholder="0.00" required>
+                                    <div class="col-md-4 mb-3">
+                                        <label>With/Without item<span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker with_item" data-placeholder="Choose" name="with_item" required>
+                                                <option value=""></option>
+                                                <option value="True" {% if jobOrder.with_item == 'True' %}selected{% endif %} >With item</option>
+                                                <option value="False" {% if jobOrder.with_item == 'False' %}selected{% endif %} >Without item</option>
+                                            </select>
+                                        </div>
                                     </div>
-                                    <div class="col-md-1 mb-3">
-                                        <label>Quantity <span class="required-indicator">*</span></label>
-                                        <input type="text" value="{{orderDetail.quantity}}" onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="item_quantity" min="0.0001" class="form-control item_quantity"
-                                            placeholder="Quantity" required>
+                                    <div class="col-md-4 mb-3">
                                     </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Price <span class="required-indicator">*</span></label>
-                                        <input type="text" value="{{orderDetail.amount}}" onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="item_price" min="0.01" class="form-control item_price"
-                                            placeholder="0.00" required>
-                                    </div>
-                                    <div class="col-md-1 mb-3">
-                                        <label>GST %<span class="required-indicator">*</span></label>
-                                        <input type="text" value="{{orderDetail.gst_percentage}}" name="gst_percentage" class="form-control gst_percentage" readonly
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            max="100" min="0.00" placeholder="0%">
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Price With GST <span class="required-indicator">*</span></label>
-                                        <input type="text" value="{{orderDetail.amount_with_gst}}" onkeyup="checkMaxMin(this)" readonly
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="amount_with_gst" min="0.01" class="form-control amount_with_gst"
-                                            placeholder="0.00" required>
-                                    </div>
-                                    <div class="col-md-1 mb-4 text-center ">
-                                        {% if forloop.counter == 1 %}
-                                        <button type="button" class="btn add_btn mt-1"><i class="fa fa-plus"></i></button>
-                                        {% else %}
-                                        <button type="button" class="btn remove_btn mt-1"><i class="fa fa-minus"></i></button>
+                                    <div class="col-md-12 mb-3 form-row items">
+                                        {% if jobOrder.with_item == 'True' %}
+                                            {% for jobOrderDetail in jobOrder.job_order_detail_set.all %}
+                                                <div class="col-md-12 form-row item">
+                                                    <div class="col-md-4 mb-3">
+                                                        <label>Item <span class="required-indicator">*</span></label>
+                                                        <div class="input-group">
+                                                            <select class="custom-select selectpicker item_id" data-placeholder="Select item" name="item_id" required>
+                                                                <option value="">Choose...</option>
+                                                                {% for item in items %}
+                                                                <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-1 mb-4 text-center ">
+                                                        {% if forloop.counter == 1 %}
+                                                        <button type="button" class="btn add_btn mt-1"><i class="fa fa-plus"></i></button>
+                                                        {% else %}
+                                                        <button type="button" class="btn remove_btn mt-1"><i class="fa fa-minus"></i></button>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
                                         {% endif %}
                                     </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                            <div class="add_more_content col-md-12">
+                                {% endif %}
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label>Reference Number</label>
-                                <input type="text" value="{{purchaseOrder.reference_number}}" name="reference_number" class="form-control"
-                                    placeholder="Drawing/Specification/Sample Ref Number">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Business Terms</label>
-                                <input type="text" value="{{purchaseOrder.business_terms}}" name="business_terms" class="form-control"
-                                    placeholder="Business Terms">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Excise Duty %</label>
-                                <input type="text" value="{{purchaseOrder.excise_duty_percentage}}" name="excise_duty_percentage" class="form-control"
-                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    onkeyup="checkMaxMin(this)" id="excise_duty_percentage" max="100" min="0.00" placeholder="0%">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Insurance</label>
-                                <input type="text" value="{{purchaseOrder.insurance}}" name="insurance" class="form-control"
-                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    onkeyup="checkMaxMin(this)" id="insurance" min="0.00" placeholder="₹0.00">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Octroi</label>
-                                <input type="text" value="{{purchaseOrder.octroi}}" name="octroi" class="form-control"
-                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    onkeyup="checkMaxMin(this)" id="octroi" min="0.00" placeholder="₹0.00">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Freight</label>
-                                <input type="text" value="{{purchaseOrder.freight}}" name="freight" class="form-control"
-                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    onkeyup="checkMaxMin(this)" id="freight" min="0.00" placeholder="₹0.00">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Packing<span class="required-indicator">*</span></label>
-                                <input type="text" value="{{purchaseOrder.packing}}" name="packing" class="form-control" placeholder="Packing" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Payment Terms<span class="required-indicator">*</span></label>
-                                <input type="text" value="{{purchaseOrder.payment_terms}}" name="payment_terms" class="form-control" placeholder="Payment Terms"
-                                    required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Delivery Schedule<span class="required-indicator">*</span></label>
-                                <input type="text" value="{{purchaseOrder.delivery_schedule}}" name="delivery_schedule" class="form-control"
-                                    placeholder="Delivery Schedule" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Delivery At<span class="required-indicator">*</span></label>
-                                <input type="text" value="{{purchaseOrder.delivery_at}}" name="delivery_at" class="form-control" placeholder="Delivery At"
-                                    required>
-                            </div>
                             <div class="col-md-12 mb-3">
-                                <label>Notes</label>
-                                <textarea name="notes" rows="5" class="form-control" placeholder="Note">{{purchaseOrder.notes}}</textarea>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Discount Type <span class="required-indicator">*</span></label>
-                                <select name="discount_type" id="discount_type" class="selectpicker form-control"
-                                    required data-live-search="true">
-                                    <option {% if purchaseOrder.discount_type == 'no_discount' %}selected{% endif %} value="no_discount">No Discount</option>
-                                    <option {% if purchaseOrder.discount_type == 'percentage' %}selected{% endif %} value="percentage">Percentage</option>
-                                    <option {% if purchaseOrder.discount_type == 'flat' %}selected{% endif %} value="flat">Flat</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3 discount_value_display" style="display: {% if purchaseOrder.discount_type == 'no_discount' %}none{% else %}block{% endif %};">
-                                <label>Discount Value<span class="required-indicator">*</span></label>
-                                <input type="text" name="discount_value" id="discount_value" class="form-control"
-                                    value="{{purchaseOrder.discount_value}}" onkeyup="checkMaxMin(this)" {% if purchaseOrder.discount_type != 'no_discount' %}required{% endif %}
-                                    onkeypress="return (event.charCode >=45 &&  event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)">
-                            </div>
-                            <input type="hidden" name="discounted_value" id="discounted_value" class="form-control"
-                                value="{{purchaseOrder.discounted_value}}">
-                            <div class="col-md-6 mb-3">
-                                <label>Total Amount <span class="required-indicator">*</span></label>
-                                <input type="text" value="{{purchaseOrder.total_amount}}" name="total_amount" class="form-control" placeholder="Total Amount"
-                                    required id="total_amount" onkeyup="checkMaxMin(this)" {% if purchaseOrder.discount_type != 'no_discount' %}required{% endif %}
-                                    onkeypress="return (event.charCode >=45 &&  event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)">
+                                <label>Job Description<span class="required-indicator">*</span></label>
+                                <textarea name="notes" rows="5" class="form-control" placeholder="Job Description" required>{{jobOrder.notes}}</textarea>
                             </div>
                         </div>
-                        {% if request.user.is_superuser == 1 or 'edit_purchase_order'|get_session_permission:request is not None %}
+                        {% if request.user.is_superuser == 1 or 'edit_item'|get_session_permission:request is not None %}
                         <button class="btn btn-success submit-btn" type="submit">Submit</button>
                         {% endif %}
                     </form>
@@ -255,9 +155,6 @@
 
 {% block js %}
 <script>
-    $('.selectpicker').select2({
-        placeholder: ''
-    });
     // Example starter JavaScript for disabling form submissions if there are invalid fields
     (function () {
         'use strict';
@@ -278,7 +175,86 @@
     })();
 </script>
 <script>
+    var vendor_options_text;
+    var item_options_text = ``;
+    var item_options_used_pk = [];
+    var itemsData;
+
+    $('.selectpicker').select2({
+        placeholder: '',
+        templateResult: function(option) {
+            if(option.element && (option.element).hasAttribute('hidden')){
+                return null;
+            }
+            return option.text;
+        }
+    });
+
+    function renderItemDropdown(){
+        // console.log(item_options_used_pk)
+        $('.item_id').each(function(){
+            let selected_item_id=$(this).val()
+            $(this).children("option").each(function(index, element){
+                if($(this).val()!==selected_item_id && item_options_used_pk.includes($(this).val()) ){
+                    $(this).prop("hidden",true)
+                }
+                else{
+                    $(this).prop("hidden",false)
+                }
+            })
+        })
+    }
+
+    function update_item_options_used_pk(){
+        item_options_used_pk=[]
+        $('.item_id').each(function(){
+            item_options_used_pk.push($(this).val())
+        }); 
+    }
+
+    function callback(){
+        var callbacks = $.Callbacks();
+        callbacks.add(update_item_options_used_pk);
+        callbacks.fire();
+        callbacks.add(renderItemDropdown);
+        callbacks.fire();
+        
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });
+    }
+
     $(document).ready(function () {
+        callback()
+
+        $.ajax({
+            url: "{% url 'api:vendorList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    vendor_options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        vendor_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+
         $.ajax({
             url: "{% url 'api:itemList' %}?find_all=1",
             type: 'GET',
@@ -288,11 +264,21 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    item_options_text = `<option value="">Choose...</option>`;
+                    item_options_text += `<option value="">Choose item</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
                         item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
-                } else {
+                    $('.selectpicker').select2({
+                        placeholder: '',
+                        templateResult: function(option) {
+                            if(option.element && (option.element).hasAttribute('hidden')){
+                                return null;
+                            }
+                            return option.text;
+                        }
+                    });
+                } 
+                else {
                     alert(response.message);
                 }
             },
@@ -302,267 +288,154 @@
         });
     });
 
-    $(document).on('change', '.item_id', function () {
-        let element = $(this);
-        let item_count = 0;
-        $('.item_id').each(function () {
-            if ($(this).val() == element.val()) {
-                item_count += 1;
-            }
-        })
-        if (item_count > 1) {
-            element.val("");
-            element.parents('.content_parent').find('.item_quantity').val("");
-            element.parents('.content_parent').find('.rate').val("");
-            element.parents('.content_parent').find('.item_price').val("");
-            element.parents('.content_parent').find('.gst_percentage').val("");
-            element.parents('.content_parent').find('.amount_with_gst').val("");
-            alert("Item already added in the list.");
-            calculateTotalAmount();
-        } else {
-            item_id = element.val();
-            if (item_id != null && item_id != "") {
-                $.ajax({
-                    url: "{% url 'api:itemList' %}?id=" + item_id,
-                    type: 'GET',
-                    data: ({}),
-                    headers: {
-                        'Authorization': getCookieValue("accessToken")
-                    },
-                    success: function (response) {
-                        if (response.status == 200) {
-                            element.parents('.content_parent').find('.item_quantity').val(1);
-                            element.parents('.content_parent').find('.rate').val(response.page_items[0].price);
-                            element.parents('.content_parent').find('.item_price').val(response.page_items[0].price);
-                            element.parents('.content_parent').find('.gst_percentage').val(response.page_items[0].item_type__gst_percentage);
-                            element.parents('.content_parent').find('.amount_with_gst').val((parseFloat(response.page_items[0].price) + (parseFloat(response.page_items[0].price) * parseFloat(response.page_items[0].item_type__gst_percentage) / 100)).toFixed(2));
-                        } else {
-                            alert(response.message);
-                        }
-                        calculateTotalAmount();
-                    },
-                    error: function (error) {
-                        $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-                    }
-                });
-            }
+    $(document).on('change', '.manufacturing_type', function(){
+        if($(this).val()==="Self"){
+            $(".third_party").empty()
         }
-    });
+        if($(this).val()==="Third party"){
 
-    $(document).on('keyup change', '.item_quantity', function () {
-        item_quantity = $(this).val();
-        rate = $(this).parents(".content_parent").find('.rate').val();
-        gst_percentage = $(this).parents(".content_parent").find('.gst_percentage').val();
+            $(".third_party").html(`
+                <div class="col-md-4 mb-3">
+                    <label>Vendor<span class="required-indicator">*</span></label>
+                    <div class="input-group">
+                        <select class="custom-select selectpicker vendor_id" data-placeholder="Select Vendor" name="vendor_id" required>
+                            ${vendor_options_text}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>With/Without item<span class="required-indicator">*</span></label>
+                    <div class="input-group">
+                        <select class="custom-select selectpicker with_item" data-placeholder="Choose" name="with_item" required>
+                            <option value=""></option>
+                            <option value="True">With item</option>
+                            <option value="False">Without item</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                </div>
+                <div class="col-md-12 mb-3 form-row items">
+                </div>
+            `)
+        }
+        $('.selectpicker').select2({
+            placeholder: '',
+        });
+    })
+    
+    $(document).on('change', '.with_item', function(){
+    
+        if($(this).val()==="False"){
+            $(".items").empty()
+        }
 
-        item_price = (parseFloat(item_quantity) * parseFloat(rate)).toFixed(2);
-        $(this).parents(".content_parent").find('.item_price').val(item_price);
+        if($(this).val()==="True"){
+
+            $(".items").html(`
+                <div class="col-md-12 mb-3 form-row item">
+                    <div class="col-md-4 mb-3">
+                        <label>Item<span class="required-indicator">*</span></label>
+                        <div class="input-group">
+                            <select class="custom-select selectpicker item_id" name="item_id" required>
+                                ${item_options_text}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-1 mb-4 text-center ">
+                        <button type="button" class="btn add_btn mt-1">
+                            <i class="fa fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            `)
+        }
         
-        gst_value = (parseFloat(item_price) * parseFloat(gst_percentage) / 100).toFixed(2);
-        item_with_gst_price = (parseFloat(item_price) + parseFloat(gst_value)).toFixed(2);
-        $(this).parents(".content_parent").find('.amount_with_gst').val(item_with_gst_price);
-
-        calculateTotalAmount();
-    });
-
-    $(document).on('keyup change', '.rate', function () {
-        rate = $(this).val();
-        item_quantity = $(this).parents(".content_parent").find('.item_quantity').val();
-        gst_percentage = $(this).parents(".content_parent").find('.gst_percentage').val();
-
-        item_price = (parseFloat(item_quantity) * parseFloat(rate)).toFixed(2);
-        $(this).parents(".content_parent").find('.item_price').val(item_price);
-
-        gst_value = (parseFloat(item_price) * parseFloat(gst_percentage) / 100).toFixed(2);
-        item_with_gst_price = (parseFloat(item_price) + parseFloat(gst_value)).toFixed(2);
-        $(this).parents(".content_parent").find('.amount_with_gst').val(item_with_gst_price);
-
-        calculateTotalAmount();
-    });
-
-    $(document).on('keyup change', '.item_price', function () {
-        gst_percentage = $(this).parents(".content_parent").find('.gst_percentage').val();
-        gst_value = (parseFloat(item_price) * parseFloat(gst_percentage) / 100).toFixed(2);
-        item_with_gst_price = (parseFloat(item_price) + parseFloat(gst_value)).toFixed(2);
-        $(this).parents(".content_parent").find('.amount_with_gst').val(item_with_gst_price);
-
-        calculateTotalAmount();
-    });
-
-    function calculateTotalAmount() {
-        total_amount = 0;
-        $('.amount_with_gst').each(function () {
-            if ($(this).val() != "") {
-                total_amount += parseFloat($(this).val());
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
             }
         });
-
-        if ($("#discount_type").val() == 'percentage') {
-            discounted_value = total_amount * ($("#discount_value").val() / 100);
-        } else if ($("#discount_type").val() == 'flat') {
-            discounted_value = $("#discount_value").val();
-        } else {
-            $("#discount_value").val(0);
-            discounted_value = 0;
-        }
-        $("#discounted_value").val(discounted_value);
-        total_amount -= discounted_value;
-
-        excise_duty_percentage = $('#excise_duty_percentage').val();
-        insurance = $('#insurance').val();
-        octroi = $('#octroi').val();
-        freight = $('#freight').val();
-
-        total_amount += (parseFloat(insurance) + parseFloat(octroi) + parseFloat(freight));
-
-        total_amount = total_amount + (total_amount * parseFloat(excise_duty_percentage) / 100)
-
-        $("#total_amount").val((total_amount).toFixed(2));
-    }
+        callback()
+    })
+    
+    $(document).on('change', '.item_id', function () {
+        callback();
+    });
 
     $(document).on('click', '.add_btn', function () {
-        $('.add_more_content').append(`<div class="form-row content_parent">
-                                    <div class="col-md-3 mb-3">
-                                        <label>Item <span class="required-indicator">*</span></label>
-                                        <div class="input-group">
-                                            <select class="custom-select selectpicker item_id" name="item_id" required>
-                                                ${item_options_text}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Rate <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="rate" min="0.01" class="form-control rate"
-                                            placeholder="0.00" required>
-                                    </div>
-                                    <div class="col-md-1 mb-3">
-                                        <label>Quantity <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="item_quantity" min="0.0001" class="form-control item_quantity"
-                                            placeholder="Quantity" required>
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Price <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="item_price" min="0.01" class="form-control item_price"
-                                            placeholder="0.00" required>
-                                    </div>
-                                    <div class="col-md-1 mb-3">
-                                        <label>GST %<span class="required-indicator">*</span></label>
-                                        <input type="text" name="gst_percentage" class="form-control gst_percentage" readonly
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            max="100" min="0.00" placeholder="0%">
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label>Price With GST <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)" readonly
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="amount_with_gst" min="0.01" class="form-control amount_with_gst"
-                                            placeholder="0.00" required>
-                                    </div>
-                                    <div class="col-md-1 mb-4 text-center ">
-                                        <button type="button" class="btn remove_btn mt-1"><i class="fa fa-minus"></i></button>
-                                    </div>
-                                </div>`);
+        $(".items").append(`
+                <div class="col-md-12 mb-3 form-row item">
+                    <div class="col-md-4 mb-3">
+                        <label>Item<span class="required-indicator">*</span></label>
+                        <div class="input-group">
+                            <select class="custom-select selectpicker item_id" name="item_id" required>
+                                ${item_options_text}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-1 mb-4 text-center ">
+                        <button type="button" class="btn remove_btn mt-1">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+            `)
         $('.selectpicker').select2({
-            placeholder: ''
-        });
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });  
+        callback();
     });
 
     $(document).on('click', '.remove_btn', function () {
-        $(this).parents().closest('.content_parent').remove();
-        calculateTotalAmount();
+        $(this).closest('.item').remove();
+        callback();
     });
 
-    $(document).on('change', '#discount_type', function () {
-        if ($(this).val() == 'no_discount') {
-            $('.discount_value_display').hide();
-            $('#discount_value').removeAttr('required');
-            $('#discount_value').removeAttr('max');
-            $('#discount_value').val('');
-        } else if ($(this).val() == 'percentage') {
-            $('.discount_value_display').show();
-            $('#discount_value').attr('required', 'required');
-            $('#discount_value').attr('max', '100');
-            $('#discount_value').val('');
-        } else {
-            $('.discount_value_display').show();
-            $('#discount_value').attr('required', 'required');
-            $('#discount_value').removeAttr('max');
-            $('#discount_value').val('');
-        }
-    });
-
-    $(document).on('keyup change', '#discount_value', function () {
-        calculateTotalAmount();
-    });
-
-    $(document).on('keyup change', '#excise_duty_percentage', function () {
-        calculateTotalAmount();
-    });
-
-    $(document).on('keyup change', '#insurance', function () {
-        calculateTotalAmount();
-    });
-
-    $(document).on('keyup change', '#octroi', function () {
-        calculateTotalAmount();
-    });
-
-    $(document).on('keyup change', '#freight', function () {
-        calculateTotalAmount();
-    });
-
-    function checkMaxMin(element) {
-        if ($(element).val() == "") {
-            $(element).val($(element).attr('min'));
-        } else {
-            if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
-                $(element).val($(element).attr('max'));
-            }
-            if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
-                $(element).val($(element).attr('min'));
-            }
-        }
-    }
-
-    $(document).on('submit', '#edit_form', function (e) {
-        e.preventDefault();
-        $('.submit-btn').text('Submitting...');
-        $('.submit-btn').prop('disabled', true);
-        var formData = new FormData(edit_form);
-        $.ajax({
-            type: "POST",
-            evalScripts: true,
-            contentType: false,
-            processData: false,
-            url: "{% url 'api:purchaseOrderEdit' %}",
-            data: formData,
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                $('.submit-btn').text('Submitting...');
-                $('.submit-btn').prop('disabled', false);
-                if (response.status == 200) {
-                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:purchaseOrderList' %}");
-                } else {
-                    alert(response.message);
+    $(document).on('submit', '#create_form', function (e) {
+            e.preventDefault();
+            $('.submit-btn').text('Submitting...');
+            $('.submit-btn').prop('disabled', true);
+            var formData = new FormData(create_form);
+            $.ajax({
+                type: "POST",
+                evalScripts: true,
+                contentType: false,
+                processData: false,
+                url: "{% url 'api:jobOrderEdit' %}",
+                data: formData,
+                headers: {
+                    'Authorization': getCookieValue("accessToken")
+                },
+                success: function (response) {
+                    $('.submit-btn').text('Submitting...');
+                    $('.submit-btn').prop('disabled', false);
+                    if (response.status == 200) {
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:jobOrderList' %}");
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function (error) {
+                    $('.submit-btn').text('Submitting...');
+                    $('.submit-btn').prop('disabled', false);
+                    // locationAfterMessageStore(error.responseJSON.detail, 'error');
+                    $('.success-msg-txt').text("");
+                    $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
+                    $('.error-msg-txt').addClass('text-danger');
+                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
                 }
-            },
-            error: function (error) {
-                $('.submit-btn').text('Submitting...');
-                $('.submit-btn').prop('disabled', false);
-                // locationAfterMessageStore(error.responseJSON.detail, 'error');
-                $('.success-msg-txt').text("");
-                $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
-                $('.error-msg-txt').addClass('text-danger');
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
+            });
         });
-    });
 </script>
 {% endblock %}

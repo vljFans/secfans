@@ -362,7 +362,7 @@
                 if (response.status == 200) {
                     bom_level_options_text = `<option value="">Choose...</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
-                        bom_level_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                        bom_level_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].bom_item__name}</option>`;
                     }
                 } else {
                     alert(response.message);

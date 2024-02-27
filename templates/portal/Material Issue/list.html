@@ -18,7 +18,7 @@
                 <div class="breadcrumb pd-0 mg-0">
                     {% for breadcrumb in breadcrumbs %}
                     {% if forloop.counter != breadcrumbs|length %}
-                    <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                    <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}} </a>
                     {% else %}
                     <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
                     {% endif %}
@@ -63,7 +63,7 @@
                         <div class="text-right">
                             <div class="d-flex">
                                 {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
-                                <a href="{% url 'superuser:storeTransactionAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
+                                <a href="{% url 'superuser:materialIssueAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
                                 {% endif %}
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                                 <!-- <div class="dropdown" data-toggle="dropdown">
@@ -95,11 +95,10 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Vendor</th>
-                                    <th>Transaction Number</th>
-                                    <th>Transaction Date</th>
-                                    <th>Total Price</th>
+                                    <th>Material Issue Number</th>
+                                    <th>Issue Date</th>
                                     <th>Action</th>
+                                    
                                 </tr>
                             </thead>
                             <tbody id="table-body">
@@ -121,10 +120,11 @@
 {% block js %}
 <script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
-    function getStoreTransactionList(keyword) {
+    function getMaterialIssuedList(keyword) {
+        console.log("123")
         $.ajax({
             type: "GET",
-            url: "{% url 'api:storeTransactionList' %}?keyword="+keyword+"&transaction_type=GRN",
+            url: "{% url 'api:storeTransactionList' %}?keyword=" + keyword+"&transaction_type=MIS",
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -132,28 +132,22 @@
             success: function (response) {
                 $('.error-msg-txt').text("");
                 if (response.status == 200) {
-                    view_url = "{% url 'superuser:storeTransactionView' 1 %}";
-                    edit_url = "{% url 'superuser:storeTransactionEdit' 1 %}";
+                    edit_url = "{% url 'superuser:materialIssueEdit' 1 %}";
+                    view_url = "{% url 'superuser:materialIssueView' 1 %}";
                     page_items = response.page_items;
-                    console.log(page_items)
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index];
                         tbody_text += `<tr>
-                                <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
-                                <td>${element.vendor__name}</td>
+                                <td>${((response.total_pages - 1) * response.per_page) +  index + 1}</td>
                                 <td>${element.transaction_number}</td>
                                 <td>${element.transaction_date}</td>
-                                <td>₹${element.total_amount}</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
                                 <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
                                 {% endif %}
-                                {% if request.user.is_superuser == 1 or 'change_store_transaction'|get_session_permission:request is not None %}
+                                {% if request.user.is_superuser == 1 or 'change_store_transaction'|get_session_permission:request is not None   %}
                                 <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'delete_store_transaction'|get_session_permission:request is not None %}
-                                <a id="delete-btn" data-id="${element.pk}" data-name="${element.transaction_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
                                 {% endif %}
                                 </td>
                             </tr>`;
@@ -180,12 +174,13 @@
 
     }
     $(document).ready(function () {
-        getStoreTransactionList(keyword)
+        // console.log("168");
+        getMaterialIssuedList(keyword)
     });
 
     $(document).on('keyup', '#search', function () {
         keyword = $(this).val();
-        getStoreTransactionList(keyword)
+        getMaterialIssuedList(keyword)
     })
 
     $(document).on('click', '#delete-btn', function () {
@@ -201,7 +196,7 @@
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:storeTransactionList' %}");
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialIssueList' %}");
                     } else {
                         alert(response.message);
                     }

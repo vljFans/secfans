@@ -14,6 +14,7 @@ from django.http import JsonResponse
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.hashers import make_password, check_password
 from datetime import datetime
+from django.utils.timezone import now
 from openpyxl import Workbook
 from django.db import transaction
 from django.db.models import Q
@@ -715,8 +716,8 @@ def customerList(request):
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
     if id is not None and id != "":
-        customer = list(models.Customer.objects.filter(pk=id)[:1].values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk',
-                        'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
+        customer = list(models.Customer.objects.filter(pk=id)[:1].values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk',
+                        'country__name', 'state__name', 'city', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
         context.update({
             'status': 200,
             'message': "Customer Fetched Successfully.",
@@ -724,11 +725,11 @@ def customerList(request):
         })
     else:
         if keyword is not None and keyword != "":
-            customers = list(models.Customer.objects.filter(Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(contact_no__icontains=keyword) | Q(customer_type__name__icontains=keyword) | Q(pin__icontains=keyword) | Q(city__name__icontains=keyword)).filter(
-                status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk', 'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
+            customers = list(models.Customer.objects.filter(Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(contact_no__icontains=keyword) | Q(customer_type__name__icontains=keyword) | Q(pin__icontains=keyword) | Q(city__icontains=keyword)).filter(
+                status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'country__name', 'state__name', 'city', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
         else:
-            customers = list(models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk', 'city__pk',
-                             'country__name', 'state__name', 'city__name', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
+            customers = list(models.Customer.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'landmark', 'country__pk', 'state__pk',
+                             'country__name', 'state__name', 'city', 'pin', 'contact_no', 'contact_name', 'contact_email', 'customer_type__name', 'photo', 'kyc_image'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -760,7 +761,7 @@ def customerList(request):
 @permission_classes([IsAuthenticated])
 def customerAdd(request):
     context = {}
-    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['landmark'] or not request.POST['pin'] or not request.POST['customer_type_id'] or not request.POST['kyc_type_id'] or not request.POST['kyc_detail'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
+    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['landmark'] or not request.POST['pin'] or not request.POST['customer_type_id'] or not request.POST['kyc_type_id'] or not request.POST['kyc_detail'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city']:
         context.update({
             'status': 524,
             'message': "Name/Contact Name/Contact Email/Contact No/Landmark/Pin/Customer Type/KYC Type/KYC Detail/Address/Country/State/City has not been provided."
@@ -800,7 +801,7 @@ def customerAdd(request):
             customer.address = request.POST['address']
             customer.country_id = request.POST['country_id']
             customer.state_id = request.POST['state_id']
-            customer.city_id = request.POST['city_id']
+            customer.city = request.POST['city']
             customer.save()
 
             if 'photo' in request.FILES.keys():
@@ -847,7 +848,7 @@ def customerAdd(request):
 @permission_classes([IsAuthenticated])
 def customerEdit(request):
     context = {}
-    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['landmark'] or not request.POST['pin'] or not request.POST['customer_type_id'] or not request.POST['kyc_type_id'] or not request.POST['kyc_detail'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
+    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['landmark'] or not request.POST['pin'] or not request.POST['customer_type_id'] or not request.POST['kyc_type_id'] or not request.POST['kyc_detail'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city']:
         context.update({
             'status': 527,
             'message': "Name/Contact Name/Contact Email/Contact No/Landmark/Pin/Customer Type/KYC Type/KYC Detail/Address/Country/State/City has not been provided."
@@ -887,7 +888,7 @@ def customerEdit(request):
             customer.address = request.POST['address']
             customer.country_id = request.POST['country_id']
             customer.state_id = request.POST['state_id']
-            customer.city_id = request.POST['city_id']
+            customer.city = request.POST['city']
             customer.updated_at = datetime.now()
             customer.save()
 
@@ -958,7 +959,7 @@ def customerExport(request):
     keyword = request.GET.get('keyword')
     if keyword is not None and keyword != "":
         page_items = models.Customer.objects.filter(Q(name__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(email__icontains=keyword) | Q(
-            phone__icontains=keyword) | Q(customer_type__name__icontains=keyword) | Q(pin__icontains=keyword) | Q(city__name__icontains=keyword)).filter(status=1, deleted=0)
+            phone__icontains=keyword) | Q(customer_type__name__icontains=keyword) | Q(pin__icontains=keyword) | Q(city__icontains=keyword)).filter(status=1, deleted=0)
     else:
         page_items = models.Customer.objects.filter(status=1, deleted=0)
 
@@ -1773,6 +1774,7 @@ def itemList(request):
         else:
             items = list(models.Item.objects.filter(status=1, deleted=0).values(
                 'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price'))
+
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -1958,6 +1960,7 @@ def storeList(request):
     context = {}
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
+    store_type=request.GET.get('store_type', None)
     keyword = request.GET.get('keyword', None)
     if id is not None and id != "":
         store = list(models.Store.objects.filter(pk=id)[:1].values(
@@ -1974,6 +1977,7 @@ def storeList(request):
         else:
             stores = list(models.Store.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'contact_name',
                           'contact_no', 'contact_email', 'manager_name', 'pin', 'city__name', 'state__name', 'country__name'))
+
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -1981,6 +1985,27 @@ def storeList(request):
                 'page_items': stores,
             })
             return JsonResponse(context)
+
+        if store_type is not None :
+            if store_type=="InHouse":
+                stores = list(models.Store.objects.filter(status=1, deleted=0,vendor_id=None).values('pk', 'name', 'address', 'contact_name',
+                              'contact_no', 'contact_email', 'manager_name', 'pin', 'city__name', 'state__name', 'country__name'))
+                context.update({
+                    'status': 200,
+                    'message': "Stores Fetched Successfully.",
+                    'page_items': stores,
+                })
+                return JsonResponse(context)
+
+            if store_type=="Vendor":
+                stores = list(models.Store.objects.filter(status=1, deleted=0,vendor_id__isnull=False).values('pk', 'name', 'address', 'contact_name',
+                              'contact_no', 'contact_email', 'manager_name', 'pin', 'vendor_id', 'city__name', 'state__name', 'country__name'))
+                context.update({
+                    'status': 200,
+                    'message': "Stores Fetched Successfully.",
+                    'page_items': stores,
+                })
+                return JsonResponse(context)
 
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
@@ -2680,6 +2705,151 @@ def purchaseOrderDetails(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def transactionTypeList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
+    if id is not None and id != "":
+        transactionType = list(models.Transaction_Type.objects.filter(pk=id)[:1].values('pk', 'name'))
+        context.update({
+            'status': 200,
+            'message': "Transaction Type Fetched Successfully.",
+            'page_items': transactionType,
+        })
+    else:
+        if keyword is not None and keyword != "":
+            transactionTypes = list(models.Transaction_Type.objects.filter(
+                name__icontains=keyword, status=1, deleted=0).values('pk', 'name'))
+        else:
+            transactionTypes = list(models.Transaction_Type.objects.filter(
+                status=1, deleted=0).values('pk', 'name'))
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Transaction Types Fetched Successfully.",
+                'page_items': transactionTypes,
+            })
+            return JsonResponse(context)
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(transactionTypes, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Transaction Types Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'per_page': per_page,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def transactionTypeAdd(request):
+    context = {}
+    if not request.POST['name']:
+        context.update({
+            'status': 531,
+            'message': "Name has not been provided."
+        })
+        return JsonResponse(context)
+    exist_data = models.Transaction_Type.objects.filter(
+        name=request.POST['name']).filter(deleted=0)
+    if len(exist_data) > 0:
+        context.update({
+            'status': 532,
+            'message': "Transaction Type with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            transactionType = models.Transaction_Type()
+            transactionType.name = request.POST['name']
+            transactionType.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Transaction Type Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 533,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def transactionTypeEdit(request):
+    context = {}
+    if not request.POST['name']:
+        context.update({
+            'status': 534,
+            'message': "Name has not been provided."
+        })
+        return JsonResponse(context)
+    exist_data = models.Transaction_Type.objects.filter(
+        name=request.POST['name']).exclude(pk=request.POST['id']).filter(deleted=0)
+    if len(exist_data) > 0:
+        context.update({
+            'status': 535,
+            'message': "Transaction Type with this name already exists.",
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            transactionType = models.Transaction_Type.objects.get(pk=request.POST['id'])
+            transactionType.name = request.POST['name']
+            transactionType.updated_at = datetime.now()
+            transactionType.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Transaction Type Updated Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 536,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def transactionTypeDelete(request):
+    context = {}
+    transactionType = models.Transaction_Type.objects.get(pk=request.POST['id'])
+    try:
+        with transaction.atomic():
+            transactionType.delete()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Transaction Type Deleted Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 537,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def storeItemList(request):
     context = {}
     id = request.GET.get('id', None)
@@ -2894,7 +3064,7 @@ def storeTransactionList(request):
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
     vendor_id = request.GET.get('vendor_id', None)
-    transaction_type_id = request.GET.get('transaction_type_id', None)
+    transaction_type = request.GET.get('transaction_type', None)
     if id is not None and id != "":
         storeTransaction = list(models.Store_Transaction.objects.filter(pk=id)[:1].values(
             'pk', 'transaction_number', 'transaction_date', 'total_amount', 'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name'))
@@ -2904,20 +3074,18 @@ def storeTransactionList(request):
             'page_items': storeTransaction,
         })
     else:
-        if vendor_id is not None and vendor_id != "":
-            storeTransactions = models.Store_Transaction.objects.filter(
-                vendor_id=vendor_id).filter(status=1, deleted=0)
+        if transaction_type:
+            storeTransactions = models.Store_Transaction.objects.filter(transaction_type__name=transaction_type)
         else:
-            storeTransactions = models.Store_Transaction.objects.filter(
-                status=1, deleted=0)
-        if transaction_type_id is not None and transaction_type_id != "":
-            storeTransactions = storeTransactions.filter(
-                transaction_type_id=transaction_type_id)
+            storeTransactions = models.Store_Transaction.objects.all()
+
         if keyword is not None and keyword != "":
-            storeTransactions = storeTransactions.filter(Q(vendor__name__icontains=keyword) | Q(transaction_number__icontains=keyword) | Q(
-                transaction_date__icontains=keyword) | Q(total_amount__icontains=keyword)).filter(status=1, deleted=0)
-        storeTransactions = list(storeTransactions.values('pk', 'transaction_number', 'transaction_date', 'total_amount',
+            storeTransactions = list(storeTransactions.filter(Q(vendor__name__icontains=keyword) | Q(transaction_number__icontains=keyword) | Q(
+                transaction_date__icontains=keyword) | Q(total_amount__icontains=keyword)).filter(status=1, deleted=0))
+        else:
+            storeTransactions = list(storeTransactions.values('pk', 'transaction_number', 'transaction_date', 'total_amount',
                                  'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name'))
+
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -2950,6 +3118,8 @@ def storeTransactionList(request):
 @permission_classes([IsAuthenticated])
 def storeTransactionAdd(request):
     context = {}
+    check1 = 0
+    check2 = 0
     if not request.POST['vendor_id'] or not request.POST['transaction_date'] or not request.POST['total_amount']:
         context.update({
             'status': 586,
@@ -2957,88 +3127,123 @@ def storeTransactionAdd(request):
         })
         return JsonResponse(context)
     try:
+        inspect = request.POST.getlist('inspect')
         with transaction.atomic():
-            store_transaction_count = models.Store_Transaction.objects.all().count()
-            storeTransactionHeader = models.Store_Transaction()
-            storeTransactionHeader.vendor_id = request.POST['vendor_id']
-            storeTransactionHeader.transaction_type_id = request.POST['transaction_type_id']
-            if (request.POST['purchase_order_header_id']):
-                storeTransactionHeader.purchase_order_header_id = request.POST[
-                    'purchase_order_header_id']
-            storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
-                "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
-            storeTransactionHeader.transaction_date = request.POST['transaction_date']
-            storeTransactionHeader.total_amount = request.POST['total_amount']
-            storeTransactionHeader.notes = request.POST['notes']
-            storeTransactionHeader.save()
+            if "1" in inspect:
+                grn_inspection_transaction_count = models.Grn_Inspection_Transaction.objects.all().count()
+                grnTransactionheader = models.Grn_Inspection_Transaction()
+                grnTransactionheader.vendor_id = request.POST['vendor_id']
+                grnTransactionheader.transaction_type_id = request.POST['transaction_type_id']
+                grnTransactionheader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(5))
+                if (request.POST['purchase_order_header_id']):
+                    grnTransactionheader.purchase_order_header_id = request.POST[
+                        'purchase_order_header_id']
+                grnTransactionheader.transaction_date = request.POST['transaction_date']
+                grnTransactionheader.total_amount = request.POST['total_amount']
+                grnTransactionheader.notes = request.POST['notes']
+                grnTransactionheader.save()
 
-            order_details = []
-            for index, elem in enumerate(request.POST.getlist('item_id')):
-                order_details.append(
-                    models.Store_Transaction_Detail(
-                        store_transaction_header_id=storeTransactionHeader.id,
-                        item_id=elem,
-                        store_id=request.POST.getlist('store_id')[index],
-                        quantity=request.POST.getlist('item_quantity')[index],
-                        rate=request.POST.getlist('rate')[index],
-                        amount=request.POST.getlist('item_price')[index],
-                        gst_percentage=request.POST.getlist(
-                            'gst_percentage')[index],
-                        amount_with_gst=request.POST.getlist(
-                            'amount_with_gst')[index]
-                    )
-                )
-                storeItem = models.Store_Item.objects.filter(
-                    item_id=elem, store_id=request.POST.getlist('store_id')[index]).first()
-                if storeItem is None:
-                    storeItem = models.Store_Item()
-                    storeItem.opening_qty = Decimal(
-                        request.POST.getlist('item_quantity')[index])
-                    storeItem.on_hand_qty = Decimal(
-                        request.POST.getlist('item_quantity')[index])
-                    storeItem.closing_qty = Decimal(
-                        request.POST.getlist('item_quantity')[index])
-                    storeItem.item_id = elem
-                    storeItem.store_id = request.POST.getlist('store_id')[
-                        index]
-                    storeItem.save()
-                else:
-                    storeItem.on_hand_qty += Decimal(
-                        request.POST.getlist('item_quantity')[index])
-                    storeItem.closing_qty += Decimal(
-                        request.POST.getlist('item_quantity')[index])
-                    storeItem.updated_at = datetime.now()
-                    storeItem.save()
-            models.Store_Transaction_Detail.objects.bulk_create(order_details)
-            if request.POST['with_purchase_order'] != "" and int(request.POST['with_purchase_order']) != 0:
-                for index, elem in enumerate(request.POST.getlist('detail_id')):
-                    purchaseOrderItem = models.Purchase_Order_Detail.objects.get(
-                        pk=elem)
-                    purchaseOrderItem.delivered_quantity += Decimal(
-                        request.POST.getlist('item_quantity')[index])
-                    purchaseOrderItem.delivered_rate = Decimal(
-                        request.POST.getlist('rate')[index])
-                    purchaseOrderItem.delivered_amount += Decimal(
-                        request.POST.getlist('item_price')[index])
-                    purchaseOrderItem.delivered_gst_percentage = Decimal(
-                        request.POST.getlist('gst_percentage')[index])
-                    purchaseOrderItem.delivered_amount_with_gst += Decimal(
-                        request.POST.getlist('amount_with_gst')[index])
-                    purchaseOrderItem.updated_at = datetime.now()
-                    purchaseOrderItem.save()
-                purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related(
-                    'purchase_order_detail_set').get(pk=request.POST['purchase_order_header_id'])
-                flag = True
-                for purchaseOrderDetail in purchaseOrderHeader.purchase_order_detail_set.all():
-                    if Decimal(purchaseOrderDetail.quantity) > Decimal(purchaseOrderDetail.delivered_quantity):
-                        flag = False
-                        break
-                if flag == True:
-                    purchaseOrderHeader.delivery_status = 3
-                else:
-                    purchaseOrderHeader.delivery_status = 2
-                purchaseOrderHeader.updated_at = datetime.now()
-                purchaseOrderHeader.save()
+                order_details = []
+                for index, elem in enumerate(request.POST.getlist('item_id')):
+                    if inspect[index] == "1":
+                        check1 +=1
+                        order_details.append(
+                            models.Grn_Inspection_Transaction_Detail(
+                                grn_inspection_transaction_header_id= grnTransactionheader.id,
+                                item_id=elem,
+                                store_id=request.POST.getlist('store_id')[index],
+                                quantity=request.POST.getlist('item_quantity')[index],
+                                rate=request.POST.getlist('rate')[index],
+                                amount=request.POST.getlist('item_price')[index]
+                            )
+                        )
+                models.Grn_Inspection_Transaction_Detail.objects.bulk_create(order_details)
+
+            if "0" in inspect:
+                store_transaction_count = models.Store_Transaction.objects.all().count()
+                storeTransactionHeader = models.Store_Transaction()
+                storeTransactionHeader.vendor_id = request.POST['vendor_id']
+                storeTransactionHeader.transaction_type_id = request.POST['transaction_type_id']
+                if (request.POST['purchase_order_header_id']):
+                    storeTransactionHeader.purchase_order_header_id = request.POST[
+                        'purchase_order_header_id']
+                storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
+                storeTransactionHeader.transaction_date = request.POST['transaction_date']
+                storeTransactionHeader.total_amount = request.POST['total_amount']
+                storeTransactionHeader.notes = request.POST['notes']
+                storeTransactionHeader.save()
+
+                order_details = []
+                for index, elem in enumerate(request.POST.getlist('item_id')):
+                    if inspect[index] == "0":
+                        check2 +=1
+                        order_details.append(
+                            models.Store_Transaction_Detail(
+                                store_transaction_header_id=storeTransactionHeader.id,
+                                item_id=elem,
+                                store_id=request.POST.getlist('store_id')[index],
+                                quantity=request.POST.getlist('item_quantity')[index],
+                                rate=request.POST.getlist('rate')[index],
+                                amount=request.POST.getlist('item_price')[index],
+                                gst_percentage=request.POST.getlist(
+                                    'gst_percentage')[index],
+                                amount_with_gst=request.POST.getlist(
+                                    'amount_with_gst')[index]
+                            )
+                        )
+                        storeItem = models.Store_Item.objects.filter(
+                            item_id=elem, store_id=request.POST.getlist('store_id')[index]).first()
+                        if storeItem is None:
+                            storeItem = models.Store_Item()
+                            storeItem.opening_qty = Decimal(
+                                request.POST.getlist('item_quantity')[index])
+                            storeItem.on_hand_qty = Decimal(
+                                request.POST.getlist('item_quantity')[index])
+                            storeItem.closing_qty = Decimal(
+                                request.POST.getlist('item_quantity')[index])
+                            storeItem.item_id = elem
+                            storeItem.store_id = request.POST.getlist('store_id')[
+                                index]
+                            storeItem.save()
+                        else:
+                            storeItem.on_hand_qty += Decimal(
+                                request.POST.getlist('item_quantity')[index])
+                            storeItem.closing_qty += Decimal(
+                                request.POST.getlist('item_quantity')[index])
+                            storeItem.updated_at = datetime.now()
+                            storeItem.save()
+                models.Store_Transaction_Detail.objects.bulk_create(order_details)
+                if request.POST['with_purchase_order'] != "" and int(request.POST['with_purchase_order']) != 0:
+                    for index, elem in enumerate(request.POST.getlist('detail_id')):
+                        purchaseOrderItem = models.Purchase_Order_Detail.objects.get(
+                            pk=elem)
+                        purchaseOrderItem.delivered_quantity += Decimal(
+                            request.POST.getlist('item_quantity')[index])
+                        purchaseOrderItem.delivered_rate = Decimal(
+                            request.POST.getlist('rate')[index])
+                        purchaseOrderItem.delivered_amount += Decimal(
+                            request.POST.getlist('item_price')[index])
+                        purchaseOrderItem.delivered_gst_percentage = Decimal(
+                            request.POST.getlist('gst_percentage')[index])
+                        purchaseOrderItem.delivered_amount_with_gst += Decimal(
+                            request.POST.getlist('amount_with_gst')[index])
+                        purchaseOrderItem.updated_at = datetime.now()
+                        purchaseOrderItem.save()
+                    purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related(
+                        'purchase_order_detail_set').get(pk=request.POST['purchase_order_header_id'])
+                    flag = True
+                    for purchaseOrderDetail in purchaseOrderHeader.purchase_order_detail_set.all():
+                        if Decimal(purchaseOrderDetail.quantity) > Decimal(purchaseOrderDetail.delivered_quantity):
+                            flag = False
+                            break
+                    if flag == True:
+                        purchaseOrderHeader.delivery_status = 3
+                    else:
+                        purchaseOrderHeader.delivery_status = 2
+                    purchaseOrderHeader.updated_at = datetime.now()
+                    purchaseOrderHeader.save()
         transaction.commit()
         context.update({
             'status': 200,
@@ -3629,7 +3834,7 @@ def storeTransactionDetails(request):
     if header_id is not None and header_id != "":
         header_detail = list(models.Store_Transaction.objects.filter(id=header_id).values('pk', 'transaction_number', 'transaction_date', 'total_amount',
                              'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name'))
-        orderDetails = list(models.Store_Transaction_Detail.objects.filter(purchase_order_header_id=header_id).values('pk', 'quantity', 'rate', 'amount', 'gst_percentage', 'amount_with_gst',
+        orderDetails = list(models.Store_Transaction_Detail.objects.filter(store_transaction_header_id=header_id).values('pk', 'quantity', 'rate', 'amount', 'gst_percentage', 'amount_with_gst',
                             'item_id', 'item__name', 'store_id', 'store__name', 'store_transaction_header_id', 'store_transaction_header__transaction_number', 'store_transaction_header__transaction_date'))
         context.update({
             'status': 200,
@@ -3645,7 +3850,7 @@ def storeTransactionDetails(request):
     return JsonResponse(context)
 
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 def jobOrderList(request):
     context = {}
@@ -3653,7 +3858,7 @@ def jobOrderList(request):
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
     if id is not None and id != "":
-        jobOrder = list(models.Job_Order.objects.filter(pk=id)[:1].values('pk', 'order_number', 'order_date', 'total_amount'))
+        jobOrder = list(models.Job_Order.objects.filter(pk=id)[:1].values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor_id', 'vendor__name', 'with_item', 'notes'))
         context.update({
             'status': 200,
             'message': "Job Order Fetched Successfully.",
@@ -3663,7 +3868,7 @@ def jobOrderList(request):
         jobOrders = models.Job_Order.objects.filter(status=1, deleted=0)
         if keyword is not None and keyword != "":
             jobOrders = jobOrders.filter(order_number__icontains=keyword).filter(status=1, deleted=0)
-        jobOrders = list(jobOrders.values('pk', 'order_number', 'order_date', 'total_amount'))
+        jobOrders = list(jobOrders.values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor', 'with_item', 'notes'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -3696,32 +3901,31 @@ def jobOrderList(request):
 @permission_classes([IsAuthenticated])
 def jobOrderAdd(request):
     context = {}
-    if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['total_amount']:
+    if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['manufacturing_type'] or not request.POST['notes']:
         context.update({
             'status': 589,
-            'message': "Order Number/Total Amount has not been provided."
+            'message': "Order Number/Order Date/Manufacturing Type/Notes has not been provided."
         })
         return JsonResponse(context)
     try:
         with transaction.atomic():
             jobOrderHeader = models.Job_Order()
             jobOrderHeader.order_number = request.POST['order_number']
-            jobOrderHeader.order_number = request.POST['order_date']
-            jobOrderHeader.total_amount = request.POST['total_amount']
+            jobOrderHeader.order_date = request.POST['order_date']
+            jobOrderHeader.manufacturing_type = request.POST['manufacturing_type']
+            if 'vendor_id' in request.POST:
+                jobOrderHeader.vendor_id = request.POST['vendor_id']
+            if 'with_item' in request.POST:
+                jobOrderHeader.with_item = eval(request.POST['with_item'])
+            jobOrderHeader.notes = request.POST['notes']
             jobOrderHeader.save()
 
             job_order_details = []
-            for index in range( len(request.POST.getlist('quantity')) ):
+            for item_id in request.POST.getlist('item_id'):
                 job_order_details.append(
                     models.Job_Order_Detail(
                         job_order_header_id=jobOrderHeader.id,
-                        item_id=request.POST.getlist('item_id')[index] if request.POST.getlist('item_id')[index] else None,
-                        bill_of_material_id=request.POST.getlist('bill_of_material_id')[index] if request.POST.getlist('bill_of_material_id')[index] else None,
-                        source_store_id=request.POST.getlist('source_store_id')[index],
-                        destination_store_id=request.POST.getlist('destination_store_id')[index],
-                        quantity=request.POST.getlist('quantity')[index],
-                        rate=request.POST.getlist('rate')[index],
-                        amount=request.POST.getlist('price')[index],
+                        item_id=int(item_id)
                     )
                 )
             models.Job_Order_Detail.objects.bulk_create(job_order_details)
@@ -3743,37 +3947,37 @@ def jobOrderAdd(request):
 @permission_classes([IsAuthenticated])
 def jobOrderEdit(request):
     context = {}
-    if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['total_amount']:
+    if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['manufacturing_type'] or not request.POST['notes']:
         context.update({
-            'status': 591,
-            'message': "Order Number/Total Amount has not been provided."
+            'status': 589,
+            'message': "Order Number/Order Date/Manufacturing Type/Notes has not been provided."
         })
         return JsonResponse(context)
     try:
         with transaction.atomic():
             jobOrderHeader = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=request.POST['id'])
             jobOrderHeader.order_number = request.POST['order_number']
-            jobOrderHeader.order_number = request.POST['order_date']
-            jobOrderHeader.total_amount = request.POST['total_amount']
-            jobOrderHeader.updated_at = datetime.now()
+            jobOrderHeader.order_date = request.POST['order_date']
+            jobOrderHeader.manufacturing_type = request.POST['manufacturing_type']
+            if 'vendor_id' in request.POST:
+                jobOrderHeader.vendor_id = request.POST['vendor_id']
+            if 'with_item' in request.POST:
+                jobOrderHeader.with_item = eval(request.POST['with_item'])
+            else:
+                jobOrderHeader.with_item = False
+            jobOrderHeader.notes = request.POST['notes']
+            jobOrderHeader.updated_at = now()
             jobOrderHeader.save()
             jobOrderHeader.job_order_detail_set.all().delete()
-
-            purchase_order_details = []
-            for index, elem in enumerate(request.POST.getlist('quantity')):
-                purchase_order_details.append(
-                    models.Purchase_Order_Detail(
+            job_order_details = []
+            for item_id in request.POST.getlist('item_id'):
+                job_order_details.append(
+                    models.Job_Order_Detail(
                         job_order_header_id=jobOrderHeader.id,
-                        item_id=request.POST.getlist('item_id')[index] if request.POST.getlist('item_id')[index] else None,
-                        bill_of_material_id=request.POST.getlist('bill_of_material_id')[index] if request.POST.getlist('bill_of_material_id')[index] else None,
-                        source_store_id=request.POST.getlist('source_store_id')[index],
-                        destination_store_id=request.POST.getlist('destination_store_id')[index],
-                        quantity=request.POST.getlist('quantity')[index],
-                        rate=request.POST.getlist('rate')[index],
-                        amount=request.POST.getlist('price')[index],
+                        item_id=int(item_id)
                     )
                 )
-            models.Purchase_Order_Detail.objects.bulk_create(purchase_order_details)
+            models.Job_Order_Detail.objects.bulk_create(job_order_details)
         transaction.commit()
         context.update({
             'status': 200,
@@ -3816,13 +4020,13 @@ def jobOrderDetails(request):
     context = {}
     header_id = request.GET.get('header_id', None)
     if header_id is not None and header_id != "":
-        header_detail = list(models.Job_Order.objects.filter(id=header_id).values('pk', 'order_number', 'total_amount'))
-        orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id).values('pk', 'job_order_header_id', 'job_order_header__order_number', 'parent_detail_id', 'item_id', 'bill_of_material_id', 'rate', 'quantity', 'amount'))
+        header_detail = list(models.Job_Order.objects.filter(pk=header_id)[:1].values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor_id', 'vendor__name', 'with_item', 'notes'))
+        orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'item__name'))
         context.update({
             'status': 200,
             'message': "Job Order Details Fetched Successfully.",
-            'header_detail': header_detail,
-            'page_items': orderDetails,
+            'job_order_header_detail': header_detail,
+            'job_order_details': orderDetails,
         })
     else:
         context.update({
@@ -3831,3 +4035,405 @@ def jobOrderDetails(request):
         })
     return JsonResponse(context)
 
+#for material issue --- developed by saswata
+
+
+# @api_view(['GET','POST'])
+# @permission_classes([IsAuthenticated])
+# def materialIssueDetails(request):
+#     context = {}
+#     id = request.GET.get('id', None)
+#     find_all = request.GET.get('find_all', None)
+#     keyword = request.GET.get('keyword', None)
+#     job_Order_header_id = request.GET.get('job_Order_id',None)
+#     store_id = request.GET.get('store_id',None)
+#     header_detail_res = list(models.Job_Order_Detail.objects.filter(job_order_header=job_Order_header_id).values('pk','item_id','item__name','job_order_header__vendor__name','job_order_header__vendor_id'))
+#     job_order_head = list(models.Job_Order.objects.filter(pk=job_Order_header_id).values('pk','vendor_id','vendor__name'))
+#     context.update({
+#         'status': 200,
+#         'job_order_head': job_order_head,
+#         'page_items': header_detail_res
+#
+#     })
+#
+#     return JsonResponse(context)
+
+
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
+def getActualQuantity(request):
+    context = {}
+    item_id = request.GET.get('item_id',None)
+    store_id = request.GET.get('store_id',None)
+    
+    try:
+        store_item = models.Store_Item.objects.get(store_id=int(store_id), item_id=int(item_id))
+        context.update({
+            'status': 200,
+            'on_hand_qty_res': store_item.on_hand_qty
+        })
+    except:
+        context.update({
+            'status': 200,
+            'on_hand_qty_res': '0.00'
+        })
+    
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def materialIssueDetails(request):
+    context = {}
+    job_order_id = request.GET.get('job_order_id', None)
+    if job_order_id is not None and job_order_id != "" :
+        if models.Store_Transaction.objects.filter(job_order_id=job_order_id, transaction_type__name="MIS").exists():
+            material_issue = list(
+                models.Store_Transaction.objects.filter(job_order_id=job_order_id, transaction_type__name="MIS")[:1].values(
+                'id', 'vendor_id',
+                'vendor__name',
+                'transaction_type_id',
+                'transaction_type__name',
+                'transaction_number',
+                'transaction_date',
+                'job_order_id',
+                'job_order__order_number'
+                )
+            )
+            material_issue_details = list(
+                models.Store_Transaction_Detail.objects.filter(
+                    store_transaction_header_id=models.Store_Transaction.objects.get(job_order_id=job_order_id, transaction_type__name="MIS").id
+                ).values('pk',
+                         'store_transaction_header_id',
+                         'store_id',
+                         'store__name',
+                         'item_id',
+                         'item__name',
+                         'quantity',
+                         ))
+        else:
+            material_issue=material_issue_details=None
+
+        context.update({
+            'status': 200,
+            'message': "Material Issue Details Fetched Successfully.",
+            'material_issue': material_issue,
+            'material_issue_details': material_issue_details,
+        })
+    else:
+        context.update({
+            'status': 594,
+            'message': "Please Provide an Id.",
+        })
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def materialIssueAdd(request):
+    context = {}
+    if not request.POST['job_order_id'] or not request.POST['issue_date'] or not request.POST['store_id']:
+        context.update({
+            'status': 594,
+            'message': "Job Order/Issue Date/Store has not been provided."
+        })
+        return JsonResponse(context)
+
+    try:
+        with transaction.atomic():
+            # transation_type = models.Transaction_Type.objects.get(name = 'MIS')
+            store_transaction_count = models.Store_Transaction.objects.all().count()
+            storeTransactionHeader=models.Store_Transaction()
+            if request.POST['vendor_id']:
+                storeTransactionHeader.vendor_id = request.POST['vendor_id']
+            storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'MIS')
+            storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')
+                ).replace(
+                    "${AI_DIGIT_5}",str(store_transaction_count + 1).zfill(5)
+                )
+            storeTransactionHeader.transaction_date=request.POST['issue_date']
+            storeTransactionHeader.job_order_id = request.POST['job_order_id']
+            storeTransactionHeader.save()
+
+            store_transaction_details = []
+            store_items_add=[]
+            for index, elem in enumerate(request.POST.getlist('item_id')):
+                store_transaction_details.append(
+                    models.Store_Transaction_Detail(
+                        store_transaction_header=storeTransactionHeader,
+                        item_id=elem,
+                        store_id=request.POST['store_id'],
+                        quantity=float(request.POST.getlist('quantity_sent')[index])
+                    )
+                )
+
+                if request.POST['vendor_id']:
+                    vendor_store=models.Store.objects.get(vendor_id=request.POST['vendor_id'])
+                    # If the item exists in vendor store
+                    if models.Store_Item.objects.filter(store=vendor_store, item_id=elem).exists():
+                        store_item=models.Store_Item.objects.get(store=vendor_store, item_id=elem)
+                        store_item.on_hand_qty+=Decimal(request.POST.getlist('quantity_sent')[index])
+                        store_item.closing_qty+= Decimal(request.POST.getlist('quantity_sent')[index])
+                        store_item.updated_at = datetime.now()
+                        store_item.save()
+
+                    # If the item does not exist in vendor store so new store item is being created
+                    else:
+                        store_items_add.append(
+                            models.Store_Item(
+                                store=vendor_store,
+                                item_id=int(elem),
+                                opening_qty=float(request.POST.getlist('quantity_sent')[index]),
+                                on_hand_qty=float(request.POST.getlist('quantity_sent')[index]),
+                                closing_qty=float(request.POST.getlist('quantity_sent')[index]),
+                            )
+                        )
+
+                # In house store items being reduced
+                in_house_store=models.Store.objects.get(id=request.POST['store_id'])
+                store_item = models.Store_Item.objects.get(store=in_house_store, item_id=elem)
+                store_item.on_hand_qty -= Decimal(request.POST.getlist('quantity_sent')[index])
+                store_item.closing_qty -= Decimal(request.POST.getlist('quantity_sent')[index])
+                store_item.updated_at = datetime.now()
+                store_item.save()
+
+            models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
+            models.Store_Item.objects.bulk_create(store_items_add)
+
+        transaction.commit()
+
+        context.update({
+            'status': 200,
+            'message': "Material Issue Created Successfully."
+        })
+
+    except Exception:
+        context.update({
+            'status': 595,
+            'message': "Something Went Wrong. Please Try Again."
+
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def materialIssueEdit(request):
+    context = {}
+    if not request.POST['issue_date']:
+        context.update({
+            'status': 596,
+            'message': "Issue Date has not been provided."
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            vendor_id = request.POST.get('vendor_id',None)
+            item_id = request.POST.getlist('item_id')
+            issue_date=request.POST['issue_date']
+            store_transaction_id = request.POST['id']
+
+            for index in range(0,len(item_id)):
+                if(vendor_id):
+                    store_item_vendor_update = models.Store_Item.objects.get(store_id = request.POST['store_id'] , item_id=item_id[index])
+                    store_item_vendor_update.on_hand_qty = (float(store_item_vendor_update.on_hand_qty)- float(request.POST.getlist('quantity_sent_og')[0])) +float(request.POST.getlist('quantity_sent')[0])
+                    store_item_vendor_update.closing_qty =(float(store_item_vendor_update.closing_qty)- float(request.POST.getlist('quantity_sent_og')[0])) + float(request.POST.getlist('quantity_sent')[0])
+                    store_item_vendor_update.updated_at =  datetime.now()
+                    store_item_vendor_update.save()
+
+                store_transaction_deat_update = models.Store_Transaction_Detail.objects.get(store_transaction_header_id=store_transaction_id,item_id= item_id[index])
+                store_transaction_deat_update.quantity = request.POST.getlist('quantity_sent')[index]
+                store_transaction_deat_update.updated_at = datetime.now()
+                store_transaction_deat_update.save()
+
+                store_item_update = models.Store_Item.objects.get(store_id = request.POST['store_id'] , item_id=item_id[index])
+                store_item_update.on_hand_qty = (float(store_item_update.on_hand_qty)+ float(request.POST.getlist('quantity_sent_og')[0])) - float(request.POST.getlist('quantity_sent')[0])
+                store_item_update.closing_qty =(float(store_item_update.closing_qty)+ float(request.POST.getlist('quantity_sent_og')[0])) - float(request.POST.getlist('quantity_sent')[0])
+                store_item_update.updated_at =  datetime.now()
+                store_item_update.save()
+
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Material Issue Edited Successfully."
+        })
+
+    except Exception:
+        context.update({
+            'status': 597,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+#for grn inspetion--- developed by saswata
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getGrnInspectionTransaction(request):
+    context = {}
+    try:
+        grn_Ins = list(models.Grn_Inspection_Transaction.objects.filter(status = 1 , deleted =0).values('pk','transaction_type','purchase_order_header','transaction_number','transaction_date','status'))
+        print(grn_Ins)
+        context.update({
+            'status': 200,
+            'page_items': grn_Ins
+        })
+    except:
+        context.update({
+            'status': 404,
+            'message': 'server error'
+        })
+    
+    return JsonResponse(context)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getGrnDetailisInsTransaction(request):
+    print(request.GET,"saswata")
+
+    try:
+        grn_Ins_Det = list(models.Grn_Inspection_Transaction_Detail.objects.filter(
+                grn_inspection_transaction_header_id = int(request.GET.get('insId')) 
+            ).values(
+                'pk',
+                'grn_inspection_transaction_header_id',
+                'grn_inspection_transaction_header__vendor_id',
+                'grn_inspection_transaction_header__vendor__name',
+                'item_id',
+                'item__name',
+                'store_id',
+                'store__name',
+                'quantity'
+            ))
+        # print(grn_Ins_Det)
+        context ={
+            'status':200,
+            'page_items': grn_Ins_Det
+        }
+    except:
+        context ={
+        'status':404,
+        'message':'server error'
+        }
+
+
+    return JsonResponse(context)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def addGrnDetailisInsTransaction(request):
+    context = {}
+    # print(request.POST)
+
+    # ins_done = 0  if '' in request.POST.getlist('accp_quantity') else 1
+
+    ins_par_done = 0 if not all(request.POST.getlist('accp_quantity')) else 1 #if ins_par_done is 0 means all item is not inspected may be inspection happned paritally
+
+
+    # ins_no
+
+    try:
+        if any(request.POST.getlist('accp_quantity')):
+            print("4274")
+
+            with transaction.atomic():
+                print("4277")
+                grn_ins_head = models.Grn_Inspection_Transaction.objects.get(pk = request.POST['insTraId'])
+                grn_ins_head.ins_done = 1
+                print(grn_ins_head.ins_done)
+                grn_ins_head.ins_par_done = ins_par_done
+                print("4282")
+                grn_ins_head.save()
+                
+                print("4284")
+
+                for index in  range(0,len(request.POST.getlist('accp_quantity'))):
+                    print("4285")
+                    if request.POST.getlist('accp_quantity')[index] != '':
+                        print("4287",request.POST.getlist('det_id')[index])
+                        grn_ins_det = models.Grn_Inspection_Transaction_Detail.objects.get(pk =request.POST.getlist('det_id')[index])
+                        print("4292")
+                        grn_ins_det.ins_done = 1
+                        grn_ins_det.accepted_quantity  = request.POST.getlist('accp_quantity')[index]
+                        grn_ins_det.reject_quantity = request.POST.getlist('rej_quantity')[index] 
+                        grn_ins_det.inspection_date = request.POST['issue_date']
+                        grn_ins_det.updated_at = datetime.now()
+                        grn_ins_det.save()
+                        print("4295")
+            
+
+                transaction.commit()
+    except:
+        print("error")
+
+
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def materialReturnAdd(request):
+    context = {}
+    if not request.POST['reason'] or not request.POST['job_order_id']:
+        context.update({
+            'status': 531,
+            'message': "Reason/Job Order Id has not been provided."
+        })
+        return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            store_transaction_count = models.Store_Transaction.objects.all().count()
+            material_issue=models.Store_Transaction.objects.get(transaction_type__name="MIS", job_order_id=request.POST['job_order_id'])
+            material_return=models.Store_Transaction()
+            if material_issue.vendor: material_return.vendor=material_issue.vendor
+            material_return.transaction_type=models.Transaction_Type.objects.get(name="MR")
+            material_return.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')
+                ).replace(
+                    "${AI_DIGIT_5}",str(store_transaction_count + 1).zfill(5)
+                )
+            material_return.transaction_date=datetime.now()
+            material_return.job_order=material_issue.job_order
+            # material_return.save()
+
+            in_house_store=models.Store_Transaction_Detail.objects.filter(store_transaction_header=material_issue).first().store
+            vendor_store=models.Store.objects.filter(vendor=material_issue.vendor).first()
+            store_transaction_details = []
+
+            for (item_id, previous_quantity, updated_quantity) in zip(request.POST.getlist('item_id'),request.POST.getlist('previous_quantity'),request.POST.getlist('updated_quantity')):
+                store_transaction_details.append(
+                    models.Store_Transaction_Detail(
+                        store_transaction_header=material_return,
+                        item_id=item_id,
+                        store=in_house_store,
+                        quantity=Decimal(updated_quantity)-Decimal(previous_quantity)
+                    )
+                )
+
+                vendor_store_item = models.Store_Item.objects.get(store=vendor_store, item_id=item_id)
+                vendor_store_item.on_hand_qty -= Decimal(previous_quantity)-Decimal(updated_quantity)
+                vendor_store_item.closing_qty -= Decimal(previous_quantity)-Decimal(updated_quantity)
+                vendor_store_item.updated_at = datetime.now()
+                vendor_store_item.save()
+
+                in_house_store_item = models.Store_Item.objects.get(store=in_house_store, item_id=elem)
+                in_house_store_item.on_hand_qty += Decimal(previous_quantity)-Decimal(updated_quantity)
+                in_house_store_item.closing_qty += Decimal(previous_quantity)-Decimal(updated_quantity)
+                in_house_store_item.updated_at = datetime.now()
+                in_house_store_item.save()
+
+            models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Material Return Created Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 533,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)

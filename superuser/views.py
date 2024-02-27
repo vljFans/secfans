@@ -483,7 +483,9 @@ def storeList(request):
 
 @login_required
 def storeAdd(request):
+    vendors = models.Vendor.objects.all().exclude(id__in=list(models.Store.objects.filter(vendor_id__isnull=False).values_list("vendor_id", flat="True")))
     context.update({
+        'vendors':vendors,
         'page_title': "Store Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store", 'url': reverse('superuser:storeList')}, {'name': "Add"}]
     })
@@ -618,8 +620,7 @@ def purchaseOrderAdd(request):
 
 @login_required
 def purchaseOrderEdit(request, id):
-    purchaseOrder = models.Purchase_Order.objects.prefetch_related(
-        'purchase_order_detail_set').get(pk=id)
+    purchaseOrder = models.Purchase_Order.objects.prefetch_related('purchase_order_detail_set').get(pk=id)
     vendors = models.Vendor.objects.filter(status=1, deleted=0)
     items = models.Item.objects.filter(status=1, deleted=0)
     context.update({
@@ -657,6 +658,36 @@ def purchaseOrderPrint(request, id):
         'purchaseOrder': purchaseOrder
     })
     return render(request, 'portal/Purchase Order/print.html', context)
+
+
+@login_required
+def transactionTypeList(request):
+    context.update({
+        'page_title': "Transaction Type List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Transaction Type ", 'url': reverse('superuser:transactionTypeList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Transaction Type/list.html', context)
+
+
+@login_required
+def transactionTypeAdd(request):
+    
+    context.update({
+        'page_title': "Transaction Type Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Transaction Type ", 'url': reverse('superuser:transactionTypeList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Transaction Type/add.html', context)
+
+
+@login_required
+def transactionTypeEdit(request, id):
+    transactionType = models.Transaction_Type.objects.get(pk=id)
+    context.update({
+        'transactionType': transactionType,
+        'page_title': "Transaction Type Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Transaction Type ", 'url': reverse('superuser:transactionTypeList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Transaction Type/edit.html', context)
 
 
 @login_required
@@ -705,7 +736,7 @@ def storeTransactionList(request):
 def storeTransactionAdd(request):
     context.update({
         'transaction_type': "1",
-        'page_title': "Store Transaction Add",
+        'page_title': "Material Receipt Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}, {'name': "Add"}]
     })
     return render(request, 'portal/Store Transaction/add.html', context)
@@ -768,12 +799,13 @@ def jobOrderList(request):
 
 @login_required
 def jobOrderAdd(request):
-    item_id_n_bom_id={}
-    for bom in models.Bill_Of_Material.objects.all():
-        item_id_n_bom_id[str(bom.bom_item_id)]=bom.id
-    bom_items_id_list = list(models.Bill_Of_Material.objects.all().values_list('bom_item_id', flat=True))
+    # item_id_n_bom_id={}
+    # for bom in models.Bill_Of_Material.objects.all():
+    #     item_id_n_bom_id[str(bom.bom_item_id)]=bom.id
+    # bom_items_id_list = list(models.Bill_Of_Material.objects.all().values_list('bom_item_id', flat=True))
+
     context.update({
-        'item_id_n_bom_id':json.dumps(item_id_n_bom_id),
+        # 'item_id_n_bom_id':json.dumps(item_id_n_bom_id),
         'page_title': "Job Order Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "Add"}]
     })
@@ -784,22 +816,169 @@ def jobOrderAdd(request):
 def jobOrderEdit(request, id):
     jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
     stores = models.Store.objects.filter(status=1, deleted=0)
+    vendors = models.Vendor.objects.filter(status=1, deleted=0)
+    items = models.Item.objects.filter(status=1, deleted=0)
     context.update({
         'jobOrder': jobOrder,
-        'stores': stores,
+        # 'stores': stores,
+        'items': items,
+        'vendors': vendors,
         'page_title': "Job Order Edit",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "Edit"}]
     })
     return render(request, 'portal/Job Order/edit.html', context)
 
 
-@login_required
-def jobOrderView(request, id):
-    jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
-    context.update({
-        'purchaseOrder': jobOrder,
-        'page_title': "Job Order View",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "View"}]
-    })
-    return render(request, 'portal/Job Order/view.html', context)
+# @login_required
+# def jobOrderView(request, id):
+#     jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
+#     context.update({
+#         'purchaseOrder': jobOrder,
+#         'page_title': "Job Order View",
+#         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "View"}]
+#     })
+#     return render(request, 'portal/Job Order/view.html', context)
+#
+#--- developed by saswata
 
+
+@login_required
+def materialIssueList(request):
+    context.update({
+        'page_title': "Material Issue List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Material Issue/list.html', context)
+
+
+@login_required
+def materialIssueAdd(request):
+    items = models.Item.objects.filter(status=1, deleted=0)
+    context.update({
+        'page_title': " Material Issue Add",
+        'items': items,
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Material Issue/add.html', context)
+
+
+@login_required
+def materialIssueEdit(request,id):
+    materialIssue = models.Store_Transaction.objects.prefetch_related('store_transaction_detail_set').get(pk=id)
+    jobOrders = models.Job_Order.objects.filter(status=1, deleted=0)
+    jobOrder = models.Job_Order.objects.get(id=materialIssue.job_order_id,status=1, deleted=0)
+    items = models.Item.objects.filter(status=1, deleted=0)
+    vendor = models.Vendor.objects.filter(id=materialIssue.vendor_id)[0] if len(models.Vendor.objects.filter(id=materialIssue.vendor_id)) else None
+    store = materialIssue.store_transaction_detail_set.first().store
+    context.update({
+        'materialIssue': materialIssue,
+        'store': store,
+        'jobOrder': jobOrder,
+        'items': items,
+        'vendor':vendor,
+        'page_title': "Material Issue Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},{'name': "Material Issue", 'url': reverse('superuser:materialIssueList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Material Issue/edit.html', context)
+
+
+@login_required
+def materialIssueView(request,id):
+    context = returnMaterialListView(id,2)
+
+    return render(request, 'portal/Material Issue/view.html', context)
+
+
+@login_required
+def returnMaterialListView(id,type_id):
+    context = {}
+    material_issue = models.Store_Transaction.objects.filter(pk=id).values('pk','transaction_number','transaction_date','vendor_id','vendor__name','transaction_type_id','job_order__order_number')
+    material_issue_details = list(models.Store_Transaction_Detail.objects.filter(store_transaction_header_id=id).values('pk','item_id', 'item__name','store_id','store__name','quantity'))
+    if(type_id == 1):
+        context.update({
+            'material_issue':  material_issue,
+            'store_name': material_issue_details[0]['store__name'],
+            'store_id' : material_issue_details[0]['store_id'],
+            'material_issue_details':  material_issue_details,
+            'page_title': " Material Issue edit",
+            'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueList')}, {'name': "Edit"}]
+        })
+    else:
+        context.update({
+            'material_issue' :  material_issue,
+            'store_name': material_issue_details[0]['store__name'],
+            'material_issue_details':  material_issue_details,
+            'page_title': " Material Issue view",
+            'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Issue ", 'url': reverse('superuser:materialIssueList')}, {'name': "view"}]
+        })
+
+    return context
+
+
+@login_required
+def grnInspectionListView(request):
+    context.update({
+        'page_title': "Grn Inspection List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Grn Inspection", 'url': reverse('superuser:grnInspectionListView')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Grn Inspection/list.html', context)
+
+
+@login_required
+def grnInspectionAdd(request):
+    context.update({
+        'page_title': "Grn Inspection Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Grn Inspection", 'url': reverse('superuser:grnInspectionListView')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Grn Inspection/add.html', context)
+
+
+@login_required
+def grnInspectionEdit(request,id):
+    context = returnMaterialListView(id,1)
+
+    return render(request, 'portal/Grn Inspection/edit.html', context)
+
+
+@login_required
+def grnInspectionView(request,id):
+    context = returnMaterialListView(id,2)
+
+    return render(request, 'portal/Grn Inspection/view.html', context)
+
+
+@login_required
+def materialReturnList(request):
+    context.update({
+        'page_title': "Material Return List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Return ", 'url': reverse('superuser:materialReturnList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Material Return/list.html', context)
+
+
+@login_required
+def materialReturnAdd(request):
+    job_orders= models.Job_Order.objects.filter(
+        id__in=list(models.Store_Transaction.objects.filter(transaction_type__name="MIS").values_list('job_order', flat=True))
+    )
+    print(job_orders)
+    context.update({
+        'job_orders': job_orders,
+        'page_title': " Material Return Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Return ", 'url': reverse('superuser:materialReturnList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Material Return/add.html', context)
+
+
+@login_required
+def materialReturnEdit(request,id):
+    context = None
+
+    return render(request, 'portal/Material Return/edit.html', context)
+
+
+@login_required
+def materialReturnView(request,id):
+    context = None
+
+    return render(request, 'portal/Material Return/view.html', context)

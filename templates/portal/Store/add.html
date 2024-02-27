@@ -146,6 +146,12 @@
                                     <label>Vendor Name<span class="required-indicator">*</span></label>
                                     <div class="input-group">
                                         <select class="custom-select selectpicker" id="vendor_id" name="vendor_id" required>
+                                            <option value="">Choose...</option>
+                                            {% for vendor in vendors %}
+                                                <option {% if vendor.id == store.vendor_id %}selected{% endif %} value="{{vendor.id}}">
+                                                    {{vendor.name}}
+                                                </option>
+                                            {% endfor %}
                                         </select>
                                     </div>
                                 </div>
@@ -216,29 +222,32 @@
                 }
             },
         });
-        $.ajax({
-            url: "{% url 'api:vendorList' %}?find_all=1",
-            type: 'GET',
-            data: ({}),
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                if (response.status == 200) {
-                    var vendor_options_text = `<option value=""></option>`;
-                    for (let index = 0; index < response.page_items.length; index++) {
-                        vendor_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
-                    }
-                    $('#vendor_id').html(vendor_options_text);
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });
+        
+        // $.ajax({
+        //     url: "{% url 'api:vendorList' %}?find_all=1",
+        //     type: 'GET',
+        //     data: ({}),
+        //     headers: {
+        //         'Authorization': getCookieValue("accessToken")
+        //     },
+        //     success: function (response) {
+        //         if (response.status == 200) {
+        //             var vendor_options_text = `<option value=""></option>`;
+        //             for (let index = 0; index < response.page_items.length; index++) {
+        //                 vendor_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+        //             }
+        //             $('#vendor_id').html(vendor_options_text);
+        //         } else {
+        //             alert(response.message);
+        //         }
+        //     },
+        //     error: function (error) {
+        //         $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+        //     }
+        // });
+
         $(".vendor_content").hide()
+
     })
 
     $(document).on('change', '#country_id', function () {
