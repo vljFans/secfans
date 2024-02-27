@@ -120,9 +120,10 @@ urlpatterns = [
     path('material-issue-edit', views.materialIssueEdit, name='materialIssueEdit'),
     path('material-issue-details', views.materialIssueDetails, name='materialIssueDetails'),
 
-    path('grn-inspection-transaction-list', views.getGrnInspectionTransaction, name='getGrnInspectionTransaction'),
     path('grn-inspection-details-transaction', views.getGrnDetailisInsTransaction, name='getGrnDetailisInsTransaction'),
     path('grn-inspection-list-Add', views.addGrnDetailisInsTransaction, name='addGrnDetailisInsTransaction'),
+    path('grn-inspection-head-list', views.grnInspectionHeaderList, name='grnInspectionHeaderList'), 
 
     path('material-return-add', views.materialReturnAdd, name='materialReturnAdd'),
+
 ]

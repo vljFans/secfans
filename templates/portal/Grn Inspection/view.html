@@ -1,0 +1,158 @@
+{% extends 'portal/base.html' %}
+{% load static %}
+{% load template_func %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<!-- main wrapper div content -->
+<div class="wrapper">
+
+    <!--================================-->
+    <!-- Breadcrumb Start -->
+    <!--================================-->
+    <div class="pageheader pd-t-25 pd-b-35">
+        <div class="d-flex justify-content-between">
+            <div class="clearfix">
+                <div class="pd-t-5 pd-b-5">
+                    <h1 class="pd-0 mg-0 tx-20 tx-dark">{{parent_page_title}} {{page_title}}</h1>
+                </div>
+                <div class="breadcrumb pd-0 mg-0">
+                    {% for breadcrumb in breadcrumbs %}
+                    {% if forloop.counter != breadcrumbs|length %}
+                    <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                    {% else %}
+                    <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row row-xs clearfix">
+        <div class="col-md-12 col-lg-12">
+            <div class="card mg-b-30">
+                <!-- upper header of form -->
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-header-title tx-13 mb-0">{{parent_page_title}} {{page_title}}</h6>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- end upper header -->
+                <!-- main form  -->
+                <div class="card-body">
+                    {% for grn_inspection_head in grn_inspection_heads %}
+                    <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
+                        <div class="form-row">
+
+                            <div class="col-md-3 mb-3">
+                                <label>GRN Transaction Number<span class="required-indicator">*</span></label>
+                                <input type="text" id="inspection_number" name="inspection_number" class="form-control" value="{{grn_inspection_head.transaction_number}}"
+                                    readonly >
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label>Purchase Order Reference<span class="required-indicator">*</span></label>
+                                <input type="text" id="purchase_order_ref_name" name="purchase_order_ref_name" class="form-control" value="{{grn_inspection_head.purchase_order_header__order_number}}"
+                                    readonly >
+                                
+                            </div>
+                            
+
+                            <div class="col-md-3 mb-3">
+                                <label>Vendor </label>
+                                <input type="text" id="vendor_name" name="vendor_name" class="form-control" value="{{grn_inspection_head.vendor__name}}"
+                                    readonly >
+                                    
+                                
+                            </div>
+
+
+                            <div class="col-md-12" id="table_form">
+                                {% for grn_inspection_det in grn_inspection_dets %}
+                                
+                                <div class="form-row content_parent">
+                                    <input type="hidden" name="ins_det_id" value="">
+                                    <div class="col-md-2 mb-3">
+                                        <label>Item <span class="required-indicator">*</span></label>
+                                        <input type="text"  readonly
+                                            name="item_name"  class="form-control item_name"
+                                            value="{{grn_inspection_det.item__name}}">
+                                    </div>
+                                    <input type="hidden" name="item_id" value="">
+                                    <div class="col-md-2 mb-3">
+                                        <label>Store <span class="required-indicator">*</span></label>
+                                        <input type="text" readonly
+                                            name="store_name" min="0.01" class="form-control store_name"
+                                            value="{{grn_inspection_det.store__name}}">
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>Rate <span class="required-indicator">*</span></label>
+                                        <input type="text" name="rate"  class="form-control rate"
+                                            value="{{grn_inspection_det.rate}}" readonly>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>GST %* <span class="required-indicator">*</span></label>
+                                        <input type="text" name="gst_percentage"  class="form-control gst_percentage"
+                                            value="{{grn_inspection_det.gst_percentage}}" readonly>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>Accepted Quantity</label>
+                                        <input type="text" 
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="accp_quantity" value="{{grn_inspection_det.accepted_quantity}}" class="form-control accp_quantity" value="{{accepted_quantity}}"
+                                            placeholder="0.00" readonly >
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label> Rejected Quantiy</label>
+                                        <input type="text" name="rej_quantity" class="form-control rej_quantity" readonly
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            value="{{grn_inspection_det.reject_quantity}}" placeholder="0.00">
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label> Amount </label>
+                                        <input type="text" name="amount" class="form-control amount" readonly
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                             value="{{grn_inspection_det.amount}}">
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label> Inspection Date </label>
+                                        <input type="date" name="actualPrice" class="form-control actualPrice" readonly
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                             placeholder="0.00" value="{{grn_inspection_det.inspection_date|date:'Y-m-d'}}">
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-5" id="total" hidden>
+                                <label> Total price </label>
+                                <input type="text" name="totalPrice" class="form-control totalPrice" readonly
+                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                     placeholder="0.00"><br>
+                            </div>
+                            
+
+
+                        </div>
+                    </form>
+                    {% endfor %}
+                </div>
+                <!-- end main form -->
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- end main wrapper div -->
+
+{% endblock %}
+
+{% block js %}
+<!-- script -->
+
+
+{% endblock js %}

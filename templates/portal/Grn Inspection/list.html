@@ -65,29 +65,7 @@
                                 {% if request.user.is_superuser == 1 or 'add_store_item'|get_session_permission:request is not None %}
                                 <a href="{% url 'superuser:grnInspectionAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
                                 {% endif %}
-                                {% if request.user.is_superuser == 1 or 'view_store_item'|get_session_permission:request is not None %}
-                                <a href="javascript:void(0);" url="{% url 'api:storeItemExport' %}?&keyword={{request.GET.keyword}}" class="mr-3 excel_download"><i class="fa fa-download"></i></a>
-                                {% endif %}
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
-                                <!-- <div class="dropdown" data-toggle="dropdown">
-                                    <a href=""><i class="ti-more-alt"></i></a>
-                                    <div class="dropdown-menu dropdown-menu-right">
-                                        <a href="" class="dropdown-item"><i data-feather="info"
-                                                class="wd-16 mr-2"></i>View Details</a>
-                                        <a href="" class="dropdown-item"><i data-feather="share"
-                                                class="wd-16 mr-2"></i>Share</a>
-                                        <a href="" class="dropdown-item"><i data-feather="download"
-                                                class="wd-16 mr-2"></i>Download</a>
-                                        <a href="" class="dropdown-item"><i data-feather="copy"
-                                                class="wd-16 mr-2"></i>Copy to</a>
-                                        <a href="" class="dropdown-item"><i data-feather="folder"
-                                                class="wd-16 mr-2"></i>Move to</a>
-                                        <a href="" class="dropdown-item"><i data-feather="edit"
-                                                class="wd-16 mr-2"></i>Rename</a>
-                                        <a href="" class="dropdown-item"><i data-feather="trash"
-                                                class="wd-16 mr-2"></i>Delete</a>
-                                    </div>
-                                </div> -->
                             </div>
                         </div>
                     </div>
@@ -98,11 +76,9 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Store</th>
-                                    <th>Item</th>
-                                    <th>Opening quantity</th>
-                                    <th>On hand quantity</th>
-                                    <th>Closing quantity</th>
+                                    <th>Inspection Number</th>
+                                    <th>Vendor Name</th>
+                                    <!-- <th>Inspection Date</th> -->
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -125,10 +101,10 @@
 {% block js %}
 <script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
-    function getStoreItemList(keyword) {
+    function getgrnInspectionList(keyword) {
         $.ajax({
             type: "GET",
-            url: "{% url 'api:storeItemList' %}?keyword=" + keyword,
+            url: "{% url 'api:grnInspectionHeaderList' %}?keyword=" + keyword,
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -136,25 +112,17 @@
             success: function (response) {
                 $('.error-msg-txt').text("");
                 if (response.status == 200) {
-                    edit_url = "{% url 'superuser:storeItemEdit' 1 %}";
+                    view_url = "{% url 'superuser:grnInspectionView' 1 %}";
                     page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index];
                         tbody_text += `<tr>
                                 <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
-                                <td>${element.store__name}</td>
-                                <td>${element.item__name}</td>
-                                <td>${parseFloat(element.opening_qty)}</td>
-                                <td>${parseFloat(element.on_hand_qty)}</td>
-                                <td>${parseFloat(element.closing_qty)}</td>
+                                <td>${element.transaction_number}</td>
+                                <td>${element.vendor__name}</td>
                                 <td>
-                                {% if request.user.is_superuser == 1 or 'change_store_item'|get_session_permission:request is not None %}
-                                <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'delete_store_item'|get_session_permission:request is not None %}
-                                <a id="delete-btn" data-id="${element.pk}" data-name="${element.item__name} in ${element.store__name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
-                                {% endif %}
+                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
                                 </td>
                             </tr>`;
                     }
@@ -180,40 +148,14 @@
 
     }
     $(document).ready(function () {
-        getStoreItemList(keyword)
+        getgrnInspectionList(keyword)
     });
 
     $(document).on('keyup', '#search', function () {
         keyword = $(this).val();
-        getStoreItemList(keyword)
+        getgrnInspectionList(keyword)
     })
 
-    $(document).on('click', '#delete-btn', function () {
-        id = $(this).attr('data-id');
-        name = $(this).attr('data-name');
-        if (window.confirm('Are you sure to delete ' + name + '?')) {
-            $.ajax({
-                type: "POST",
-                url: "{% url 'api:storeItemDelete' %}",
-                data: ({ id: id }),
-                headers: {
-                    'Authorization': getCookieValue("accessToken"),
-                },
-                success: function (response) {
-                    if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:storeItemList' %}");
-                    } else {
-                        alert(response.message);
-                    }
-                },
-                error: function (error) {
-                    $('.success-msg-txt').text("");
-                    $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
-                    $('.error-msg-txt').addClass('text-danger');
-                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-                }
-            });
-        }
-    });
+   
 </script>
 {% endblock %}

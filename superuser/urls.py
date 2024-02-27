@@ -107,10 +107,11 @@ urlpatterns = [
     path('material-issue-edit/<int:id>',views.materialIssueEdit, name='materialIssueEdit'),
     path('material-issue-view/<int:id>',views.materialIssueView, name='materialIssueView'),
 
-    path('grn-inspection-list',views.grnInspectionListView, name='grnInspectionListView'),
-    path('grn-inspection-add',views.grnInspectionAdd, name='grnInspectionAdd'),
-    path('grn-inspection-edit/<int:id>',views.grnInspectionEdit, name='grnInspectionEdit'),
-    path('grn-inspection-view/<int:id>',views.grnInspectionView, name='grnInspectionView'),
+    path('grn-inspection-list',views.grnInspectionListView , name = 'grnInspectionListView'),
+    path('grn-inspection-add',views.grnInspectionAdd , name = 'grnInspectionAdd'),
+    path('grn-inspection-edit/<int:id>',views.grnInspectionEdit , name = 'grnInspectionEdit'),
+    path('grn-inspection-view/<int:id>',views.grnInspectionView , name = 'grnInspectionView'),
+
 
     path('material-return-list',views.materialReturnList, name='materialReturnList'),
     path('material-return-add',views.materialReturnAdd, name='materialReturnAdd'),
