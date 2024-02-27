@@ -4407,7 +4407,7 @@ def getGrnDetailisInsTransaction(request):
 
     return JsonResponse(context)
 
-#grnInspection add and upatdate  ----developed by saswata
+#grnInspection add and update  ----developed by saswata
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

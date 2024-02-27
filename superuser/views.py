@@ -914,7 +914,7 @@ def returnMaterialListView(id,type_id):
 
     return context
 
-
+#  grn inspection --- developed by saswata
 @login_required
 def grnInspectionListView(request):
     context.update({
@@ -949,7 +949,7 @@ def grnInspectionView(request,id):
     'transaction_number',
     'purchase_order_header__order_number',
     ))
-    print(grn_inspection_head)
+    # print(grn_inspection_head)
     grn_inspection_det = list(models.Grn_Inspection_Transaction_Detail.objects.filter(grn_inspection_transaction_header_id=id , ins_done =1).values('pk',
     'item__name',
     'store__name',
@@ -985,7 +985,7 @@ def materialReturnAdd(request):
     job_orders= models.Job_Order.objects.filter(
         id__in=list(models.Store_Transaction.objects.filter(transaction_type__name="MIS").values_list('job_order', flat=True))
     )
-    print(job_orders)
+    # print(job_orders)
     context.update({
         'job_orders': job_orders,
         'page_title': " Material Return Add",
