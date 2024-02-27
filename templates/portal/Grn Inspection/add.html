@@ -339,7 +339,7 @@
                 $('.submit-btn').prop('disabled', false);
                 if (response.status == 200) {
                     // alert(response.message);
-                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialIssueList' %}");
+                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:grnInspectionListView' %}");
                     
                 } else {
                     alert(response.message);

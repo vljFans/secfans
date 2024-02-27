@@ -3128,11 +3128,12 @@ def storeTransactionAdd(request):
         })
         return JsonResponse(context)
     try:
-        # print("3130")
+        print("3130")
         inspect = request.POST.getlist('inspect')
+        print(request.POST)
         with transaction.atomic():
             if "1" in inspect:
-                # print("3134")
+                print("3134")
                 grn_inspection_transaction_count = models.Grn_Inspection_Transaction.objects.all().count()
                 grnTransactionheader = models.Grn_Inspection_Transaction()
                 grnTransactionheader.vendor_id = request.POST['vendor_id']
