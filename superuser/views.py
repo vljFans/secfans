@@ -889,7 +889,7 @@ def materialIssueView(request,id):
     return render(request, 'portal/Material Issue/view.html', context)
 
 
-@login_required
+# @login_required
 def returnMaterialListView(id,type_id):
     context = {}
     material_issue = models.Store_Transaction.objects.filter(pk=id).values('pk','transaction_number','transaction_date','vendor_id','vendor__name','transaction_type_id','job_order__order_number')
