@@ -3128,25 +3128,28 @@ def storeTransactionAdd(request):
         })
         return JsonResponse(context)
     try:
-        # print("3130")
+        print("3130")
         inspect = request.POST.getlist('inspect')
+        print(request.POST)
         with transaction.atomic():
             if "1" in inspect:
-                # print("3134")
+                print("3134")
                 grn_inspection_transaction_count = models.Grn_Inspection_Transaction.objects.all().count()
                 grnTransactionheader = models.Grn_Inspection_Transaction()
                 grnTransactionheader.vendor_id = request.POST['vendor_id']
                 grnTransactionheader.transaction_type_id = request.POST['transaction_type_id']
                 grnTransactionheader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                     "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(5))
-                if (request.POST['purchase_order_header_id']):
+                print("3143")
+                if (request.POST.get('purchase_order_header_id',None)):
                     grnTransactionheader.purchase_order_header_id = request.POST[
                         'purchase_order_header_id']
+                print("3147")
                 grnTransactionheader.transaction_date = request.POST['transaction_date']
                 grnTransactionheader.total_amount = request.POST['total_amount']
                 grnTransactionheader.notes = request.POST['notes']
                 grnTransactionheader.save()
-                # print("3148")
+                print("3148")
                 order_details = []
                 for index, elem in enumerate(request.POST.getlist('item_id')):
                     if inspect[index] == "1":
@@ -3176,9 +3179,11 @@ def storeTransactionAdd(request):
                 storeTransactionHeader = models.Store_Transaction()
                 storeTransactionHeader.vendor_id = request.POST['vendor_id']
                 storeTransactionHeader.transaction_type_id = request.POST['transaction_type_id']
-                if (request.POST['purchase_order_header_id']):
+                # print("3182")
+                if (request.POST.get('purchase_order_header_id',None)):
                     storeTransactionHeader.purchase_order_header_id = request.POST[
                         'purchase_order_header_id']
+                # print("3186")
                 storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                     "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
                 storeTransactionHeader.transaction_date = request.POST['transaction_date']
@@ -4402,7 +4407,7 @@ def getGrnDetailisInsTransaction(request):
 
     return JsonResponse(context)
 
-#grnInspection add and upatdate  ----developed by saswata
+#grnInspection add and update  ----developed by saswata
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -4448,7 +4453,7 @@ def addGrnDetailisInsTransaction(request):
                     storeTransactionHeader.vendor_id = request.POST['vendor_id']
                     storeTransactionHeader.transaction_type_id = 2
                     # print("4312")
-                    if (request.POST['purchase_order_header_id']!=""):
+                    if (request.POST.get('purchase_order_header_id',None) and request.POST['purchase_order_header_id']!=""):
                         storeTransactionHeader.purchase_order_header_id = request.POST[
                             'purchase_order_header_id']
                     # print("4316")

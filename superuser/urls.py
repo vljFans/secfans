@@ -112,7 +112,7 @@ urlpatterns = [
     path('grn-inspection-edit/<int:id>',views.grnInspectionEdit , name = 'grnInspectionEdit'),
     path('grn-inspection-view/<int:id>',views.grnInspectionView , name = 'grnInspectionView'),
 
-
+     # path grn inspection ---developed by saswata
     path('material-return-list',views.materialReturnList, name='materialReturnList'),
     path('material-return-add',views.materialReturnAdd, name='materialReturnAdd'),
     path('material-return-edit/<int:id>',views.materialReturnEdit, name='materialReturnEdit'),

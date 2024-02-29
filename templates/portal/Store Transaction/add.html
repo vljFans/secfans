@@ -85,7 +85,7 @@
                                     <label>Purchase Order Reference<span class="required-indicator">*</span></label>
                                     <div class="input-group">
                                         <select class="custom-select selectpicker" id="purchase_order_header_id"
-                                            name="purchase_order_header_id" required>
+                                            name="purchase_order_header_id" required >
                                             <option value="">Select Purchase Order</option>
                                         </select>
                                     </div>
@@ -328,14 +328,29 @@
     }
 
     $(document).on('change', '#with_purchase_order', function () {
+        console.log("328");
         purchase_order_type = $(this).val();
+        console.log(purchase_order_type);
         if (parseInt(purchase_order_type) == 1) {
-            $('.purchase_order_type_content').show();
+            // $('.purchase_order_type_content').show();
             $('#purchase_order_header_id').attr('required', 'required');
-            $('.purchase_order_type_content').hide();
+            // $('.purchase_order_type_content').hide();
             $('#purchase_order_header_id').val("")
+            // $('#purchase_order_header_id').removeAttr('required');
+            $('#purchase_order_header_id').removeAttr('disabled');
+           
+        
+        }
+
+        else{
+            // $('.purchase_order_type_content').hide();
             $('#purchase_order_header_id').removeAttr('required');
-            purchase_details = `<div class="form-row content_parent">
+            $('#purchase_order_header_id').attr('disabled','true');
+            $('#purchase_order_header_id').val("")
+            
+        }
+
+        purchase_details = `<div class="form-row content_parent">
                                     <div class="col-md-2 mb-3">
                                         <label>Item <span class="required-indicator">*</span></label>
                                         <div class="input-group">
@@ -389,8 +404,8 @@
                                     <div class="col-md-1 mb-3">
                                         <div class="custom-control custom-checkbox inspect">
                                             <input type="checkbox" class="custom-control-input "
-                                                 value="0" onclick="check(this)">
-                                                <label class="custom-control-label">
+                                                 value="0" id="inspect4" onclick="check(this)">
+                                                <label class="custom-control-label" for="inspect4">
                                                 Inspect
                                             </label>
                                             <input type="hidden" name="inspect" class="insc" value="0">
@@ -400,9 +415,9 @@
                                         <button type="button" class="btn add_item mt-1"><i class="fa fa-plus"></i></button>
                                     </div>
                                 </div>`;
-            $(".purchase_order_details").html(purchase_details);
-            $("#total_amount").val(0);
-        }
+        $(".purchase_order_details").html(purchase_details);
+        $("#total_amount").val(0);
+      
         $('.selectpicker').select2({
             placeholder: '',
             templateResult: function(option) {
@@ -483,8 +498,8 @@
                                         </div>
                                     </div>
                                     <div class="col-md-1 mb-3">
-                                        <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input inspect"
+                                        <div class="custom-control custom-checkbox inspect" >
+                                            <input type="checkbox" class="custom-control-input"
                                                  id="inspect0" value="0" onclick="check(this)">
                                                 <label class="custom-control-label" for="inspect0">
                                                 Inspect
@@ -556,8 +571,8 @@
                                         </div>
                                     </div>
                                     <div class="col-md-1 mb-3">
-                                        <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input inspect"
+                                        <div class="custom-control custom-checkbox inspect">
+                                            <input type="checkbox" class="custom-control-input "
                                                  id="inspect1" value="0" onclick="check(this)">
                                                 <label class="custom-control-label" for="inspect1">
                                                 Inspect
@@ -645,8 +660,8 @@
                                         </div>
                                     </div>
                                     <div class="col-md-1 mb-3">
-                                        <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input inspect"
+                                        <div class="custom-control custom-checkbox inspect">
+                                            <input type="checkbox" class="custom-control-input "
                                                  id ="inspect2" value="0" onclick="check(this)">
                                                 <label class="custom-control-label" for="inspect2">
                                                 Inspect
@@ -926,8 +941,10 @@
     //     }
     // });
         function check(element){
-            console.log($(element).parent().closest('.content_parent').html());
+            // console.log($(element).parent().closest('.content_parent').html());
             console.log($(element).parent().closest('.inspect').find('.insc').val());
+            console.log($(element).parent().closest('.inspect').html());
+            console.log($(element).parent().html());
             if($(element).val() === "0"){
                 $(element).val("1")
                 $(element).parent().closest('.inspect').find('.insc').val("1")

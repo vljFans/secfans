@@ -735,7 +735,7 @@ def storeTransactionList(request):
 @login_required
 def storeTransactionAdd(request):
     context.update({
-        'transaction_type': "1",
+        'transaction_type': "2",
         'page_title': "Material Receipt Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}, {'name': "Add"}]
     })
@@ -889,7 +889,7 @@ def materialIssueView(request,id):
     return render(request, 'portal/Material Issue/view.html', context)
 
 
-@login_required
+# @login_required
 def returnMaterialListView(id,type_id):
     context = {}
     material_issue = models.Store_Transaction.objects.filter(pk=id).values('pk','transaction_number','transaction_date','vendor_id','vendor__name','transaction_type_id','job_order__order_number')
@@ -914,7 +914,7 @@ def returnMaterialListView(id,type_id):
 
     return context
 
-
+#  grn inspection --- developed by saswata
 @login_required
 def grnInspectionListView(request):
     context.update({
@@ -949,7 +949,7 @@ def grnInspectionView(request,id):
     'transaction_number',
     'purchase_order_header__order_number',
     ))
-    print(grn_inspection_head)
+    # print(grn_inspection_head)
     grn_inspection_det = list(models.Grn_Inspection_Transaction_Detail.objects.filter(grn_inspection_transaction_header_id=id , ins_done =1).values('pk',
     'item__name',
     'store__name',
