@@ -3128,28 +3128,28 @@ def storeTransactionAdd(request):
         })
         return JsonResponse(context)
     try:
-        print("3130")
+        # print("3130")
         inspect = request.POST.getlist('inspect')
-        print(request.POST)
+        # print(request.POST)
         with transaction.atomic():
             if "1" in inspect:
-                print("3134")
+                # print("3134")
                 grn_inspection_transaction_count = models.Grn_Inspection_Transaction.objects.all().count()
                 grnTransactionheader = models.Grn_Inspection_Transaction()
                 grnTransactionheader.vendor_id = request.POST['vendor_id']
                 grnTransactionheader.transaction_type_id = request.POST['transaction_type_id']
                 grnTransactionheader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                     "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(5))
-                print("3143")
+                # print("3143")
                 if (request.POST.get('purchase_order_header_id',None)):
                     grnTransactionheader.purchase_order_header_id = request.POST[
                         'purchase_order_header_id']
-                print("3147")
+                # print("3147")
                 grnTransactionheader.transaction_date = request.POST['transaction_date']
                 grnTransactionheader.total_amount = request.POST['total_amount']
                 grnTransactionheader.notes = request.POST['notes']
                 grnTransactionheader.save()
-                print("3148")
+                # print("3148")
                 order_details = []
                 for index, elem in enumerate(request.POST.getlist('item_id')):
                     if inspect[index] == "1":
@@ -4439,7 +4439,7 @@ def addGrnDetailisInsTransaction(request):
                 
                 # print("4381")
                 storeTranscHeadPresent = models.Store_Transaction.objects.filter(grn_inspection_id = request.POST['insTraId']).first()
-                print("4383")
+                # print("4383")
                 if storeTranscHeadPresent is not None:
                     # print("4385")
                     storeTransactionHeader = storeTranscHeadPresent
@@ -4520,7 +4520,8 @@ def addGrnDetailisInsTransaction(request):
                                 request.POST.getlist('accp_quantity')[index])
                             storeItem.closing_qty = Decimal(
                                 request.POST.getlist('accp_quantity')[index])
-                            storeItem.item_id = elem
+                            storeItem.item_id = request.POST.getlist('item_id')[index]
+                            # print("4529")
                             storeItem.store_id = request.POST.getlist('store_id')[
                                 index]
                             # print("4378")
@@ -4536,7 +4537,7 @@ def addGrnDetailisInsTransaction(request):
                 models.Store_Transaction_Detail.objects.bulk_create(order_details)
                 # print("4466")
                 if request.POST['purchase_order_header_id'] != "" and (request.POST['purchase_order_header_id']) != 0:
-                    print("4468")
+                    # print("4468")
                     for index, elem in enumerate(request.POST.getlist('item_id')):
                         # print("4470")
                         if request.POST.getlist('accp_quantity')[index] != '':
