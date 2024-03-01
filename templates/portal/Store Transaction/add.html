@@ -514,11 +514,13 @@
                                     </div>
                                 </div>`;
                         $(".purchase_order_details").html(purchase_details);
-                    } else {
+                    } 
+                    else {
                         var options_text = `<option value="">Select Purchase Order</option>`;
                         $("#purchase_order_header_id").html(options_text);
-                        $('.purchase_order_type_content').hide();
                         $('#purchase_order_header_id').removeAttr('required');
+                        $('#purchase_order_header_id').attr('disabled','true');
+                        $('#purchase_order_header_id').val("")
                         purchase_details = `<div class="form-row content_parent">
                                     <div class="col-md-2 mb-3">
                                         <label>Item <span class="required-indicator">*</span></label>

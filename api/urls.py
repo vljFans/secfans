@@ -121,7 +121,7 @@ urlpatterns = [
     path('material-issue-details', views.materialIssueDetails, name='materialIssueDetails'),
 
     # path grn inspection ---developed by saswata
-    path('grn-inspection-details-transaction', views.getGrnDetailisInsTransaction, name='getGrnDetailisInsTransaction'),
+    path('grn-inspection-details-transaction', views.getGrnInspectionTransactionDetail, name='getGrnInspectionTransactionDetail'),
     path('grn-inspection-list-Add', views.addGrnDetailisInsTransaction, name='addGrnDetailisInsTransaction'),
     path('grn-inspection-head-list', views.grnInspectionHeaderList, name='grnInspectionHeaderList'), 
 

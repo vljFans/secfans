@@ -158,7 +158,7 @@
 
         var item_options_text = ``;
         $.ajax({
-            url: "{% url 'api:grnInspectionHeaderList' %}?inspar=1",
+            url: "{% url 'api:grnInspectionHeaderList' %}?ins_completed=0",
             type: 'GET',
             data: ({}),
             headers: {
@@ -221,7 +221,7 @@
         $('#vendor_name').val("")
         $('.vendor_id').val("")
         $.ajax({
-            url: "{% url 'api:getGrnDetailisInsTransaction' %}?insId=" + insId,
+            url: "{% url 'api:getGrnInspectionTransactionDetail' %}?insId=" + insId + "&ins_done=0",
             type: 'GET',
             data: ({
             }),
@@ -292,7 +292,7 @@
                                                 max="${response.page_items[index].quantity}" min="0.00" placeholder="0.00">
                                         </div>
                                         <div class="col-md-2 mb-3">
-                                            <label> amount </label>
+                                            <label> Amount </label>
                                             <input type="text" name="amount" class="form-control amount" readonly
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                  placeholder="0.00">
