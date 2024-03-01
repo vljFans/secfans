@@ -3138,7 +3138,7 @@ def storeTransactionAdd(request):
                 grnTransactionheader = models.Grn_Inspection_Transaction()
                 grnTransactionheader.vendor_id = request.POST['vendor_id']
                 grnTransactionheader.transaction_type_id = request.POST['transaction_type_id']
-                grnTransactionheader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+                grnTransactionheader.transaction_number = env("GRN_TRANSACTION_INSPECTION_SEQ").replace(
                     "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(5))
                 # print("3143")
                 if (request.POST.get('purchase_order_header_id',None)):
