@@ -1014,3 +1014,35 @@ def materialReturnView(request,id):
     })
 
     return render(request, 'portal/Material Return/view.html', context)
+
+# on transit transaction --- developed by saswata
+
+# material out
+@login_required
+def materialOutList(request):
+    context.update({
+        'page_title': "Material Out List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Material Out", 'url': reverse('superuser:materialOutList')},
+                        {'name': "List"}]
+    })
+
+    return render(request, 'portal/Material Out/list.html', context)
+
+
+
+
+# material in
+@login_required
+def materialInList(request):
+    context.update({
+        'page_title': "Material Out List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Material In", 'url': reverse('superuser:materialInList')},
+                        {'name': "List"}]
+    })
+
+    return render(request, 'portal/Material In/list.html', context)
+    
+
+
