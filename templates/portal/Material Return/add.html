@@ -61,7 +61,7 @@
                 <div class="card-body">
                     <form id="create_form" class="needs-validation" novalidate>
                         <div class="form-row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-5 mb-3">
                                 <label>Reason for material return<span class="required-indicator">*</span></label>
                                 <div class="input-group">
                                     <select class="custom-select selectpicker" id="reason" name="reason" required>
@@ -71,8 +71,14 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-6 mb-3 job_order_div"></div>
-                            <div class="col-md-12 mb-3 issued_items_div"></div>
+                            <div class="col-md-5 mb-3 child_div"></div>
+                            <div class="col-md-2 mb-3">
+                                <label> Return  Date <span class="required-indicator">*</span></label>
+                                <input type="date" name="return_date" class="form-control return_date" placeholder="Return Date"
+                                required>
+
+                            </div>
+                            <div class="col-md-12 mb-3 items_div"></div>
                         </div>
                         {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
                         <button class="btn btn-success submit-btn" type="submit">Submit</button>
@@ -114,49 +120,46 @@
     });
     
     $(document).ready(function () {
+        $(".return_date").val(new Date().toISOString().slice(0, 10))
         $(".submit-btn").prop("disabled", true);
     });
 
     $(document).on('change', '#reason', function () {
         if ($(this).val()==="1"){
-            let e=$(this)
-            $.ajax({
-                url: "{% url 'api:jobOrderList' %}?find_all=1",
-                type: 'GET',
-                data: ({}),
-                headers: {
-                    'Authorization': getCookieValue("accessToken")
-                },
-                success: function (response) {
-                    if (response.status == 200) {
-                        let options_text=`
-                            <label>Job Order<span class="required-indicator">*</span></label>
-                            <div class="input-group">
-                                <select class="custom-select selectpicker job_order" name="job_order_id" required>
-                                    <option value="">Choose...</option>
-                                    {% for job_order in job_orders %}
-                                    <option value="{{job_order.id}}">{{job_order.order_number}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            
-                        `;
-                        e.closest(".form-row").find(".job_order_div").html(options_text);
-                        $('.selectpicker').select2({
-                            placeholder: '',
-                        });
-                    } 
-                    else {
-                        alert(response.message);
-                    }
-                },
-                error: function (error) {
-                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-                }
+            let options_text=`
+                <label>Job Order<span class="required-indicator">*</span></label>
+                <div class="input-group">
+                    <select class="custom-select selectpicker job_order" name="job_order_id" required>
+                        <option value="">Choose...</option>
+                        {% for job_order in job_orders %}
+                        <option value="{{job_order.id}}">{{job_order.order_number}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            `;
+            $(this).closest(".form-row").find(".child_div").html(options_text);
+            $(".items_div").empty();
+            $('.selectpicker').select2({
+                placeholder: '',
             });
         }
-        else{
-
+        if ($(this).val()==="2"){
+            let options_text=`
+                <label>GRN Inspection<span class="required-indicator">*</span></label>
+                <div class="input-group">
+                    <select class="custom-select selectpicker grn_inspection" name="grn_inspection_id" required>
+                        <option value="">Choose...</option>
+                        {% for grn_inspection in grn_inspections %}
+                        <option value="{{grn_inspection.id}}">{{grn_inspection.transaction_number}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            `;
+            $(this).closest(".form-row").find(".child_div").html(options_text);
+            $(".items_div").empty();
+            $('.selectpicker').select2({
+                placeholder: '',
+            }); 
         }
     })
 
@@ -172,9 +175,9 @@
             success: function (response) {
                 if (response.status == 200) {
                     $(".submit-btn").prop("disabled",   false);
-                    let issued_items_div=``;
+                    let items_div=``;
                     for (const x of response.material_issue_details){
-                        issued_items_div+=`
+                        items_div+=`
                         <div class="form-row">
                             <div class="col-md-6 mb-3">
                                 <label>Item<span class="required-indicator">*</span></label>
@@ -186,13 +189,13 @@
                                 <input type="hidden" class="previous_quantity" name="previous_quantity" value="${x.quantity}">
                                 <input type="text" onkeyup="checkMaxMin(this)"
                                     onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    name="updated_quantity" min="0.01" max="${x.quantity}" class="form-control quantity_sent"
+                                    name="updated_quantity" min="0.01" max="${x.quantity}" class="form-control updated_quantity"
                                     value="${x.quantity}" required>
                             </div>
                         </div>
                         `
                     }
-                    $(".issued_items_div").html(issued_items_div)
+                    $(".items_div").html(items_div)
                     
                 }
             },
@@ -203,6 +206,55 @@
 
     })
     
+    $(document).on('change', '.grn_inspection', function () {
+        let job_order_id=$(this).val()
+        $.ajax({
+            url: "{% url 'api:getGrnInspectionTransactionDetail' %}?insId=" + $(".grn_inspection").val() + "&ins_done=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    $(".submit-btn").prop("disabled",   false);
+                    let items_div=``;
+                    for (const x of response.page_items){
+                        items_div+=`
+                        <div class="form-row">
+                            <div class="col-md-6 mb-3">
+                                <label>Item<span class="required-indicator">*</span></label>
+                                <input type="hidden" class="store_id" name="store_id" value="${x.store_id}">
+                                <input type="hidden" class="item_id" name="item_id" value="${x.item_id}">
+                                <input type="text" class="form-control item_name" name="item_name" value="${x.item__name}"  readonly required>
+                            </div>
+                            <div class="col-md-5 mb-3">
+                                <label>Rejected Quantity<span class="required-indicator">*</span></label>
+                                <input type="hidden" class="quantity" name="quantity" value="${x.quantity}">
+                                <input type="text" onkeyup="checkMaxMin(this)"
+                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                    name="reject_quantity" min="0.01" max="${x.reject_quantity}" class="form-control reject_quantity"
+                                    value="${x.reject_quantity}" readonly required>
+                            </div>
+                            <div class="col-md-1 mb-3" style="text-align:center;">                                        
+                                <label for="return_item">Return</label><br>
+                                <input type="hidden" name="return_item" value="0"><input type="checkbox" onclick="this.previousSibling.value=1-this.previousSibling.value" style="transform: scale(2);margin-top: 12px;">
+                            </div>
+                        </div>
+                        `
+                    }
+                    $(".items_div").html(items_div)
+                    
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+
+    })
+    
+
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
         $('.submit-btn').text('Submitting...');

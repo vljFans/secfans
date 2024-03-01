@@ -3128,28 +3128,28 @@ def storeTransactionAdd(request):
         })
         return JsonResponse(context)
     try:
-        print("3130")
+        # print("3130")
         inspect = request.POST.getlist('inspect')
-        print(request.POST)
+        # print(request.POST)
         with transaction.atomic():
             if "1" in inspect:
-                print("3134")
+                # print("3134")
                 grn_inspection_transaction_count = models.Grn_Inspection_Transaction.objects.all().count()
                 grnTransactionheader = models.Grn_Inspection_Transaction()
                 grnTransactionheader.vendor_id = request.POST['vendor_id']
                 grnTransactionheader.transaction_type_id = request.POST['transaction_type_id']
                 grnTransactionheader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                     "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(5))
-                print("3143")
+                # print("3143")
                 if (request.POST.get('purchase_order_header_id',None)):
                     grnTransactionheader.purchase_order_header_id = request.POST[
                         'purchase_order_header_id']
-                print("3147")
+                # print("3147")
                 grnTransactionheader.transaction_date = request.POST['transaction_date']
                 grnTransactionheader.total_amount = request.POST['total_amount']
                 grnTransactionheader.notes = request.POST['notes']
                 grnTransactionheader.save()
-                print("3148")
+                # print("3148")
                 order_details = []
                 for index, elem in enumerate(request.POST.getlist('item_id')):
                     if inspect[index] == "1":
@@ -4296,7 +4296,7 @@ def grnInspectionHeaderList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    inspar = request.GET.get('inspar',None)
+    ins_completed = request.GET.get('ins_completed',None)
 
     try:
         if id is not None and id != "":
@@ -4317,9 +4317,9 @@ def grnInspectionHeaderList(request):
                     ).filter(
                         status=1, deleted=0 ,ins_done = 1).values('pk', 'vendor_id', 'vendor__name', 'transaction_number')
                 )
-            elif inspar is not None and inspar != "":
+            elif ins_completed is not None and ins_completed != "":
                 # print("4252",request.GET)
-                grnInspection = list(models.Grn_Inspection_Transaction.objects.filter(status=1, deleted=0 ,ins_par_done = 0).values(
+                grnInspection = list(models.Grn_Inspection_Transaction.objects.filter(status=1, deleted=0 ,ins_completed = 0).values(
                     'pk', 'vendor_id', 'vendor__name', 'transaction_number'))
                 context.update({
                     'status': 200,
@@ -4367,17 +4367,39 @@ def grnInspectionHeaderList(request):
     return JsonResponse(context)
 
 
-#grnInspection detalis List ----developed by saswata
+#GRN Inspection Transaction Details List ----developed by saswata
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def getGrnDetailisInsTransaction(request):
+def getGrnInspectionTransactionDetail(request):
     # print(request.GET,"saswata")
 
     try:
         # print("4247")
-        grn_Ins_Det = list(models.Grn_Inspection_Transaction_Detail.objects.filter(
-                grn_inspection_transaction_header_id = int(request.GET.get('insId')), ins_done = 0 
-            ).values(
+        # Getting grn inspection transaction details whose inspection is not done
+        if int(request.GET.get('ins_done'))==0:
+            grn_Ins_Det = list(models.Grn_Inspection_Transaction_Detail.objects.filter(
+                    grn_inspection_transaction_header_id = int(request.GET.get('insId')), ins_done = 0
+                ).values(
+                    'pk',
+                    'grn_inspection_transaction_header_id',
+                    'grn_inspection_transaction_header__vendor_id',
+                    'grn_inspection_transaction_header__vendor__name',
+                    'grn_inspection_transaction_header__purchase_order_header_id',
+                    'grn_inspection_transaction_header__purchase_order_header__order_number',
+                    'item_id',
+                    'item__name',
+                    'store_id',
+                    'store__name',
+                    'quantity',
+                    'rate',
+                    'amount',
+                    'gst_percentage'
+                ))
+        # Getting grn inspection transaction details whose inspection is done
+        if int(request.GET.get('ins_done')) == 1:
+            grn_Ins_Det = list(models.Grn_Inspection_Transaction_Detail.objects.filter(
+                grn_inspection_transaction_header_id=int(request.GET.get('insId')), ins_done=1,
+            ).exclude(reject_quantity=0).values(
                 'pk',
                 'grn_inspection_transaction_header_id',
                 'grn_inspection_transaction_header__vendor_id',
@@ -4391,9 +4413,10 @@ def getGrnDetailisInsTransaction(request):
                 'quantity',
                 'rate',
                 'amount',
+                'reject_quantity',
+                'quantity',
                 'gst_percentage'
             ))
-        # print(grn_Ins_Det)
         context ={
             'status':200,
             'page_items': grn_Ins_Det
@@ -4413,75 +4436,39 @@ def getGrnDetailisInsTransaction(request):
 @permission_classes([IsAuthenticated])
 def addGrnDetailisInsTransaction(request):
     context = {}
-    # print(request.POST)
-
-    # ins_done = 0  if '' in request.POST.getlist('accp_quantity') else 1
-
-    ins_par_done = 0 if not all(request.POST.getlist('accp_quantity')) else 1 #if ins_par_done is 0 means all item is not inspected may be inspection happned paritally
-
-
-    # ins_no
-
-    # print(request.POST)
-
+    ins_completed = 0 if not all(request.POST.getlist('accp_quantity')) else 1 #if ins_completed is 0 means all item is not inspected may be inspection happened paritally
     try:
         if any(request.POST.getlist('accp_quantity')):
-            # print("4274")
-
             with transaction.atomic():
-                # print("4277")
                 grn_ins_head = models.Grn_Inspection_Transaction.objects.get(pk = request.POST['insTraId'])
                 grn_ins_head.ins_done = 1
-                # print(grn_ins_head.ins_done)
-                grn_ins_head.ins_par_done = ins_par_done
-                # print("4282")
+                grn_ins_head.ins_completed = ins_completed
                 grn_ins_head.save()
-                
-                # print("4381")
                 storeTranscHeadPresent = models.Store_Transaction.objects.filter(grn_inspection_id = request.POST['insTraId']).first()
-                print("4383")
                 if storeTranscHeadPresent is not None:
-                    # print("4385")
                     storeTransactionHeader = storeTranscHeadPresent
-                    # print("4387")
                     storeTransactionHeader.total_amount = float(storeTransactionHeader.total_amount) + float (request.POST['totalPrice'])
+                    storeTransactionHeader.notes=grn_ins_head.notes
                     storeTransactionHeader.save()
                 else:
-                    # print("4390")
                     store_transaction_count = models.Store_Transaction.objects.all().count()
                     storeTransactionHeader = models.Store_Transaction()
                     storeTransactionHeader.vendor_id = request.POST['vendor_id']
                     storeTransactionHeader.transaction_type_id = 2
-                    # print("4312")
                     if (request.POST.get('purchase_order_header_id',None) and request.POST['purchase_order_header_id']!=""):
                         storeTransactionHeader.purchase_order_header_id = request.POST[
                             'purchase_order_header_id']
-                    # print("4316")
-                    
                     storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                         "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
-                    # print("4319")
                     storeTransactionHeader.transaction_date = request.POST['issue_date']
-                    # print("4321")
                     storeTransactionHeader.total_amount = request.POST['totalPrice']
-                    # print("4323")
-                    # print(request.POST['insTraId'])
                     storeTransactionHeader.grn_inspection_id = request.POST['insTraId']
-                    
-                    # print(storeTransactionHeader.id)
+                    storeTransactionHeader.notes = grn_ins_head.notes
                     storeTransactionHeader.save()
-
-
-                # print("4284")
-                
                 order_details =[]
                 for index in  range(0,len(request.POST.getlist('accp_quantity'))):
-                    # print("4285")
-                    # print(request.POST.getlist('accp_quantity')[index]!= '')
                     if request.POST.getlist('accp_quantity')[index] != '':
-                        # print("4287")
                         grn_ins_det = models.Grn_Inspection_Transaction_Detail.objects.get(pk =request.POST.getlist('ins_det_id')[index])
-                        # print("4292")
                         grn_ins_det.ins_done = 1
                         grn_ins_det.accepted_quantity  = request.POST.getlist('accp_quantity')[index] 
                         grn_ins_det.reject_quantity = request.POST.getlist('rej_quantity')[index] 
@@ -4491,7 +4478,6 @@ def addGrnDetailisInsTransaction(request):
                                     'actualPrice')[index]
                         grn_ins_det.updated_at = datetime.now()
                         grn_ins_det.save()
-                        # print("4295")
 
                         order_details.append(
                             models.Store_Transaction_Detail(
@@ -4501,62 +4487,39 @@ def addGrnDetailisInsTransaction(request):
                                 quantity=request.POST.getlist('accp_quantity')[index],
                                 rate=request.POST.getlist('rate')[index],
                                 amount=request.POST.getlist('amount')[index],
-                                gst_percentage=request.POST.getlist(
-                                    'gst_percentage')[index],
-                                amount_with_gst=request.POST.getlist(
-                                    'actualPrice')[index]
+                                gst_percentage=request.POST.getlist('gst_percentage')[index],
+                                amount_with_gst=request.POST.getlist('actualPrice')[index]
                                 
                             )
                         )
-                        # print("4363")
                         storeItem = models.Store_Item.objects.filter(
                             item_id=request.POST.getlist('item_id')[index], store_id=request.POST.getlist('store_id')[index]).first()
-                        # print("4367")
                         if storeItem is None:
                             storeItem = models.Store_Item()
-                            storeItem.opening_qty = Decimal(
-                                request.POST.getlist('accp_quantity')[index])
-                            storeItem.on_hand_qty = Decimal(
-                                request.POST.getlist('accp_quantity')[index])
-                            storeItem.closing_qty = Decimal(
-                                request.POST.getlist('accp_quantity')[index])
-                            storeItem.item_id = elem
-                            storeItem.store_id = request.POST.getlist('store_id')[
-                                index]
-                            # print("4378")
+                            storeItem.opening_qty = Decimal(request.POST.getlist('accp_quantity')[index])
+                            storeItem.on_hand_qty = Decimal(request.POST.getlist('accp_quantity')[index])
+                            storeItem.closing_qty = Decimal(request.POST.getlist('accp_quantity')[index])
+                            storeItem.item_id = request.POST.getlist('item_id')[index]
+                            storeItem.store_id = request.POST.getlist('store_id')[index]
                             storeItem.save()
                         else:
-                            storeItem.on_hand_qty += Decimal(
-                                request.POST.getlist('accp_quantity')[index])
-                            storeItem.closing_qty += Decimal(
-                                request.POST.getlist('accp_quantity')[index])
+                            storeItem.on_hand_qty += Decimal(request.POST.getlist('accp_quantity')[index])
+                            storeItem.closing_qty += Decimal(request.POST.getlist('accp_quantity')[index])
                             storeItem.updated_at = datetime.now()
-                            # print("4386")
                             storeItem.save()
                 models.Store_Transaction_Detail.objects.bulk_create(order_details)
-                # print("4466")
                 if request.POST['purchase_order_header_id'] != "" and (request.POST['purchase_order_header_id']) != 0:
-                    print("4468")
                     for index, elem in enumerate(request.POST.getlist('item_id')):
-                        # print("4470")
                         if request.POST.getlist('accp_quantity')[index] != '':
-                            # print("4472")
                             purchaseOrderItem = models.Purchase_Order_Detail.objects.get(
                                 purchase_order_header_id= request.POST['purchase_order_header_id'] ,item_id = elem)
-                            # print(purchaseOrderItem.pk)
-                            purchaseOrderItem.delivered_quantity += Decimal(
-                                request.POST.getlist('accp_quantity')[index])
-                            purchaseOrderItem.delivered_rate = Decimal(
-                                request.POST.getlist('rate')[index])
-                            purchaseOrderItem.delivered_amount += Decimal(
-                                request.POST.getlist('amount')[index])
-                            purchaseOrderItem.delivered_gst_percentage = Decimal(
-                                request.POST.getlist('gst_percentage')[index])
-                            purchaseOrderItem.delivered_amount_with_gst += Decimal(
-                                request.POST.getlist('actualPrice')[index])
+                            purchaseOrderItem.delivered_quantity += Decimal(request.POST.getlist('accp_quantity')[index])
+                            purchaseOrderItem.delivered_rate = Decimal(request.POST.getlist('rate')[index])
+                            purchaseOrderItem.delivered_amount += Decimal(request.POST.getlist('amount')[index])
+                            purchaseOrderItem.delivered_gst_percentage = Decimal(request.POST.getlist('gst_percentage')[index])
+                            purchaseOrderItem.delivered_amount_with_gst += Decimal(request.POST.getlist('actualPrice')[index])
                             purchaseOrderItem.updated_at = datetime.now()
                             purchaseOrderItem.save()
-                    # print("4484")
                     purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related(
                         'purchase_order_detail_set').get(pk=request.POST['purchase_order_header_id'])
                     flag = True
@@ -4581,8 +4544,6 @@ def addGrnDetailisInsTransaction(request):
             'status':599,
             'message':'server error'
         }
-
-
     return JsonResponse(context)
 
 
@@ -4590,55 +4551,89 @@ def addGrnDetailisInsTransaction(request):
 @permission_classes([IsAuthenticated])
 def materialReturnAdd(request):
     context = {}
-    if not request.POST['reason'] or not request.POST['job_order_id']:
+    if not request.POST['reason'] or not request.POST['return_date'] :
         context.update({
             'status': 531,
-            'message': "Reason/Job Order Id has not been provided."
+            'message': "Reason or return date has not been provided."
         })
         return JsonResponse(context)
     try:
         with transaction.atomic():
-            store_transaction_count = models.Store_Transaction.objects.all().count()
-            material_issue=models.Store_Transaction.objects.get(transaction_type__name="MIS", job_order_id=request.POST['job_order_id'])
-            material_return=models.Store_Transaction()
-            if material_issue.vendor: material_return.vendor=material_issue.vendor
-            material_return.transaction_type=models.Transaction_Type.objects.get(name="MR")
-            material_return.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+            # Reason = On excess issue of items against a job
+            if int(request.POST['reason'])==1:
+                store_transaction_count = models.Store_Transaction.objects.all().count()
+                material_issue=models.Store_Transaction.objects.get(transaction_type__name="MIS", job_order_id=request.POST['job_order_id'])
+                material_return=models.Store_Transaction()
+                if material_issue.vendor: material_return.vendor=material_issue.vendor
+                material_return.transaction_type=models.Transaction_Type.objects.get(name="MR")
+                material_return.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+                        "${CURRENT_YEAR}", datetime.today().strftime('%Y')
+                    ).replace(
+                        "${AI_DIGIT_5}",str(store_transaction_count + 1).zfill(5)
+                    )
+                material_return.transaction_date = request.POST['return_date']
+                material_return.job_order=material_issue.job_order
+                material_return.save()
+
+                in_house_store=models.Store_Transaction_Detail.objects.filter(store_transaction_header=material_issue).first().store
+                vendor_store=models.Store.objects.filter(vendor=material_issue.vendor).first()
+                store_transaction_details = []
+
+                for (item_id, previous_quantity, updated_quantity) in zip(request.POST.getlist('item_id'),request.POST.getlist('previous_quantity'),request.POST.getlist('updated_quantity')):
+                    store_transaction_details.append(
+                        models.Store_Transaction_Detail(
+                            store_transaction_header=material_return,
+                            item_id=item_id,
+                            store=in_house_store,
+                            quantity=Decimal(updated_quantity)-Decimal(previous_quantity)
+                        )
+                    )
+
+                    vendor_store_item = models.Store_Item.objects.get(store=vendor_store, item_id=item_id)
+                    vendor_store_item.on_hand_qty -= Decimal(previous_quantity)-Decimal(updated_quantity)
+                    vendor_store_item.closing_qty -= Decimal(previous_quantity)-Decimal(updated_quantity)
+                    vendor_store_item.updated_at = datetime.now()
+                    vendor_store_item.save()
+
+                    in_house_store_item = models.Store_Item.objects.get(store=in_house_store, item_id=elem)
+                    in_house_store_item.on_hand_qty += Decimal(previous_quantity)-Decimal(updated_quantity)
+                    in_house_store_item.closing_qty += Decimal(previous_quantity)-Decimal(updated_quantity)
+                    in_house_store_item.updated_at = datetime.now()
+                    in_house_store_item.save()
+
+                models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
+
+            # Reason = For rejected material during inspection process
+            elif int(request.POST['reason'])==2:
+                store_transaction_count = models.Store_Transaction.objects.all().count()
+                grn_inspection_transaction_header=models.Grn_Inspection_Transaction.objects.get(id=request.POST['grn_inspection_id'])
+
+                material_return = models.Store_Transaction()
+                material_return.vendor = grn_inspection_transaction_header.vendor
+                if grn_inspection_transaction_header.purchase_order_header: material_return.purchase_order_header = grn_inspection_transaction_header.purchase_order_header
+                material_return.transaction_type = models.Transaction_Type.objects.get(name="MR")
+                material_return.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                     "${CURRENT_YEAR}", datetime.today().strftime('%Y')
                 ).replace(
-                    "${AI_DIGIT_5}",str(store_transaction_count + 1).zfill(5)
+                    "${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5)
                 )
-            material_return.transaction_date=datetime.now()
-            material_return.job_order=material_issue.job_order
-            # material_return.save()
+                material_return.transaction_date = request.POST['return_date']
+                material_return.save()
 
-            in_house_store=models.Store_Transaction_Detail.objects.filter(store_transaction_header=material_issue).first().store
-            vendor_store=models.Store.objects.filter(vendor=material_issue.vendor).first()
-            store_transaction_details = []
+                store_transaction_details = []
+                for i in range(len(request.POST.getlist('item_id'))):
+                    if request.POST.getlist('return_item')[i]=="1":
+                        store_transaction_details.append(
+                            models.Store_Transaction_Detail(
+                                store_transaction_header=material_return,
+                                item_id=request.POST.getlist('item_id')[i],
+                                store_id=request.POST.getlist('store_id')[i],
+                                quantity=request.POST.getlist('reject_quantity')[i]
+                            )
+                        )
+                models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
 
-            for (item_id, previous_quantity, updated_quantity) in zip(request.POST.getlist('item_id'),request.POST.getlist('previous_quantity'),request.POST.getlist('updated_quantity')):
-                store_transaction_details.append(
-                    models.Store_Transaction_Detail(
-                        store_transaction_header=material_return,
-                        item_id=item_id,
-                        store=in_house_store,
-                        quantity=Decimal(updated_quantity)-Decimal(previous_quantity)
-                    )
-                )
 
-                vendor_store_item = models.Store_Item.objects.get(store=vendor_store, item_id=item_id)
-                vendor_store_item.on_hand_qty -= Decimal(previous_quantity)-Decimal(updated_quantity)
-                vendor_store_item.closing_qty -= Decimal(previous_quantity)-Decimal(updated_quantity)
-                vendor_store_item.updated_at = datetime.now()
-                vendor_store_item.save()
-
-                in_house_store_item = models.Store_Item.objects.get(store=in_house_store, item_id=elem)
-                in_house_store_item.on_hand_qty += Decimal(previous_quantity)-Decimal(updated_quantity)
-                in_house_store_item.closing_qty += Decimal(previous_quantity)-Decimal(updated_quantity)
-                in_house_store_item.updated_at = datetime.now()
-                in_house_store_item.save()
-
-            models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
         transaction.commit()
         context.update({
             'status': 200,

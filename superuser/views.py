@@ -985,9 +985,10 @@ def materialReturnAdd(request):
     job_orders= models.Job_Order.objects.filter(
         id__in=list(models.Store_Transaction.objects.filter(transaction_type__name="MIS").values_list('job_order', flat=True))
     )
-    # print(job_orders)
+    grn_inspections=models.Grn_Inspection_Transaction.objects.exclude(ins_done=0,ins_completed=0)
     context.update({
         'job_orders': job_orders,
+        'grn_inspections':grn_inspections,
         'page_title': " Material Return Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Return ", 'url': reverse('superuser:materialReturnList')}, {'name': "Add"}]
     })
@@ -1003,6 +1004,13 @@ def materialReturnEdit(request,id):
 
 @login_required
 def materialReturnView(request,id):
-    context = None
+    material_return = models.Store_Transaction.objects.prefetch_related('store_transaction_detail_set').get(pk=id)
+    context.update({
+        'material_return': material_return,
+        'page_title': "Material Return View",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Material Return", 'url': reverse('superuser:materialReturnList')},
+                        {'name': "View"}]
+    })
 
     return render(request, 'portal/Material Return/view.html', context)

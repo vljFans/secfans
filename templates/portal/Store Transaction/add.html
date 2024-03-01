@@ -169,7 +169,7 @@
                             </div> -->
                             <div class="col-md-6 mb-3">
                                 <label>Transaction Date <span class="required-indicator">*</span></label>
-                                <input type="date" name="transaction_date" class="form-control" placeholder="Transaction Date" required id="transaction_date">
+                                <input type="date" name="transaction_date" class="form-control" id="transaction_date" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Total Amount <span class="required-indicator">*</span></label>
@@ -233,6 +233,9 @@
     });
 
     $(document).ready(function () {
+
+        $("#transaction_date").val(new Date().toISOString().slice(0, 10))
+
         $.ajax({
             url: "{% url 'api:vendorList' %}?find_all=1",
             type: 'GET',
@@ -511,11 +514,13 @@
                                     </div>
                                 </div>`;
                         $(".purchase_order_details").html(purchase_details);
-                    } else {
+                    } 
+                    else {
                         var options_text = `<option value="">Select Purchase Order</option>`;
                         $("#purchase_order_header_id").html(options_text);
-                        $('.purchase_order_type_content').hide();
                         $('#purchase_order_header_id').removeAttr('required');
+                        $('#purchase_order_header_id').attr('disabled','true');
+                        $('#purchase_order_header_id').val("")
                         purchase_details = `<div class="form-row content_parent">
                                     <div class="col-md-2 mb-3">
                                         <label>Item <span class="required-indicator">*</span></label>
