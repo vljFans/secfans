@@ -1029,14 +1029,57 @@ def materialOutList(request):
 
     return render(request, 'portal/Material Out/list.html', context)
 
+@login_required
+def materialOutAdd(request):
+    stores = list(models.Store.objects.filter(status= 1,deleted=0).values('pk' ,'name','vendor_id','vendor__name'))
+    # print(stores)
+    context.update({
+        'store_list' : stores,
+        'page_title': "Material Out Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Material Out", 'url': reverse('superuser:materialOutList')},
+                        {'name': "Add"}]
+    })
 
 
+    return render(request, 'portal/Material Out/add.html', context)
+
+
+@login_required
+def materialOutEdit(request,id):
+
+    materialOut =  models.On_Transit_Transaction.objects.filter(pk=id).get()
+    # print(materialOut.source_store__name)
+    context.update({
+        'material_out': materialOut,
+        'page_title': "Material Out Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Material Out", 'url': reverse('superuser:materialOutList')},
+                        {'name': "Edit"}]
+    })
+
+    return render(request, 'portal/Material Out/edit.html', context)
+
+@login_required
+def materialOutView(request,id):
+
+    materialOut =  models.On_Transit_Transaction.objects.filter(pk=id).get()
+    # print(materialOut.source_store__name)
+    context.update({
+        'material_out': materialOut,
+        'page_title': "Material Out View",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Material Out", 'url': reverse('superuser:materialOutList')},
+                        {'name': "view"}]
+    })
+
+    return render(request, 'portal/Material Out/view.html', context)
 
 # material in
 @login_required
 def materialInList(request):
     context.update({
-        'page_title': "Material Out List",
+        'page_title': "Material In List",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
                         {'name': "Material In", 'url': reverse('superuser:materialInList')},
                         {'name': "List"}]

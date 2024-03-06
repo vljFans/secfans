@@ -1756,6 +1756,7 @@ def itemColorDelete(request):
 @permission_classes([IsAuthenticated])
 def itemList(request):
     context = {}
+    # print(request.GET)
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
@@ -1767,6 +1768,7 @@ def itemList(request):
             'message': "Item Fetched Successfully.",
             'page_items': item,
         })
+        return JsonResponse(context)
     else:
         if keyword is not None and keyword != "":
             items = list(models.Item.objects.filter(Q(name__icontains=keyword) | Q(item_type__name__icontains=keyword) | Q(uom__name__icontains=keyword)).filter(
@@ -1962,6 +1964,7 @@ def storeList(request):
     find_all = request.GET.get('find_all', None)
     store_type=request.GET.get('store_type', None)
     keyword = request.GET.get('keyword', None)
+    
     if id is not None and id != "":
         store = list(models.Store.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'address', 'contact_name', 'contact_no', 'contact_email', 'manager_name', 'pin', 'city__name', 'state__name', 'country__name'))
@@ -1970,6 +1973,7 @@ def storeList(request):
             'message': "Store Fetched Successfully.",
             'page_items': store,
         })
+   
     else:
         if keyword is not None and keyword != "":
             stores = list(models.Store.objects.filter(Q(name__icontains=keyword) | Q(address__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(contact_no__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(manager_name__icontains=keyword) | Q(pin__icontains=keyword)).filter(
@@ -1977,6 +1981,7 @@ def storeList(request):
         else:
             stores = list(models.Store.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'contact_name',
                           'contact_no', 'contact_email', 'manager_name', 'pin', 'city__name', 'state__name', 'country__name'))
+
 
         if find_all is not None and int(find_all) == 1:
             context.update({
@@ -2852,9 +2857,12 @@ def transactionTypeDelete(request):
 @permission_classes([IsAuthenticated])
 def storeItemList(request):
     context = {}
+    # print('1961')
+    # print(request.GET)
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
+    storeId = request.GET.get('storeId', None)
     if id is not None and id != "":
         storeItem = list(models.Store_Item.objects.filter(pk=id)[:1].values(
             'pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty'))
@@ -2863,6 +2871,16 @@ def storeItemList(request):
             'message': "Store Item Fetched Successfully.",
             'page_items': storeItem,
         })
+    elif storeId is not None and storeId != "":
+        storeItem = list(models.Store_Item.objects.filter(store_id = storeId ).values(
+           'pk', 'store__name','item_id','item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','item__price'))
+        context.update({
+            'status': 200,
+            'message': "Store Fetched Successfully.",
+            'page_items': storeItem,
+        })
+        # print(storeItem)
+        return JsonResponse(context)
     else:
         if keyword is not None and keyword != "":
             storeItems = list(
@@ -3146,10 +3164,14 @@ def storeTransactionAdd(request):
                         'purchase_order_header_id']
                 # print("3147")
                 grnTransactionheader.transaction_date = request.POST['transaction_date']
+                # print("3149")
                 grnTransactionheader.total_amount = request.POST['total_amount']
+                # print("3151")
                 grnTransactionheader.notes = request.POST['notes']
+                # print("3153")
                 grnTransactionheader.save()
                 # print("3148")
+               
                 order_details = []
                 for index, elem in enumerate(request.POST.getlist('item_id')):
                     if inspect[index] == "1":
@@ -4374,7 +4396,8 @@ def getGrnInspectionTransactionDetail(request):
     # print(request.GET,"saswata")
 
     try:
-        # print("4247")
+        print("4247")
+        # print(request.GET.get('ins_done'))
         # Getting grn inspection transaction details whose inspection is not done
         if int(request.GET.get('ins_done'))==0:
             grn_Ins_Det = list(models.Grn_Inspection_Transaction_Detail.objects.filter(
@@ -4424,7 +4447,7 @@ def getGrnInspectionTransactionDetail(request):
     except:
         context ={
         'status':598,
-        'message':'server error'
+        'message':'server error1'
         }
 
 
@@ -4642,6 +4665,272 @@ def materialReturnAdd(request):
     except Exception:
         context.update({
             'status': 533,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+# on transit transaction ---deveoped by saswata
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getOnTransitTransactionHeadersList(request):
+    context = {}
+    # print("4679",request.GET)
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
+    flag = request.GET.get('flag', None)
+    try:
+        if id is not None and id != "":
+            onTransitTransactionHeader = list(models.On_Transit_Transaction.objects.filter(pk=id)[:1].values(
+                'pk', 'transaction_number', 'transaction_date', 'source_store_id','source_store__name' ,'destination_store_id','destination_store__name'))
+            context.update({
+                'status': 200,
+                'message': "onTransitTransaction header Fetched Successfully.",
+                'page_items': onTransitTransactionHeader,
+            })
+        elif flag is not None and flag != "":
+            if keyword is not None and keyword != "":
+                # print("4244",request.GET)
+                onTransitTransactionHeader = list(
+                    models.On_Transit_Transaction.objects.filter(
+                        Q(transaction_number__icontains=keyword) 
+                    ).filter(
+                        status=1, deleted=0,flag=1).values('pk', 'transaction_number', 'transaction_date', 'source_store_id','source_store__name' ,'destination_store_id','destination_store__name')
+                )
+
+            else:
+                # print("4263",request.GET)   
+                onTransitTransactionHeader = list(models.On_Transit_Transaction.objects.filter(status=1, deleted=0,flag=1).values(
+                    'pk', 'transaction_number', 'transaction_date', 'source_store_id','source_store__name' ,'destination_store_id','destination_store__name'))
+                # print(onTransitTransactionHeader)
+            if find_all is not None and int(find_all) == 1:
+                context.update({
+                    'status': 200,
+                    'message': "Store Items Fetched Successfully.",
+                    'page_items': onTransitTransactionHeader,
+                })
+                return JsonResponse(context)
+
+            per_page = int(env("PER_PAGE_DATA"))
+            button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+            current_page = request.GET.get('current_page', 1)
+
+            paginator = CustomPaginator(onTransitTransactionHeader, per_page)
+            page_items = paginator.get_page(current_page)
+            total_pages = paginator.get_total_pages()
+
+            context.update({
+                'status': 200,
+                'message': "onTransitTransaction Header Fetched Successfully.",
+                'page_items': page_items,
+                'total_pages': total_pages,
+                'per_page': per_page,
+                'current_page': int(current_page),
+                'button_to_show': int(button_to_show),
+            })
+        else:
+            # print("4244",request.GET)
+            if keyword is not None and keyword != "":
+                # print("4244",request.GET)
+                onTransitTransactionHeader = list(
+                    models.On_Transit_Transaction.objects.filter(
+                        Q(transaction_number__icontains=keyword) 
+                    ).filter(
+                        status=1, deleted=0,flag=0).values('pk', 'transaction_number', 'transaction_date', 'source_store_id','source_store__name' ,'destination_store_id','destination_store__name')
+                )
+
+            else:
+                # print("4263",request.GET)   
+                onTransitTransactionHeader = list(models.On_Transit_Transaction.objects.filter(status=1, deleted=0,flag=0).values(
+                    'pk', 'transaction_number', 'transaction_date', 'source_store_id','source_store__name' ,'destination_store_id','destination_store__name'))
+                # print(onTransitTransactionHeader)
+            if find_all is not None and int(find_all) == 1:
+                context.update({
+                    'status': 200,
+                    'message': "Store Items Fetched Successfully.",
+                    'page_items': onTransitTransactionHeader,
+                })
+                return JsonResponse(context)
+
+            per_page = int(env("PER_PAGE_DATA"))
+            button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+            current_page = request.GET.get('current_page', 1)
+
+            paginator = CustomPaginator(onTransitTransactionHeader, per_page)
+            page_items = paginator.get_page(current_page)
+            total_pages = paginator.get_total_pages()
+
+            context.update({
+                'status': 200,
+                'message': "onTransitTransaction Header Fetched Successfully.",
+                'page_items': page_items,
+                'total_pages': total_pages,
+                'per_page': per_page,
+                'current_page': int(current_page),
+                'button_to_show': int(button_to_show),
+            })
+    except Exception:
+       context.update({
+            'status': 534,
+            'message': "Something Went Wrong. Please Try Again."
+        }) 
+
+
+    return JsonResponse(context)
+
+
+# material out
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def materialOutDetailsAdd(request):
+    context = {}
+    # print(request.POST['sourceStore'])
+    try:
+        with transaction.atomic():
+
+            # on transit transaction for material out header save
+
+            on_transit_transaction_count = models.On_Transit_Transaction.objects.all().count() 
+           
+            on_transit_transaction_header =  models.On_Transit_Transaction()
+            on_transit_transaction_header.transaction_number =  env("MAT_TRANSFER_OUT_SEQ").replace(
+                            "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace(
+                            "${AI_DIGIT_5}", str(on_transit_transaction_count + 1).zfill(5))
+           
+            on_transit_transaction_header.transaction_date =request.POST['issue_date']
+            
+            on_transit_transaction_header.source_store_id = request.POST['sourceStore']
+            # print("hello" )
+            on_transit_transaction_header.destination_store_id = request.POST['desStore']
+            on_transit_transaction_header.save()
+            # store transaction header  for material out save
+
+            print("hi")
+            store_transaction_count = models.Store_Transaction.objects.all().count()
+            storeTransactionHeader = models.Store_Transaction()
+            storeTransactionHeader.transaction_type_id = 6
+            storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+                "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
+            storeTransactionHeader.transaction_date = request.POST['issue_date']
+            storeTransactionHeader.reference_id =  int(on_transit_transaction_header.id)
+            print("helulo" )
+            storeTransactionHeader.save()
+
+            on_transit_transaction_details = []
+            order_details = []
+
+            for index in range(0,len(request.POST.getlist('item_id'))):
+
+                # on transit transaction detalis for material out save
+                on_transit_transaction_details.append(
+                    models.On_Transit_Transaction_Details(
+                         on_transit_transaction_header_id = on_transit_transaction_header.id,
+                         item_id = request.POST.getlist('item_id')[index],
+                         quantity = request.POST.getlist('quantity_sent')[index],
+                         rate = request.POST.getlist('rate')[index],
+                         amount = float(request.POST.getlist('quantity_sent')[index]) * float(request.POST.getlist('rate')[index])
+                    )
+                )
+
+                # on store transaction detalis for material out save
+                order_details.append(
+                        models.Store_Transaction_Detail(
+                            store_transaction_header_id=storeTransactionHeader.id,
+                            item_id=request.POST.getlist('item_id')[index],
+                            store_id= request.POST['sourceStore'],
+                            quantity=request.POST.getlist('quantity_sent')[index],
+                            rate=request.POST.getlist('rate')[index],
+                            amount=float(request.POST.getlist('quantity_sent')[index]) * float(request.POST.getlist('rate')[index]),
+                            
+                        )
+                    )
+                
+                # item deducted from source store
+
+                storeItem = models.Store_Item.objects.filter(
+                    item_id=request.POST.getlist('item_id')[index], store_id=request.POST['sourceStore']).first()
+                storeItem.on_hand_qty -= Decimal(request.POST.getlist('quantity_sent')[index])
+                storeItem.closing_qty -= Decimal(request.POST.getlist('quantity_sent')[index])
+                storeItem.updated_at = datetime.now()
+                storeItem.save()
+           
+            models.On_Transit_Transaction_Details.objects.bulk_create(on_transit_transaction_details)
+            models.Store_Transaction_Detail.objects.bulk_create(order_details)
+
+
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Material out created sucessfully"
+        })
+    except Exception:
+        context.update({
+            'status': 536,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+
+    return JsonResponse(context)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def materialOutDetailsDelete(request):
+    context = {}
+    print(request.POST)
+    try:
+        materialOut = models.On_Transit_Transaction.objects.get(pk=request.POST['id'])
+        materialOutDetails = list(models.On_Transit_Transaction_Details.objects.filter(on_transit_transaction_header_id = request.POST['id']).values('pk','item_id','quantity'))
+        store_id = materialOut.source_store_id
+        storeTransaction = models.Store_Transaction.objects.get(reference_id =request.POST['id'],transaction_type_id= 6 )
+        print(materialOut.source_store_id)
+        print(storeTransaction)
+        print(materialOutDetails)
+        
+        with transaction.atomic():
+            materialOut.delete()
+            storeTransaction.delete()
+
+            # item added to  source store
+            for index in materialOutDetails:
+                print(index['item_id'])
+                storeItem = models.Store_Item.objects.filter(
+                    item_id=index['item_id'], store_id=store_id).first()
+                print(storeItem)
+                storeItem.on_hand_qty += Decimal(index['quantity'])
+                storeItem.closing_qty += Decimal(index['quantity'])
+                # print("4900")
+                storeItem.updated_at = datetime.now()
+                
+                storeItem.save()
+                # print("4902")
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Material Out transaction Deleted Sucessfully"
+        })
+
+    except Exception:
+        context.update({
+            'status': 537,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def materialOutDetailsEdit(request):
+    context = {}
+    print(request.POST)
+    try:
+        pass
+
+    except Exception:
+        pass
+        context.update({
+            'status': 538,
             'message': "Something Went Wrong. Please Try Again."
         })
         transaction.rollback()

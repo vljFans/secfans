@@ -149,7 +149,7 @@
           </ul>
         </li>
         <li class="{% if request.path == '/material-issue-list' %}open active{% endif %}">
-          <a href="{% url 'superuser:materialIssueList' %}"><i data-feather="printer"></i>
+          <a href="{% url 'superuser:materialIssueList' %}"><i data-feather="shopping-bag"></i>
             <span>Material Issue</span></a>
         </li>
         <li class="{% if request.path == '/material-return-list' %}open active{% endif %}">
@@ -159,8 +159,8 @@
 
         <!-- on transit tansaction ---developed by saswata -->
         <li>
-          <a href="javascript:void(0)"><i data-feather="wind"></i>
-            <span>On Transit Transaction</span><i class="accordion-icon fa fa-angle-left"></i>
+          <a href="javascript:void(0)"><i data-feather="truck"></i>
+            <span>Material Transfer</span><i class="accordion-icon fa fa-angle-left"></i>
           </a>
           <ul class="sub-menu"
             style="display: {% if request.path == '/material-out-list' %}block{% else %}none{% endif %};">

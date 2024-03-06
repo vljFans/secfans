@@ -63,7 +63,7 @@
                         <div class="text-right">
                             <div class="d-flex">
                                 {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
-                                <a href="{% url 'superuser:materialIssueAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
+                                <a href="{% url 'superuser:materialOutAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
                                 {% endif %}
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                                 
@@ -77,9 +77,12 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Material Issue Number</th>
-                                    <th>Issue Date</th>
+                                    <th>Transaction Number</th>
+                                    <th>Source Store</th>
+                                    <th>Destination Store</th>
+                                    <th>Transaction Date</th>
                                     <th>Action</th>
+                                    
                                     
                                 </tr>
                             </thead>
@@ -100,13 +103,13 @@
 {% endblock %}
 
 {% block js %}
-<!-- <script>
+<script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
-    function getMaterialIssuedList(keyword) {
-        console.log("123")
+    function getMaterialOutList(keyword) {
+        // console.log("123")
         $.ajax({
             type: "GET",
-            url: "{% url 'api:storeTransactionList' %}?keyword=" + keyword+"&transaction_type=MIS",
+            url: "{% url 'api:getOnTransitTransactionHeadersList' %}?keyword=" + keyword,
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -114,23 +117,26 @@
             success: function (response) {
                 $('.error-msg-txt').text("");
                 if (response.status == 200) {
-                    edit_url = "{% url 'superuser:materialIssueEdit' 1 %}";
-                    view_url = "{% url 'superuser:materialIssueView' 1 %}";
+                    // edit_url = "{% url 'superuser:materialOutEdit' 1 %}";
+                    view_url = "{% url 'superuser:materialOutView' 1 %}";
                     page_items = response.page_items;
                     tbody_text = ``;
+                    // console.log(page_items[0].transaction_number);
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index];
                         tbody_text += `<tr>
                                 <td>${((response.total_pages - 1) * response.per_page) +  index + 1}</td>
                                 <td>${element.transaction_number}</td>
+                                <td>${element.source_store__name}</td>
+                                <td>${element.destination_store__name}</td>
                                 <td>${element.transaction_date}</td>
                                 <td>
-                                {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
-                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'change_store_transaction'|get_session_permission:request is not None   %}
-                                <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
-                                {% endif %}
+                                    {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
+                                    <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
+                                    {% endif %}
+                                    {% if request.user.is_superuser == 1 or 'delete_on_transit_transaction'|get_session_permission:request is not None %}
+                                    <a id="delete-btn" data-id="${element.pk}" data-name="${element.transaction_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
+                                    {% endif %}
                                 </td>
                             </tr>`;
                     }
@@ -157,12 +163,12 @@
     }
     $(document).ready(function () {
         // console.log("168");
-        getMaterialIssuedList(keyword)
+        getMaterialOutList(keyword)
     });
 
     $(document).on('keyup', '#search', function () {
         keyword = $(this).val();
-        getMaterialIssuedList(keyword)
+        getMaterialOutList(keyword)
     })
 
     $(document).on('click', '#delete-btn', function () {
@@ -171,14 +177,15 @@
         if (window.confirm('Are you sure to delete ' + name + '?')) {
             $.ajax({
                 type: "POST",
-                url: "{% url 'api:storeTransactionDelete' %}",
+                url: "{% url 'api:materialOutDetailsDelete' %}",
                 data: ({ id: id }),
                 headers: {
                     'Authorization': getCookieValue("accessToken"),
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialIssueList' %}");
+                        // alert(response.message)
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialOutList' %}");
                     } else {
                         alert(response.message);
                     }
@@ -192,5 +199,6 @@
             });
         }
     });
-</script> -->
+</script>
+
 {% endblock %}

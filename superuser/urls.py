@@ -123,8 +123,9 @@ urlpatterns = [
 
     # material out
     path('material-out-list',views.materialOutList, name='materialOutList'),
-    # path('material-out-add',views.materialReturnAdd, name='materialReturnAdd'),
-    # path('material-out-view/<int:id>',views.materialReturnView, name='materialReturnView'),
+    path('material-out-add',views.materialOutAdd, name='materialOutAdd'),
+    path('material-out-edit/<int:id>',views.materialOutEdit, name='materialOutEdit'),
+    path('material-out-view/<int:id>',views.materialOutView, name='materialOutView'),
 
 
     # material in 
