@@ -1086,6 +1086,20 @@ def materialInList(request):
     })
 
     return render(request, 'portal/Material In/list.html', context)
+
+@login_required
+def materialInAdd(request):
+
+    onTrasitTrasactionList = list(models.On_Transit_Transaction.objects.filter(flag=0).values('pk','transaction_number'))
+    context.update({
+        'transit_transaction_list': onTrasitTrasactionList,
+        'page_title': "Material In Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Material In", 'url': reverse('superuser:materialInList')},
+                        {'name': "Add"}]
+    })
+
+    return render(request, 'portal/Material In/add.html', context)
     
 
 

@@ -130,6 +130,7 @@ urlpatterns = [
     # path on transit transaction ---developed by saswata
 
     path('on-transit-transaction-list', views.getOnTransitTransactionHeadersList, name='getOnTransitTransactionHeadersList'),
+    path('on-transit-transaction-all-list', views.getOnTransitTransactionDetalisList, name='getOnTransitTransactionDetalisList'),
     # material out
     path('material-out-details-add', views.materialOutDetailsAdd, name='materialOutDetailsAdd'),
     path('material-out-details-delete', views.materialOutDetailsDelete, name='materialOutDetailsDelete'),
@@ -137,7 +138,7 @@ urlpatterns = [
     # path('', views.grnInspectionHeaderList, name='grnInspectionHeaderList'), 
 
     # material in
-    # path('grn-inspection-details-transaction', views.getGrnInspectionTransactionDetail, name='getGrnInspectionTransactionDetail'),
+    path('material-in-details-add', views.materialInDetailsAdd, name='materialInDetailsAdd'),
     # path('grn-inspection-list-Add', views.addGrnDetailisInsTransaction, name='addGrnDetailisInsTransaction'),
     # path('grn-inspection-head-list', views.grnInspectionHeaderList, name='grnInspectionHeaderList'),
 

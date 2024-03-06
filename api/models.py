@@ -684,7 +684,6 @@ class On_Transit_Transaction(models.Model):
     destination_store =  models.ForeignKey(
         Store, on_delete=models.CASCADE, blank=True, null=True, related_name="destination_store")
     flag = models.SmallIntegerField(default=0)
-    notes = models.TextField(blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -706,6 +705,7 @@ class On_Transit_Transaction_Details(models.Model):
     reject_quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    notes = models.TextField(blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)

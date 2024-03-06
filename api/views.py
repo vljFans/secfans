@@ -4780,6 +4780,40 @@ def getOnTransitTransactionHeadersList(request):
 
     return JsonResponse(context)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getOnTransitTransactionDetalisList(request):
+    context = {}
+    # print(request.GET)
+    id = request.GET.get('transactionNumber',None)
+    try:
+        if id is not None and id !="":
+            onTransitTransactionDetails = list(models.On_Transit_Transaction_Details.objects.filter(on_transit_transaction_header_id = id).values('pk',
+            'item_id',
+            'item__name',
+            'on_transit_transaction_header__source_store_id',
+            'on_transit_transaction_header__source_store__name',
+            'on_transit_transaction_header__destination_store_id',
+            'on_transit_transaction_header__destination_store__name',
+            'quantity',
+            'amount',
+            'rate'
+            ))
+            print(onTransitTransactionDetails)
+           
+            context.update({
+                'onTransitTransactionDetails':onTransitTransactionDetails,
+                'status': 200,
+                'message': 'onTransitTransaction Details fetched sucesfully'
+            })
+    except Exception:
+        context.update({
+            'status': 535,
+            'message': "Something Went Wrong. Please Try Again."
+        }) 
+
+    return JsonResponse(context)
+
 
 # material out
 @api_view(['POST'])
@@ -4807,7 +4841,7 @@ def materialOutDetailsAdd(request):
             on_transit_transaction_header.save()
             # store transaction header  for material out save
 
-            print("hi")
+            # print("hi")
             store_transaction_count = models.Store_Transaction.objects.all().count()
             storeTransactionHeader = models.Store_Transaction()
             storeTransactionHeader.transaction_type_id = 6
@@ -4815,7 +4849,6 @@ def materialOutDetailsAdd(request):
                 "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
             storeTransactionHeader.transaction_date = request.POST['issue_date']
             storeTransactionHeader.reference_id =  int(on_transit_transaction_header.id)
-            print("helulo" )
             storeTransactionHeader.save()
 
             on_transit_transaction_details = []
@@ -4884,9 +4917,9 @@ def materialOutDetailsDelete(request):
         materialOutDetails = list(models.On_Transit_Transaction_Details.objects.filter(on_transit_transaction_header_id = request.POST['id']).values('pk','item_id','quantity'))
         store_id = materialOut.source_store_id
         storeTransaction = models.Store_Transaction.objects.get(reference_id =request.POST['id'],transaction_type_id= 6 )
-        print(materialOut.source_store_id)
-        print(storeTransaction)
-        print(materialOutDetails)
+        # print(materialOut.source_store_id)
+        # print(storeTransaction)
+        # print(materialOutDetails)
         
         with transaction.atomic():
             materialOut.delete()
@@ -4935,3 +4968,96 @@ def materialOutDetailsEdit(request):
         })
         transaction.rollback()
     return JsonResponse(context)
+
+#material in 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def materialInDetailsAdd(request):
+    context = {}
+    print(request.POST)
+    try:
+        # pass
+        with transaction.atomic():
+            # print("4982")
+            #material added on on transit transaction heder flag be 1 
+            transitTransactionHeader = models.On_Transit_Transaction.objects.get(pk=request.POST['transactionNumber'])
+            print(transitTransactionHeader.id)
+            transitTransactionHeader.flag = 1
+            transitTransactionHeader.transaction_in_date = request.POST['issue_date']
+            transitTransactionHeader.updated_at = datetime.now()
+
+            transitTransactionHeader.save()
+
+            #store transaction created for material in
+            store_transaction_count = models.Store_Transaction.objects.all().count()
+            storeTransactionHeader= models.Store_Transaction()
+            storeTransactionHeader.transaction_type_id = 7
+            storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+                "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
+            storeTransactionHeader.transaction_date = request.POST['issue_date']
+            storeTransactionHeader.reference_id =  int(transitTransactionHeader.id)
+            storeTransactionHeader.save()
+            print("4987")
+           
+            order_details = []
+            for index in range(0,len(request.POST.getlist('item_id'))):
+                #on transit transaction details for material in changed
+                transitTransactionDetails = models.On_Transit_Transaction_Details.objects.get(pk=request.POST.getlist('details_id')[index])
+                print(transitTransactionDetails)
+                transitTransactionDetails.recieved_quntity = request.POST.getlist('quantity_recieved')[index]
+                transitTransactionDetails.reject_quantity = request.POST.getlist('quantity_reject')[index]
+                transitTransactionDetails.amount = request.POST.getlist('amount')[index]
+                print("4995")
+                transitTransactionDetails.notes = request.POST.getlist('notes')[index] if request.POST.getlist('notes')[index] != "" else None
+                print("4996")
+                transitTransactionDetails.updated_at = datetime.now()
+                transitTransactionDetails.save()
+                #store transaction details created for material in 
+                order_details.append(
+                    models.Store_Transaction_Detail(
+                        store_transaction_header_id=storeTransactionHeader.id,
+                        item_id=request.POST.getlist('item_id')[index],
+                        store_id= request.POST['destination_store_id'],
+                        quantity=request.POST.getlist('quantity_recieved')[index],
+                        rate=request.POST.getlist('rate')[index],
+                        amount=request.POST.getlist('amount')[index]
+                        
+                    )
+                )
+                # print("5021")
+
+                # item added to destination store
+
+                storeItem = models.Store_Item.objects.filter(
+                    item_id=request.POST.getlist('item_id')[index], store_id=request.POST['destination_store_id']).first()
+                if storeItem is None:
+                    storeItem = models.Store_Item()
+                    storeItem.opening_qty = Decimal(request.POST.getlist('quantity_recieved')[index])
+                    storeItem.on_hand_qty = Decimal(request.POST.getlist('quantity_recieved')[index])
+                    storeItem.closing_qty = Decimal(request.POST.getlist('quantity_recieved')[index])
+                    storeItem.item_id = request.POST.getlist('item_id')[index]
+                    storeItem.store_id = request.POST['destination_store_id']
+                    storeItem.save()
+                else:
+                    storeItem.on_hand_qty += Decimal(request.POST.getlist('quantity_recieved')[index])
+                    storeItem.closing_qty += Decimal(request.POST.getlist('quantity_recieved')[index])
+                    storeItem.updated_at = datetime.now()
+                storeItem.save()
+            models.Store_Transaction_Detail.objects.bulk_create(order_details)
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Material In Transaction added Sucessfully"
+        })
+
+    except Exception:
+        context.update({
+            'status': 539,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+
+    return JsonResponse(context)
+
+
+
