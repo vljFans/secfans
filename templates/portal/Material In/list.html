@@ -77,8 +77,10 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Material Issue Number</th>
-                                    <th>Issue Date</th>
+                                    <th>Transaction Number</th>
+                                    <th>materialIn Date</th>
+                                    <th>Source Store</th>
+                                    <th>Destination store</th>
                                     <th>Action</th>
                                     
                                 </tr>
@@ -100,13 +102,13 @@
 {% endblock %}
 
 {% block js %}
-<!-- <script>
+<script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
     function getMaterialIssuedList(keyword) {
         console.log("123")
         $.ajax({
             type: "GET",
-            url: "{% url 'api:storeTransactionList' %}?keyword=" + keyword+"&transaction_type=MIS",
+            url: "{% url 'api:getOnTransitTransactionHeadersList' %}?keyword=" + keyword+"&flag=1",
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -114,8 +116,9 @@
             success: function (response) {
                 $('.error-msg-txt').text("");
                 if (response.status == 200) {
-                    edit_url = "{% url 'superuser:materialIssueEdit' 1 %}";
-                    view_url = "{% url 'superuser:materialIssueView' 1 %}";
+                    // alert("Saswata")
+                    //edit_url = "{% url 'superuser:materialIssueEdit' 1 %}";
+                   view_url = "{% url 'superuser:materialInView' 1 %}";
                     page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
@@ -123,15 +126,15 @@
                         tbody_text += `<tr>
                                 <td>${((response.total_pages - 1) * response.per_page) +  index + 1}</td>
                                 <td>${element.transaction_number}</td>
-                                <td>${element.transaction_date}</td>
+                                <td>${element.transaction_in_date}</td>
+                                <td>${element.source_store__name}</td>
+                                <td>${element.destination_store__name}</td>
                                 <td>
-                                {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
-                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'change_store_transaction'|get_session_permission:request is not None   %}
-                                <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
-                                {% endif %}
+                                    {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
+                                    <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
+                                    {% endif %}
                                 </td>
+                                
                             </tr>`;
                     }
                     // pagination_text = ``;
@@ -165,32 +168,6 @@
         getMaterialIssuedList(keyword)
     })
 
-    $(document).on('click', '#delete-btn', function () {
-        id = $(this).attr('data-id');
-        name = $(this).attr('data-name');
-        if (window.confirm('Are you sure to delete ' + name + '?')) {
-            $.ajax({
-                type: "POST",
-                url: "{% url 'api:storeTransactionDelete' %}",
-                data: ({ id: id }),
-                headers: {
-                    'Authorization': getCookieValue("accessToken"),
-                },
-                success: function (response) {
-                    if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialIssueList' %}");
-                    } else {
-                        alert(response.message);
-                    }
-                },
-                error: function (error) {
-                    $('.success-msg-txt').text("");
-                    $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
-                    $('.error-msg-txt').addClass('text-danger');
-                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-                }
-            });
-        }
-    });
-</script> -->
+   
+</script>
 {% endblock %}

@@ -1021,7 +1021,7 @@ def materialReturnView(request,id):
 @login_required
 def materialOutList(request):
     context.update({
-        'page_title': "Material Out List",
+        'page_title': "Material Out ",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
                         {'name': "Material Out", 'url': reverse('superuser:materialOutList')},
                         {'name': "List"}]
@@ -1079,7 +1079,7 @@ def materialOutView(request,id):
 @login_required
 def materialInList(request):
     context.update({
-        'page_title': "Material In List",
+        'page_title': "Material In ",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
                         {'name': "Material In", 'url': reverse('superuser:materialInList')},
                         {'name': "List"}]
@@ -1101,5 +1101,18 @@ def materialInAdd(request):
 
     return render(request, 'portal/Material In/add.html', context)
     
+@login_required
+def materialInView(request,id):
+
+    materialIn =  models.On_Transit_Transaction.objects.filter(pk=id).get()
+    # print(materialOut.source_store__name)
+    context.update({
+        'material_In': materialIn,
+        'page_title': "Material In View",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Material In", 'url': reverse('superuser:materialInList')},
+                        {'name': "view"}]
+    })
+    return render(request, 'portal/Material In/view.html', context)
 
 

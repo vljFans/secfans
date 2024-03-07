@@ -4681,10 +4681,11 @@ def getOnTransitTransactionHeadersList(request):
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
     flag = request.GET.get('flag', None)
+    print(request.GET)
     try:
         if id is not None and id != "":
             onTransitTransactionHeader = list(models.On_Transit_Transaction.objects.filter(pk=id)[:1].values(
-                'pk', 'transaction_number', 'transaction_date', 'source_store_id','source_store__name' ,'destination_store_id','destination_store__name'))
+                'pk', 'transaction_number', 'transaction_date','transaction_in_date', 'source_store_id','source_store__name' ,'destination_store_id','destination_store__name'))
             context.update({
                 'status': 200,
                 'message': "onTransitTransaction header Fetched Successfully.",
@@ -4697,13 +4698,13 @@ def getOnTransitTransactionHeadersList(request):
                     models.On_Transit_Transaction.objects.filter(
                         Q(transaction_number__icontains=keyword) 
                     ).filter(
-                        status=1, deleted=0,flag=1).values('pk', 'transaction_number', 'transaction_date', 'source_store_id','source_store__name' ,'destination_store_id','destination_store__name')
+                        status=1, deleted=0,flag=1).values('pk', 'transaction_number', 'transaction_date','transaction_in_date', 'source_store_id','source_store__name' ,'destination_store_id','destination_store__name')
                 )
 
             else:
                 # print("4263",request.GET)   
                 onTransitTransactionHeader = list(models.On_Transit_Transaction.objects.filter(status=1, deleted=0,flag=1).values(
-                    'pk', 'transaction_number', 'transaction_date', 'source_store_id','source_store__name' ,'destination_store_id','destination_store__name'))
+                    'pk', 'transaction_number', 'transaction_date','transaction_in_date', 'source_store_id','source_store__name' ,'destination_store_id','destination_store__name'))
                 # print(onTransitTransactionHeader)
             if find_all is not None and int(find_all) == 1:
                 context.update({
@@ -4738,13 +4739,13 @@ def getOnTransitTransactionHeadersList(request):
                     models.On_Transit_Transaction.objects.filter(
                         Q(transaction_number__icontains=keyword) 
                     ).filter(
-                        status=1, deleted=0,flag=0).values('pk', 'transaction_number', 'transaction_date', 'source_store_id','source_store__name' ,'destination_store_id','destination_store__name')
+                        status=1, deleted=0,flag=0).values('pk', 'transaction_number', 'transaction_date','transaction_in_date', 'source_store_id','source_store__name' ,'destination_store_id','destination_store__name')
                 )
 
             else:
                 # print("4263",request.GET)   
                 onTransitTransactionHeader = list(models.On_Transit_Transaction.objects.filter(status=1, deleted=0,flag=0).values(
-                    'pk', 'transaction_number', 'transaction_date', 'source_store_id','source_store__name' ,'destination_store_id','destination_store__name'))
+                    'pk', 'transaction_number', 'transaction_date','transaction_in_date', 'source_store_id','source_store__name' ,'destination_store_id','destination_store__name'))
                 # print(onTransitTransactionHeader)
             if find_all is not None and int(find_all) == 1:
                 context.update({

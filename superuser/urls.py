@@ -131,7 +131,7 @@ urlpatterns = [
     # material in 
     path('material-in-list',views.materialInList, name='materialInList'),
     path('material-in-add',views.materialInAdd, name='materialInAdd'),
-    # path('material-in-view/<int:id>',views.materialReturnView, name='materialReturnView'),
+    path('material-in-view/<int:id>',views.materialInView, name='materialInView')
 
 
 ]
