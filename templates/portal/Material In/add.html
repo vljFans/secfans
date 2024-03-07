@@ -1,0 +1,344 @@
+{% extends 'portal/base.html' %}
+{% load static %}
+{% load template_func %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<!-- main wrapper div content -->
+<div class="wrapper">
+
+    <!--================================-->
+    <!-- Breadcrumb Start -->
+    <!--================================-->
+    <div class="pageheader pd-t-25 pd-b-35">
+        <div class="d-flex justify-content-between">
+            <div class="clearfix">
+                <div class="pd-t-5 pd-b-5">
+                    <h1 class="pd-0 mg-0 tx-20 tx-dark">{{parent_page_title}} {{page_title}}</h1>
+                </div>
+                <div class="breadcrumb pd-0 mg-0">
+                    {% for breadcrumb in breadcrumbs %}
+                    {% if forloop.counter != breadcrumbs|length %}
+                    <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                    {% else %}
+                    <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row row-xs clearfix">
+        <div class="col-md-12 col-lg-12">
+            {% if messages %}
+            {% for message in messages %}
+            {% if forloop.counter == messages|length %}
+            <div class="{{ message.tags }} success-msg-txt" style="height: 30px; text-align: center;">{{ message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            <div class="card mg-b-30">
+                <!-- upper header of form -->
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-header-title tx-13 mb-0">{{parent_page_title}} {{page_title}}</h6>
+                        </div>
+                        <div class="text-right">
+                            <div class="d-flex">
+                                <a href="{% url 'superuser:itemList' %}" class="mr-3"><i
+                                        class="fa fa-step-backward"></i></a>
+                                <a href="" class="mr-3"><i class="ti-reload"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- end upper header -->
+                <!-- main form  -->
+                <div class="card-body ">
+                    <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
+                        <div class="form-row">
+                            
+                            <div class="col-md-3 mb-3">
+                                <label>Transaction Number<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="transactionNumber" name="transactionNumber" required>
+                                        <option value="">Choose...</option>
+                                        {% for transitTransaction in transit_transaction_list %}
+                                        <option value="{{transitTransaction.pk}}">{{transitTransaction.transaction_number}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <label>Source Store<span class="required-indicator">*</span></label>
+                                <input type="text" id="source_store_name" name="source_store_name" class="form-control source_name"  readonly >
+                                <input type="hidden" id="source_store_id" name="source_store_id" >
+                            </div>
+
+                            <div class="col-md-3 mb-3 test ">
+                                <label>Destination Store<span class="required-indicator">*</span></label>
+                                <input type="text" id="destination_store_name" name="destination_store_name" class="form-control destination_name" readonly >
+                                <input type="hidden" id="destination_store_id" name="destination_store_id" >
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label> Transaction  Date <span class="required-indicator">*</span></label>
+                                <input type="date" name="issue_date" class="form-control issue_date" placeholder="Order Date"
+                                required>
+                            </div>
+
+
+                            <div class="col-md-12" id="table_form" hidden>
+                                
+                            </div>
+                            <div class="col-md-12" id="submit" hidden>
+                                <button onclick="return confirm('Please check the form again before submitting. It can not be changed')" class="btn btn-success submit-btn" type="submit">Submit</button>
+                            </div>
+                            
+                        </div>
+                    </form>
+                </div>
+                <!-- end main form -->
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- end main wrapper div -->
+
+{% endblock %}
+
+{% block js %}
+<!-- script -->
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+    
+    $('.selectpicker').select2({
+        placeholder: '',
+        templateResult: function(option) {
+            if(option.element && (option.element).hasAttribute('hidden')){
+                return null;
+            }
+            return option.text;
+        }
+    });
+</script>
+
+<script>
+    var item_options_text =``
+    var page_item_len = 0
+    $(document).on('change','#transactionNumber',function(){
+             
+             $('#table_form').removeAttr('hidden')
+             $('#submit').removeAttr('hidden')
+             $('#table_form').html(``)
+            let transactionNumber = $('select#transactionNumber option:selected').val()
+            
+            console.log(transactionNumber);
+
+            $.ajax({
+            url: "{% url 'api:getOnTransitTransactionDetalisList' %}?transactionNumber="+transactionNumber ,
+            type: 'GET',
+            data: ({ }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                //    alert(response.message)
+                   $('#source_store_name').val(response.onTransitTransactionDetails[0].on_transit_transaction_header__source_store__name)
+                   $('#source_store_id').val(response.onTransitTransactionDetails[0].on_transit_transaction_header__source_store_id)
+                   $('#destination_store_name').val(response.onTransitTransactionDetails[0].on_transit_transaction_header__destination_store__name)
+                   $('#destination_store_id').val(response.onTransitTransactionDetails[0].on_transit_transaction_header__destination_store_id)
+                //    source_store_id
+                    var page_item = response.onTransitTransactionDetails
+                    for(let index = 0 ; index < page_item.length ; index ++){
+                        // console.log(index);
+                        var text_inp =`<div class="form-row content_parent">
+                                        <div class="col-md-2 mb-3">
+                                            <label>Item<span class="required-indicator">*</span></label>
+                                            <input type="text" class="form-control item_name" name="item_name" value="${page_item[index].item__name}" readonly >
+                                            <input type="hidden" class="form-control item_id" name="item_id" value="${page_item[index].item_id}" >
+                                            <input type="hidden" class="form-control details_id" name="details_id" value="${page_item[index].pk}" >
+                                        </div>
+    
+                                        <div class="col-md-2 mb-3">
+                                            <label>Rate<span class="required-indicator">*</span></label>
+                                            <input type="text" class="form-control rate" name="rate" value="${page_item[index].rate}" readonly required>
+                                        </div>
+    
+                                        <div class="col-md-2 mb-3">
+                                            <label>Quantity Sent <span class="required-indicator">*</span></label>
+                                            <input type="text"
+                                                name="quantity_sent" min="0.01" class="form-control quantity_sent"
+                                                value="${page_item[index].quantity}" required readonly>
+                                        </div>
+                                        <div class="col-md-2 mb-3">
+                                            <label>Quantity Recieved <span class="required-indicator">*</span></label>
+                                            <input type="text" onkeyup="checkMaxMin(this)"
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="quantity_recieved" min="0.01" max="${page_item[index].quantity}" class="form-control quantity_recieved"
+                                                placeholder="0.00" required >
+                                        </div>
+                                        <div class="col-md-2 mb-3">
+                                            <label>Loss/Rejected Sent <span class="required-indicator">*</span></label>
+                                            <input type="text" name="quantity_reject" min="0.01" class="form-control quantity_reject"
+                                                placeholder="0.00" required readonly>
+                                        </div>
+
+                                        <div class="col-md-2 mb-3">
+                                            <label>Amount <span class="required-indicator">*</span></label>
+                                            <input type="text" name="amount" min="0.01" class="form-control amount"
+                                                value="${page_item[index].amount}" required readonly>
+                                        </div>
+
+                                        <div class="col-md-5 notes"  hidden>
+                                            <label>Notes <span class="required-indicator">*</span></label>
+                                            <textarea name="notes" rows="5" class="form-control note " placeholder="Note"></textarea>
+                                        </div>
+                                    </div><br>`
+                        $('#table_form').append(text_inp)
+                        $('.selectpicker').select2({
+                                placeholder: '',
+                                templateResult: function(option) {
+                                    if(option.element && (option.element).hasAttribute('hidden')){
+                                        return null;
+                                    }
+                                    return option.text;
+                                }
+                            });
+                    }
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            // complete: function(response){
+            //     if(page_item_len !=0) {
+            //         $('#submit').removeAttr('hidden')
+            //         
+            //     }
+            //     else{
+            //         $('#submit').attr('hidden','true')
+            //         $('#table_form').html(`<p> Store doesn't have any item at present <p>`)
+            //     }
+            // },
+            error: function (error) {
+                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                }
+            });
+            
+            // console.log(item_options_text,"saswata");
+          
+        })
+    
+    
+    function checkMaxMin(element) {
+        if ($(element).val() == "") {
+            $(element).val($(element).attr('min'));
+        } else {
+            if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
+                $(element).val($(element).attr('max'));
+            }
+            if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
+                $(element).val($(element).attr('min'));
+            }
+        }
+        if($(element).attr('class') == 'form-control quantity_recieved'){
+            var quantity_recv = parseFloat($(element).val())
+            var quantity_sent = parseFloat($(element).parent().closest('.content_parent').find('.quantity_sent').val())
+            var quantity_reject = quantity_sent - quantity_recv
+            var rate = parseFloat($(element).parent().closest('.content_parent').find('.rate').val())
+            console.log(rate);
+            if(quantity_reject > 0.00){
+                $(element).parent().closest('.content_parent').find('.notes').removeAttr('hidden')
+                $(element).parent().closest('.content_parent').find('.note').attr('required','true')
+            }
+            else{
+                $(element).parent().closest('.content_parent').find('.notes').attr('hidden','true')
+                $(element).parent().closest('.content_parent').find('.note').removeAttr('required','true')
+            }
+            var amount = quantity_recv * rate
+            $(element).parent().closest('.content_parent').find('.quantity_reject').val(quantity_reject)
+            $(element).parent().closest('.content_parent').find('.amount').val(amount)
+        }
+    }
+
+    
+
+    // $(document).on('click', '.remove_btn', function () {
+    //     $(this).parents().closest('.content_parent').remove();
+    // });
+
+   
+
+    $(document).on('submit', '#create_form', function (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        console.log("426");
+        $('.submit-btn').text('Submitting...');
+        $('.submit-btn').prop('disabled', true);
+        var formData = new FormData(create_form);
+        console.log(formData.getAll('quantity_sent'))
+        $.ajax({
+            type: "POST",
+            evalScripts: true,
+            contentType: false,
+            processData: false,
+            url: "{% url 'api:materialInDetailsAdd' %}",
+            data: formData,
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', false);
+                if (response.status == 200) {
+                    // alert(response.message);
+                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialInList' %}");
+                    
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', false);
+                // locationAfterMessageStore(error.responseJSON.detail, 'error');
+                $('.success-msg-txt').text("");
+                $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
+                $('.error-msg-txt').addClass('text-danger');
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    
+    });
+    
+
+</script>
+
+
+{% endblock js %}

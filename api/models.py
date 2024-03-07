@@ -640,6 +640,7 @@ class Store_Transaction(models.Model):
     updated_at = models.DateTimeField(default=now)
     job_order = models.ForeignKey(Job_Order, on_delete=models.CASCADE, blank=True, null=True)
     grn_inspection =  models.ForeignKey(Grn_Inspection_Transaction, on_delete=models.CASCADE, blank=True, null=True)
+    reference_id = models.SmallIntegerField(default=0)
 
     def __str__(self):
         return self.transaction_number
@@ -671,5 +672,52 @@ class Store_Transaction_Detail(models.Model):
         managed = True
         db_table = 'store_transaction_details'
         verbose_name_plural = 'store_transaction_details'
+
+# on transit transaction -- developed by saswata 
+# transaction_date date when material out  happned flag be 1 if material in on that particular transaction occured
+class On_Transit_Transaction(models.Model):
+    transaction_number = models.CharField(max_length=25, blank=True, null=True)
+    transaction_date = models.DateField(blank=True, null=True)
+    transaction_in_date = models.DateField(blank=True, null=True)
+    source_store =  models.ForeignKey(
+        Store, on_delete=models.CASCADE, blank=True, null=True , related_name="source_store")
+    destination_store =  models.ForeignKey(
+        Store, on_delete=models.CASCADE, blank=True, null=True, related_name="destination_store")
+    flag = models.SmallIntegerField(default=0)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.transaction_number
+
+    class Meta:
+        managed = True
+        db_table = 'on_transit_transaction_headers'
+        verbose_name_plural = 'on_transit_transaction_headers'
+    
+class On_Transit_Transaction_Details(models.Model):
+    on_transit_transaction_header = models.ForeignKey(On_Transit_Transaction, on_delete=models.CASCADE, blank=True, null=True)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
+    quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    recieved_quntity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    reject_quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    notes = models.TextField(blank=True, null=True)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.on_transit_transaction_header.transaction_number
+
+    class Meta:
+        managed = True
+        db_table = 'On_Transit_Transaction_details'
+        verbose_name_plural = 'On_Transit_Transaction_details'
+
 
 

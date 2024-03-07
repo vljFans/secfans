@@ -1,0 +1,128 @@
+{% extends 'portal/base.html' %}
+{% load template_func %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<div class="wrapper">
+    <!--================================-->
+    <!-- Breadcrumb Start -->
+    <!--================================-->
+    <div class="pageheader pd-t-25 pd-b-35">
+        <div class="d-flex justify-content-between">
+            <div class="clearfix">
+                <div class="pd-t-5 pd-b-5">
+                    <h1 class="pd-0 mg-0 tx-20 tx-dark">{{parent_page_title}} {{page_title}}</h1>
+                </div>
+                <div class="breadcrumb pd-0 mg-0">
+                    {% for breadcrumb in breadcrumbs %}
+                    {% if forloop.counter != breadcrumbs|length %}
+                    <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                    {% else %}
+                    <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Breadcrumb End -->
+    <!--================================-->
+    <!--================================-->
+    <!-- Form Element Start -->
+    <!--================================-->
+    <div class="row row-xs clearfix">
+        <div class="col-md-12 col-lg-12">
+            {% if messages %}
+            {% for message in messages %}
+            {% if forloop.counter == messages|length %}
+            <div class="{{ message.tags }} success-msg-txt" style="height: 30px; text-align: center;">{{ message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            <div class="error-msg-txt" style="height: 30px; text-align: center;"></div>
+            <div class="card mg-b-30">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-header-title tx-13 mb-0">{{parent_page_title}} {{page_title}}</h6>
+                        </div>
+                        <div class="text-right">
+                            <div class="d-flex">
+                                <a href="{% url 'superuser:materialInList' %}" class="mr-3"><i
+                                        class="fa fa-step-backward"></i></a>
+                                <a href="" class="mr-3"><i class="ti-reload"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body pd-5">
+                    <div class="form-row">
+                        <div class="col-md-4 mb-3">
+                            <label>Transaction Number </label>
+                            <input type="text" id="transaction_number" name="transaction_number" class="form-control" value="{{material_In.transaction_number}}" readonly >
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>Source Store</label>
+                            <input type="text" id="source_store_name" name="store_name" class="form-control" value="{{material_In.source_store.name}}" readonly >
+                        </div>
+                        
+                        
+                        <div class="col-md-3 mb-3 test ">
+                            <label>Destination Store</label>
+                            <input type="text" id="destination_store_name" name="store_name" class="form-control" value="{{material_In.destination_store.name}}" readonly >
+                        </div>
+
+                        <div class="col-md-2 mb-3">
+                            <label>Transaction In Date </label>
+                            <input type="date" name="transaction_date" class="form-control transaction_date" value="{{material_In.transaction_in_date|date:'Y-m-d'}}" readonly>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Item</th>
+                                    <th>Sent Quantity</th>
+                                    <th>Accepted Quantity</th>
+                                    <th>Rejected quantity</th>
+                                    <th>Rate</th>
+                                    <th>Amount</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+                                {% for materialIn in material_In.on_transit_transaction_details_set.all %}
+                                <tr>
+                                    <td>{{forloop.counter}}</td>
+                                    <td>{{materialIn.item.name}}</td>
+                                    <td>{{materialIn.quantity}}</td>
+                                    <td>{{materialIn.recieved_quntity}}</td>
+                                    <td>{{materialIn.reject_quantity}}</td>
+                                    <td>{{materialIn.rate}}</td>
+                                    <td>{{materialIn.amount}}</td>
+                                    {% if materialIn.notes != null  %}
+                                    <td><a href="" class="mr-3"><i  onclick="return alert('{{materialIn.notes}}')" class="fa fa-eye" style="cursor: pointer;" ></i></a></td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <nav>
+                        <ul id="pagination" class="pagination justify-content-center">
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Form Element End -->
+</div>
+{% endblock %}
+
+{% block js %}
+{% endblock %}

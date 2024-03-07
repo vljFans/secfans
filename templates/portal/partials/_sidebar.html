@@ -149,12 +149,30 @@
           </ul>
         </li>
         <li class="{% if request.path == '/material-issue-list' %}open active{% endif %}">
-          <a href="{% url 'superuser:materialIssueList' %}"><i data-feather="printer"></i>
+          <a href="{% url 'superuser:materialIssueList' %}"><i data-feather="shopping-bag"></i>
             <span>Material Issue</span></a>
         </li>
         <li class="{% if request.path == '/material-return-list' %}open active{% endif %}">
           <a href="{% url 'superuser:materialReturnList' %}"><i data-feather="skip-back"></i>
             <span>Material Return</span></a>
+        </li>
+
+        <!-- on transit tansaction ---developed by saswata -->
+        <li>
+          <a href="javascript:void(0)"><i data-feather="truck"></i>
+            <span>Material Transfer</span><i class="accordion-icon fa fa-angle-left"></i>
+          </a>
+          <ul class="sub-menu"
+            style="display: {% if request.path == '/material-out-list' %}block{% else %}none{% endif %};">
+            {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
+            <li class="{% if request.path == '/material-out-list' %}active{% endif %}">
+              <a href="{% url 'superuser:materialOutList' %}">Material Out</a>
+            </li>
+            <li class="{% if request.path == '/material-in-list' %}active{% endif %}">
+              <a href="{% url 'superuser:materialInList' %}">Material In</a>
+            </li>
+            {% endif %}
+          </ul>
         </li>
         {% endif %}
         <!-- <li class="mg-l-20-force mg-t-25-force menu-elements">Elements</li>

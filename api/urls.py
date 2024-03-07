@@ -127,4 +127,19 @@ urlpatterns = [
 
     path('material-return-add', views.materialReturnAdd, name='materialReturnAdd'),
 
+    # path on transit transaction ---developed by saswata
+
+    path('on-transit-transaction-list', views.getOnTransitTransactionHeadersList, name='getOnTransitTransactionHeadersList'),
+    path('on-transit-transaction-all-list', views.getOnTransitTransactionDetalisList, name='getOnTransitTransactionDetalisList'),
+    # material out
+    path('material-out-details-add', views.materialOutDetailsAdd, name='materialOutDetailsAdd'),
+    path('material-out-details-delete', views.materialOutDetailsDelete, name='materialOutDetailsDelete'),
+    path('material-out-details-edit', views.materialOutDetailsEdit, name='materialOutDetailsEdit'),
+    # path('', views.grnInspectionHeaderList, name='grnInspectionHeaderList'), 
+
+    # material in
+    path('material-in-details-add', views.materialInDetailsAdd, name='materialInDetailsAdd'),
+    # path('grn-inspection-list-Add', views.addGrnDetailisInsTransaction, name='addGrnDetailisInsTransaction'),
+    # path('grn-inspection-head-list', views.grnInspectionHeaderList, name='grnInspectionHeaderList'),
+
 ]

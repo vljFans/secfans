@@ -1014,3 +1014,105 @@ def materialReturnView(request,id):
     })
 
     return render(request, 'portal/Material Return/view.html', context)
+
+# on transit transaction --- developed by saswata
+
+# material out
+@login_required
+def materialOutList(request):
+    context.update({
+        'page_title': "Material Out ",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Material Out", 'url': reverse('superuser:materialOutList')},
+                        {'name': "List"}]
+    })
+
+    return render(request, 'portal/Material Out/list.html', context)
+
+@login_required
+def materialOutAdd(request):
+    stores = list(models.Store.objects.filter(status= 1,deleted=0).values('pk' ,'name','vendor_id','vendor__name'))
+    # print(stores)
+    context.update({
+        'store_list' : stores,
+        'page_title': "Material Out Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Material Out", 'url': reverse('superuser:materialOutList')},
+                        {'name': "Add"}]
+    })
+
+
+    return render(request, 'portal/Material Out/add.html', context)
+
+
+@login_required
+def materialOutEdit(request,id):
+
+    materialOut =  models.On_Transit_Transaction.objects.filter(pk=id).get()
+    # print(materialOut.source_store__name)
+    context.update({
+        'material_out': materialOut,
+        'page_title': "Material Out Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Material Out", 'url': reverse('superuser:materialOutList')},
+                        {'name': "Edit"}]
+    })
+
+    return render(request, 'portal/Material Out/edit.html', context)
+
+@login_required
+def materialOutView(request,id):
+
+    materialOut =  models.On_Transit_Transaction.objects.filter(pk=id).get()
+    # print(materialOut.source_store__name)
+    context.update({
+        'material_out': materialOut,
+        'page_title': "Material Out View",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Material Out", 'url': reverse('superuser:materialOutList')},
+                        {'name': "view"}]
+    })
+
+    return render(request, 'portal/Material Out/view.html', context)
+
+# material in
+@login_required
+def materialInList(request):
+    context.update({
+        'page_title': "Material In ",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Material In", 'url': reverse('superuser:materialInList')},
+                        {'name': "List"}]
+    })
+
+    return render(request, 'portal/Material In/list.html', context)
+
+@login_required
+def materialInAdd(request):
+
+    onTrasitTrasactionList = list(models.On_Transit_Transaction.objects.filter(flag=0).values('pk','transaction_number'))
+    context.update({
+        'transit_transaction_list': onTrasitTrasactionList,
+        'page_title': "Material In Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Material In", 'url': reverse('superuser:materialInList')},
+                        {'name': "Add"}]
+    })
+
+    return render(request, 'portal/Material In/add.html', context)
+    
+@login_required
+def materialInView(request,id):
+
+    materialIn =  models.On_Transit_Transaction.objects.filter(pk=id).get()
+    # print(materialOut.source_store__name)
+    context.update({
+        'material_In': materialIn,
+        'page_title': "Material In View",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Material In", 'url': reverse('superuser:materialInList')},
+                        {'name': "view"}]
+    })
+    return render(request, 'portal/Material In/view.html', context)
+
+

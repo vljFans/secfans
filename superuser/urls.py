@@ -119,4 +119,19 @@ urlpatterns = [
     path('material-return-view/<int:id>',views.materialReturnView, name='materialReturnView'),
 
 
+    # path on transit transaction ---developed by saswata
+
+    # material out
+    path('material-out-list',views.materialOutList, name='materialOutList'),
+    path('material-out-add',views.materialOutAdd, name='materialOutAdd'),
+    path('material-out-edit/<int:id>',views.materialOutEdit, name='materialOutEdit'),
+    path('material-out-view/<int:id>',views.materialOutView, name='materialOutView'),
+
+
+    # material in 
+    path('material-in-list',views.materialInList, name='materialInList'),
+    path('material-in-add',views.materialInAdd, name='materialInAdd'),
+    path('material-in-view/<int:id>',views.materialInView, name='materialInView')
+
+
 ]
