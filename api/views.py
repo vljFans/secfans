@@ -4681,7 +4681,7 @@ def getOnTransitTransactionHeadersList(request):
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
     flag = request.GET.get('flag', None)
-    print(request.GET)
+    # print(request.GET)
     try:
         if id is not None and id != "":
             onTransitTransactionHeader = list(models.On_Transit_Transaction.objects.filter(pk=id)[:1].values(
@@ -4800,7 +4800,7 @@ def getOnTransitTransactionDetalisList(request):
             'amount',
             'rate'
             ))
-            print(onTransitTransactionDetails)
+            # print(onTransitTransactionDetails)
            
             context.update({
                 'onTransitTransactionDetails':onTransitTransactionDetails,
@@ -4912,7 +4912,7 @@ def materialOutDetailsAdd(request):
 @permission_classes([IsAuthenticated])
 def materialOutDetailsDelete(request):
     context = {}
-    print(request.POST)
+    # print(request.POST)
     try:
         materialOut = models.On_Transit_Transaction.objects.get(pk=request.POST['id'])
         materialOutDetails = list(models.On_Transit_Transaction_Details.objects.filter(on_transit_transaction_header_id = request.POST['id']).values('pk','item_id','quantity'))
@@ -4928,10 +4928,10 @@ def materialOutDetailsDelete(request):
 
             # item added to  source store
             for index in materialOutDetails:
-                print(index['item_id'])
+                # print(index['item_id'])
                 storeItem = models.Store_Item.objects.filter(
                     item_id=index['item_id'], store_id=store_id).first()
-                print(storeItem)
+                # print(storeItem)
                 storeItem.on_hand_qty += Decimal(index['quantity'])
                 storeItem.closing_qty += Decimal(index['quantity'])
                 # print("4900")
@@ -4957,7 +4957,7 @@ def materialOutDetailsDelete(request):
 @permission_classes([IsAuthenticated])
 def materialOutDetailsEdit(request):
     context = {}
-    print(request.POST)
+    # print(request.POST)
     try:
         pass
 
@@ -4975,14 +4975,14 @@ def materialOutDetailsEdit(request):
 @permission_classes([IsAuthenticated])
 def materialInDetailsAdd(request):
     context = {}
-    print(request.POST)
+    # print(request.POST)
     try:
         # pass
         with transaction.atomic():
             # print("4982")
             #material added on on transit transaction heder flag be 1 
             transitTransactionHeader = models.On_Transit_Transaction.objects.get(pk=request.POST['transactionNumber'])
-            print(transitTransactionHeader.id)
+            # print(transitTransactionHeader.id)
             transitTransactionHeader.flag = 1
             transitTransactionHeader.transaction_in_date = request.POST['issue_date']
             transitTransactionHeader.updated_at = datetime.now()
@@ -4998,19 +4998,19 @@ def materialInDetailsAdd(request):
             storeTransactionHeader.transaction_date = request.POST['issue_date']
             storeTransactionHeader.reference_id =  int(transitTransactionHeader.id)
             storeTransactionHeader.save()
-            print("4987")
+            # print("4987")
            
             order_details = []
             for index in range(0,len(request.POST.getlist('item_id'))):
                 #on transit transaction details for material in changed
                 transitTransactionDetails = models.On_Transit_Transaction_Details.objects.get(pk=request.POST.getlist('details_id')[index])
-                print(transitTransactionDetails)
+                # print(transitTransactionDetails)
                 transitTransactionDetails.recieved_quntity = request.POST.getlist('quantity_recieved')[index]
                 transitTransactionDetails.reject_quantity = request.POST.getlist('quantity_reject')[index]
                 transitTransactionDetails.amount = request.POST.getlist('amount')[index]
-                print("4995")
+                # print("4995")
                 transitTransactionDetails.notes = request.POST.getlist('notes')[index] if request.POST.getlist('notes')[index] != "" else None
-                print("4996")
+                # print("4996")
                 transitTransactionDetails.updated_at = datetime.now()
                 transitTransactionDetails.save()
                 #store transaction details created for material in 

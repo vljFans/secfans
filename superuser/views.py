@@ -943,7 +943,7 @@ def grnInspectionEdit(request,id):
 @login_required
 def grnInspectionView(request,id):
     context = {}
-    print("928")
+    # print("928")
     grn_inspection_head = list(models.Grn_Inspection_Transaction.objects.filter(pk=id).values('pk',
     'vendor__name',
     'transaction_number',
