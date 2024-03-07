@@ -105,7 +105,7 @@
                                     <td>{{materialIn.rate}}</td>
                                     <td>{{materialIn.amount}}</td>
                                     {% if materialIn.notes != null  %}
-                                    <td><a href="" class="mr-3"><i  onclick="return alert('{{materialIn.notes}}')" class="fa fa-eye" style="cursor: pointer;" ></i></a></td>
+                                    <td><i  onclick="return swal({title:'Note',text:'{{materialIn.notes}}'})" class="fa fa-eye " style="cursor: pointer; " ></i></td>
                                     {% endif %}
                                 </tr>
                                 {% endfor %}
@@ -125,4 +125,5 @@
 {% endblock %}
 
 {% block js %}
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 {% endblock %}
