@@ -105,7 +105,7 @@
                                 <div class="table-responsive">
                                     <table class="table" id="table_form" hidden>
                                         <thead>
-                                            <tr>
+                                            <tr style="width:10%">
                                                 <th>#</th>
                                                 <th>Item Name</th>
                                                 <th>Book quantiy</th>
@@ -184,7 +184,7 @@
         $('#table_form').attr('hidden','true')
         $('#submit').attr('hidden','true')
         $('#itemCat').val(null).trigger("change")
-        $('#nav').html(``)
+        $('#nav').attr('hidden','true')
 
     })
 
@@ -197,7 +197,7 @@
         $('#table-body').html(``)
         $('#table_form').attr('hidden','true')
         $('#submit').attr('hidden','true')
-        $('#nav').html(``)
+        $('#nav').attr('hidden','true')
 
         $.ajax({
             url: "{% url 'api:itemTypeList' %}?itemCatId="+itemCatId ,
@@ -247,15 +247,16 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    console.log("saswata");
+                    // console.log("saswata");
                     page_items = response.page_items;
                     tbody_text = ``;
                     if(page_items.length>0){
+                        $('#nav').removeAttr('hidden')
                         $('#table_form').removeAttr('hidden')
                         console.log(page_items);
                         for (let index = 0; index < page_items.length; index++) {
                             const element = page_items[index];
-                            tbody_text += `<tr>
+                            tbody_text += `<tr style="width:10%">
                                                 <td>${((response.total_pages - 1) * response.per_page) +  index + 1}</td>
                                                 <td><input type="text" size="5" name="item_name" class="form-control item_name" value="${element.item__name}"
                                                 readonly> <input type="hidden" name="item_id" class="form-control item_id" value="${element.item_id}"
@@ -268,14 +269,14 @@
                                                 <td><input type="text" size="6" name="notes" rows="5" class="form-control note" placeholder="Note"></td>   
                                             </tr>`;
                         }
-                        console.log(tbody_text)
+                        // console.log(tbody_text)
                         pagination_text = generatePaginationLinks(response.current_page, response.total_pages, response.button_to_show);
                         $('#table-body').html(tbody_text);
                         $('#submit').removeAttr('hidden')
                         $('#pagination').html(pagination_text);
                     }
                     else{
-                        console.log("260");
+                        // console.log("260");
                         tbody_text = ` `;
                         $('#table-body').html(tbody_text);
                         $('#table_form').attr('hidden','true')
