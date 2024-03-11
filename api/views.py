@@ -2875,7 +2875,8 @@ def storeItemList(request):
     storeId = request.GET.get('storeId', None)
     itemTypeId = request.GET.get('itemTypeId', None)
     itemCatId = request.GET.get('itemCatId', None)
-    print(request.GET)
+    itemId = request.GET.get('itemId', None)
+    print(request.GET,"2879")
     if id is not None and id != "":
         storeItem = list(models.Store_Item.objects.filter(pk=id)[:1].values(
             'pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty'))
@@ -2908,6 +2909,15 @@ def storeItemList(request):
                     'current_page': int(current_page),
                     'button_to_show': int(button_to_show),
                 })
+        elif itemId is not None and itemId != "" :
+            storeItem = list(models.Store_Item.objects.filter(store_id = storeId ,item_id = itemId)[:1].values(
+                    'pk', 'store__name','item_id','item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','item__price','item__item_type_id'))
+            context.update({
+                'status': 200,
+                'message': "Store Item Fetched Successfully.",
+                'page_items': storeItem,
+            })
+        
         else:
             storeItem = list(models.Store_Item.objects.filter(store_id = storeId ).values(
             'pk', 'store__name','item_id','item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','item__price'))
