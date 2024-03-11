@@ -720,4 +720,48 @@ class On_Transit_Transaction_Details(models.Model):
         verbose_name_plural = 'On_Transit_Transaction_details'
 
 
+# physical Inspection on Store Items --- developed by saswata
+class Physical_Inspection(models.Model):
+    transaction_number = models.CharField(max_length=50, blank=True, null=True)
+    inspection_date = models.DateField(blank=True, null=True)
+    store =  models.ForeignKey(Store, on_delete=models.CASCADE, blank=True, null=True)
+    item_catagories = models.ForeignKey(Item_Category, on_delete=models.CASCADE, blank=True, null=True)
+    item_type = models.ForeignKey(Item_Type, on_delete=models.CASCADE, blank=True, null=True)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+
+
+    def __str__(self):
+        return self.transaction_number
+
+    class Meta:
+        managed = True
+        db_table = 'physical_inspection_headers'
+        verbose_name_plural = 'physical_inspection_headers'
+
+class Physical_Inspection_Details(models.Model):
+    physical_inspection_header = models.ForeignKey(Physical_Inspection, on_delete=models.CASCADE, blank=True, null=True)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
+    booked_quantity = models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    physical_quantity = models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    adjusted_quantity = models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    notes = models.TextField(blank=True, null=True)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+
+
+    def __str__(self):
+        return self.physical_inspection_header.transaction_number
+
+    class Meta:
+        managed = True
+        db_table = 'physical_inspection_details'
+        verbose_name_plural = 'physical_inspection_details'
+
 

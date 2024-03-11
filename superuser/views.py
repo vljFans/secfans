@@ -1115,4 +1115,47 @@ def materialInView(request,id):
     })
     return render(request, 'portal/Material In/view.html', context)
 
+# physical Inspection on Store Items --- developed by saswata
+
+@login_required
+def physicalInspectionList(request):
+    context.update({
+        'page_title': "Physical Verification/Reconciliation",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Physical Verification/Reconciliation", 'url': reverse('superuser:physicalInspectionList')},
+                        {'name': "List"}] 
+    })
+
+    return render(request, 'portal/Physcial Inspection Store/list.html', context)
+
+@login_required
+def physicalInspectionAdd(request):
+
+    stores = list(models.Store.objects.filter(status=1, deleted=0).values('pk','name'))
+    itemCategories = list(models.Item_Category.objects.filter(status=1, deleted=0).values('pk','name'))
+    context.update({
+        'store_list': stores,
+        'item_catagories' : itemCategories,
+        'page_title': "Physical Verification/Reconciliation Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Physical Verification/Reconciliation", 'url': reverse('superuser:physicalInspectionList')},
+                        {'name': "Add"}]
+    })
+
+    return render(request, 'portal/Physcial Inspection Store/add.html', context)
+
+@login_required
+def physicalInspectionView(request,id):
+
+    physicalInspDet = models.Physical_Inspection.objects.get(pk=id)
+    context.update({
+        'physical_inspection': physicalInspDet,
+        'page_title': "Physical Verification/Reconciliation View",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Physical Verification/Reconciliation", 'url': reverse('superuser:physicalInspectionList')},
+                        {'name': "Add"}]
+    })
+
+    return render(request, 'portal/Physcial Inspection Store/view.html', context)
+
 

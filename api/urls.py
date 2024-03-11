@@ -142,4 +142,9 @@ urlpatterns = [
     # path('grn-inspection-list-Add', views.addGrnDetailisInsTransaction, name='addGrnDetailisInsTransaction'),
     # path('grn-inspection-head-list', views.grnInspectionHeaderList, name='grnInspectionHeaderList'),
 
+    # physical Inspection on Store Items --- developed by saswata
+    path('physical-inspection-header-list', views.getPhysicalInspectionHeadersList, name='getPhysicalInspectionHeadersList'),
+    path('physical-inspection-details-add', views.physicalInspectionDetailsAdd, name='physicalInspectionDetailsAdd'),
+
+
 ]

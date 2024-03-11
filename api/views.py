@@ -1456,9 +1456,19 @@ def itemTypeList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
+    itemCatId = request.GET.get('itemCatId', None)
     if id is not None and id != "":
         itemType = list(models.Item_Type.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
+        context.update({
+            'status': 200,
+            'message': "Item Type Fetched Successfully.",
+            'page_items': itemType,
+        })
+    elif itemCatId is not None and itemCatId != "":
+        itemType = list(models.Item_Type.objects.filter(item_category_id=itemCatId).values(
+            'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
+        # print(itemType)
         context.update({
             'status': 200,
             'message': "Item Type Fetched Successfully.",
@@ -2863,6 +2873,9 @@ def storeItemList(request):
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
     storeId = request.GET.get('storeId', None)
+    itemTypeId = request.GET.get('itemTypeId', None)
+    itemCatId = request.GET.get('itemCatId', None)
+    print(request.GET)
     if id is not None and id != "":
         storeItem = list(models.Store_Item.objects.filter(pk=id)[:1].values(
             'pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty'))
@@ -2872,13 +2885,37 @@ def storeItemList(request):
             'page_items': storeItem,
         })
     elif storeId is not None and storeId != "":
-        storeItem = list(models.Store_Item.objects.filter(store_id = storeId ).values(
-           'pk', 'store__name','item_id','item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','item__price'))
-        context.update({
-            'status': 200,
-            'message': "Store Fetched Successfully.",
-            'page_items': storeItem,
-        })
+        if itemTypeId is not None and itemTypeId != "" :
+            if itemCatId is not None and itemCatId != "" :
+                # print("2890")
+                storeItems = list(models.Store_Item.objects.filter(store_id = storeId ,item__item_type_id = itemTypeId , item__item_type__item_category_id = itemCatId).values(
+                    'pk', 'store__name','item_id','item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','item__price','item__item_type_id'))
+                # print(storeItems)
+                per_page = int(env("PER_PAGE_DATA"))
+                button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+                current_page = request.GET.get('current_page', 1)
+
+                paginator = CustomPaginator(storeItems, per_page)
+                page_items = paginator.get_page(current_page)
+                total_pages = paginator.get_total_pages()
+
+                context.update({
+                    'status': 200,
+                    'message': "Store Items Fetched Successfully.",
+                    'page_items': page_items,
+                    'total_pages': total_pages,
+                    'per_page': per_page,
+                    'current_page': int(current_page),
+                    'button_to_show': int(button_to_show),
+                })
+        else:
+            storeItem = list(models.Store_Item.objects.filter(store_id = storeId ).values(
+            'pk', 'store__name','item_id','item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','item__price'))
+            context.update({
+                'status': 200,
+                'message': "Store Fetched Successfully.",
+                'page_items': storeItem,
+            })
         # print(storeItem)
         return JsonResponse(context)
     else:
@@ -5059,6 +5096,179 @@ def materialInDetailsAdd(request):
         transaction.rollback()
 
     return JsonResponse(context)
+
+
+# physical Inspection on Store Items --- developed by saswata
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getPhysicalInspectionHeadersList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
+    # print(request.GET)
+    try:
+        if id is not None and id != "":
+            phyInspectHeader = list(models.Physical_Inspection.objects.filter(pk=id)[:1].values('pk','transaction_number',
+            'inspection_date',
+            'store_id',
+            'store__name',
+            'item_catagories_id',
+            'item_catagories__name',
+            'item_type_id',
+            'item_type__name'
+            ))
+            context.update({
+            'status': 200,
+            'message': "phycial Inspect  Header Fetched Successfully.",
+            'page_items': phyInspectHeader,
+        })
+
+        else:
+            # print('5128')
+            if keyword is not None and keyword != "":
+                phyInspectHeader = list(models.Physical_Inspection.objects.filter(Q(transaction_number__icontains=keyword) | 
+                Q(store__name__icontains=keyword) |
+                Q(item_catagories__name__icontains=keyword) |
+                Q(item_type__name__icontains=keyword)
+                    ).values('pk','transaction_number',
+                    'inspection_date',
+                    'store_id',
+                    'store__name',
+                    'item_catagories_id',
+                    'item_catagories__name',
+                    'item_type_id',
+                    'item_type__name'
+                ))
+            else:
+                # print('5144')
+                phyInspectHeader = list(models.Physical_Inspection.objects.filter(status=1, deleted=0).values('pk','transaction_number',
+                'inspection_date',
+                'store_id',
+                'store__name',
+                'item_catagories_id',
+                'item_catagories__name',
+                'item_type_id',
+                'item_type__name'
+                ))
+                # print(phyInspectHeader)
+            if find_all is not None and int(find_all) == 1:
+                    context.update({
+                        'status': 200,
+                        'message': "phycial Inspect  Header Fetched Successfully.",
+                        'page_items': phyInspectHeader,
+                    })
+                    return JsonResponse(context)
+            # print(phyInspectHeader)
+            per_page = int(env("PER_PAGE_DATA"))
+            button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+            current_page = request.GET.get('current_page', 1)
+
+            paginator = CustomPaginator(phyInspectHeader, per_page)
+            page_items = paginator.get_page(current_page)
+            total_pages = paginator.get_total_pages()
+
+            context.update({
+                'status': 200,
+                'message': "phycial Inspect  Header Fetched Successfully.",
+                'page_items': page_items,
+                'total_pages': total_pages,
+                'per_page': per_page,
+                'current_page': int(current_page),
+                'button_to_show': int(button_to_show),
+            })
+
+
+
+    except Exception:
+        context.update({
+            'status': 540,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+
+    return JsonResponse(context)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def physicalInspectionDetailsAdd(request):
+    context ={}
+    # print(request.POST)
+    try:
+        with transaction.atomic():
+
+            physical_inspection_count = models.Physical_Inspection.objects.all().count()
+            physicalInspectionHeader = models.Physical_Inspection()
+            physicalInspectionHeader.transaction_number = env("PHY_INSP_TRANSACTION_SEQ").replace(
+                "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(physical_inspection_count + 1).zfill(5))        
+            physicalInspectionHeader.inspection_date = request.POST['issue_date']
+            physicalInspectionHeader.store_id = request.POST['storeId']
+            physicalInspectionHeader.item_catagories_id = request.POST['itemCat']
+            physicalInspectionHeader.item_type_id = request.POST['itemType']
+            physicalInspectionHeader.save()
+
+             #store transaction created for material in
+            print("5121")
+            store_transaction_count = models.Store_Transaction.objects.all().count()
+            storeTransactionHeader= models.Store_Transaction()
+            print("5124")
+            storeTransactionHeader.transaction_type_id = 8
+            storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+                "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
+            storeTransactionHeader.transaction_date = request.POST['issue_date']
+            storeTransactionHeader.reference_id =  int(physicalInspectionHeader.id)
+            storeTransactionHeader.save()
+
+            print('5132')
+            phyInsDet = []
+            order_details = []
+            for index in range(0,len(request.POST.getlist('item_id'))):
+                if request.POST.getlist('physical_quantity')[index]!='':
+                    print('item:',request.POST.getlist('item_id')[index])
+                    adjustQuan = float(request.POST.getlist('book_quantity')[index]) - float( request.POST.getlist('physical_quantity')[index])
+                    print(storeTransactionHeader.id)
+                    phyInsDet.append(
+                        models.Physical_Inspection_Details(
+                            physical_inspection_header_id = physicalInspectionHeader.id,
+                            item_id = request.POST.getlist('item_id')[index],
+                            booked_quantity = request.POST.getlist('book_quantity')[index],
+                            physical_quantity = request.POST.getlist('physical_quantity')[index],
+                            adjusted_quantity = adjustQuan,
+                            notes = request.POST.getlist('notes')[index]
+                        )
+                    )
+                    print('5148')
+                    order_details.append(
+                    models.Store_Transaction_Detail(
+                        store_transaction_header_id=storeTransactionHeader.id,
+                        item_id=request.POST.getlist('item_id')[index],
+                        store_id= request.POST['storeId'],
+                        quantity=adjustQuan
+                        )
+                    )
+                    print('5158')
+                
+                print('5159')
+            models.Physical_Inspection_Details.objects.bulk_create(phyInsDet)
+            print('5160')
+            models.Store_Transaction_Detail.objects.bulk_create(order_details)   
+        
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Physical Inspection Transaction added Sucessfully"
+        })
+        
+    except Exception:
+        context.update({
+            'status': 542,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+    
+
 
 
 
