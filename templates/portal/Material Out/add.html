@@ -304,6 +304,7 @@
         let storeId = $('select#sourceStore option:selected').val()
         console.log(storeId);
         var parentDiv =  $(this).parents().closest('.content_parent');
+        parentDiv.find('.quantity_sent').val('')
 
             $.ajax({
             url: "{% url 'api:itemList' %}?id="+valu ,
@@ -323,7 +324,7 @@
                 }
             },
             complete: function(response){
-            console.log("325");
+            // console.log("325");
             $.ajax({
             url: "{% url 'api:storeItemList' %}?itemId="+valu+"&storeId="+storeId ,
             type: 'GET',

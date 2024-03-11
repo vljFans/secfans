@@ -183,9 +183,7 @@
     $(document).on('change','#storeId',function(){
         $('#table_form').attr('hidden','true')
         $('#submit').attr('hidden','true')
-        $('select#itemCat option:selected').val(' ')
-        $('select#itemType option:selected').val(' ')
-        nav
+        $('#itemCat').val(null).trigger("change")
         $('#nav').html(``)
 
     })
