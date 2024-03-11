@@ -1153,7 +1153,7 @@ def physicalInspectionView(request,id):
         'page_title': "Physical Verification/Reconciliation View",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
                         {'name': "Physical Verification/Reconciliation", 'url': reverse('superuser:physicalInspectionList')},
-                        {'name': "Add"}]
+                        {'name': "View"}]
     })
 
     return render(request, 'portal/Physcial Inspection Store/view.html', context)
