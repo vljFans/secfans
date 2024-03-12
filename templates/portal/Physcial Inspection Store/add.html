@@ -253,10 +253,10 @@
                     if(page_items.length>0){
                         $('#nav').removeAttr('hidden')
                         $('#table_form').removeAttr('hidden')
-                        console.log(page_items);
+                        // console.log(page_items);
                         for (let index = 0; index < page_items.length; index++) {
                             const element = page_items[index];
-                            tbody_text += `<tr style="width:10%">
+                            tbody_text += `<tr style="width:10%" class="content_parent">
                                                 <td>${((response.total_pages - 1) * response.per_page) +  index + 1}</td>
                                                 <td><input type="text" size="5" name="item_name" class="form-control item_name" value="${element.item__name}"
                                                 readonly> <input type="hidden" name="item_id" class="form-control item_id" value="${element.item_id}"
@@ -264,7 +264,7 @@
                                                 <td> <input type="text" size="5" name="book_quantity" class="form-control book_quantity" value="${element.on_hand_qty}"
                                                 readonly></td>
                                                 <td><input type="text" size="5" name="physical_quantity" class="form-control physical_quantity" onkeyup="checkMaxMin(this)"
-                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" onfocusout="onNotsCheck(this)" 
                                                 ></td>
                                                 <td><input type="text" size="6" name="notes" rows="5" class="form-control note" placeholder="Note"></td>   
                                             </tr>`;
@@ -309,6 +309,23 @@
                 $(element).val($(element).attr('min'));
             }
         }
+        
+    }
+
+    function onNotsCheck(element){
+        let book_quantity = parseFloat($(element).parent().closest('.content_parent').find('.book_quantity').val())
+        let physical_quantity = parseFloat($(element).parent().closest('.content_parent').find('.physical_quantity').val())
+        let adj_quntity = book_quantity - physical_quantity
+        console.log($(element).parent().closest('.content_parent').find('.book_quantity').val());
+        if(isNaN(adj_quntity)){
+            $(element).parent().closest('.content_parent').find('.note').removeAttr('required')
+        }
+        else if(adj_quntity != 0.00){
+            $(element).parent().closest('.content_parent').find('.note').attr('required','true')
+        } 
+        else{
+            $(element).parent().closest('.content_parent').find('.note').removeAttr('required')
+        }
     }
 
   
@@ -319,38 +336,45 @@
         $('.submit-btn').text('Submitting...');
         $('.submit-btn').prop('disabled', true);
         var formData = new FormData(create_form);
-        console.log(formData.getAll('quantity_sent'))
-        $.ajax({
-            type: "POST",
-            evalScripts: true,
-            contentType: false,
-            processData: false,
-            url: "{% url 'api:physicalInspectionDetailsAdd' %}",
-            data: formData,
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                $('.submit-btn').text('Submitting...');
-                $('.submit-btn').prop('disabled', false);
-                if (response.status == 200) {
-                    // alert(response.message);
-                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:physicalInspectionList' %}");
-                    
-                } else {
-                    alert(response.message);
+
+        if(formData.getAll('physical_quantity').some((x)=>x!="")){
+
+            $.ajax({
+                type: "POST",
+                evalScripts: true,
+                contentType: false,
+                processData: false,
+                url: "{% url 'api:physicalInspectionDetailsAdd' %}",
+                data: formData,
+                headers: {
+                    'Authorization': getCookieValue("accessToken")
+                },
+                success: function (response) {
+                    $('.submit-btn').text('Submitting...');
+                    $('.submit-btn').prop('disabled', false);
+                    if (response.status == 200) {
+                        // alert(response.message);
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:physicalInspectionList' %}");
+                        
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function (error) {
+                    $('.submit-btn').text('Submitting...');
+                    $('.submit-btn').prop('disabled', false);
+                    // locationAfterMessageStore(error.responseJSON.detail, 'error');
+                    $('.success-msg-txt').text("");
+                    $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
+                    $('.error-msg-txt').addClass('text-danger');
+                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
                 }
-            },
-            error: function (error) {
-                $('.submit-btn').text('Submitting...');
-                $('.submit-btn').prop('disabled', false);
-                // locationAfterMessageStore(error.responseJSON.detail, 'error');
-                $('.success-msg-txt').text("");
-                $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
-                $('.error-msg-txt').addClass('text-danger');
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });
+            });
+        }
+        else{
+            alert('table is empty add data atleast in one row  to submit!')
+            $('.submit-btn').prop('disabled', false);
+        }
     
     });
     
