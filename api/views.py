@@ -5218,10 +5218,8 @@ def physicalInspectionDetailsAdd(request):
             physicalInspectionHeader.save()
 
              #store transaction created for material in
-            print("5121")
             store_transaction_count = models.Store_Transaction.objects.all().count()
             storeTransactionHeader= models.Store_Transaction()
-            print("5124")
             storeTransactionHeader.transaction_type_id = 8
             storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                 "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
@@ -5229,14 +5227,13 @@ def physicalInspectionDetailsAdd(request):
             storeTransactionHeader.reference_id =  int(physicalInspectionHeader.id)
             storeTransactionHeader.save()
 
-            print('5132')
             phyInsDet = []
             order_details = []
             for index in range(0,len(request.POST.getlist('item_id'))):
                 if request.POST.getlist('physical_quantity')[index]!='':
-                    print('item:',request.POST.getlist('item_id')[index])
+
                     adjustQuan = float(request.POST.getlist('book_quantity')[index]) - float( request.POST.getlist('physical_quantity')[index])
-                    print(storeTransactionHeader.id)
+
                     phyInsDet.append(
                         models.Physical_Inspection_Details(
                             physical_inspection_header_id = physicalInspectionHeader.id,
@@ -5247,7 +5244,7 @@ def physicalInspectionDetailsAdd(request):
                             notes = request.POST.getlist('notes')[index]
                         )
                     )
-                    print('5148')
+
                     order_details.append(
                     models.Store_Transaction_Detail(
                         store_transaction_header_id=storeTransactionHeader.id,
@@ -5256,13 +5253,9 @@ def physicalInspectionDetailsAdd(request):
                         quantity=adjustQuan
                         )
                     )
-                    print('5158')
-                
-                print('5159')
+
             models.Physical_Inspection_Details.objects.bulk_create(phyInsDet)
-            print('5160')
-            models.Store_Transaction_Detail.objects.bulk_create(order_details)   
-        
+            models.Store_Transaction_Detail.objects.bulk_create(order_details)           
         transaction.commit()
         context.update({
             'status': 200,
