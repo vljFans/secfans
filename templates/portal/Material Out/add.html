@@ -186,7 +186,7 @@
                 if(page_item_len !=0) {
                     $('#submit').removeAttr('hidden')
                     var text_inp =`<div class="form-row content_parent">
-                                        <div class="col-md-5 mb-3">
+                                        <div class="col-md-3 mb-3">
                                             <label>Item<span class="required-indicator">*</span></label>
                                             <div class="input-group">
                                                 <select class="custom-select selectpicker item_id" name="item_id" required>
@@ -195,17 +195,17 @@
                                             </div>
                                         </div>
     
-                                        <div class="col-md-3 mb-3">
+                                        <div class="col-md-2 mb-3">
                                             <label>Rate<span class="required-indicator">*</span></label>
                                             <input type="text" class="form-control rate" name="rate"  readonly required>
                                         </div>
 
-                                        <div class="col-md-3 mb-3">
+                                        <div class="col-md-2 mb-3">
                                             <label>Quantity<span class="required-indicator">*</span></label>
                                             <input type="text" class="form-control handquantity" name="handquantity"  readonly required>
                                         </div>
     
-                                        <div class="col-md-3 mb-3">
+                                        <div class="col-md-2 mb-3">
                                             <label>Quantity Sent <span class="required-indicator">*</span></label>
                                             <input type="text" onkeyup="checkMaxMin(this)"
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
@@ -249,7 +249,7 @@
 
     $(document).on('click','.add_btn',function(){
             var text_inp = `<div class="form-row content_parent">
-                                    <div class="col-md-5 mb-3">
+                                    <div class="col-md-3 mb-3">
                                         <label>Item<span class="required-indicator">*</span></label>
                                         <div class="input-group">
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
@@ -258,17 +258,17 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-2 mb-3">
                                         <label>Rate<span class="required-indicator">*</span></label>
                                         <input type="text" class="form-control rate" name="rate" readonly required>
                                     </div>
 
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-2 mb-3">
                                             <label>Book Quantity<span class="required-indicator">*</span></label>
                                             <input type="text" class="form-control handquantity" name="handquantity"  readonly required>
                                     </div>
 
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-2 mb-3">
                                         <label>Quantity Sent <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"

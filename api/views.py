@@ -2876,7 +2876,7 @@ def storeItemList(request):
     itemTypeId = request.GET.get('itemTypeId', None)
     itemCatId = request.GET.get('itemCatId', None)
     itemId = request.GET.get('itemId', None)
-    print(request.GET,"2879")
+    # print(request.GET,"2879")
     if id is not None and id != "":
         storeItem = list(models.Store_Item.objects.filter(pk=id)[:1].values(
             'pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty'))
