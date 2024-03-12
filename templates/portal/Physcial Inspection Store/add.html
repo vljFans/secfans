@@ -1,0 +1,361 @@
+{% extends 'portal/base.html' %}
+{% load static %}
+{% load template_func %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<!-- main wrapper div content -->
+<div class="wrapper">
+
+    <!--================================-->
+    <!-- Breadcrumb Start -->
+    <!--================================-->
+    <div class="pageheader pd-t-25 pd-b-35">
+        <div class="d-flex justify-content-between">
+            <div class="clearfix">
+                <div class="pd-t-5 pd-b-5">
+                    <h1 class="pd-0 mg-0 tx-20 tx-dark">{{parent_page_title}} {{page_title}}</h1>
+                </div>
+                <div class="breadcrumb pd-0 mg-0">
+                    {% for breadcrumb in breadcrumbs %}
+                    {% if forloop.counter != breadcrumbs|length %}
+                    <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                    {% else %}
+                    <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row row-xs clearfix">
+        <div class="col-md-12 col-lg-12">
+            {% if messages %}
+            {% for message in messages %}
+            {% if forloop.counter == messages|length %}
+            <div class="{{ message.tags }} success-msg-txt" style="height: 30px; text-align: center;">{{ message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            <div class="card mg-b-30">
+                <!-- upper header of form -->
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-header-title tx-13 mb-0">{{parent_page_title}} {{page_title}}</h6>
+                        </div>
+                        <div class="text-right">
+                            <div class="d-flex">
+                                <a href="{% url 'superuser:physicalInspectionList' %}" class="mr-3"><i
+                                        class="fa fa-step-backward"></i></a>
+                                <a href="" class="mr-3"><i class="ti-reload"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- end upper header -->
+                <!-- main form  -->
+                <div class="card-body ">
+                    <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
+                        <div class="form-row">
+                            
+                            <div class="col-md-3 mb-3">
+                                <label>Store Name<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="storeId" name="storeId" required>
+                                        <option value="">Choose...</option>
+                                        {% for store in store_list %}
+                                        <option value="{{store.pk}}">{{store.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label>Item Catagory<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="itemCat" name="itemCat" required>
+                                        <option value="">Choose...</option>
+                                        {% for itemCat in item_catagories %}
+                                        <option value="{{itemCat.pk}}">{{itemCat.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label>Item Type<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="itemType" name="itemType" required disabled>
+                                    </select>
+                                </div>
+                            </div>
+                            
+
+                            <div class="col-md-2 mb-3">
+                                <label> Transaction  Date <span class="required-indicator">*</span></label>
+                                <input type="date" name="issue_date" class="form-control issue_date" placeholder="Order Date"
+                                required>
+                            </div>
+                            <div class="card-body pd-0">
+                                <div class="table-responsive">
+                                    <table class="table" id="table_form" hidden>
+                                        <thead>
+                                            <tr style="width:10%">
+                                                <th>#</th>
+                                                <th>Item Name</th>
+                                                <th>Book quantiy</th>
+                                                <th>Physical Quantity</th>
+                                                <th>Notes</th>
+                                                
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table-body">
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <nav id="nav" hidden>
+                                    <ul id="pagination" class="pagination justify-content-center">
+                                    </ul>
+                                </nav>
+                            </div>
+                            <div class="col-md-12" id="submit" hidden>
+                                <button onclick="return confirm('Please check the form again before submitting. It can not be changed')" class="btn btn-success submit-btn" type="submit">Submit</button>
+                            </div>
+
+
+                        </div>
+                    </form>
+                </div>
+                <!-- end main form -->
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- end main wrapper div -->
+
+{% endblock %}
+
+{% block js %}
+<!-- script -->
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+    
+    $('.selectpicker').select2({
+        placeholder: '',
+        templateResult: function(option) {
+            if(option.element && (option.element).hasAttribute('hidden')){
+                return null;
+            }
+            return option.text;
+        }
+    });
+</script>
+
+<script>
+    var item_options_text =``
+    var page_item_len = 0
+
+
+    
+    $(document).on('change','#storeId',function(){
+        $('#table_form').attr('hidden','true')
+        $('#submit').attr('hidden','true')
+        $('#itemCat').val(null).trigger("change")
+        $('#nav').attr('hidden','true')
+
+    })
+
+
+    // item type selection on item catagory
+
+    $(document).on('change','#itemCat',function(){
+        $('#itemType').removeAttr('disabled')
+        let itemCatId = $('select#itemCat option:selected').val()
+        $('#table-body').html(``)
+        $('#table_form').attr('hidden','true')
+        $('#submit').attr('hidden','true')
+        $('#nav').attr('hidden','true')
+
+        $.ajax({
+            url: "{% url 'api:itemTypeList' %}?itemCatId="+itemCatId ,
+            type: 'GET',
+            data: ({ }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    item_options_text =``
+                    item_options_text += `<option value="">Choose item</option>`;
+                    page_item_len = response.page_items.length
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $('#itemType').html(item_options_text)
+                    // console.log(item_options_text,"saswata");
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                }
+            });
+
+    })
+
+    // item type selection and table body change
+    $(document).on('change','#itemType',function(){
+             
+            $('#table-body').html(``)
+            let itemTypeId = $('select#itemType option:selected').val()
+            let storeId = $('select#storeId option:selected').val()
+            let itemCatId = $('select#itemCat option:selected').val()
+            
+            // console.log(sourceStore);
+
+            $.ajax({
+            url: "{% url 'api:storeItemList' %}?storeId="+storeId+"&itemTypeId="+itemTypeId+"&itemCatId="+itemCatId,
+            type: 'GET',
+            data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    // console.log("saswata");
+                    page_items = response.page_items;
+                    tbody_text = ``;
+                    if(page_items.length>0){
+                        $('#nav').removeAttr('hidden')
+                        $('#table_form').removeAttr('hidden')
+                        console.log(page_items);
+                        for (let index = 0; index < page_items.length; index++) {
+                            const element = page_items[index];
+                            tbody_text += `<tr style="width:10%">
+                                                <td>${((response.total_pages - 1) * response.per_page) +  index + 1}</td>
+                                                <td><input type="text" size="5" name="item_name" class="form-control item_name" value="${element.item__name}"
+                                                readonly> <input type="hidden" name="item_id" class="form-control item_id" value="${element.item_id}"
+                                                required></td>
+                                                <td> <input type="text" size="5" name="book_quantity" class="form-control book_quantity" value="${element.on_hand_qty}"
+                                                readonly></td>
+                                                <td><input type="text" size="5" name="physical_quantity" class="form-control physical_quantity" onkeyup="checkMaxMin(this)"
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                ></td>
+                                                <td><input type="text" size="6" name="notes" rows="5" class="form-control note" placeholder="Note"></td>   
+                                            </tr>`;
+                        }
+                        // console.log(tbody_text)
+                        pagination_text = generatePaginationLinks(response.current_page, response.total_pages, response.button_to_show);
+                        $('#table-body').html(tbody_text);
+                        $('#submit').removeAttr('hidden')
+                        $('#pagination').html(pagination_text);
+                    }
+                    else{
+                        // console.log("260");
+                        tbody_text = ` `;
+                        $('#table-body').html(tbody_text);
+                        $('#table_form').attr('hidden','true')
+                        $('#submit').attr('hidden','true')
+                        $('#nav').html(``)
+                    }
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                }
+            });
+            
+            // console.log(item_options_text,"saswata");
+          
+        })
+    
+    
+    function checkMaxMin(element) {
+        if ($(element).val() == "") {
+            $(element).val($(element).attr('min'));
+        } else {
+            if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
+                $(element).val($(element).attr('max'));
+            }
+            if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
+                $(element).val($(element).attr('min'));
+            }
+        }
+    }
+
+  
+    $(document).on('submit', '#create_form', function (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        // console.log("426");
+        $('.submit-btn').text('Submitting...');
+        $('.submit-btn').prop('disabled', true);
+        var formData = new FormData(create_form);
+        console.log(formData.getAll('quantity_sent'))
+        $.ajax({
+            type: "POST",
+            evalScripts: true,
+            contentType: false,
+            processData: false,
+            url: "{% url 'api:physicalInspectionDetailsAdd' %}",
+            data: formData,
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', false);
+                if (response.status == 200) {
+                    // alert(response.message);
+                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:physicalInspectionList' %}");
+                    
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', false);
+                // locationAfterMessageStore(error.responseJSON.detail, 'error');
+                $('.success-msg-txt').text("");
+                $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
+                $('.error-msg-txt').addClass('text-danger');
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    
+    });
+    
+
+</script>
+
+
+{% endblock js %}

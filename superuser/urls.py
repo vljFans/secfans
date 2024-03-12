@@ -131,7 +131,12 @@ urlpatterns = [
     # material in 
     path('material-in-list',views.materialInList, name='materialInList'),
     path('material-in-add',views.materialInAdd, name='materialInAdd'),
-    path('material-in-view/<int:id>',views.materialInView, name='materialInView')
+    path('material-in-view/<int:id>',views.materialInView, name='materialInView'),
+
+    # physical inspection on store items ---developed by saswata
+    path('physical-inspection-list',views.physicalInspectionList, name='physicalInspectionList'),
+    path('physical-inspection-add',views.physicalInspectionAdd, name='physicalInspectionAdd'),
+    path('physical-inspection-view/<int:id>',views.physicalInspectionView, name='physicalInspectionView')
 
 
 ]

@@ -154,8 +154,8 @@
     var page_item_len = 0
     $(document).on('change','#sourceStore',function(){
              
-             $('#table_form').removeAttr('hidden')
-             $('#table_form').html(``)
+            $('#table_form').removeAttr('hidden')
+            $('#table_form').html(``)
             let storeId = $('select#sourceStore option:selected').val()
             
             console.log(sourceStore);
@@ -176,7 +176,7 @@
                         item_options_text += `<option value="${response.page_items[index].item_id}">${response.page_items[index].item__name}</option>`;
                         // console.log(item_options_text);
                     }
-                    console.log(item_options_text,"saswata");
+                    // console.log(item_options_text,"saswata");
                 } 
                 else {
                     alert(response.message);
@@ -186,7 +186,7 @@
                 if(page_item_len !=0) {
                     $('#submit').removeAttr('hidden')
                     var text_inp =`<div class="form-row content_parent">
-                                        <div class="col-md-5 mb-3">
+                                        <div class="col-md-3 mb-3">
                                             <label>Item<span class="required-indicator">*</span></label>
                                             <div class="input-group">
                                                 <select class="custom-select selectpicker item_id" name="item_id" required>
@@ -195,12 +195,17 @@
                                             </div>
                                         </div>
     
-                                        <div class="col-md-3 mb-3">
+                                        <div class="col-md-2 mb-3">
                                             <label>Rate<span class="required-indicator">*</span></label>
                                             <input type="text" class="form-control rate" name="rate"  readonly required>
                                         </div>
+
+                                        <div class="col-md-2 mb-3">
+                                            <label>Quantity<span class="required-indicator">*</span></label>
+                                            <input type="text" class="form-control handquantity" name="handquantity"  readonly required>
+                                        </div>
     
-                                        <div class="col-md-3 mb-3">
+                                        <div class="col-md-2 mb-3">
                                             <label>Quantity Sent <span class="required-indicator">*</span></label>
                                             <input type="text" onkeyup="checkMaxMin(this)"
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
@@ -238,24 +243,13 @@
             // console.log(item_options_text,"saswata");
           
         })
+        
+
     
-    
-    function checkMaxMin(element) {
-        if ($(element).val() == "") {
-            $(element).val($(element).attr('min'));
-        } else {
-            if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
-                $(element).val($(element).attr('max'));
-            }
-            if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
-                $(element).val($(element).attr('min'));
-            }
-        }
-    }
 
     $(document).on('click','.add_btn',function(){
             var text_inp = `<div class="form-row content_parent">
-                                    <div class="col-md-5 mb-3">
+                                    <div class="col-md-3 mb-3">
                                         <label>Item<span class="required-indicator">*</span></label>
                                         <div class="input-group">
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
@@ -264,12 +258,17 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-2 mb-3">
                                         <label>Rate<span class="required-indicator">*</span></label>
                                         <input type="text" class="form-control rate" name="rate" readonly required>
                                     </div>
 
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-2 mb-3">
+                                            <label>Book Quantity<span class="required-indicator">*</span></label>
+                                            <input type="text" class="form-control handquantity" name="handquantity"  readonly required>
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
                                         <label>Quantity Sent <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
@@ -302,8 +301,12 @@
 
     $(document).on('change','.item_id',function(){
         var valu = $(this).val()
+        let storeId = $('select#sourceStore option:selected').val()
+        console.log(storeId);
         var parentDiv =  $(this).parents().closest('.content_parent');
-        $.ajax({
+        parentDiv.find('.quantity_sent').val('')
+
+            $.ajax({
             url: "{% url 'api:itemList' %}?id="+valu ,
             type: 'GET',
             data: ({ }),
@@ -320,13 +323,63 @@
                     alert(response.message);
                 }
             },
+            complete: function(response){
+            // console.log("325");
+            $.ajax({
+            url: "{% url 'api:storeItemList' %}?itemId="+valu+"&storeId="+storeId ,
+            type: 'GET',
+            data: ({ }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    // console.log(response.page_items[0].on_hand_qty);
+                    parentDiv.find('.handquantity').val(response.page_items[0].on_hand_qty);
+                    
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            
             error: function (error) {
                     $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
                 }
             });
+            },
+            error: function (error) {
+                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                }
+            });
+
+            
+
             
 
     })
+
+    function checkMaxMin(element) {
+        if ($(element).val() == "") {
+            $(element).val($(element).attr('min'));
+        } else {
+            if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
+                $(element).val($(element).attr('max'));
+            }
+            if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
+                $(element).val($(element).attr('min'));
+            }
+        }
+
+        if($(element).attr('class') == 'form-control quantity_sent'){
+            let book_quantity = parseFloat($(element).parent().closest('.content_parent').find('.handquantity').val())
+            let sent_quantity = parseFloat($(element).parent().closest('.content_parent').find('.quantity_sent').val())
+            let res_quantity = book_quantity - sent_quantity
+            if(res_quantity<0.00){
+                $(element).parent().closest('.content_parent').find('.quantity_sent').val('0.00')
+            }
+        }
+    }
 
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();

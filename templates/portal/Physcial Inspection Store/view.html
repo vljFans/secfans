@@ -51,7 +51,7 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                <a href="{% url 'superuser:materialInList' %}" class="mr-3"><i
+                                <a href="{% url 'superuser:physicalInspectionList' %}" class="mr-3"><i
                                         class="fa fa-step-backward"></i></a>
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                             </div>
@@ -62,22 +62,28 @@
                     <div class="form-row">
                         <div class="col-md-4 mb-3">
                             <label>Transaction Number </label>
-                            <input type="text" id="transaction_number" name="transaction_number" class="form-control" value="{{material_In.transaction_number}}" readonly >
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label>Source Store</label>
-                            <input type="text" id="source_store_name" name="store_name" class="form-control" value="{{material_In.source_store.name}}" readonly >
+                            <input type="text" id="transaction_number" name="transaction_number" class="form-control" value="{{physical_inspection.transaction_number}}" readonly >
                         </div>
                         
                         
-                        <div class="col-md-3 mb-3 test ">
-                            <label>Destination Store</label>
-                            <input type="text" id="destination_store_name" name="store_name" class="form-control" value="{{material_In.destination_store.name}}" readonly >
+                        <div class="col-md-1 mb-3 test ">
+                            <label>Store</label>
+                            <input type="text" id="destination_store_name" name="store_name" class="form-control" value="{{physical_inspection.store.name}}" readonly >
+                        </div>
+
+                        <div class="col-md-2 mb-3 test ">
+                            <label>Item Catagorie</label>
+                            <input type="text" id="item_catagories_name" name="item_catagories_name" class="form-control" value="{{physical_inspection.item_catagories.name}}" readonly >
+                        </div>
+
+                        <div class="col-md-2 mb-3 test ">
+                            <label>Item Type</label>
+                            <input type="text" id="item_type_name" name="item_type_name" class="form-control" value="{{physical_inspection.item_type.name}}" readonly >
                         </div>
 
                         <div class="col-md-2 mb-3">
-                            <label>Transaction In Date </label>
-                            <input type="date" name="transaction_date" class="form-control transaction_date" value="{{material_In.transaction_in_date|date:'Y-m-d'}}" readonly>
+                            <label>Inspection Date </label>
+                            <input type="date" name="inspection_date" class="form-control inspection_date" value="{{physical_inspection.inspection_date|date:'Y-m-d'}}" readonly>
                         </div>
                     </div>
                     <div class="table-responsive">
@@ -86,26 +92,22 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Item</th>
-                                    <th>Sent Quantity</th>
-                                    <th>Accepted Quantity</th>
-                                    <th>Rejected quantity</th>
-                                    <th>Rate</th>
-                                    <th>Amount</th>
+                                    <th>Book Quantity</th>
+                                    <th>Physical Quantity</th>
+                                    <th>Adjust quantity</th>
                                     <th>Notes</th>
                                 </tr>
                             </thead>
                             <tbody id="table-body">
-                                {% for materialIn in material_In.on_transit_transaction_details_set.all %}
+                                {% for physIns in physical_inspection.physical_inspection_details_set.all %}
                                 <tr>
                                     <td>{{forloop.counter}}</td>
-                                    <td>{{materialIn.item.name}}</td>
-                                    <td>{{materialIn.quantity}}</td>
-                                    <td>{{materialIn.recieved_quntity}}</td>
-                                    <td>{{materialIn.reject_quantity}}</td>
-                                    <td>{{materialIn.rate}}</td>
-                                    <td>{{materialIn.amount}}</td>
-                                    {% if materialIn.notes != null  %}
-                                    <td><i  onclick="return swal({title:'Note',text:'{{materialIn.notes}}'})" class="fa fa-sticky-note-o" style="cursor: pointer; " ></i></td>
+                                    <td>{{physIns.item.name}}</td>
+                                    <td>{{physIns.booked_quantity}}</td>
+                                    <td>{{physIns.physical_quantity}}</td>
+                                    <td>{{physIns.adjusted_quantity}}</td>
+                                    {% if physIns.notes != '' %}
+                                    <td><i  onclick="return swal({title:'Note',text:'{{physIns.notes}}'})" class="fa fa-sticky-note-o" style="cursor: pointer; " ></i></td>
                                     {% endif %}
                                 </tr>
                                 {% endfor %}
