@@ -5227,7 +5227,6 @@ def physicalInspectionDetailsAdd(request):
             storeTransactionHeader.reference_id =  int(physicalInspectionHeader.id)
             storeTransactionHeader.save()
 
-
             phyInsDet = []
             order_details = []
             for index in range(0,len(request.POST.getlist('item_id'))):
@@ -5255,12 +5254,8 @@ def physicalInspectionDetailsAdd(request):
                         )
                     )
 
-                
-
             models.Physical_Inspection_Details.objects.bulk_create(phyInsDet)
-
-            models.Store_Transaction_Detail.objects.bulk_create(order_details)   
-        
+            models.Store_Transaction_Detail.objects.bulk_create(order_details)           
         transaction.commit()
         context.update({
             'status': 200,
