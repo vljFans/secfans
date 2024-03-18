@@ -1159,3 +1159,54 @@ def physicalInspectionView(request,id):
     return render(request, 'portal/Physcial Inspection Store/view.html', context)
 
 
+# purchase bill ---developed by Saswata
+@login_required
+def purchaseBillList(request):
+    context.update({
+        'page_title': "Purchase Bill",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Purchase Bill", 'url': reverse('superuser:purchaseBillList')},
+                        {'name': "List"}] 
+    })
+
+    return render(request, 'portal/Purchase Bill/list.html', context)
+
+@login_required
+def purchaseBillAdd(request):
+    vendor_list = list(models.Vendor.objects.filter(status = 1, deleted =0).values('pk','name'))
+    context.update({
+        'Vendor_list': vendor_list,
+        'page_title': "Purchase Bill Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Purchase Bill", 'url': reverse('superuser:purchaseBillList')},
+                        {'name': "Add"}]
+    })
+
+    return render(request, 'portal/Purchase Bill/add.html', context)
+
+@login_required
+def purchaseBillEdit(request,id):
+
+    purchaseBill = models.Purchase_Bill.objects.get(pk=id)
+    context.update({
+        'purchase_bill': purchaseBill,
+        'page_title': "Purchase Bill Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Purchase Bill", 'url': reverse('superuser:purchaseBillList')},
+                        {'name': "Edit"}]
+    })
+
+    return render(request, 'portal/Purchase Bill/edit.html', context)
+@login_required
+def purchaseBillView(request,id):
+
+    physicalInspDet = models.Physical_Inspection.objects.get(pk=id)
+    context.update({
+        'physical_inspection': physicalInspDet,
+        'page_title': "Physical Verification/Reconciliation View",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Physical Verification/Reconciliation", 'url': reverse('superuser:physicalInspectionList')},
+                        {'name': "View"}]
+    })
+
+    return render(request, 'portal/Physcial Inspection Store/view.html', context)

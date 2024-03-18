@@ -5270,6 +5270,196 @@ def physicalInspectionDetailsAdd(request):
         transaction.rollback()
     return JsonResponse(context)
 
+# purchase bill --- developed by saswata
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getPurchaseBillHeadersList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
+    print(request.GET)
+    try:
+        if id is not None and id != "":
+            purchaseBill = list(models.Purchase_Bill.objects.filter(pk=id)[:1].values('pk','transaction_number',
+            'transaction_date',
+            'e_way_no',
+            'e_way_date',
+            'vechical_no',
+            'total_igst',
+            'total_cgst',
+            'total_sgst',
+            'total_amount',
+            'total_gst_amount',
+            'notes',
+            'flag'
+            ))
+            context.update({
+            'status': 200,
+            'message': "purchase bill  Header Fetched Successfully.",
+            'page_items': purchaseBill,
+        })
+
+        else:
+            if keyword is not None and keyword != "":
+                purchaseBill = list(models.Purchase_Bill.objects.filter(Q(transaction_number__icontains=keyword)
+                    ).values('pk','transaction_number',
+                    'transaction_date',
+                    'e_way_no',
+                    'e_way_date',
+                    'vechical_no',
+                    'total_igst',
+                    'total_cgst',
+                    'total_sgst',
+                    'total_amount',
+                    'total_gst_amount',
+                    'notes',
+                    'flag'
+                ))
+            else:
+                purchaseBill = list(models.Purchase_Bill.objects.filter(status=1, deleted=0).values('pk','transaction_number',
+                'transaction_date',
+                'e_way_no',
+                'e_way_date',
+                'vechical_no',
+                'total_igst',
+                'total_cgst',
+                'total_sgst',
+                'total_amount',
+                'total_gst_amount',
+                'notes',
+                'flag'
+                ))
+
+            if find_all is not None and int(find_all) == 1:
+                    context.update({
+                        'status': 200,
+                        'message': "purchase bill  Header Fetched Successfully.",
+                        'page_items': purchaseBill,
+                    })
+                    return JsonResponse(context)
+
+            per_page = int(env("PER_PAGE_DATA"))
+            button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+            current_page = request.GET.get('current_page', 1)
+
+            paginator = CustomPaginator(purchaseBill, per_page)
+            page_items = paginator.get_page(current_page)
+            total_pages = paginator.get_total_pages()
+
+            context.update({
+                'status': 200,
+                'message': "purchase bill  Header Fetched Successfully.",
+                'page_items': page_items,
+                'total_pages': total_pages,
+                'per_page': per_page,
+                'current_page': int(current_page),
+                'button_to_show': int(button_to_show),
+            })
+
+
+
+    except Exception:
+        context.update({
+            'status': 540,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+
+    return JsonResponse(context)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def purchaseBillDetailsAdd(request):
+    context = {}
+    print(request.POST)
+    try:
+        with transaction.atomic():
+            purchase_bill_head_count = models.Purchase_Bill.objects.all().count()
+            purcahse_bill_header = models.Purchase_Bill()
+            # print("5283")
+            purcahse_bill_header.transaction_number = env("PURCHASE_BILL_TRANSACTION_SEQ").replace(
+            "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(purchase_bill_head_count + 1).zfill(5))
+            print( purcahse_bill_header.vechical_no)
+            purcahse_bill_header.transaction_date = request.POST['issue_date']
+            purcahse_bill_header.vendor_id = request.POST['vendor']
+            purcahse_bill_header.invoice_no =  request.POST['invoice']
+            print("5288")
+            purcahse_bill_header.e_way_no = request.POST['e_way']
+            
+            purcahse_bill_header.e_way_date = request.POST['e_way_date']
+
+            purcahse_bill_header.vechical_no = request.POST['vehicle_no']
+            print(purcahse_bill_header.total_igst)
+            purcahse_bill_header.total_igst = request.POST['total_igst']
+            purcahse_bill_header.total_cgst = request.POST['total_cgst']
+            purcahse_bill_header.total_sgst = request.POST['total_sgst']
+            purcahse_bill_header.total_amount = request.POST['total']
+            purcahse_bill_header.total_gst_amount = request.POST['total_amount_with_gst']
+            purcahse_bill_header.notes = request.POST['notes']
+            # print(purchase_bill_header.vendor_id)
+            
+            print("5400")
+            purcahse_bill_header.save()
+            
+            if(request.POST.get('igst',None)):
+                print("AAAAAA")
+                bill_details = []
+                for index in range(0,len(request.POST.getlist('item_id'))):
+                    uom_id = models.Uom.objects.get(name = request.POST.getlist('uom')[index])
+                    bill_details.append(
+                        models.Purchase_Bill_Details(
+                            purchase_bill_header_id = purcahse_bill_header.id,
+                            item_id = request.POST.getlist('item_id')[index],
+                            hsn_code = request.POST.getlist('hsn')[index],
+                            quantity = request.POST.getlist('quantity')[index],
+                            uom_id = uom_id.id,
+                            rate = request.POST.getlist('rate')[index],
+                            amount = request.POST.getlist('amount')[index],
+                            igst_percentage = request.POST.getlist('igst')[index],
+                            igst_amount =  request.POST.getlist('amount_igst')[index],
+                            amount_with_gst = request.POST.getlist('amount_gst')[index]
+                        )
+                    )
+                models.Purchase_Bill_Details.objects.bulk_create(bill_details)
+                
+            else:
+                print("5325")
+                bill_details = []
+                for index in range(0,len(request.POST.getlist('item_id'))):
+                    uom_id = models.Uom.objects.get(name = request.POST.getlist('uom')[index])
+                    bill_details.append(
+                        models.Purchase_Bill_Details(
+                            purchase_bill_header_id = purcahse_bill_header.id,
+                            item_id = request.POST.getlist('item_id')[index],
+                            quantity = request.POST.getlist('quantity')[index],
+                            hsn_code = request.POST.getlist('hsn')[index],
+                            uom_id = uom_id.id,
+                            rate = request.POST.getlist('rate')[index],
+                            amount = request.POST.getlist('amount')[index],
+                            cgst_percentage = request.POST.getlist('cgst')[index],
+                            cgst_amount = request.POST.getlist('amount_cgst')[index],
+                            sgst_percentage = request.POST.getlist('sgst')[index],
+                            sgst_amount =  request.POST.getlist('amount_sgst')[index],
+                            amount_with_gst = request.POST.getlist('amount_gst')[index]
+                        )
+
+                    )
+                    print("5345")
+                models.Purchase_Bill_Details.objects.bulk_create(bill_details)
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "purchase bill added succesfully"
+        })
+    except Exception:
+        context.update({
+            'status': 544,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
     
 
 

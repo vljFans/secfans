@@ -181,6 +181,13 @@
             <span>Physical Verification</span></a>
         </li>
 
+        <!-- purchase bill  ---developed by Saswata -->
+
+        <li class="{% if request.path == '/purchase-bill-list' %}open active{% endif %}">
+          <a href="{% url 'superuser:purchaseBillList' %}"><i data-feather="printer"></i>
+            <span>Purchase Bill</span></a>
+        </li>
+
         {% endif %}
         <!-- <li class="mg-l-20-force mg-t-25-force menu-elements">Elements</li>
         <li>

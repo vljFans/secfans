@@ -1,0 +1,430 @@
+{% extends 'portal/base.html' %}
+{% load static %}
+{% load template_func %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<!-- main wrapper div content -->
+<div class="wrapper">
+
+    <!--================================-->
+    <!-- Breadcrumb Start -->
+    <!--================================-->
+    <div class="pageheader pd-t-25 pd-b-35">
+        <div class="d-flex justify-content-between">
+            <div class="clearfix">
+                <div class="pd-t-5 pd-b-5">
+                    <h1 class="pd-0 mg-0 tx-20 tx-dark">{{parent_page_title}} {{page_title}}</h1>
+                </div>
+                <div class="breadcrumb pd-0 mg-0">
+                    {% for breadcrumb in breadcrumbs %}
+                    {% if forloop.counter != breadcrumbs|length %}
+                    <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                    {% else %}
+                    <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row row-xs clearfix">
+        <div class="col-md-12 col-lg-12">
+            {% if messages %}
+            {% for message in messages %}
+            {% if forloop.counter == messages|length %}
+            <div class="{{ message.tags }} success-msg-txt" style="height: 30px; text-align: center;">{{ message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            <div class="card mg-b-30">
+                <!-- upper header of form -->
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-header-title tx-13 mb-0">{{parent_page_title}} {{page_title}}</h6>
+                        </div>
+                        <div class="text-right">
+                            <div class="d-flex">
+                                <a href="{% url 'superuser:purchaseBillList' %}" class="mr-3"><i
+                                        class="fa fa-step-backward"></i></a>
+                                <a href="" class="mr-3"><i class="ti-reload"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- end upper header -->
+                <!-- main form  -->
+                <div class="card-body ">
+                    <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
+                        <div class="form-row">
+                            
+                            <div class="col-md-3 mb-3">
+                                <label>Vendor<span class="required-indicator">*</span></label>
+                                <input type="text" name="vendor" class="form-control vendor" value="{{purchase_bill.vendor.name}}"
+                                readonly disabled>
+                                <input type="hidden" class="form-control headerPk" name="headerPk" value="{{purchase_bill.id}}" readonly required>
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label> Invoice  <span class="required-indicator">*</span></label>
+                                <input type="text" name="invoice" class="form-control invoice" placeholder="Invoice No" value="{{purchase_bill.invoice_no}}"
+                                required>
+                            </div>
+                            
+
+                            <div class="col-md-2 mb-3">
+                                <label> Transaction  Date <span class="required-indicator">*</span></label>
+                                <input type="date" name="issue_date" class="form-control issue_date" value="{{purchase_bill.transaction_date|date:'Y-m-d'}}"
+                                readonly>
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label> E-Way No <span class="required-indicator">*</span></label>
+                                <input type="text" name="e_way" class="form-control e_way" value="{{purchase_bill.e_way_no}}"
+                                required>
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label> E-Way  Date <span class="required-indicator">*</span></label>
+                                <input type="date" name="e_way_date" class="form-control e_way_date" value="{{purchase_bill.e_way_date|date:'Y-m-d'}}"
+                                required>
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label> Vehicle No <span class="required-indicator">*</span></label>
+                                <input type="text" name="vehicle_no" class="form-control Vehicle_no" value="{{purchase_bill.vechical_no}}"
+                                required>
+                            </div>
+                            <div class="col-md-12">
+                                <br>
+                            </div>
+
+                            <div class="col-md-12" style="border-bottom: 1px solid gray;border-top: 1px solid gray;" id="table_form" >
+                                {% for purchaseBillDet in purchase_bill.purchase_bill_details_set.all %}
+                                <div class="form-row content_parent">
+                                    <div class="col-md-3 mb-3">
+                                        <label>Item<span class="required-indicator">*</span></label>
+                                        <input type="text" name="vendor" class="form-control vendor" value="{{purchaseBillDet.item.name}}"
+                                            readonly disabled>
+                                        <input type="hidden" class="form-control detailPk" name="detailPk" value="{{purchaseBillDet.id}}" readonly required>
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
+                                        <label>HSN/SAC <span class="required-indicator">*</span></label>
+                                        <input type="text" class="form-control hsn" name="hsn" 
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" value="{{purchaseBillDet.hsn_code}}" required>
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
+                                        <label>Rate<span class="required-indicator">*</span></label>
+                                        <input type="text" class="form-control rate" name="rate"  onkeyup="checkMaxMin(this)"
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" min="0.01" value="{{purchaseBillDet.rate}}" required>
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
+                                        <label>Quantity<span class="required-indicator">*</span></label>
+                                        <input type="text" class="form-control quantity" name="quantity"  onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" min="0.01" value="{{purchaseBillDet.quantity}}"  required>
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
+                                        <label>UOM<span class="required-indicator">*</span></label>
+                                        <input type="text" class="form-control uom" name="uom" value="{{purchaseBillDet.uom.name}}" readonly required>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>Amount<span class="required-indicator">*</span></label>
+                                        <input type="text" class="form-control amount" name="amount" value="{{purchaseBillDet.amount}}" readonly required>
+                                    </div>
+                                    {% if purchaseBillDet.igst_percentage != 0.00 %}
+                                    <div class="col-md-2 mb-3">
+                                        <label>IGST% <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="igst" min="0.01" class="form-control igst gst"
+                                            placeholder="0.00" value="{{purchaseBillDet.igst_percentage}}" required>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>Amount Igst<span class="required-indicator">*</span></label>
+                                        <input type="text" class="form-control amount_igst" name="amount_igst" value="{{purchaseBillDet.igst_amount}}"  readonly required>
+                                    </div>
+                                    {% else %}
+                                    <div class="col-md-2 mb-3">
+                                        <label>SGST% <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="sgst" min="0.01" class="form-control sgst gst"
+                                            placeholder="0.00" value="{{purchaseBillDet.sgst_percentage}}" required>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>Amount Sgst<span class="required-indicator">*</span></label>
+                                        <input type="text" class="form-control amount_sgst" name="amount_sgst" value="{{purchaseBillDet.sgst_amount}}"  readonly disabled>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>CGST% <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="cgst" min="0.01" class="form-control cgst gst"
+                                            placeholder="0.00" value="{{purchaseBillDet.cgst_percentage}}" required>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>Amount Cgst<span class="required-indicator">*</span></label>
+                                        <input type="text" class="form-control amount_cgst" name="amount_cgst" value="{{purchaseBillDet.cgst_amount}}" readonly disabled>
+                                    </div>
+
+                                    {% endif %}
+                                    <div class="col-md-2 mb-3">
+                                        <label>Total Amount<span class="required-indicator">*</span></label>
+                                        <input type="text" class="form-control amount_gst" name="amount_gst" value="{{purchaseBillDet.amount_with_gst}}"  readonly required>
+                                    </div>
+                                    
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-2 mb-3 table_form" >
+                                <label>Total<span class="required-indicator">*</span></label>
+                                <input type="text" class="form-control total_amount" name="total" id="total_amount" value="{{purchase_bill.total_amount}}" readonly required>
+                            </div>
+                            <div class="col-md-2 mb-3 table_form" >
+                                <label>Total igst<span class="required-indicator">*</span></label>
+                                <input type="text" class="form-control total_igst" name="total_igst" id="total_igst" value ="{{purchase_bill.total_igst}}" readonly required>
+                            </div>
+                            <div class="col-md-2 mb-3 table_form" >
+                                <label>Total sgst<span class="required-indicator">*</span></label>
+                                <input type="text" class="form-control total_sgst" name="total_sgst" id="total_sgst" value="{{purchase_bill.total_sgst}}" readonly required>
+                            </div>
+                            <div class="col-md-2 mb-3 table_form" >
+                                <label>Total cgst<span class="required-indicator">*</span></label>
+                                <input type="text" class="form-control total_cgst" name="total_cgst" id="total_cgst" value="{{purchase_bill.total_cgst}}" readonly required>
+                            </div>
+                            <div class="col-md-2 mb-3 table_form" >
+                                <label>Total amount with gst<span class="required-indicator">*</span></label>
+                                <input type="text" class="form-control total_amount_with_gst" name="total_amount_with_gst" value="{{purchase_bill.total_gst_amount}}" id="total_amount_with_gst" readonly required>
+                            </div>
+                            <div class="col-md-12  table_form"  >
+                                <label>Notes</label>
+                                <textarea name="notes" rows="5" class="form-control note" placeholder="Note" required>{{purchase_bill.notes}}</textarea>
+                            </div>
+                            <div class="col-md-12  table_form"  >
+                                <br>
+                            </div>
+
+
+                            <div class="col-md-12" id="submit" >
+                                <button onclick="return confirm('Please check the form again before submitting. It can not be changed')" class="btn btn-success submit-btn" type="submit">Submit</button>
+                            </div>
+
+
+                        </div>
+                    </form>
+                </div>
+                <!-- end main form -->
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- end main wrapper div -->
+
+{% endblock %}
+
+{% block js %}
+<!-- script -->
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+    
+    $('.selectpicker').select2({
+        placeholder: '',
+        templateResult: function(option) {
+            if(option.element && (option.element).hasAttribute('hidden')){
+                return null;
+            }
+            return option.text;
+        }
+    });
+</script>
+
+<script>
+    var item_options_text =``
+    var page_item_len = 0
+    var state_name = ''
+    var sum = 0
+
+    function renderTotalAmountWithGst(){
+        let total_amount_with_gst=0;
+        $('.amount_gst').each(function(){
+            if($(this).val()){
+                total_amount_with_gst += parseFloat($(this).val())
+            }
+        })
+
+        $('.total_amount_with_gst').val(total_amount_with_gst)
+    }
+    function renderTotalIgst(){
+        let total_igst=0;
+        $('.amount_igst').each(function(){
+            if($(this).val()){
+                total_igst += parseFloat($(this).val())
+            }
+        })
+
+        $('.total_igst').val(total_igst)
+    }
+    function renderTotalCgst(){
+        let total_cgst=0;
+        $('.amount_cgst').each(function(){
+            if($(this).val()){
+                total_cgst += parseFloat($(this).val())
+            }
+        })
+
+        $('.total_cgst').val(total_cgst)
+    }
+    function renderTotalSGst(){
+        let total_sgst=0;
+        $('.amount_sgst').each(function(){
+            if($(this).val()){
+                total_sgst += parseFloat($(this).val())
+            }
+        })
+
+        $('.total_sgst').val(total_sgst)
+    }
+
+    function renderTotalAmount(){
+        let total_amount=0;
+        $('.amount').each(function(){
+            if($(this).val()){
+                total_amount += parseFloat($(this).val())
+            }
+        })
+
+        $('.total_amount').val(total_amount)
+    }
+
+    
+
+
+   
+
+    function checkMaxMin(element) {
+        if ($(element).val() == "") {
+            $(element).val($(element).attr('min'));
+        } else {
+            if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
+                $(element).val($(element).attr('max'));
+            }
+            if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
+                $(element).val($(element).attr('min'));
+            }
+        }
+
+       
+    }
+
+    $(document).on('submit', '#create_form', function (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        // console.log("426");
+        $('.submit-btn').text('Submitting...');
+        $('.submit-btn').prop('disabled', true);
+        var formData = new FormData(create_form);
+        // console.log(formData.getAll('quantity_sent'))
+        $.ajax({
+            type: "POST",
+            evalScripts: true,
+            contentType: false,
+            processData: false,
+            url: "{% url 'api:purchaseBillDetailsAdd' %}",
+            data: formData,
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', false);
+                if (response.status == 200) {
+                    alert(response.message);
+                    // locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialOutList' %}");
+                    
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', false);
+                // locationAfterMessageStore(error.responseJSON.detail, 'error');
+                $('.success-msg-txt').text("");
+                $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
+                $('.error-msg-txt').addClass('text-danger');
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    
+    });
+    
+    $(document).on('keyup','.quantity , .rate',function(){
+        console.log("722");
+        let quantity = parseFloat($(this).parent().closest('.content_parent').find('.quantity').val())
+            let rate = parseFloat($(this).parent().closest('.content_parent').find('.rate').val())
+            let amount = quantity?(quantity * rate) : 0.00
+
+            $(this).parent().closest('.content_parent').find('.amount').val(amount).trigger('change')
+            renderTotalAmount()
+
+    })
+    $(document).on('change keyup','.gst, .amount',function(){
+        sum = 0 
+        let amount, gst, amount_gst=0 , amount_gst_per = 0,total_gst =0;
+        amount = parseFloat($(this).closest('.content_parent').find('.amount').val())
+        // console.log($(this).closest('.content_parent').find('.gst')[0].html(),"saswata");
+        if(amount){
+            $(this).closest('.content_parent').find('.gst').each(function(){
+                if (parseFloat($(this).val())){
+                    gst = parseFloat($(this).val())/100
+                    amount_gst_per = amount*gst
+                    total_gst+= amount_gst_per
+                    $(this).parent().next().find('input').val(amount_gst_per)
+                }
+            });
+            amount_gst= amount + total_gst
+        }
+
+        if(amount_gst){
+            $(this).closest('.content_parent').find('.amount_gst').val(amount_gst)
+        }
+
+        renderTotalAmountWithGst()
+        renderTotalIgst()
+        renderTotalCgst()
+        renderTotalSGst()
+    })
+
+
+
+</script>
+
+
+{% endblock js %}
