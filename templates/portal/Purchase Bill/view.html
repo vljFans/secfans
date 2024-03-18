@@ -51,7 +51,7 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                <a href="{% url 'superuser:materialOutList' %}" class="mr-3"><i
+                                <a href="{% url 'superuser:purchaseBillList' %}" class="mr-3"><i
                                         class="fa fa-step-backward"></i></a>
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                             </div>
@@ -60,24 +60,42 @@
                 </div>
                 <div class="card-body pd-5">
                     <div class="form-row">
-                        <div class="col-md-4 mb-3">
-                            <label>Transaction Number </label>
-                            <input type="text" id="transaction_number" name="transaction_number" class="form-control" value="{{material_out.transaction_number}}" readonly >
-                        </div>
                         <div class="col-md-3 mb-3">
-                            <label>Source Store</label>
-                            <input type="text" id="source_store_name" name="store_name" class="form-control" value="{{material_out.source_store.name}}" readonly >
-                        </div>
-                        
-                        
-                        <div class="col-md-3 mb-3 test ">
-                            <label>Destination Store</label>
-                            <input type="text" id="destination_store_name" name="store_name" class="form-control" value="{{material_out.destination_store.name}}" readonly >
+                            <label>Vendor<span class="required-indicator">*</span></label>
+                            <input type="text" name="vendor" class="form-control vendor" value="{{purchase_bill.vendor.name}}"
+                            readonly disabled>
+                            <input type="hidden" class="form-control headerPk" name="headerPk" value="{{purchase_bill.id}}" readonly required>
                         </div>
 
                         <div class="col-md-2 mb-3">
-                            <label>Transaction Date </label>
-                            <input type="date" name="transaction_date" class="form-control transaction_date" value="{{material_out.transaction_date|date:'Y-m-d'}}" readonly>
+                            <label> Invoice  <span class="required-indicator">*</span></label>
+                            <input type="text" name="invoice" class="form-control invoice" placeholder="Invoice No" value="{{purchase_bill.invoice_no}}"
+                            readonly>
+                        </div>
+                        
+
+                        <div class="col-md-2 mb-3">
+                            <label> Transaction  Date <span class="required-indicator">*</span></label>
+                            <input type="date" name="issue_date" class="form-control issue_date" value="{{purchase_bill.transaction_date|date:'Y-m-d'}}"
+                            readonly>
+                        </div>
+
+                        <div class="col-md-2 mb-3">
+                            <label> E-Way No <span class="required-indicator">*</span></label>
+                            <input type="text" name="e_way" class="form-control e_way" value="{{purchase_bill.e_way_no}}"
+                            readonly>
+                        </div>
+
+                        <div class="col-md-2 mb-3">
+                            <label> E-Way  Date <span class="required-indicator">*</span></label>
+                            <input type="date" name="e_way_date" class="form-control e_way_date" value="{{purchase_bill.e_way_date|date:'Y-m-d'}}"
+                            readonly>
+                        </div>
+
+                        <div class="col-md-2 mb-3">
+                            <label> Vehicle No <span class="required-indicator">*</span></label>
+                            <input type="text" name="vehicle_no" class="form-control Vehicle_no" value="{{purchase_bill.vechical_no}}"
+                            readonly>
                         </div>
                     </div>
                     <div class="table-responsive">
@@ -99,22 +117,60 @@
                                 </tr>
                             </thead>
                             <tbody id="table-body">
-                                {% for materialOut in material_out.on_transit_transaction_details_set.all %}
+                                {% for purchaseBillDet in purchase_bill.purchase_bill_details_set.all %}
                                 <tr>
                                     <td>{{forloop.counter}}</td>
-                                    <td>{{materialOut.item.name}}</td>
-                                    <td>{{materialOut.quantity}}</td>
-                                    <td>{{materialOut.rate}}</td>
-                                    <td>{{materialOut.amount}}</td>
+                                    <td>{{purchaseBillDet.item.name}}</td>
+                                    <td>{{purchaseBillDet.quantity}}</td>
+                                    <td>{{purchaseBillDet.rate}}</td>
+                                    <td>{{purchaseBillDet.amount}}</td>
+                                    {% if purchaseBillDet.igst_percentage != 0.00  %}
+                                    <td>{{purchaseBillDet.igst_percentage}}</td>
+                                    <td>{{purchaseBillDet.igst_amount}}</td>
+                                    <td>---</td>
+                                    <td>---</td>
+                                    <td>---</td>
+                                    <td>---</td>
+                                    {% else %}
+                                    <td>---</td>
+                                    <td>---</td>
+                                    <td>{{purchaseBillDet.cgst_percentage}}</td>
+                                    <td>{{purchaseBillDet.cgst_amount}}</td>
+                                    <td>{{purchaseBillDet.sgst_percentage}}</td>
+                                    <td>{{purchaseBillDet.sgst_amount}}</td>
+                                    {% endif %}
+                                    <td>{{purchaseBillDet.amount_with_gst}}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
-                    <nav>
-                        <ul id="pagination" class="pagination justify-content-center">
-                        </ul>
-                    </nav>
+                    <div class="form-row">
+                        <div class="col-md-2 mb-3 table_form" >
+                            <label>Total<span class="required-indicator">*</span></label>
+                            <input type="text" class="form-control total_amount" name="total" id="total_amount" value="{{purchase_bill.total_amount}}" readonly required>
+                        </div>
+                        <div class="col-md-2 mb-3 table_form" >
+                            <label>Total igst<span class="required-indicator">*</span></label>
+                            <input type="text" class="form-control total_igst" name="total_igst" id="total_igst" value ="{{purchase_bill.total_igst}}" readonly required>
+                        </div>
+                        <div class="col-md-2 mb-3 table_form" >
+                            <label>Total sgst<span class="required-indicator">*</span></label>
+                            <input type="text" class="form-control total_sgst" name="total_sgst" id="total_sgst" value="{{purchase_bill.total_sgst}}" readonly required>
+                        </div>
+                        <div class="col-md-2 mb-3 table_form" >
+                            <label>Total cgst<span class="required-indicator">*</span></label>
+                            <input type="text" class="form-control total_cgst" name="total_cgst" id="total_cgst" value="{{purchase_bill.total_cgst}}" readonly required>
+                        </div>
+                        <div class="col-md-2 mb-3 table_form" >
+                            <label>Total amount with gst<span class="required-indicator">*</span></label>
+                            <input type="text" class="form-control total_amount_with_gst" name="total_amount_with_gst" value="{{purchase_bill.total_gst_amount}}" id="total_amount_with_gst" readonly required>
+                        </div>
+                        <div class="col-md-12  table_form"  >
+                            <label>Notes</label>
+                            <textarea name="notes" rows="5" class="form-control note" placeholder="Note" readonly>{{purchase_bill.notes}}</textarea>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

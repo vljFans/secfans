@@ -141,7 +141,9 @@ urlpatterns = [
     # purchase bill url ---developed by Saswata
     path('purchase-bill-list',views.purchaseBillList, name='purchaseBillList'),
     path('purchase-bill-add',views.purchaseBillAdd, name='purchaseBillAdd'),
-    path('purchase-bill-edit/<int:id>',views.purchaseBillEdit, name='purchaseBillEdit')
+    path('purchase-bill-edit/<int:id>',views.purchaseBillEdit, name='purchaseBillEdit'),
+    path('purchase-bill-view/<int:id>',views.purchaseBillView, name='purchaseBillView')
+
 
 
 ]

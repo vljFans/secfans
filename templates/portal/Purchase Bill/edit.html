@@ -162,7 +162,7 @@
                                     </div>
                                     <div class="col-md-2 mb-3">
                                         <label>Amount Sgst<span class="required-indicator">*</span></label>
-                                        <input type="text" class="form-control amount_sgst" name="amount_sgst" value="{{purchaseBillDet.sgst_amount}}"  readonly disabled>
+                                        <input type="text" class="form-control amount_sgst" name="amount_sgst" value="{{purchaseBillDet.sgst_amount}}"  readonly  required>
                                     </div>
                                     <div class="col-md-2 mb-3">
                                         <label>CGST% <span class="required-indicator">*</span></label>
@@ -173,7 +173,7 @@
                                     </div>
                                     <div class="col-md-2 mb-3">
                                         <label>Amount Cgst<span class="required-indicator">*</span></label>
-                                        <input type="text" class="form-control amount_cgst" name="amount_cgst" value="{{purchaseBillDet.cgst_amount}}" readonly disabled>
+                                        <input type="text" class="form-control amount_cgst" name="amount_cgst" value="{{purchaseBillDet.cgst_amount}}" readonly required >
                                     </div>
 
                                     {% endif %}
@@ -356,7 +356,7 @@
             evalScripts: true,
             contentType: false,
             processData: false,
-            url: "{% url 'api:purchaseBillDetailsAdd' %}",
+            url: "{% url 'api:purchaseBillDetailsEdit' %}",
             data: formData,
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -365,8 +365,8 @@
                 $('.submit-btn').text('Submitting...');
                 $('.submit-btn').prop('disabled', false);
                 if (response.status == 200) {
-                    alert(response.message);
-                    // locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialOutList' %}");
+                    // alert(response.message);
+                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:purchaseBillList' %}");
                     
                 } else {
                     alert(response.message);

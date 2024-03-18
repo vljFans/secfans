@@ -1200,13 +1200,15 @@ def purchaseBillEdit(request,id):
 @login_required
 def purchaseBillView(request,id):
 
-    physicalInspDet = models.Physical_Inspection.objects.get(pk=id)
+    purchaseBill = models.Purchase_Bill.objects.get(pk=id)
     context.update({
-        'physical_inspection': physicalInspDet,
-        'page_title': "Physical Verification/Reconciliation View",
+        'purchase_bill': purchaseBill,
+        'page_title': "Purchase Bill Edit",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
-                        {'name': "Physical Verification/Reconciliation", 'url': reverse('superuser:physicalInspectionList')},
+                        {'name': "Purchase Bill", 'url': reverse('superuser:purchaseBillList')},
                         {'name': "View"}]
     })
 
-    return render(request, 'portal/Physcial Inspection Store/view.html', context)
+    return render(request, 'portal/Purchase Bill/view.html', context)
+
+

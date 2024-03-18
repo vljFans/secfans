@@ -796,8 +796,8 @@
                 $('.submit-btn').text('Submitting...');
                 $('.submit-btn').prop('disabled', false);
                 if (response.status == 200) {
-                    alert(response.message);
-                    // locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialOutList' %}");
+                    // alert(response.message);
+                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:purchaseBillList' %}");
                     
                 } else {
                     alert(response.message);
