@@ -122,7 +122,9 @@
                                 <td>${element.transaction_number}</td>
                                 <td>${element.vendor__name}</td>
                                 <td>
+                                {% if request.user.is_superuser == 1 or 'view_grn_inspection_transaction'|get_session_permission:request is not None %}
                                 <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
+                                {% endif %}
                                 </td>
                             </tr>`;
                     }

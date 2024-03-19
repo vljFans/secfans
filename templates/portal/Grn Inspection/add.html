@@ -49,7 +49,7 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                <a href="{% url 'superuser:itemList' %}" class="mr-3"><i
+                                <a href="{% url 'superuser:grnInspectionListView' %}" class="mr-3"><i
                                         class="fa fa-step-backward"></i></a>
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                             </div>
@@ -199,7 +199,19 @@
 
 <script>
     var item_options_text
-    var totalPrice = 0.00
+    // var totalPrice = 0.00
+
+    function renderTotalAmount(){
+        let total_amount=0;
+        $('.actualPrice').each(function(){
+            if($(this).val()){
+                total_amount += parseFloat($(this).val())
+            }
+        })
+
+        $('.totalPrice').val(total_amount)
+    }
+
     $(document).ready(function(){
         $(document).on('change','#insTraId' , function(){
             // console.log('230',$('select#job_Order_id option:selected').val())
@@ -209,8 +221,6 @@
                 }
            
         })
-
-       
         
     });
 
@@ -378,28 +388,47 @@
             }
         }
     //    console.log($(element).attr('class'));
-        if($(element).attr('class') == 'form-control accp_quantity'){
+        // if($(element).attr('class') == 'form-control accp_quantity'){
 
-            var acc_quan = parseFloat($(element).val())
-            var recp_quan= parseFloat( $(element).parent().closest('.content_parent').find('.recp_quantity').val())
-            var rate = parseFloat( $(element).parent().closest('.content_parent').find('.rate').val())
-            // console.log($(element).parent().closest('.content_parent').find('.gst_percentage').val());
-            var gstPer = parseFloat( $(element).parent().closest('.content_parent').find('.gst_percentage').val())
-            var rej_quan = recp_quan - acc_quan
-            var amount = rate * acc_quan
-            var accAmount = amount + (amount * (gstPer/100))
-            totalPrice += accAmount
-            // console.log(accAmount,amount,gstPer);
+        //     var acc_quan = parseFloat($(element).val())
+        //     var recp_quan= parseFloat( $(element).parent().closest('.content_parent').find('.recp_quantity').val())
+        //     var rate = parseFloat( $(element).parent().closest('.content_parent').find('.rate').val())
+        //     // console.log($(element).parent().closest('.content_parent').find('.gst_percentage').val());
+        //     var gstPer = parseFloat( $(element).parent().closest('.content_parent').find('.gst_percentage').val())
+        //     var rej_quan = recp_quan - acc_quan
+        //     var amount = rate * acc_quan
+        //     var accAmount = amount + (amount * (gstPer/100))
+        //     totalPrice += accAmount
+        //     // console.log(accAmount,amount,gstPer);
 
-            $(element).parent().closest('.content_parent').find('.rej_quantity').val(rej_quan)
-            $(element).parent().closest('.content_parent').find('.amount').val(amount)
-            $(element).parent().closest('.content_parent').find('.actualPrice').val(accAmount)
-            $('.totalPrice').val(totalPrice)
+        //     $(element).parent().closest('.content_parent').find('.rej_quantity').val(rej_quan)
+        //     $(element).parent().closest('.content_parent').find('.amount').val(amount)
+        //     $(element).parent().closest('.content_parent').find('.actualPrice').val(accAmount)
+        //     $('.totalPrice').val(totalPrice)
 
-        }
+        // }
 
         
     }
+
+    $(document).on('change keyup','.accp_quantity' ,function(){
+        // console.log("hi");
+        var acc_quan = parseFloat($(this).val())
+        var recp_quan= parseFloat( $(this).parent().closest('.content_parent').find('.recp_quantity').val())
+        var rate = parseFloat( $(this).parent().closest('.content_parent').find('.rate').val())
+        // console.log($(element).parent().closest('.content_parent').find('.gst_percentage').val());
+        var gstPer = parseFloat( $(this).parent().closest('.content_parent').find('.gst_percentage').val())
+        var rej_quan = recp_quan - acc_quan
+        var amount = rate * acc_quan
+        var accAmount = amount + (amount * (gstPer/100))
+        // totalPrice += accAmount
+        // console.log(accAmount,amount,gstPer);
+
+        $(this).parent().closest('.content_parent').find('.rej_quantity').val(rej_quan)
+        $(this).parent().closest('.content_parent').find('.amount').val(amount)
+        $(this).parent().closest('.content_parent').find('.actualPrice').val(accAmount)
+        renderTotalAmount()
+    })
 
 
 </script>
