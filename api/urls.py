@@ -146,5 +146,11 @@ urlpatterns = [
     path('physical-inspection-header-list', views.getPhysicalInspectionHeadersList, name='getPhysicalInspectionHeadersList'),
     path('physical-inspection-details-add', views.physicalInspectionDetailsAdd, name='physicalInspectionDetailsAdd'),
 
+    # purchase bill url --- developed by saswata
+    path('purchase-bill-header-list', views.getPurchaseBillHeadersList, name='getPurchaseBillHeadersList'),
+    path('purchase-bill-details-add', views.purchaseBillDetailsAdd, name='purchaseBillDetailsAdd'),
+    path('purchase-bill-details-edit', views.purchaseBillDetailsEdit, name='purchaseBillDetailsEdit'),
+    path('purchase-bill-details-delete', views.purchaseBillDetailsDelete, name='purchaseBillDetailsDelete'),
+    
 
 ]
