@@ -78,6 +78,8 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Purhase Bill No </th>
+                                    <th>Invoice</th>
+                                    <th>vendor</th>
                                     <th>Issue Date</th>
                                     <th>Action</th>
                                     
@@ -123,6 +125,8 @@
                         tbody_text += `<tr>
                                 <td>${((response.total_pages - 1) * response.per_page) +  index + 1}</td>
                                 <td>${element.transaction_number}</td>
+                                <td>${element.invoice_no}</td>
+                                <td>${element.vendor__name}</td>
                                 <td>${element.transaction_date}</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'change_purchase_bill_details'|get_session_permission:request is not None   %}

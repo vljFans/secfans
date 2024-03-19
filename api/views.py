@@ -5291,6 +5291,8 @@ def getPurchaseBillHeadersList(request):
             'total_sgst',
             'total_amount',
             'total_gst_amount',
+            'invoice_no',
+            'vendor__name',
             'notes',
             'flag'
             ))
@@ -5302,7 +5304,9 @@ def getPurchaseBillHeadersList(request):
 
         else:
             if keyword is not None and keyword != "":
-                purchaseBill = list(models.Purchase_Bill.objects.filter(Q(transaction_number__icontains=keyword)
+                purchaseBill = list(models.Purchase_Bill.objects.filter(Q(transaction_number__icontains=keyword) | 
+                Q(invoice_no__icontains=keyword) | Q(vendor__name__icontains=keyword)
+
                     ).values('pk','transaction_number',
                     'transaction_date',
                     'e_way_no',
@@ -5313,6 +5317,8 @@ def getPurchaseBillHeadersList(request):
                     'total_sgst',
                     'total_amount',
                     'total_gst_amount',
+                    'invoice_no',
+                    'vendor__name',
                     'notes',
                     'flag'
                 ))
@@ -5327,6 +5333,8 @@ def getPurchaseBillHeadersList(request):
                 'total_sgst',
                 'total_amount',
                 'total_gst_amount',
+                'invoice_no',
+                'vendor__name',
                 'notes',
                 'flag'
                 ))
