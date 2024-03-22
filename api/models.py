@@ -764,4 +764,65 @@ class Physical_Inspection_Details(models.Model):
         db_table = 'physical_inspection_details'
         verbose_name_plural = 'physical_inspection_details'
 
+# purchase bill ---developed by saswata
+class Purchase_Bill(models.Model):
+    transaction_number = models.CharField(max_length=50, blank=True, null=True)
+    transaction_date = models.DateField(blank=True, null=True)
+    invoice_no = models.CharField(max_length=50, blank=True, null=True)
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True)
+    e_way_no =  models.CharField(max_length=50, blank=True, null=True)
+    e_way_date = models.DateField(blank=True, null=True)
+    vechical_no = models.CharField(max_length=50, blank=True, null=True)
+    total_igst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_gst_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    notes = models.TextField(blank=True, null=True)
+    flag = models.SmallIntegerField(default=0)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+
+    def __str__(self):
+        return self.transaction_number
+
+    class Meta:
+        managed = True
+        db_table = 'purchase_bill_header'
+        verbose_name_plural = 'purchase_bill_header'
+
+class Purchase_Bill_Details(models.Model):
+    purchase_bill_header = models.ForeignKey(Purchase_Bill, on_delete=models.CASCADE, blank=True, null=True)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
+    quantity = models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    hsn_code = models.CharField(max_length=50, blank=True, null=True)
+    uom = models.ForeignKey(
+        Uom, on_delete=models.CASCADE, blank=True, null=True)
+    rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    igst_percentage = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    igst_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    cgst_percentage = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    cgst_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    sgst_percentage = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    sgst_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    amount_with_gst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.purchase_bill_header.transaction_number
+
+    class Meta:
+        managed = True
+        db_table = 'purchase_bill_details'
+        verbose_name_plural = 'purchase_bill_details'
+
+
+
 

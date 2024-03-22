@@ -136,7 +136,14 @@ urlpatterns = [
     # physical inspection on store items ---developed by saswata
     path('physical-inspection-list',views.physicalInspectionList, name='physicalInspectionList'),
     path('physical-inspection-add',views.physicalInspectionAdd, name='physicalInspectionAdd'),
-    path('physical-inspection-view/<int:id>',views.physicalInspectionView, name='physicalInspectionView')
+    path('physical-inspection-view/<int:id>',views.physicalInspectionView, name='physicalInspectionView'),
+
+    # purchase bill url ---developed by Saswata
+    path('purchase-bill-list',views.purchaseBillList, name='purchaseBillList'),
+    path('purchase-bill-add',views.purchaseBillAdd, name='purchaseBillAdd'),
+    path('purchase-bill-edit/<int:id>',views.purchaseBillEdit, name='purchaseBillEdit'),
+    path('purchase-bill-view/<int:id>',views.purchaseBillView, name='purchaseBillView')
+
 
 
 ]
