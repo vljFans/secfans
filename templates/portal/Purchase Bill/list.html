@@ -78,6 +78,8 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Purhase Bill No </th>
+                                    <th>Invoice</th>
+                                    <th>vendor</th>
                                     <th>Issue Date</th>
                                     <th>Action</th>
                                     
@@ -122,15 +124,17 @@
                         tbody_text += `<tr>
                                 <td>${((response.total_pages - 1) * response.per_page) +  index + 1}</td>
                                 <td>${element.transaction_number}</td>
+                                <td>${element.invoice_no}</td>
+                                <td>${element.vendor__name}</td>
                                 <td>${element.transaction_date}</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'change_purchase_bill_details'|get_session_permission:request is not None   %}
                                 <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
                                 {% endif %}
-                                {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
+                                {% if request.user.is_superuser == 1 or 'view_purchase_bill'|get_session_permission:request is not None %}
                                 <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
                                 {% endif %}
-                                {% if request.user.is_superuser == 1 or 'delete_on_transit_transaction'|get_session_permission:request is not None %}
+                                {% if request.user.is_superuser == 1 or 'delete_purchase_bill'|get_session_permission:request is not None %}
                                 <a id="delete-btn" data-id="${element.pk}" data-name="${element.transaction_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
                                 {% endif %}
                                 </td>
