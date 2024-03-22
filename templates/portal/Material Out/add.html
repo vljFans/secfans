@@ -272,7 +272,7 @@
                                         <label>Quantity Sent <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="quantity_sent" min="0.01" class="form-control quantity_sent"
+                                            name="quantity_sent" min="0.01" class="form-control quantity_sent" max="$"
                                             placeholder="0.00" required>
                                     </div>
 
@@ -336,6 +336,7 @@
                 if (response.status == 200) {
                     // console.log(response.page_items[0].on_hand_qty);
                     parentDiv.find('.handquantity').val(response.page_items[0].on_hand_qty);
+                    parentDiv.find('.quantity_sent').attr('max',response.page_items[0].on_hand_qty)
                     
                 } 
                 else {
@@ -370,16 +371,9 @@
                 $(element).val($(element).attr('min'));
             }
         }
-
-        if($(element).attr('class') == 'form-control quantity_sent'){
-            let book_quantity = parseFloat($(element).parent().closest('.content_parent').find('.handquantity').val())
-            let sent_quantity = parseFloat($(element).parent().closest('.content_parent').find('.quantity_sent').val())
-            let res_quantity = book_quantity - sent_quantity
-            if(res_quantity<0.00){
-                $(element).parent().closest('.content_parent').find('.quantity_sent').val('0.00')
-            }
-        }
     }
+
+   
 
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
