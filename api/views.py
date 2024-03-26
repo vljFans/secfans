@@ -4886,6 +4886,7 @@ def materialOutDetailsAdd(request):
             on_transit_transaction_header.source_store_id = request.POST['sourceStore']
             # print("hello" )
             on_transit_transaction_header.destination_store_id = request.POST['desStore']
+            on_transit_transaction_header.vechical_no = request.POST['vehicle_no']
             on_transit_transaction_header.save()
             # store transaction header  for material out save
 

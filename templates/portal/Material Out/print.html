@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+    <title>{{page_title}}</title>
+    <style type="text/css">
+        body {
+            position: absolute;
+            top: 2%;
+            left: 2%;
+            right: 2%;
+        }
+
+        table,
+        th,
+        tr,
+        td {
+            border: 1px solid rgb(195, 195, 195);
+        }
+
+        tr,
+        th,
+        td {
+            font-family: sans-serif;
+            font-size: 12px;
+            padding: 7px;
+            text-align: left;
+        }
+
+        .fs-16 {
+            font-size: 16px;
+            
+        }
+
+        .fs-10 {
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .fs-11 {
+            font-size: 11px;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="text-align: center; width: 55%; padding-left: 150px;">
+        <strong class="fs-16">Shiva Engineering Co</strong>
+        <p>47, Biplabi Anukul Chandra Street, Kolkata-72
+            Factory214A, Raja Ram Mohon Roy Road, Kolkata, W.B- 700008
+            16F, Khanpur Road, Kolkata, West Bengal, 700047
+            Sarmastarchak, D H Road, Kolkata, South 24 Parganas, W B- 700104
+            2D, Temple Street, Kolkata - 700072
+            CONTACT - 9433525676_IEC CODE- 0216927218
+            UDYAM-WB-10-0017669_ MEDIUM
+            E-Mail : shivaenggco@yahoo.in/shivaenggco1987@gmail.com</p>
+    </div>
+    <div style="text-align: center; width: 100%; ">
+        <strong class="fs-16">INTER WAREHOUSE TRNSFER Voucher&nbsp;&nbsp;({{page_title}})</strong>
+    </div>
+    <div style="width: 100%;">
+        <table style="border-width:0px; border-spacing:0px; width: 100%; border-color: white;">
+            <tr>
+                <td rowspan="5" style="border-color: white;">NO Ref: <b>{{materialOut.transaction_number}}</b> </td>
+                <td rowspan="5" style="border-color: white;">Source Store: <b>{{materialOut.source_store.name}}</b> </td>
+                <td rowspan="5" style="border-color: white;">Destination Store: <b>{{materialOut.destination_store.name}}</b> </td>
+                <td rowspan="5" style="border-color: white;">Dated: <b>{{materialOut.transaction_date}}</b> </td>
+                <p></p>
+            </tr>
+        </table>
+    </div>
+    <div style="width: 100%;">
+        <table style="border-width:0px; border-spacing:0px; width: 100%;">
+        <tr>
+            <th style="border-top: 1px solid black;border-bottom:1px solid black; border-left: white; border-right: white;">Item Name</th>
+            <th style="border-top: 1px solid black;border-bottom:1px solid black; border-left: white; border-right: white;">Quantity</th>
+            <th style="border-top: 1px solid black;border-bottom:1px solid black; border-left: white; border-right: white;">Rate</th>
+            <th style="border-top: 1px solid black;border-bottom:1px solid black; border-left: white; border-right: white;">Amount</th>
+        </tr>
+        {% for materialOutDet in materialOut.on_transit_transaction_details_set.all %}
+        <tr>
+            <td style="border-color: white;" class="fs-10 ">{{materialOutDet.item.name}}</td>
+            <td style="border-color: white;" >{{materialOutDet.quantity}}</td> 
+            <td style="border-color: white;" >{{materialOutDet.rate}}</td>
+            <td style="border-color: white;" >{{materialOutDet.amount}}</td>
+        </tr>
+        {% endfor %}
+        </table>
+        <table style="border-width:0px; border-spacing:0px; width: 100%; float: right; padding-left: 300px; padding-top: 50px;">
+            <tr>
+                <th rowspan="100" style="border-color: white;">TOTAL PICES: {{total_quantity}} PICES</th>     
+                <th rowspan="100" style="border-color: white;" >TOTAL AMOUNT: &#8377;{{total_amount}}</th>
+            </tr>
+        </table>
+    </div>
+    <!-- <table style="border-width:0px; border-spacing:0px; width: 100%;">
+        <tr>
+            <td rowspan="3" colspan="4" style="width:40%;"><strong class="fs-16">{{client_name}}.</strong><br>
+                {{client_address}},<br>
+                Ph. – {{client_contact}}<br>
+                Works – {{client_work_address}}
+            </td>
+           
+    </table> -->
+    
+    <div>
+        <table style="border-width:0px; border-spacing:0px; width:100%; padding-top: 100px;">
+           <tr>
+            <td style="border-top:  white;border-bottom:1px solid black; border-left: white; border-right: white;">Narration: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;   INTER WAREHOUSE MATERIAL TRANSFER.&nbsp;&nbsp;VEHICLE- {{materialOut.vechical_no}}</td>
+           </tr>
+        </table>
+    </div>
+</body>
+<footer>
+    <table style="border-width:0px; border-spacing:0px; width:100%; padding-top: 300px; padding-left: 80px;">
+        <tr>
+         <td style="border-color: white;">Checked by</td>
+         <td style="border-color: white;">Verified by</td>
+         <td style="border-color: white;">Authorised Signatory</td>
+        </tr>
+     </table>
+</footer>
+
+
+</html>
+
+<script>
+    $(document).ready(function () {
+        window.print();
+    });
+</script>

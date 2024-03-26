@@ -105,7 +105,6 @@
 <script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
     function getPurchaseBillList(keyword) {
-        console.log("123")
         $.ajax({
             type: "GET",
             url: "{% url 'api:getPurchaseBillHeadersList' %}?keyword=" + keyword,

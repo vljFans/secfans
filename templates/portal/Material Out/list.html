@@ -119,6 +119,7 @@
                 if (response.status == 200) {
                     // edit_url = "{% url 'superuser:materialOutEdit' 1 %}";
                     view_url = "{% url 'superuser:materialOutView' 1 %}";
+                    print_url = "{% url 'superuser:materialOutPrint' 1 %}";
                     page_items = response.page_items;
                     tbody_text = ``;
                     // console.log(page_items[0].transaction_number);
@@ -131,7 +132,8 @@
                                 <td>${element.destination_store__name}</td>
                                 <td>${element.transaction_date}</td>
                                 <td>
-                                    {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
+                                    {% if request.user.is_superuser == 1 or 'view_on_transit_transaction'|get_session_permission:request is not None %}
+                                    <a target="new" href="${print_url.replace('1', element.pk)}" class="table-action mg-r-10"><i class="fa fa-print"></i> </a>
                                     <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
                                     {% endif %}
                                     {% if request.user.is_superuser == 1 or 'delete_on_transit_transaction'|get_session_permission:request is not None %}

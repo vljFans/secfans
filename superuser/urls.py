@@ -126,6 +126,8 @@ urlpatterns = [
     path('material-out-add',views.materialOutAdd, name='materialOutAdd'),
     path('material-out-edit/<int:id>',views.materialOutEdit, name='materialOutEdit'),
     path('material-out-view/<int:id>',views.materialOutView, name='materialOutView'),
+     path('material-out-print/<int:id>',views.materialOutPrint, name='materialOutPrint'),
+
 
 
     # material in 
@@ -142,8 +144,8 @@ urlpatterns = [
     path('purchase-bill-list',views.purchaseBillList, name='purchaseBillList'),
     path('purchase-bill-add',views.purchaseBillAdd, name='purchaseBillAdd'),
     path('purchase-bill-edit/<int:id>',views.purchaseBillEdit, name='purchaseBillEdit'),
-    path('purchase-bill-view/<int:id>',views.purchaseBillView, name='purchaseBillView')
-
+    path('purchase-bill-view/<int:id>',views.purchaseBillView, name='purchaseBillView'),
+   
 
 
 ]
