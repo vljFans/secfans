@@ -1075,6 +1075,27 @@ def materialOutView(request,id):
 
     return render(request, 'portal/Material Out/view.html', context)
 
+@login_required
+def materialOutPrint(request, id):
+    materialOut = models.On_Transit_Transaction.objects.prefetch_related(
+        'on_transit_transaction_details_set').get(pk=id)
+    total_amount = 0
+    total_quantity = 0
+    materialOutDets = list(models.On_Transit_Transaction_Details.objects.filter(on_transit_transaction_header_id = id).values('quantity','amount'))
+    
+    for index in range (0,len(materialOutDets)):
+        total_quantity += float(materialOutDets[index]['quantity'])
+        total_amount += float(materialOutDets[index]['amount'])
+
+
+    context.update({
+        'page_title': "DELIVERY CHALLAN",
+        'materialOut': materialOut,
+        'total_amount' : total_amount,
+        'total_quantity': total_quantity
+    })
+    return render(request, 'portal/Material Out/print.html', context)
+
 # material in
 @login_required
 def materialInList(request):
@@ -1210,5 +1231,6 @@ def purchaseBillView(request,id):
     })
 
     return render(request, 'portal/Purchase Bill/view.html', context)
+
 
 

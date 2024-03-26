@@ -679,6 +679,7 @@ class On_Transit_Transaction(models.Model):
     transaction_number = models.CharField(max_length=25, blank=True, null=True)
     transaction_date = models.DateField(blank=True, null=True)
     transaction_in_date = models.DateField(blank=True, null=True)
+    vechical_no = models.CharField(max_length=50, blank=True, null=True)
     source_store =  models.ForeignKey(
         Store, on_delete=models.CASCADE, blank=True, null=True , related_name="source_store")
     destination_store =  models.ForeignKey(
