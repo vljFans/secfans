@@ -108,8 +108,12 @@
     <div>
         <table style="border-width:0px; border-spacing:0px; width:100%; padding-top: 100px;">
            <tr>
+            {% if  materialOut.vechical_no != null %}
             <td style="border-top:  white;border-bottom:1px solid black; border-left: white; border-right: white;">Narration: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;   INTER WAREHOUSE MATERIAL TRANSFER.&nbsp;&nbsp;VEHICLE- {{materialOut.vechical_no}}</td>
-           </tr>
+            {% else %}
+            <td style="border-top:  white;border-bottom:1px solid black; border-left: white; border-right: white;">Narration: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;   INTER WAREHOUSE MATERIAL TRANSFER.</td>
+            {% endif %}
+            </tr>
         </table>
     </div>
 </body>
