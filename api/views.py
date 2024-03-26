@@ -5007,8 +5007,20 @@ def materialOutDetailsEdit(request):
     context = {}
     # print(request.POST)
     try:
-        pass
+        print(request.POST)
+        with transaction.atomic():
 
+            # on transit transaction for material out header save
+
+            on_transit_transaction_header = models.On_Transit_Transaction.objects.get(pk=request.POST['pk'])
+           
+            on_transit_transaction_header.vechical_no = request.POST['vehicle_no']
+            on_transit_transaction_header.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Material Out Edited Sucessfully"
+        })
     except Exception:
         pass
         context.update({
