@@ -633,6 +633,7 @@ class Store_Transaction(models.Model):
     transaction_number = models.CharField(max_length=25, blank=True, null=True)
     transaction_date = models.DateField(blank=True, null=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    vehicle = models.CharField(max_length=25, blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)

@@ -106,6 +106,7 @@ urlpatterns = [
     path('material-issue-add',views.materialIssueAdd, name='materialIssueAdd'),
     path('material-issue-edit/<int:id>',views.materialIssueEdit, name='materialIssueEdit'),
     path('material-issue-view/<int:id>',views.materialIssueView, name='materialIssueView'),
+    path('material-issue-print/<int:id>',views.materialIssuePrint, name='materialIssuePrint'),
 
     path('grn-inspection-list',views.grnInspectionListView , name = 'grnInspectionListView'),
     path('grn-inspection-add',views.grnInspectionAdd , name = 'grnInspectionAdd'),
