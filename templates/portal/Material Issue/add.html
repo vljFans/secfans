@@ -93,8 +93,22 @@
                                 required>
                             </div>
 
+                            <div class="col-md-4 mb-3">
+                                <label>Vehicle </label>
+                                <input type="text" id="vehicle" name="vehicle" class="form-control" placeholder="vehicle name" >
+                            </div>
+
                             <div class="col-md-12" id="table_form">
                                 
+                            </div>
+                            <div class="col-md-12" id="tAmount" hidden>
+                                <div class="col-md-3 mb-3">
+                                    <label>Total Amount <span class="required-indicator">*</span></label>
+                                    <input type="text" 
+                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        name="total_amount" min="0.01" class="form-control total_amount"
+                                        placeholder="0.00" readonly>
+                                </div>
                             </div>
 
                         </div>
@@ -163,6 +177,18 @@
                 }
             })
         })
+    }
+
+    function renderTotalAmount(){
+        console.log("hi");
+        let total_amount=0;
+        $('.amount').each(function(){
+            if($(this).val()){
+                total_amount += parseFloat($(this).val())
+            }
+        })
+
+        $('.total_amount').val(total_amount)
     }
 
     function update_item_options_used_pk(){
@@ -316,6 +342,7 @@
         let store_id =  $('select#store_id option:selected').val()
         let actual_quantitys = $(this).closest('.content_parent').find('.actual_quantity')
         let quantity_sents = $(this).closest('.content_parent').find('.quantity_sent')
+        let rate =  $(this).closest('.content_parent').find('.rate')
         // console.log(quantity_sents.html());
         $.ajax({
             url: "{% url 'api:getActualQuantity' %}?",
@@ -331,6 +358,7 @@
                 if (response.status == 200) {
                     actual_quantitys.val(response.on_hand_qty_res)
                     quantity_sents.attr('max',response.on_hand_qty_res)
+                    rate.val(response.item_price)
                 } 
                 else {
                     alert(response.message);
@@ -373,11 +401,26 @@
                                     </div>
 
                                     <div class="col-md-3 mb-3">
+                                        <label>Rate <span class="required-indicator">*</span></label>
+                                        <input type="text" 
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="rate" min="0.01" class="form-control rate"
+                                            placeholder="0.00" readonly>
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
                                         <label>Quantity Sent <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="quantity_sent" min="0.01" class="form-control quantity_sent"
                                             placeholder="0.00" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                            <label>Amount <span class="required-indicator">*</span></label>
+                                            <input type="text" 
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="amount" min="0.01" class="form-control amount"
+                                                placeholder="0.00" readonly>
                                     </div>
 
                                     <div class="col-md-1 btn-group mb-4 text-center">
@@ -396,12 +439,14 @@
                     }
                     return option.text;
                 }
-            });           
-            callback()     
+            }); 
+            renderTotalAmount()          
+            callback()         
         });
 
     $(document).on('click', '.remove_btn', function () {
         $(this).parents().closest('.content_parent').remove();
+        renderTotalAmount()
         callback()
     });
 
@@ -419,7 +464,8 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    $('#submit').removeAttr('hidden')
+                    $('#submit').removeAttr('hidden') 
+                    $('#tAmount').removeAttr('hidden')
 
                     // If Job Order is third party manufacturing
                     if(response.job_order_header_detail[0].manufacturing_type=="Third party"){
@@ -446,6 +492,13 @@
                                                 name="actual_quantity" min="0.01" class="form-control actual_quantity"
                                                 placeholder="0.00" readonly>
                                         </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label>Rate <span class="required-indicator">*</span></label>
+                                            <input type="text" 
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="rate" min="0.01" class="form-control rate" value="${response.job_order_details[index].item__price}"
+                                                 readonly>
+                                        </div>
 
                                         <div class="col-md-3 mb-3">
                                             <label>Quantity Sent <span class="required-indicator">*</span></label>
@@ -453,6 +506,13 @@
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                 name="quantity_sent" min="0.01" class="form-control quantity_sent"
                                                 placeholder="0.00" required>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label>Amount <span class="required-indicator">*</span></label>
+                                            <input type="text" 
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="amount" min="0.01" class="form-control amount"
+                                                placeholder="0.00" readonly>
                                         </div>
                                     </div>
                                     `
@@ -481,6 +541,13 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="col-md-3 mb-3">
+                                            <label>Rate <span class="required-indicator">*</span></label>
+                                            <input type="text" 
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="rate" min="0.01" class="form-control rate"
+                                                placeholder="0.00" readonly>
+                                    </div>
 
                                     <div class="col-md-3 mb-3">
                                         <label>Actual quantity <span class="required-indicator">*</span></label>
@@ -496,6 +563,13 @@
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="quantity_sent" min="0.01" class="form-control quantity_sent"
                                             placeholder="0.00" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                            <label>Amount <span class="required-indicator">*</span></label>
+                                            <input type="text" 
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="amount" min="0.01" class="form-control amount"
+                                                placeholder="0.00" readonly>
                                     </div>
 
                                     <div class="col-md-1 btn-group mb-4 text-center">
@@ -515,6 +589,7 @@
                                 }
                             });   
                         }
+                        
                         
                     }
                     
@@ -537,6 +612,13 @@
                                             name="actual_quantity" min="0.01" class="form-control actual_quantity"
                                             placeholder="0.00" readonly>
                                     </div>
+                                    <div class="col-md-3 mb-3">
+                                            <label>Rate <span class="required-indicator">*</span></label>
+                                            <input type="text" 
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="rate" min="0.01" class="form-control rate"
+                                                placeholder="0.00" readonly>
+                                    </div>
 
                                     <div class="col-md-3 mb-3">
                                         <label>Quantity Sent <span class="required-indicator">*</span></label>
@@ -544,6 +626,13 @@
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="quantity_sent" min="0.01" class="form-control quantity_sent"
                                             placeholder="0.00" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                            <label>Amount <span class="required-indicator">*</span></label>
+                                            <input type="text" 
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="amount" min="0.01" class="form-control amount"
+                                                placeholder="0.00" readonly>
                                     </div>
 
                                     <div class="col-md-1 btn-group mb-4 text-center">
@@ -563,6 +652,7 @@
                             }
                         });       
                     }
+                    renderTotalAmount()
                 } 
                 else {
                     alert("res not found");
@@ -666,6 +756,16 @@
             }
         }
     }
+    $(document).on('change keyup','.quantity_sent ',function(){
+        // console.log("hi");
+        let sum = 0 
+        let amount , rate , quantitysent
+        quantitysent = parseFloat($(this).val())
+        rate = parseFloat($(this).closest('.content_parent').find('.rate').val())
+        amount = rate * quantitysent
+        $(this).closest('.content_parent').find('.amount').val(amount)
+        renderTotalAmount()
+    })
 
 
 </script>
