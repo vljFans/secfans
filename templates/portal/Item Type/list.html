@@ -97,7 +97,6 @@
                                     <th>#</th>
                                     <th>Name</th>
                                     <th>Item Category</th>
-                                    <th>HSN Code</th>
                                     <th>GST Percentage</th>
                                     <th>Action</th>
                                 </tr>
@@ -141,7 +140,6 @@
                                 <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
                                 <td>${element.name}</td>
                                 <td>${element.item_category__name}</td>
-                                <td>${element.hsn_code}</td>
                                 <td>${element.gst_percentage*1}%</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'change_item_type'|get_session_permission:request is not None %}

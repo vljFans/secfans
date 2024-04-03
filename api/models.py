@@ -283,7 +283,6 @@ class Item_Type(models.Model):
     name = models.CharField(max_length=50, blank=True, null=True)
     item_category = models.ForeignKey(
         Item_Category, on_delete=models.CASCADE, blank=True, null=True)
-    hsn_code = models.CharField(max_length=40, blank=True, null=True)
     gst_percentage = models.DecimalField(
         default=0, max_digits=10, decimal_places=2)
     status = models.SmallIntegerField(default=1)
@@ -323,6 +322,7 @@ class Item(models.Model):
         Item_Type, on_delete=models.CASCADE, blank=True, null=True)
     uom = models.ForeignKey(
         Uom, on_delete=models.CASCADE, blank=True, null=True)
+    hsn_code = models.CharField(max_length=40, blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)

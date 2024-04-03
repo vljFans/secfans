@@ -1459,7 +1459,7 @@ def itemTypeList(request):
     itemCatId = request.GET.get('itemCatId', None)
     if id is not None and id != "":
         itemType = list(models.Item_Type.objects.filter(pk=id)[:1].values(
-            'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
+            'pk', 'name', 'item_category__name', 'gst_percentage'))
         context.update({
             'status': 200,
             'message': "Item Type Fetched Successfully.",
@@ -1467,7 +1467,7 @@ def itemTypeList(request):
         })
     elif itemCatId is not None and itemCatId != "":
         itemType = list(models.Item_Type.objects.filter(item_category_id=itemCatId).values(
-            'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
+            'pk', 'name', 'item_category__name', 'gst_percentage'))
         # print(itemType)
         context.update({
             'status': 200,
@@ -1480,10 +1480,10 @@ def itemTypeList(request):
                 Q(name__icontains=keyword) | Q(item_category__name__icontains=keyword) | Q(
                     hsn_code__icontains=keyword)
             ).filter(status=1, deleted=0).values(
-                'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
+                'pk', 'name', 'item_category__name', 'gst_percentage'))
         else:
             itemTypes = list(models.Item_Type.objects.filter(status=1, deleted=0).values(
-                'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
+                'pk', 'name', 'item_category__name', 'gst_percentage'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -1534,7 +1534,6 @@ def itemTypeAdd(request):
             itemType = models.Item_Type()
             itemType.name = request.POST['name']
             itemType.item_category_id = request.POST['item_category_id']
-            itemType.hsn_code = request.POST['hsn_code']
             itemType.gst_percentage = request.POST['gst_percentage']
             itemType.save()
         transaction.commit()
@@ -1574,7 +1573,6 @@ def itemTypeEdit(request):
             itemType = models.Item_Type.objects.get(pk=request.POST['id'])
             itemType.name = request.POST['name']
             itemType.item_category_id = request.POST['item_category_id']
-            itemType.hsn_code = request.POST['hsn_code']
             itemType.gst_percentage = request.POST['gst_percentage']
             itemType.updated_at = datetime.now()
             itemType.save()
@@ -1772,7 +1770,7 @@ def itemList(request):
     keyword = request.GET.get('keyword', None)
     if id is not None and id != "":
         item = list(models.Item.objects.filter(pk=id)[:1].values(
-            'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price'))
+            'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price','hsn_code'))
         context.update({
             'status': 200,
             'message': "Item Fetched Successfully.",
@@ -1782,10 +1780,10 @@ def itemList(request):
     else:
         if keyword is not None and keyword != "":
             items = list(models.Item.objects.filter(Q(name__icontains=keyword) | Q(item_type__name__icontains=keyword) | Q(uom__name__icontains=keyword)).filter(
-                status=1, deleted=0).values('pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price'))
+                status=1, deleted=0).values('pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price','hsn_code'))
         else:
             items = list(models.Item.objects.filter(status=1, deleted=0).values(
-                'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price'))
+                'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price','hsn_code'))
 
         if find_all is not None and int(find_all) == 1:
             context.update({
@@ -1841,6 +1839,7 @@ def itemAdd(request):
             item.item_type_id = request.POST['item_type_id']
             if request.POST['price']:
                 item.price = request.POST['price']
+            item.hsn_code = request.POST['hsn_code']
             item.save()
         transaction.commit()
         context.update({
@@ -1881,6 +1880,7 @@ def itemEdit(request):
             item.item_type_id = request.POST['item_type_id']
             item.uom_id = request.POST['uom_id']
             item.price = request.POST['price']
+            item.hsn_code = request.POST['hsn_code']
             item.updated_at = datetime.now()
             item.save()
         transaction.commit()
