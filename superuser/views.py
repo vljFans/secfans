@@ -474,6 +474,15 @@ def itemEdit(request, id):
 
 
 @login_required
+def itemReport(request):
+    context.update({
+        'page_title': "Item Tracking Report",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item", 'url': reverse('superuser:itemReport')}, {'name': "Report"}]
+    })
+    return render(request, 'portal/Item/Report.html', context)
+
+
+@login_required
 def storeList(request):
     context.update({
         'page_title': "Store List",

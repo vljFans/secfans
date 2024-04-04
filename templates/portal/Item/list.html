@@ -31,15 +31,63 @@
     <!--================================-->
     <!-- Search box Start -->
     <div>
-        <label for="search">
-            <p style="font-size: 14px;">
-                Search :
-            </p>
-        </label>
-        <input type="text" id="search" name="search" style="width: 180px; height: 30px;" value="{{request.GET.keyword}}"
-            placeholder="" />
+        <div class="row">
+            <div class="col-md-4">
+                <label for="search">
+                    <p style="font-size: 14px;">
+                        Search :
+                    </p>
+                </label>
+                <input type="text" id="search" name="search" style="width: 270px; height: 30px;" value="{{request.GET.keyword}}"
+                    placeholder="" />
+            </div>
+            <div class="col-md-8">
+                <div class="float-end d-flex justify-content-end">
+                    <a href="javascript:void(0);" 
+                    url="{% url 'api:itemExport' %}?&keyword={{request.GET.keyword}}&file_type=pdf" 
+                    class="mr-3 btn btn-info btn-sm excel_download"
+                    style="padding: 4.8px 12.8px 4.8px 12.8px;">
+                        PDF
+                    </a>
+                    <a href="javascript:void(0);" 
+                    url="{% url 'api:itemExport' %}?&keyword={{request.GET.keyword}}&file_type=csv" 
+                    class="mr-3 btn btn-info btn-sm excel_download"
+                    style="padding: 4.8px 12.8px 4.8px 12.8px;">
+                        CSV
+                    </a>
+                    <a href="javascript:void(0);" 
+                    url="{% url 'api:itemExport' %}?&keyword={{request.GET.keyword}}&file_type=xlsx" 
+                    class="mr-3 btn btn-info btn-sm excel_download"
+                    style="padding: 4.8px 12.8px 4.8px 12.8px;">
+                        Excel
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
     <!--/ Search box End -->
+    <!--================================-->
+    <!-- Filter box Start -->
+    <div class="row">
+        <div class="col-md-1 mb-3"><p>Filter by:</p></div>
+        <div class="col-md-5 mb-3">
+            <label>Item Category <span class="required-indicator">*</span></label>
+            <div class="input-group">
+                <select class="custom-select selectpicker" id="item_category_id" name="item_category_id">
+                    <option value="">Choose...</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-5 mb-3">
+            <label>Item Type <span class="required-indicator">*</span></label>
+            <div class="input-group">
+                <select class="custom-select selectpicker" id="item_type_id" name="item_type_id">
+                    <option value="">Choose...</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <!--/ Filter box End -->
     <!--================================-->
     <!-- Form Element Start -->
     <!--================================-->
@@ -179,8 +227,60 @@
         });
 
     }
+    
+    $('.selectpicker').select2({
+        placeholder: ''
+    });
+
     $(document).ready(function () {
         getItemList(keyword)
+
+        $.ajax({
+            url: "{% url 'api:itemTypeList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    var item_type_options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        item_type_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $('#item_type_id').html(item_type_options_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+
+        $.ajax({
+            url: "{% url 'api:itemCategoryList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    var item_category_options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        item_category_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $('#item_category_id').html(item_category_options_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+
     });
 
     $(document).on('keyup', '#search', function () {
@@ -215,5 +315,121 @@
             });
         }
     });
+
+    $(document).on('change', '#item_type_id', function(){
+        $.ajax({
+            type: "GET",
+            url: "{% url 'api:itemList' %}?item_type_id=" + $(this).val() + "& keyword = " +$("#search").val(),
+            data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                $('.error-msg-txt').text("");
+                if (response.status == 200) {
+                    edit_url = "{% url 'superuser:itemEdit' 1 %}";
+                    page_items = response.page_items;
+                    tbody_text = ``;
+                    for (let index = 0; index < page_items.length; index++) {
+                        const element = page_items[index];
+                        tbody_text += `<tr>
+                                <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
+                                <td>${element.name}</td>
+                                <td>${element.item_type__name} (${element.item_type__item_category__name})</td>
+                                <td>${element.uom__name}</td>
+                                <td>₹${element.price}</td>
+                                <td>
+                                {% if request.user.is_superuser == 1 or 'change_item'|get_session_permission:request is not None %}
+                                <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'delete_item'|get_session_permission:request is not None %}
+                                <a id="delete-btn" data-id="${element.pk}" data-name="${element.name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
+                                {% endif %}
+                                </td>
+                            </tr>`;
+                    }
+                    pagination_text = generatePaginationLinks(response.current_page, response.total_pages, response.button_to_show, keyword);
+                    $('#table-body').html(tbody_text);
+                    $('#pagination').html(pagination_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    })
+
+    $(document).on('change', '#item_category_id', function(){
+        $.ajax({
+            type: "GET",
+            url: "{% url 'api:itemList' %}?item_category_id=" + $(this).val() + "& keyword = " +$("#search").val(),
+            data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                $('.error-msg-txt').text("");
+                if (response.status == 200) {
+                    edit_url = "{% url 'superuser:itemEdit' 1 %}";
+                    page_items = response.page_items;
+                    tbody_text = ``;
+                    for (let index = 0; index < page_items.length; index++) {
+                        const element = page_items[index];
+                        tbody_text += `<tr>
+                                <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
+                                <td>${element.name}</td>
+                                <td>${element.item_type__name} (${element.item_type__item_category__name})</td>
+                                <td>${element.uom__name}</td>
+                                <td>₹${element.price}</td>
+                                <td>
+                                {% if request.user.is_superuser == 1 or 'change_item'|get_session_permission:request is not None %}
+                                <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'delete_item'|get_session_permission:request is not None %}
+                                <a id="delete-btn" data-id="${element.pk}" data-name="${element.name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
+                                {% endif %}
+                                </td>
+                            </tr>`;
+                    }
+                    pagination_text = generatePaginationLinks(response.current_page, response.total_pages, response.button_to_show, keyword);
+                    $('#table-body').html(tbody_text);
+                    $('#pagination').html(pagination_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+
+        $.ajax({
+            url: "{% url 'api:itemTypeList' %}?itemCatId=" + $(this).val(),
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    var item_type_options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        
+                        item_type_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $('#item_type_id').html(item_type_options_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+
+    })
+
 </script>
 {% endblock %}

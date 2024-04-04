@@ -185,12 +185,26 @@
           <a href="{% url 'superuser:physicalInspectionList' %}"><i data-feather="eye"></i>
             <span>Physical Verification</span></a>
         </li>
-
         <!-- purchase bill  ---developed by Saswata -->
-
-        
-
         {% endif %}
+
+        {% if request.user.is_superuser == 1 or 'view_item'|get_session_permission:request is not None %}
+        <li
+        class="{% if request.path == '/item-report'%}open active{% endif %}">
+            <a href="javascript:void(0)"><i data-feather="layout"></i>
+            <span>Reports</span><i class="accordion-icon fa fa-angle-left"></i>
+            </a>
+            <ul class="sub-menu"
+            style="display: {% if request.path == '/item-report'%}block{% else %}none{% endif %};">
+                {% if request.user.is_superuser == 1 or 'view_item'|get_session_permission:request is not None %}
+                <li class="{% if request.path == '/item-report' %}active{% endif %}">
+                    <a href="{% url 'superuser:itemReport' %}">Item</a>
+                </li>
+                {% endif %}
+            </ul>
+        </li>
+        {% endif %}
+
         <!-- <li class="mg-l-20-force mg-t-25-force menu-elements">Elements</li>
         <li>
           <a href="javascript:void(0)"><i data-feather="underline"></i>

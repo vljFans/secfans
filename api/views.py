@@ -13,7 +13,7 @@ from django.core import serializers
 from django.http import JsonResponse
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.hashers import make_password, check_password
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.utils.timezone import now
 from openpyxl import Workbook
 from django.db import transaction
@@ -25,6 +25,8 @@ from decimal import Decimal
 import os
 import math
 import environ
+import csv
+from fpdf import FPDF
 
 env = environ.Env()
 environ.Env.read_env()
@@ -1768,6 +1770,8 @@ def itemList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
+    item_type_id = request.GET.get('item_type_id', None)
+    item_category_id = request.GET.get('item_category_id', None)
     if id is not None and id != "":
         item = list(models.Item.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price','hsn_code'))
@@ -1778,6 +1782,14 @@ def itemList(request):
         })
         return JsonResponse(context)
     else:
+        items=models.Item.objects.filter(status=1, deleted=0)
+
+        if item_category_id is not None and item_category_id!="":
+            items=items.filter(item_type__item_category_id=item_category_id)
+
+        if item_type_id is not None and item_type_id!="":
+            items=items.filter(item_type_id=item_type_id)
+
         if keyword is not None and keyword != "":
             items = list(models.Item.objects.filter(Q(name__icontains=keyword) | Q(item_type__name__icontains=keyword) | Q(uom__name__icontains=keyword)).filter(
                 status=1, deleted=0).values('pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price','hsn_code'))
@@ -1922,48 +1934,173 @@ def itemDelete(request):
 @api_view(['GET'])
 def itemExport(request):
     keyword = request.GET.get('keyword')
+    file_type=request.GET.get('file_type')
     if keyword is not None and keyword != "":
         page_items = models.Item.objects.filter(Q(name__icontains=keyword) | Q(
             item_type__name__icontains=keyword) | Q(uom__name__icontains=keyword)).filter(status=1, deleted=0)
     else:
         page_items = models.Item.objects.filter(status=1, deleted=0)
+    if file_type=="xlsx":
+        directory_path = settings.MEDIA_ROOT + '/reports/'
+        path = Path(directory_path)
+        path.mkdir(parents=True, exist_ok=True)
 
-    directory_path = settings.MEDIA_ROOT + '/reports/'
-    path = Path(directory_path)
-    path.mkdir(parents=True, exist_ok=True)
+        for f in os.listdir(settings.MEDIA_ROOT + '/reports/'):
+            if not f.endswith(".xlsx"):
+                continue
+            os.remove(os.path.join(settings.MEDIA_ROOT + '/reports/', f))
 
-    for f in os.listdir(settings.MEDIA_ROOT + '/reports/'):
-        if not f.endswith(".xlsx"):
-            continue
-        os.remove(os.path.join(settings.MEDIA_ROOT + '/reports/', f))
+        # tmpname = str(datetime.now().microsecond) + ".xlsx"
+        tmpname = "Item" + ".xlsx"
+        wb = Workbook()
 
-    # tmpname = str(datetime.now().microsecond) + ".xlsx"
-    tmpname = "Item" + ".xlsx"
-    wb = Workbook()
+        # grab the active worksheet
+        ws = wb.active
 
-    # grab the active worksheet
-    ws = wb.active
+        # Data can be assigned directly to cells
+        ws['A1'] = "Name"
+        ws['B1'] = "Item Type"
+        ws['C1'] = "Item Category"
+        ws['D1'] = "UOM"
+        ws['E1'] = "Price"
 
-    # Data can be assigned directly to cells
-    ws['A1'] = "Name"
-    ws['B1'] = "Item Type"
-    ws['C1'] = "Item Category"
-    ws['D1'] = "UOM"
-    ws['E1'] = "Price"
+        # Rows can also be appended
+        for each in page_items:
+            ws.append([each.name, each.item_type.name,
+                      each.item_type.item_category.name, each.uom.name, each.price])
 
-    # Rows can also be appended
-    for each in page_items:
-        ws.append([each.name, each.item_type.name,
-                  each.item_type.item_category.name, each.uom.name, each.price])
+        # Save the file
+        wb.save(settings.MEDIA_ROOT + '/reports/' + tmpname)
+        os.chmod(settings.MEDIA_ROOT + '/reports/' + tmpname, 0o777)
+        return JsonResponse({
+            'code': 200,
+            'filename': settings.MEDIA_URL + 'reports/' + tmpname,
+            'name':  tmpname
+        })
 
-    # Save the file
-    wb.save(settings.MEDIA_ROOT + '/reports/' + tmpname)
-    os.chmod(settings.MEDIA_ROOT + '/reports/' + tmpname, 0o777)
-    return JsonResponse({
-        'code': 200,
-        'filename': settings.MEDIA_URL + 'reports/' + tmpname,
-        'name':  tmpname
+    elif file_type == "csv":
+        directory_path = settings.MEDIA_ROOT + '/reports/'
+        path = Path(directory_path)
+        path.mkdir(parents=True, exist_ok=True)
+
+        # Clean up any existing CSV files in the directory
+        for f in os.listdir(settings.MEDIA_ROOT + '/reports/'):
+            if not f.endswith(".csv"):
+                continue
+            os.remove(os.path.join(settings.MEDIA_ROOT + '/reports/', f))
+
+        tmpname = "Item" + ".csv"
+
+        with open(os.path.join(directory_path, tmpname), 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(["Name", "Item Type", "Item Category", "UOM", "Price"])
+            for item in page_items:
+                writer.writerow(
+                    [item.name, item.item_type.name, item.item_type.item_category.name, item.uom.name, item.price])
+
+        os.chmod(settings.MEDIA_ROOT + '/reports/' + tmpname, 0o777)
+        return JsonResponse({
+            'code': 200,
+            'filename': settings.MEDIA_URL + 'reports/' + tmpname,
+            'name': tmpname
+        })
+
+    elif file_type == "pdf":
+        # Create a new PDF document with smaller margins
+        pdf = FPDF(orientation='P', unit='mm', format='A4')  # Adjust unit and format if needed
+        pdf.set_left_margin(5)
+        pdf.set_top_margin(5)
+
+        pdf.add_page()
+        pdf.set_font("Arial", size=9)
+
+        # Add a header row with bold text
+        pdf.set_font("Arial", size=9, style='B')  # Set font style to bold
+        pdf.cell(9, 10, txt="S.No.", border=1, align='C')  # Add S.No. column
+        pdf.cell(65, 10, txt="Name", border=1, align='C')
+        pdf.cell(43, 10, txt="Item Type", border=1, align='C')
+        pdf.cell(43, 10, txt="Item Category", border=1, align='C')
+        pdf.cell(20, 10, txt="UOM", border=1, align='C')
+        pdf.cell(20, 10, txt="Price", border=1, align='C')
+        pdf.set_font("Arial", size=9)  # Reset font style to normal
+        pdf.ln(10)  # Move to the next line
+
+        # Cell height (adjust as needed)
+        cell_height = 10
+
+        # Add data rows
+        counter = 1  # Counter for serial numbers
+        for item in page_items:
+            pdf.cell(9, 10, txt=str(counter), border=1, align='C')  # Add S.No. for each row
+            pdf.cell(65, 10, txt=item.name, border=1)
+            pdf.cell(43, 10, txt=item.item_type.name, border=1)
+            pdf.cell(43, 10, txt=item.item_type.item_category.name, border=1)
+            pdf.cell(20, 10, txt=item.uom.name, border=1)
+            # Right align price for each data row
+            pdf.cell(20, 10, txt=str(item.price), align='R', border=1)
+            pdf.ln(10)
+            counter += 1  # Increment counter for next row
+
+        # Save the PDF file
+        directory_path = settings.MEDIA_ROOT + '/reports/'
+        path = Path(directory_path)
+        path.mkdir(parents=True, exist_ok=True)
+        tmpname = "Item.pdf"
+        pdf.output(os.path.join(directory_path, tmpname))
+        os.chmod(os.path.join(directory_path, tmpname), 0o777)
+
+        return JsonResponse({
+            'code': 200,
+            'filename': settings.MEDIA_URL + 'reports/' + tmpname,
+            'name': tmpname
+        })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemReport(request):
+    context = {}
+    item_id = request.POST.get('item_id', None)
+    from_date = request.POST.get('from_date', None)
+    to_date = request.POST.get('to_date', None)
+
+    # Parse from_date and to_date strings to DateTime objects
+    from_date = datetime.strptime(from_date, '%Y-%m-%d').date()
+    to_date = datetime.strptime(to_date, '%Y-%m-%d').date()
+
+    item = models.Item.objects.filter(pk=item_id)
+
+    data = {}
+    if item.exists():
+        item = item.first()
+        # Get all store_transaction_details for the item within the date range
+        store_transaction_details = models.Store_Transaction_Detail.objects.filter(
+            item=item,
+            created_at__range=(from_date, to_date + timedelta(days=1)),  # Include to_date
+        ).select_related('store_transaction_header', 'store_transaction_header__transaction_type')
+
+        # Group store_transaction_details by store
+        for store_transaction_detail in store_transaction_details:
+            store = store_transaction_detail.store
+            if store.name not in data:
+                data[store.name] = []
+            data[store.name].append({
+                'quantity': store_transaction_detail.quantity,
+                'rate': store_transaction_detail.rate,
+                'amount': store_transaction_detail.amount,
+                'gst_percentage': store_transaction_detail.gst_percentage,
+                'amount_with_gst': store_transaction_detail.amount_with_gst,
+                'transaction_type': store_transaction_detail.store_transaction_header.transaction_type.name,
+                'updated_at': store_transaction_detail.updated_at.date()
+            })
+
+    context.update({
+        'status': 200,
+        'message': "Items Fetched Successfully.",
+        'page_items': data,
     })
+
+    return JsonResponse(context)
 
 
 @api_view(['GET'])
