@@ -10,6 +10,7 @@ import environ
 import json
 import os
 from sec import settings
+from num2words import num2words
 env = environ.Env()
 environ.Env.read_env()
 
@@ -898,11 +899,35 @@ def materialIssueView(request,id):
     return render(request, 'portal/Material Issue/view.html', context)
 
 
+@login_required
+def materialIssuePrint(request, id):
+    materialIssue = models.Store_Transaction.objects.prefetch_related(
+        'store_transaction_detail_set').get(pk=id)
+    total_amount = 0
+    materialIssuestores = list(models.Store_Transaction_Detail.objects.filter(store_transaction_header = id).values('pk','store__name',
+    'store__address','store__country__name',
+    'store__state__name',
+    'store__city__name',
+    'store__pin'))
+    
+    materialIssueNumToword = num2words(float(materialIssue.total_amount))
+    print(materialIssueNumToword)
+    # print(materialIssuestores[0])
+
+    context.update({
+        'page_title': "Delivery Challan",
+        'materialIssue': materialIssue,
+        'materialIssuestore':materialIssuestores[0],
+        'materialIssueNumToword': materialIssueNumToword
+    })
+    return render(request, 'portal/Material Issue/print.html', context)
+
+
 # @login_required
 def returnMaterialListView(id,type_id):
     context = {}
-    material_issue = models.Store_Transaction.objects.filter(pk=id).values('pk','transaction_number','transaction_date','vendor_id','vendor__name','transaction_type_id','job_order__order_number')
-    material_issue_details = list(models.Store_Transaction_Detail.objects.filter(store_transaction_header_id=id).values('pk','item_id', 'item__name','store_id','store__name','quantity'))
+    material_issue = models.Store_Transaction.objects.filter(pk=id).values('pk','transaction_number','transaction_date','vendor_id','vendor__name','transaction_type_id','job_order__order_number','total_amount','vehicle')
+    material_issue_details = list(models.Store_Transaction_Detail.objects.filter(store_transaction_header_id=id).values('pk','item_id', 'item__name','store_id','store__name','quantity','rate','amount'))
     if(type_id == 1):
         context.update({
             'material_issue':  material_issue,
@@ -1084,6 +1109,27 @@ def materialOutView(request,id):
 
     return render(request, 'portal/Material Out/view.html', context)
 
+@login_required
+def materialOutPrint(request, id):
+    materialOut = models.On_Transit_Transaction.objects.prefetch_related(
+        'on_transit_transaction_details_set').get(pk=id)
+    total_amount = 0
+    total_quantity = 0
+    materialOutDets = list(models.On_Transit_Transaction_Details.objects.filter(on_transit_transaction_header_id = id).values('quantity','amount'))
+    
+    for index in range (0,len(materialOutDets)):
+        total_quantity += float(materialOutDets[index]['quantity'])
+        total_amount += float(materialOutDets[index]['amount'])
+
+
+    context.update({
+        'page_title': "DELIVERY CHALLAN",
+        'materialOut': materialOut,
+        'total_amount' : total_amount,
+        'total_quantity': total_quantity
+    })
+    return render(request, 'portal/Material Out/print.html', context)
+
 # material in
 @login_required
 def materialInList(request):
@@ -1219,5 +1265,6 @@ def purchaseBillView(request,id):
     })
 
     return render(request, 'portal/Purchase Bill/view.html', context)
+
 
 

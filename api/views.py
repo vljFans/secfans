@@ -1461,7 +1461,7 @@ def itemTypeList(request):
     itemCatId = request.GET.get('itemCatId', None)
     if id is not None and id != "":
         itemType = list(models.Item_Type.objects.filter(pk=id)[:1].values(
-            'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
+            'pk', 'name', 'item_category__name', 'gst_percentage'))
         context.update({
             'status': 200,
             'message': "Item Type Fetched Successfully.",
@@ -1469,7 +1469,7 @@ def itemTypeList(request):
         })
     elif itemCatId is not None and itemCatId != "":
         itemType = list(models.Item_Type.objects.filter(item_category_id=itemCatId).values(
-            'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
+            'pk', 'name', 'item_category__name', 'gst_percentage'))
         # print(itemType)
         context.update({
             'status': 200,
@@ -1482,10 +1482,10 @@ def itemTypeList(request):
                 Q(name__icontains=keyword) | Q(item_category__name__icontains=keyword) | Q(
                     hsn_code__icontains=keyword)
             ).filter(status=1, deleted=0).values(
-                'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
+                'pk', 'name', 'item_category__name', 'gst_percentage'))
         else:
             itemTypes = list(models.Item_Type.objects.filter(status=1, deleted=0).values(
-                'pk', 'name', 'item_category__name', 'hsn_code', 'gst_percentage'))
+                'pk', 'name', 'item_category__name', 'gst_percentage'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -1536,7 +1536,6 @@ def itemTypeAdd(request):
             itemType = models.Item_Type()
             itemType.name = request.POST['name']
             itemType.item_category_id = request.POST['item_category_id']
-            itemType.hsn_code = request.POST['hsn_code']
             itemType.gst_percentage = request.POST['gst_percentage']
             itemType.save()
         transaction.commit()
@@ -1576,7 +1575,6 @@ def itemTypeEdit(request):
             itemType = models.Item_Type.objects.get(pk=request.POST['id'])
             itemType.name = request.POST['name']
             itemType.item_category_id = request.POST['item_category_id']
-            itemType.hsn_code = request.POST['hsn_code']
             itemType.gst_percentage = request.POST['gst_percentage']
             itemType.updated_at = datetime.now()
             itemType.save()
@@ -1776,7 +1774,7 @@ def itemList(request):
     item_category_id = request.GET.get('item_category_id', None)
     if id is not None and id != "":
         item = list(models.Item.objects.filter(pk=id)[:1].values(
-            'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price'))
+            'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price','hsn_code'))
         context.update({
             'status': 200,
             'message': "Item Fetched Successfully.",
@@ -1793,15 +1791,11 @@ def itemList(request):
             items=items.filter(item_type_id=item_type_id)
 
         if keyword is not None and keyword != "":
-            items = list(items.filter(
-                                        Q(name__icontains=keyword) | Q(item_type__name__icontains=keyword) | Q(uom__name__icontains=keyword)
-                                     ).values(
-                                                'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price')
-                                     )
-
+            items = list(models.Item.objects.filter(Q(name__icontains=keyword) | Q(item_type__name__icontains=keyword) | Q(uom__name__icontains=keyword)).filter(
+                status=1, deleted=0).values('pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price','hsn_code'))
         else:
-            items = list(items.values(
-                'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price'))
+            items = list(models.Item.objects.filter(status=1, deleted=0).values(
+                'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price','hsn_code'))
 
         if find_all is not None and int(find_all) == 1:
             context.update({
@@ -1857,6 +1851,7 @@ def itemAdd(request):
             item.item_type_id = request.POST['item_type_id']
             if request.POST['price']:
                 item.price = request.POST['price']
+            item.hsn_code = request.POST['hsn_code']
             item.save()
         transaction.commit()
         context.update({
@@ -1897,6 +1892,7 @@ def itemEdit(request):
             item.item_type_id = request.POST['item_type_id']
             item.uom_id = request.POST['uom_id']
             item.price = request.POST['price']
+            item.hsn_code = request.POST['hsn_code']
             item.updated_at = datetime.now()
             item.save()
         transaction.commit()
@@ -4248,7 +4244,7 @@ def jobOrderDetails(request):
     header_id = request.GET.get('header_id', None)
     if header_id is not None and header_id != "":
         header_detail = list(models.Job_Order.objects.filter(pk=header_id)[:1].values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor_id', 'vendor__name', 'with_item', 'notes'))
-        orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'item__name'))
+        orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'item__name','item__price'))
         context.update({
             'status': 200,
             'message': "Job Order Details Fetched Successfully.",
@@ -4295,14 +4291,17 @@ def getActualQuantity(request):
     
     try:
         store_item = models.Store_Item.objects.get(store_id=int(store_id), item_id=int(item_id))
+        item =  models.Item.objects.get( pk=int(item_id))
         context.update({
             'status': 200,
-            'on_hand_qty_res': store_item.on_hand_qty
+            'on_hand_qty_res': store_item.on_hand_qty,
+            'item_price' : item.price
         })
     except:
         context.update({
             'status': 200,
-            'on_hand_qty_res': '0.00'
+            'on_hand_qty_res': '0.00',
+            'item_price' : item.price
         })
     
     return JsonResponse(context)
@@ -4381,6 +4380,9 @@ def materialIssueAdd(request):
                 )
             storeTransactionHeader.transaction_date=request.POST['issue_date']
             storeTransactionHeader.job_order_id = request.POST['job_order_id']
+            storeTransactionHeader.total_amount = request.POST['total_amount']
+            if request.POST['vehicle']!="" and request.POST.get('vehicle',None):
+                storeTransactionHeader.vehicle = request.POST['vehicle']
             storeTransactionHeader.save()
 
             store_transaction_details = []
@@ -4391,7 +4393,9 @@ def materialIssueAdd(request):
                         store_transaction_header=storeTransactionHeader,
                         item_id=elem,
                         store_id=request.POST['store_id'],
-                        quantity=float(request.POST.getlist('quantity_sent')[index])
+                        quantity=float(request.POST.getlist('quantity_sent')[index]),
+                        rate = float(request.POST.getlist('rate')[index]),
+                        amount = float(request.POST.getlist('amount')[index])
                     )
                 )
 
@@ -4461,6 +4465,14 @@ def materialIssueEdit(request):
             item_id = request.POST.getlist('item_id')
             issue_date=request.POST['issue_date']
             store_transaction_id = request.POST['id']
+            storeTransactionHeader=models.Store_Transaction.objects.get(pk = store_transaction_id)
+            # print(request.POST)
+            # print(storeTransactionHeader)
+            # return
+            storeTransactionHeader.total_amount = request.POST['total_amount']
+            if request.POST['vehicle']!="" and request.POST.get('vehicle',None):
+                storeTransactionHeader.vehicle = request.POST['vehicle']
+            storeTransactionHeader.save()
 
             for index in range(0,len(item_id)):
                 if(vendor_id):
@@ -4472,6 +4484,8 @@ def materialIssueEdit(request):
 
                 store_transaction_deat_update = models.Store_Transaction_Detail.objects.get(store_transaction_header_id=store_transaction_id,item_id= item_id[index])
                 store_transaction_deat_update.quantity = request.POST.getlist('quantity_sent')[index]
+                store_transaction_deat_update.rate = request.POST.getlist('rate')[index]
+                store_transaction_deat_update.amount = request.POST.getlist('amount')[index]
                 store_transaction_deat_update.updated_at = datetime.now()
                 store_transaction_deat_update.save()
 
@@ -5027,6 +5041,7 @@ def materialOutDetailsAdd(request):
             on_transit_transaction_header.source_store_id = request.POST['sourceStore']
             # print("hello" )
             on_transit_transaction_header.destination_store_id = request.POST['desStore']
+            on_transit_transaction_header.vechical_no = request.POST['vehicle_no']
             on_transit_transaction_header.save()
             # store transaction header  for material out save
 
@@ -5147,8 +5162,20 @@ def materialOutDetailsEdit(request):
     context = {}
     # print(request.POST)
     try:
-        pass
+        print(request.POST)
+        with transaction.atomic():
 
+            # on transit transaction for material out header save
+
+            on_transit_transaction_header = models.On_Transit_Transaction.objects.get(pk=request.POST['pk'])
+           
+            on_transit_transaction_header.vechical_no = request.POST['vehicle_no']
+            on_transit_transaction_header.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Material Out Edited Sucessfully"
+        })
     except Exception:
         pass
         context.update({

@@ -91,6 +91,10 @@
                                 <input type="date" name="issue_date" class="form-control" value="{{obj.transaction_date |date:'Y-m-d'}}"
                                 readonly>
                             </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Vehicle </label>
+                                <input type="text" id="vehicle" name="vehicle" class="form-control" placeholder="vehicle name" value={% if obj.vehicle != null %} "{{obj.vehicle}}" {% else %} "" {% endif %}  readonly >
+                            </div>
 
                             <div class="col-md-12" id="table_form">
                                 {% for obj1 in  material_issue_details %}
@@ -100,7 +104,13 @@
                                         <input type="hidden" class="item_id" name="item_id" value="{{obj1.item_id}}">
                                         <input type="text" class="form-control item_name" name="item_name" value="{{obj1.item__name}}"  readonly required>
                                     </div>
-
+                                    <div class="col-md-3 mb-3">
+                                        <label>Rate <span class="required-indicator">*</span></label>
+                                        <input type="text" 
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="rate" min="0.01" class="form-control rate" value="{{obj1.rate}}"
+                                            placeholder="0.00" readonly>
+                                    </div>
 
                                     <div class="col-md-4 mb-3">
                                         <label>quantity issued<span class="required-indicator">*</span></label>
@@ -109,9 +119,25 @@
                                             name="quantity_sent" min="0.01" class="form-control quantity_sent" value="{{obj1.quantity}}"
                                             placeholder="0.00" readonly>
                                     </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label>Amount <span class="required-indicator">*</span></label>
+                                        <input type="text" 
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="amount" min="0.01" class="form-control amount" value="{{obj1.amount}}"
+                                            placeholder="0.00" readonly>
+                                    </div>
                                 </div>
 
                                 {% endfor %}
+                                <div class="col-md-12" id="tAmount">
+                                    <div class="col-md-3 mb-3">
+                                        <label>Total Amount <span class="required-indicator">*</span></label>
+                                        <input type="text" 
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="total_amount" min="0.01" class="form-control total_amount" value="{{obj.total_amount}}"
+                                            placeholder="0.00" readonly>
+                                    </div>
+                                </div>
                                 
                             </div>
                             

@@ -107,6 +107,7 @@ urlpatterns = [
     path('material-issue-add',views.materialIssueAdd, name='materialIssueAdd'),
     path('material-issue-edit/<int:id>',views.materialIssueEdit, name='materialIssueEdit'),
     path('material-issue-view/<int:id>',views.materialIssueView, name='materialIssueView'),
+    path('material-issue-print/<int:id>',views.materialIssuePrint, name='materialIssuePrint'),
 
     path('grn-inspection-list',views.grnInspectionListView , name = 'grnInspectionListView'),
     path('grn-inspection-add',views.grnInspectionAdd , name = 'grnInspectionAdd'),
@@ -127,6 +128,8 @@ urlpatterns = [
     path('material-out-add',views.materialOutAdd, name='materialOutAdd'),
     path('material-out-edit/<int:id>',views.materialOutEdit, name='materialOutEdit'),
     path('material-out-view/<int:id>',views.materialOutView, name='materialOutView'),
+     path('material-out-print/<int:id>',views.materialOutPrint, name='materialOutPrint'),
+
 
 
     # material in 
@@ -143,8 +146,8 @@ urlpatterns = [
     path('purchase-bill-list',views.purchaseBillList, name='purchaseBillList'),
     path('purchase-bill-add',views.purchaseBillAdd, name='purchaseBillAdd'),
     path('purchase-bill-edit/<int:id>',views.purchaseBillEdit, name='purchaseBillEdit'),
-    path('purchase-bill-view/<int:id>',views.purchaseBillView, name='purchaseBillView')
-
+    path('purchase-bill-view/<int:id>',views.purchaseBillView, name='purchaseBillView'),
+   
 
 
 ]

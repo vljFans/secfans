@@ -1,0 +1,258 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+    <title>{{page_title}}</title>
+    <style type="text/css">
+        body {
+            position: absolute;
+            top: 2%;
+            left: 2%;
+            right: 2%;
+        }
+
+        table,
+        th,
+        tr,
+        td {
+            border: 1px solid rgb(195, 195, 195);
+        }
+
+        tr,
+        th,
+        td {
+            font-family: sans-serif;
+            font-size: 12px;
+            padding: 7px;
+            text-align: left;
+        }
+
+        .fs-16 {
+            font-size: 16px;
+            
+        }
+
+        .fs-10 {
+            font-size: 10px;
+            
+        }
+        .fs-8 {
+            font-size: 8px;
+            
+        }
+
+        .fs-11 {
+            font-size: 11px;
+        }
+
+        .upperTab{
+            margin-left: 0px;
+            margin-right:0px;
+            padding: 0px;
+           }
+    </style>
+</head>
+
+<body >
+    <div style="text-align: center; width: 100%; padding-left: 150px;">
+        <table style="border-width:0px; border-spacing:0px;width: 100%;">
+        <tr>
+            <td style=" border: white; text-align: center; padding-left: 10px;" colspan="3"><strong class="fs-16">{{ page_title|upper }}</strong></td>
+            <td style=" border: white; margin-left: 600px;" colspan="3"><p >(ORIGINAL FOR RECIPIENT)</p></td>
+        </tr>
+        </table>     
+    </div>
+    <div style="border: 1px solid black;">
+        <div style="width: 100%; border-color: 1px solid black;">
+            <table style="border-width:0px; border-spacing:0px; width: 100%;">
+            <tr>
+                <td style="width:60%; margin-top: -10px;">
+                    <Strong>Shiva Engineering Co.</Strong><br>
+                    
+                        47, Biplabi Anukul Chandra Street, Kolkata-72<br>
+                        Factory214A, Raja Ram Mohon Roy Road, Kolkata, W.B- 700008<br>
+                        16F, Khanpur Road, Kolkata, West Bengal, 700047<br>
+                        Sarmastarchak, D H Road, Kolkata, South 24 Parganas, W B- 700104<br>
+                        2D, Temple Street, Kolkata - 700072<br>
+                        CONTACT - 9433525676_IEC CODE- 0216927218 UDYAM-WB-10-0017669_ MEDIUM<br>
+                        GSTIN/UIN: 19ACRPJ8066A1ZC<br>
+                        State Name : West Bengal, Code : 19<br>
+                        E-Mail : shivaenggco@yahoo.in/shivaenggco1987@gmail.com<br>
+                   
+                </td>
+                <td colspan="10" rowspan="12" style="width:40%; padding: 0px;">
+                    <table style=" width: 100%;" >
+                        <tr>
+                            <td>Challan No.<br>
+                            <strong>{{materialIssue.transaction_number}}</strong>
+                            </td>
+                            <td>Date. <br>
+                            <strong>{{materialIssue.transaction_date}}</strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                Mode/Terms of Payment <br>
+                                <strong></strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td> Reference No. & Date. <br>
+                            <strong>{{materialIssue.job_order.order_number}} &nbsp; {{materialIssue.job_order.order_date | date:'d-m-Y' }}</strong>
+                            </td>
+                            <td> Other References
+    
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Dispatch Doc No.</td>
+                            <td></td>
+                        </tr>
+                       
+                        <tr>
+                            <td>Dispatched through.
+                                <br>
+                                {% if materialIssue.vehicle != null %}
+                                <strong>
+                                    VEHICLE
+                                </strong>
+                                {% endif %}
+                            </td>
+                            <td>Destination
+                                <br>
+                                <strong>{{materialIssuestore.store__address}}</strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Bill of Lading/LR-RR No.
+                                <br>
+                                <strong></strong>
+                            </td>
+                            <td>Motor Vehicle No.
+                                <br>
+                                {% if materialIssue.vehicle != null %}
+                                <strong>
+                                    {{materialIssue.vehicle}}
+                                </strong>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Date & Time of Issue
+                                <br>
+                                <strong>{{materialIssue.transaction_date | date:'d-m-Y' }}</strong>
+                            </td>
+                            <td>Duration of Process</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="5" colspan="2">Nature of Processing <br>
+                                <br>
+                                <br>
+                            </td>
+                            
+                        </tr>
+                        
+                    </table>
+                </td>
+                   
+            <tr>
+                <td>Dispatch To <br>
+                    <strong>{{materialIssuestore.store__name}}</strong>
+                    <p style="margin-top: 0px;">{{materialIssuestore.store__address}}</p>
+                    <p style="margin-top: -5px;"> {{materialIssuestore.store__country__name}} &nbsp; {{materialIssuestore.store__state__name}} &nbsp; {{materialIssuestore.store__city__name}}</p>
+                    <p style="margin-top: -5px;"> {{materialIssuestore.store__pin}}</p>
+                    
+                </td>
+            </tr>
+            <tr>
+                <td>Party <br>
+                    <strong>{{materialIssue.vendor.name}}</strong>
+                    <p style="margin-top: 0px;">{{materialIssue.vendor.address}}</p>
+                    <p style="margin-top: -5px;"> {{materialIssuestore.vendor.country.name}} &nbsp; {{materialIssuestore.vendor.state.name}} &nbsp; {{materialIssuestore.vendor.city.name}}</p>
+                    <p style="margin-top: -5px;"> {{materialIssuestore.vendor.pin}}</p>
+                </td>
+                
+            </tr>
+            </table>
+            <table style="border-width:0px; border-spacing:0px; width: 100%;">
+              <tr>
+                <th>Sl No</th>
+                <th>Description of Goods</th>
+                <th>HSN/SAC</th>
+                <th>Quantity</th>
+                <th>Rate</th>
+                <th>per</th>
+                <th>Amount</th>
+              </tr>
+              {% for materialIssueDet in materialIssue.store_transaction_detail_set.all %}
+              <tr>
+                  <td>{{forloop.counter}}</td>
+                  <td>{{materialIssueDet.item.name}}</td>
+                  <td>{{materialIssueDet.item.hsn_code}}</td>
+                  <td>{{materialIssueDet.quantity}}</td>
+                  <td>{{materialIssueDet.rate}}</td>
+                  <td>{{materialIssueDet.item.uom.name}}</td>
+                  <td>{{materialIssueDet.amount}}</td>
+              </tr>
+              {% endfor %}
+            </table>
+        </div>
+        <!-- <table style="border-width:0px; border-spacing:0px; width: 100%;">
+            <tr>
+                <td rowspan="3" colspan="4" style="width:40%;"><strong class="fs-16">{{client_name}}.</strong><br>
+                    {{client_address}},<br>
+                    Ph. – {{client_contact}}<br>
+                    Works – {{client_work_address}}
+                </td>
+               
+        </table> -->
+        
+        <div>
+            <table style="border-width:0px; border-spacing:0px; width:100%; padding-top: 10px; ">
+               <tr>
+                
+                <td>Total: &nbsp;{{materialIssue.total_amount}} <br>
+                ({{materialIssueNumToword}})
+                </td>
+               </tr>
+            </table>
+        </div> 
+        <div>
+        
+            <table style="border-width:0px; border-spacing:0px; width:50%; padding-top: 200px; padding-left: 80px; margin-left: 346px;">
+                <tr>
+                    <td rowspan="10"><p style="float: right; margin-top: 0px">for Shiva Engineering Co.</p>
+                    <br>
+                    <p></p><br>
+                    <br>
+                    <p style="text-align: center;"> Authorised Signatory</p>
+                    </td>
+                </tr>
+             </table>
+        </div>
+    </div>
+</body>
+<footer>
+    <div>
+        <table style=" border-width:0px; border-spacing:0px; width:50%; padding-left: 80px; margin-left: 80px;">
+           <tr>
+               <td rowspan="10" style="text-align: center; border: white;"> SUBJECT TO KOLKATA JURISDICTION <br>
+                   This is a Computer Generated Document
+               </td>
+           </tr>
+        </table>
+    </div>
+     
+</footer>
+
+
+</html>
+
+<script>
+    $(document).ready(function () {
+        window.print();
+    });
+</script>

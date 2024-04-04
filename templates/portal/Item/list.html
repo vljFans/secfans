@@ -150,6 +150,7 @@
                                     <th>Item Type</th>
                                     <th>UOM</th>
                                     <th>Price</th>
+                                    <th>HSN Code</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -194,6 +195,7 @@
                                 <td>${element.item_type__name} (${element.item_type__item_category__name})</td>
                                 <td>${element.uom__name}</td>
                                 <td>₹${element.price}</td>
+                                <td>${element.hsn_code}</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'change_item'|get_session_permission:request is not None %}
                                 <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    

@@ -283,7 +283,6 @@ class Item_Type(models.Model):
     name = models.CharField(max_length=50, blank=True, null=True)
     item_category = models.ForeignKey(
         Item_Category, on_delete=models.CASCADE, blank=True, null=True)
-    hsn_code = models.CharField(max_length=40, blank=True, null=True)
     gst_percentage = models.DecimalField(
         default=0, max_digits=10, decimal_places=2)
     status = models.SmallIntegerField(default=1)
@@ -323,6 +322,7 @@ class Item(models.Model):
         Item_Type, on_delete=models.CASCADE, blank=True, null=True)
     uom = models.ForeignKey(
         Uom, on_delete=models.CASCADE, blank=True, null=True)
+    hsn_code = models.CharField(max_length=40, blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
@@ -633,6 +633,7 @@ class Store_Transaction(models.Model):
     transaction_number = models.CharField(max_length=25, blank=True, null=True)
     transaction_date = models.DateField(blank=True, null=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    vehicle = models.CharField(max_length=25, blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
@@ -679,6 +680,7 @@ class On_Transit_Transaction(models.Model):
     transaction_number = models.CharField(max_length=25, blank=True, null=True)
     transaction_date = models.DateField(blank=True, null=True)
     transaction_in_date = models.DateField(blank=True, null=True)
+    vechical_no = models.CharField(max_length=50, blank=True, null=True)
     source_store =  models.ForeignKey(
         Store, on_delete=models.CASCADE, blank=True, null=True , related_name="source_store")
     destination_store =  models.ForeignKey(
