@@ -13,7 +13,7 @@ from django.core import serializers
 from django.http import JsonResponse
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.hashers import make_password, check_password
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.utils.timezone import now
 from openpyxl import Workbook
 from django.db import transaction
@@ -2058,6 +2058,54 @@ def itemExport(request):
             'filename': settings.MEDIA_URL + 'reports/' + tmpname,
             'name': tmpname
         })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def itemReport(request):
+    context = {}
+    item_id = request.POST.get('item_id', None)
+    from_date = request.POST.get('from_date', None)
+    to_date = request.POST.get('to_date', None)
+
+    # Parse from_date and to_date strings to DateTime objects
+    from_date = datetime.strptime(from_date, '%Y-%m-%d').date()
+    to_date = datetime.strptime(to_date, '%Y-%m-%d').date()
+
+    item = models.Item.objects.filter(pk=item_id)
+
+    data = {}
+    if item.exists():
+        item = item.first()
+        # Get all store_transaction_details for the item within the date range
+        store_transaction_details = models.Store_Transaction_Detail.objects.filter(
+            item=item,
+            created_at__range=(from_date, to_date + timedelta(days=1)),  # Include to_date
+        ).select_related('store_transaction_header', 'store_transaction_header__transaction_type')
+
+        # Group store_transaction_details by store
+        for store_transaction_detail in store_transaction_details:
+            store = store_transaction_detail.store
+            if store.name not in data:
+                data[store.name] = []
+            data[store.name].append({
+                'quantity': store_transaction_detail.quantity,
+                'rate': store_transaction_detail.rate,
+                'amount': store_transaction_detail.amount,
+                'gst_percentage': store_transaction_detail.gst_percentage,
+                'amount_with_gst': store_transaction_detail.amount_with_gst,
+                'transaction_type': store_transaction_detail.store_transaction_header.transaction_type.name,
+                'updated_at': store_transaction_detail.updated_at.date()
+            })
+
+    context.update({
+        'status': 200,
+        'message': "Items Fetched Successfully.",
+        'page_items': data,
+    })
+
+    return JsonResponse(context)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

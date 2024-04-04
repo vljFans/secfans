@@ -66,6 +66,7 @@ urlpatterns = [
     path('item-list', views.itemList, name='itemList'),
     path('item-add', views.itemAdd, name='itemAdd'),
     path('item-edit/<int:id>', views.itemEdit, name='itemEdit'),
+    path('item-report', views.itemReport, name='itemReport'),
 
     path('store-list', views.storeList, name='storeList'),
     path('store-add', views.storeAdd, name='storeAdd'),
