@@ -521,6 +521,7 @@ def storeEdit(request, id):
     return render(request, 'portal/Store/edit.html', context)
 
 
+
 @login_required
 def billOfMaterialList(request):
     context.update({
@@ -732,6 +733,15 @@ def storeItemEdit(request, id):
     })
     return render(request, 'portal/Store Item/edit.html', context)
 
+@login_required
+def storeItemReport(request):
+    context.update({
+        'page_title': "StoreWise Item  Report",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "StoreWise", 'url': reverse('superuser:storeItemReport')}, {'name': "Report"}]
+    })
+    return render(request, 'portal/Store Item/Report.html', context)
+
+
 
 @login_required
 def storeTransactionList(request):
@@ -796,6 +806,14 @@ def storeTransactionView(request, id):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}, {'name': "View"}]
     })
     return render(request, 'portal/Store Transaction/view.html', context)
+
+@login_required
+def storeTransactionReport(request):
+    context.update({
+        'page_title': "Inventory Summary  Report",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Inventory Summary", 'url': reverse('superuser:storeTransactionReport')}, {'name': "Report"}]
+    })
+    return render(request, 'portal/Store Transaction/Report.html', context)
 
 
 @login_required
@@ -1129,6 +1147,13 @@ def materialOutPrint(request, id):
         'total_quantity': total_quantity
     })
     return render(request, 'portal/Material Out/print.html', context)
+@login_required
+def stocktransferReport(request):
+    context.update({
+        'page_title': "Stock Transfer Report",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Stock Transfer", 'url': reverse('superuser:stocktransferReport')}, {'name': "Report"}]
+    })
+    return render(request, 'portal/Material Out/Report.html', context)
 
 # material in
 @login_required
@@ -1169,6 +1194,8 @@ def materialInView(request,id):
                         {'name': "view"}]
     })
     return render(request, 'portal/Material In/view.html', context)
+
+
 
 # physical Inspection on Store Items --- developed by saswata
 

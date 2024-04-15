@@ -1,0 +1,5 @@
+Transaction number,Item,Source,Destination,Material Out Date,Material Out Quantity,Material In Date,Material In Quantity
+SEC_MAT_OUT_2024/00004,Fitting Screw,store 1,store 2,2024-03-07,15.00000,2024-03-07,12.00000
+SEC_MAT_OUT_2024/00005,Blade,store 1,store 2,2024-03-26,350.00000,,
+SEC_MAT_OUT_2024/00005,Fitting Screw,store 1,store 2,2024-03-26,400.00000,,
+SEC_MAT_OUT_2024/00005,PVC Socket,store 1,store 2,2024-03-26,600.00000,,

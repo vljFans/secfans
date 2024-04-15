@@ -102,12 +102,16 @@ urlpatterns = [
     path('store-item-edit', views.storeItemEdit, name='storeItemEdit'),
     path('store-item-delete', views.storeItemDelete, name='storeItemDelete'),
     path('store-item-export', views.storeItemExport, name='storeItemExport'),
+    path('store-item-report', views.storeItemReport, name='storeItemReport'),
+    path('store-item-report-export', views.storeItemReportExport, name='storeItemReportExport'),
+
 
     path('store-transaction-list', views.storeTransactionList, name='storeTransactionList'),
     path('store-transaction-add', views.storeTransactionAdd, name='storeTransactionAdd'),
     path('store-transaction-edit', views.storeTransactionEdit, name='storeTransactionEdit'),
     path('store-transaction-delete', views.storeTransactionDelete, name='storeTransactionDelete'),
     path('store-transaction-details', views.storeTransactionDetails, name='storeTransactionDetails'),
+    path('store-transaction-report', views.storeTransactionReport, name='storeTransactionReport'),
 
     path('job-order-list', views.jobOrderList, name='jobOrderList'),
     path('job-order-add', views.jobOrderAdd, name='jobOrderAdd'),
@@ -132,11 +136,14 @@ urlpatterns = [
 
     path('on-transit-transaction-list', views.getOnTransitTransactionHeadersList, name='getOnTransitTransactionHeadersList'),
     path('on-transit-transaction-all-list', views.getOnTransitTransactionDetalisList, name='getOnTransitTransactionDetalisList'),
+    path('store-transfer-report', views.storeTransferReport, name='storeTransferReport'),
+    path('store-transfer-report-export', views.storeTransferReportExport, name='storeTransferReportExport'),
+    
     # material out
     path('material-out-details-add', views.materialOutDetailsAdd, name='materialOutDetailsAdd'),
     path('material-out-details-delete', views.materialOutDetailsDelete, name='materialOutDetailsDelete'),
     path('material-out-details-edit', views.materialOutDetailsEdit, name='materialOutDetailsEdit'),
-    # path('', views.grnInspectionHeaderList, name='grnInspectionHeaderList'), 
+    # path('', views.grnInspectionHeaderList, name='grnInspectionHeaderList'), storeTransferReport
 
     # material in
     path('material-in-details-add', views.materialInDetailsAdd, name='materialInDetailsAdd'),
