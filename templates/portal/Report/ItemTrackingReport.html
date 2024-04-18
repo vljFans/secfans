@@ -11,14 +11,14 @@
     <!--================================-->
     <div class="pageheader pd-t-25 pd-b-35">
         <div class="row">
-            <div class="col-4 d-flex justify-content-between">
+            <div class="col-6 d-flex justify-content-between">
                 <div class="clearfix">
                     <div class="pd-t-5 pd-b-5">
                         <h1 class="pd-0 mg-0 tx-20 tx-dark">{{parent_page_title}} {{page_title}}</h1>
                     </div>
                     <div class="breadcrumb pd-0 mg-0">
                         {% for breadcrumb in breadcrumbs %}
-                        {% if forloop.counter == 1 %}
+                        {% if forloop.counter == 1 or forloop.counter == 3%}
                         <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
                         {% else %}
                         <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
@@ -27,7 +27,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-8">
+            <div class="col-md-6">
                 <div class="float-end d-flex justify-content-end" style="padding-top: 10px;">
                     <button type="button" file_type="pdf" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">PDF</button>
                     <button type="button" file_type="csv" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">CSV</button>
@@ -148,6 +148,10 @@
 {% endblock %}
 
 {% block js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
 <script>
     // Example starter JavaScript for disabling form submissions if there are invalid fields
     (function () {
@@ -168,10 +172,6 @@
         }, false);
     })();
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
 
 <script>
     
@@ -213,7 +213,7 @@
             evalScripts: true,
             contentType: false,
             processData: false,
-            url: "{% url 'api:itemReport' %}",
+            url: "{% url 'api:reportItemTrackingReport' %}",
             data: formData,
             headers: {
                 'Authorization': getCookieValue("accessToken")
