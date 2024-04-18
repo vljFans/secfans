@@ -27,7 +27,6 @@ import math
 import environ
 import csv
 from fpdf import FPDF
-from django_group_by import GroupByMixin
 
 env = environ.Env()
 environ.Env.read_env()
