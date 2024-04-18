@@ -474,15 +474,6 @@ def itemEdit(request, id):
 
 
 @login_required
-def itemReport(request):
-    context.update({
-        'page_title': "Item Tracking Report",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Item", 'url': reverse('superuser:itemReport')}, {'name': "Report"}]
-    })
-    return render(request, 'portal/Item/Report.html', context)
-
-
-@login_required
 def storeList(request):
     context.update({
         'page_title': "Store List",
@@ -794,7 +785,6 @@ def storeTransactionEdit(request, id):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}, {'name': "Edit"}]
     })
     return render(request, 'portal/Store Transaction/edit.html', context)
-
 
 
 @login_required
@@ -1112,6 +1102,7 @@ def materialOutEdit(request,id):
 
     return render(request, 'portal/Material Out/edit.html', context)
 
+
 @login_required
 def materialOutView(request,id):
 
@@ -1126,6 +1117,7 @@ def materialOutView(request,id):
     })
 
     return render(request, 'portal/Material Out/view.html', context)
+
 
 @login_required
 def materialOutPrint(request, id):
@@ -1167,6 +1159,7 @@ def materialInList(request):
 
     return render(request, 'portal/Material In/list.html', context)
 
+
 @login_required
 def materialInAdd(request):
 
@@ -1180,7 +1173,8 @@ def materialInAdd(request):
     })
 
     return render(request, 'portal/Material In/add.html', context)
-    
+
+
 @login_required
 def materialInView(request,id):
 
@@ -1210,6 +1204,7 @@ def physicalInspectionList(request):
 
     return render(request, 'portal/Physcial Inspection Store/list.html', context)
 
+
 @login_required
 def physicalInspectionAdd(request):
 
@@ -1225,6 +1220,7 @@ def physicalInspectionAdd(request):
     })
 
     return render(request, 'portal/Physcial Inspection Store/add.html', context)
+
 
 @login_required
 def physicalInspectionView(request,id):
@@ -1253,6 +1249,7 @@ def purchaseBillList(request):
 
     return render(request, 'portal/Purchase Bill/list.html', context)
 
+
 @login_required
 def purchaseBillAdd(request):
     vendor_list = list(models.Vendor.objects.filter(status = 1, deleted =0).values('pk','name'))
@@ -1265,6 +1262,7 @@ def purchaseBillAdd(request):
     })
 
     return render(request, 'portal/Purchase Bill/add.html', context)
+
 
 @login_required
 def purchaseBillEdit(request,id):
@@ -1279,6 +1277,8 @@ def purchaseBillEdit(request,id):
     })
 
     return render(request, 'portal/Purchase Bill/edit.html', context)
+
+
 @login_required
 def purchaseBillView(request,id):
 
@@ -1294,4 +1294,10 @@ def purchaseBillView(request,id):
     return render(request, 'portal/Purchase Bill/view.html', context)
 
 
-
+@login_required
+def reportItemTrackingReport(request):
+    context.update({
+        'page_title': "Item Tracking Report",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports", 'url': reverse('superuser:reportItemTrackingReport')}, {'name': "Item Tracking Report"}]
+    })
+    return render(request, 'portal/Report/ItemTrackingReport.html', context)

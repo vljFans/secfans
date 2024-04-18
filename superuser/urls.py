@@ -66,7 +66,6 @@ urlpatterns = [
     path('item-list', views.itemList, name='itemList'),
     path('item-add', views.itemAdd, name='itemAdd'),
     path('item-edit/<int:id>', views.itemEdit, name='itemEdit'),
-    path('item-report', views.itemReport, name='itemReport'),
 
     path('store-list', views.storeList, name='storeList'),
     path('store-add', views.storeAdd, name='storeAdd'),
@@ -122,7 +121,6 @@ urlpatterns = [
     path('material-return-edit/<int:id>',views.materialReturnEdit, name='materialReturnEdit'),
     path('material-return-view/<int:id>',views.materialReturnView, name='materialReturnView'),
 
-
     # path on transit transaction ---developed by saswata
 
     # material out
@@ -150,6 +148,6 @@ urlpatterns = [
     path('purchase-bill-edit/<int:id>',views.purchaseBillEdit, name='purchaseBillEdit'),
     path('purchase-bill-view/<int:id>',views.purchaseBillView, name='purchaseBillView'),
    
-
+    path('report-item-tracking-report',views.reportItemTrackingReport, name='reportItemTrackingReport'),
 
 ]

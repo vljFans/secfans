@@ -5212,6 +5212,7 @@ def getOnTransitTransactionHeadersList(request):
 
     return JsonResponse(context)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getOnTransitTransactionDetalisList(request):
@@ -5340,6 +5341,7 @@ def materialOutDetailsAdd(request):
 
     return JsonResponse(context)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def materialOutDetailsDelete(request):
@@ -5384,6 +5386,7 @@ def materialOutDetailsDelete(request):
         })
         transaction.rollback()
     return JsonResponse(context)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -5839,6 +5842,7 @@ def getPhysicalInspectionHeadersList(request):
 
     return JsonResponse(context)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def physicalInspectionDetailsAdd(request):
@@ -5909,6 +5913,7 @@ def physicalInspectionDetailsAdd(request):
         })
         transaction.rollback()
     return JsonResponse(context)
+
 
 # purchase bill --- developed by saswata
 @api_view(['GET'])
@@ -6016,6 +6021,7 @@ def getPurchaseBillHeadersList(request):
 
     return JsonResponse(context)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def purchaseBillDetailsAdd(request):
@@ -6108,6 +6114,7 @@ def purchaseBillDetailsAdd(request):
         transaction.rollback()
     return JsonResponse(context)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def purchaseBillDetailsEdit(request):
@@ -6173,6 +6180,8 @@ def purchaseBillDetailsEdit(request):
         transaction.rollback()
 
     return JsonResponse(context)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def purchaseBillDetailsDelete(request):
@@ -6196,7 +6205,3 @@ def purchaseBillDetailsDelete(request):
 
     return JsonResponse(context)
     
-
-
-
-
