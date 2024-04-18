@@ -198,7 +198,7 @@
                 
                 {% if request.user.is_superuser == 1 or 'view_item'|get_session_permission:request is not None %}
                 <li class="{% if request.path == '/item-report' %}active{% endif %}">
-                    <a href="{% url 'superuser:itemReport' %}">Item </a>
+                    <a href="{% url 'superuser:reportItemTrackingReport' %}">Item Tracking Report</a>
                 </li>
                 {% endif %}
                 
