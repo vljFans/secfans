@@ -189,18 +189,45 @@
         {% endif %}
 
         {% if request.user.is_superuser == 1 or 'view_item'|get_session_permission:request is not None %}
-        <li
-        class="{% if request.path == '/report-item-tracking-report'%}open active{% endif %}">
+        <li class="{% if request.path not in  '/item-report,/storewise-item-report' or request.path == '/storewise-item-report' %}open active{% endif %}">
             <a href="javascript:void(0)"><i data-feather="layout"></i>
             <span>Reports</span><i class="accordion-icon fa fa-angle-left"></i>
             </a>
             <ul class="sub-menu"
-            style="display: {% if request.path == '/report-item-tracking-report'%}block{% else %}none{% endif %};">
+              style="display: {% if request.path == '/item-report,/storewise-item-report' or request.path == '' %}block{% else %}none{% endif %};">
+                
                 {% if request.user.is_superuser == 1 or 'view_item'|get_session_permission:request is not None %}
-                <li class="{% if request.path == '/report-item-tracking-report' %}active{% endif %}">
+                <li class="{% if request.path == '/item-report' %}active{% endif %}">
                     <a href="{% url 'superuser:reportItemTrackingReport' %}">Item Tracking Report</a>
                 </li>
                 {% endif %}
+                
+                {% if request.user.is_superuser == 1 or 'view_item'|get_session_permission:request is not None %}
+                <li class="{% if request.path == '/storewise-item-report' %}active{% endif %}">
+                    <a href="javascript:void(0)"> 
+                      <span>Inventory</span><i class="accordion-icon fa fa-angle-left"></i>
+                    </a>
+                    <ul class="sub-menu"
+                      style="display: {% if request.path == '/store-transaction-Report' %}block{% else %}none{% endif %};" >
+                        {% if request.user.is_superuser == 1 or 'view_item'|get_session_permission:request is not None %}
+                        <li class="{% if request.path == '/store-transaction-Report' %}active{% endif %}">
+                            <a href="{% url 'superuser:storeTransactionReport' %}">Inventory Summary</a>
+                        </li>
+                        {% endif %}
+                        {% if request.user.is_superuser == 1 or 'view_item'|get_session_permission:request is not None %}
+                        <li class="{% if request.path == '/storewise-item-report' %}active{% endif %}">
+                            <a href="{% url 'superuser:storeItemReport' %}">Inventory Storewise</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </li>
+                {% endif %}
+                {% if request.user.is_superuser == 1 or 'view_item'|get_session_permission:request is not None %}
+                <li class="{% if request.path == '/stock-transfer-report' %}active{% endif %}">
+                    <a href="{% url 'superuser:stocktransferReport' %}">Stock Transfer  </a>
+                </li>
+                {% endif %}
+
             </ul>
         </li>
         {% endif %}

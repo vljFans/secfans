@@ -27,6 +27,7 @@ import math
 import environ
 import csv
 from fpdf import FPDF
+from django_group_by import GroupByMixin
 
 env = environ.Env()
 environ.Env.read_env()
@@ -2299,6 +2300,8 @@ def storeDelete(request):
 @api_view(['GET'])
 def storeExport(request):
     keyword = request.GET.get('keyword')
+    # print(keyword)
+    # return JsonResponse({})
     if keyword is not None and keyword != "":
         page_items = models.Store.objects.filter(Q(name__icontains=keyword) | Q(address__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(
             contact_no__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(manager_name__icontains=keyword) | Q(pin__icontains=keyword)).filter(status=1, deleted=0)
@@ -3257,6 +3260,190 @@ def storeItemExport(request):
         'name':  tmpname
     })
 
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
+def storeItemReport(request):
+    context = {}
+    # print(request.POST)
+    item_cat_id = request.POST.get('item_cat_id', None)
+    data ={}
+    store_item =[]
+    try:
+        if request.method == 'GET':
+        # if item_cat_id is not None and item_cat_id!="":
+            store_item = list(models.Store_Item.objects.filter(status=1 , deleted = 0 ).values('pk','on_hand_qty','item__item_type__item_category__name','item__price','store__name','item__name'))
+        else:
+            store_item = list(models.Store_Item.objects.filter(item__item_type__item_category_id=item_cat_id).values('pk','on_hand_qty','item__item_type__item_category__name','item__price','store__name','item__name'))    
+        # print(store_item)
+        if(len(store_item) == 0):
+            context.update({
+                'status': 200,
+                'message': "no item found  ",
+            })
+            return JsonResponse(context)
+        
+        for index in range(0,len(store_item)):
+            if store_item[index]['store__name'] not in data:
+                data[store_item[index]['store__name']] =[]
+            data[store_item[index]['store__name']].append({
+                'pk':store_item[index]['pk'],
+                'on_hand_qty' : store_item[index]['on_hand_qty'],
+                'item': store_item[index]['item__name'],
+                'item_category' : store_item[index]['item__item_type__item_category__name'],
+                'value' : float(store_item[index]['on_hand_qty']) * float(store_item[index]['item__price']),
+            })
+        # print(data)
+        context.update({
+            'status': 200,
+            'message': "Items Fetched Successfully.",
+            'page_items': data,
+        })
+
+    except Exception:
+        context.update({
+            'status': 592.1,
+            'message': "Internal Server Error",
+        })
+
+    return JsonResponse(context)
+@api_view(['GET'])
+def storeItemReportExport(request):
+    # print(request.GET)
+    keyword = request.GET.get('keyword')
+    file_type=request.GET.get('file_type')
+    # print(keyword)
+    # print("3314")
+    # return JsonResponse({})
+    if keyword is not None and keyword != "":
+        # print("3316")
+        page_items = models.Store_Item.objects.filter(item__item_type__item_category_id=keyword,status =1 , deleted=0).order_by('store_id','item_id')
+        
+    else:
+        page_items = models.Store_Item.objects.filter(status=1 , deleted = 0 ).order_by('store_id','store_id')
+        # page_items = models.Store_Item.objects.raw("SELECT * FROM store_items GROUP BY store_id ,item_id ")    
+    # for p in page_items:
+    #     print(p.item_id)
+    # return JsonResponse({})
+    # print(page_items)
+    if file_type=="xlsx":
+        directory_path = settings.MEDIA_ROOT + '/reports/'
+        path = Path(directory_path)
+        path.mkdir(parents=True, exist_ok=True)
+
+        for f in os.listdir(settings.MEDIA_ROOT + '/reports/'):
+            if not f.endswith(".xlsx"):
+                continue
+            os.remove(os.path.join(settings.MEDIA_ROOT + '/reports/', f))
+
+        # tmpname = str(datetime.now().microsecond) + ".xlsx"
+        tmpname = "Store Item Report" + ".xlsx"
+        wb = Workbook()
+
+        # grab the active worksheet
+        ws = wb.active
+
+        # Data can be assigned directly to cells
+        ws['A1'] = "Store"
+        ws['B1'] = "Item"
+        ws['C1'] = "On hand quantity"
+        ws['D1'] = "Item Catagory"
+        ws['E1'] = "value"
+
+        # Rows can also be appended
+        for each in page_items:
+            val = float(each.on_hand_qty)* float(each.item.price)
+            ws.append([each.store.name, each.item.name,each.on_hand_qty, 
+            each.item.item_type.item_category.name, val ])
+
+        # Save the file
+        wb.save(settings.MEDIA_ROOT + '/reports/' + tmpname)
+        os.chmod(settings.MEDIA_ROOT + '/reports/' + tmpname, 0o777)
+        return JsonResponse({
+            'code': 200,
+            'filename': settings.MEDIA_URL + 'reports/' + tmpname,
+            'name':  tmpname
+        })
+    elif file_type == "csv":
+        directory_path = settings.MEDIA_ROOT + '/reports/'
+        path = Path(directory_path)
+        path.mkdir(parents=True, exist_ok=True)
+
+        # Clean up any existing CSV files in the directory
+        for f in os.listdir(settings.MEDIA_ROOT + '/reports/'):
+            if not f.endswith(".csv"):
+                continue
+            os.remove(os.path.join(settings.MEDIA_ROOT + '/reports/', f))
+
+        tmpname = "Store Item Report" + ".csv"
+
+        with open(os.path.join(directory_path, tmpname), 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(["Store", "Item","On hand quantity", "Item Category", "Value"])
+            for each in page_items:
+                val = float(each.on_hand_qty)* float(each.item.price)
+                writer.writerow(
+                    [each.store.name, each.item.name,each.on_hand_qty, 
+            each.item.item_type.item_category.name, val])
+
+        os.chmod(settings.MEDIA_ROOT + '/reports/' + tmpname, 0o777)
+        return JsonResponse({
+            'code': 200,
+            'filename': settings.MEDIA_URL + 'reports/' + tmpname,
+            'name': tmpname
+        })
+
+    elif file_type == "pdf":
+        # print("3395")
+        # Create a new PDF document with smaller margins
+        pdf = FPDF(orientation='P', unit='mm', format='A4')  # Adjust unit and format if needed
+        pdf.set_left_margin(5)
+        pdf.set_top_margin(5)
+
+        pdf.add_page()
+        pdf.set_font("Arial", size=9)
+
+        # Add a header row with bold text
+        pdf.set_font("Arial", size=9, style='B')  # Set font style to bold
+        pdf.cell(9, 10, txt="S.No.", border=1, align='C')  # Add S.No. column
+        pdf.cell(50, 10, txt="Store", border=1, align='C')
+        pdf.cell(50, 10, txt="Item", border=1, align='C')
+        pdf.cell(40, 10, txt="On hand quantity", border=1, align='C')
+        pdf.cell(30, 10, txt="Item Category", border=1, align='C')
+        pdf.cell(20, 10, txt="Value", border=1, align='C')
+        pdf.set_font("Arial", size=9)  # Reset font style to normal
+        pdf.ln(10)  # Move to the next line
+
+        # Cell height (adjust as needed)
+        cell_height = 10
+
+        # Add data rows
+        counter = 1  # Counter for serial numbers
+        for each in page_items:
+            val = float(each.on_hand_qty)* float(each.item.price)
+            pdf.cell(9, 10, txt=str(counter), border=1, align='C')  # Add S.No. for each row
+            pdf.cell(50, 10, txt=each.store.name, border=1)
+            pdf.cell(50, 10, txt=each.item.name, border=1)
+            pdf.cell(40, 10, txt=str(each.on_hand_qty), border=1)
+            pdf.cell(30, 10, txt=each.item.item_type.item_category.name, border=1)
+            # Right align price for each data row
+            pdf.cell(20, 10, txt=str(val), align='R', border=1)
+            pdf.ln(10)
+            counter += 1  # Increment counter for next row
+
+        # Save the PDF file
+        directory_path = settings.MEDIA_ROOT + '/reports/'
+        path = Path(directory_path)
+        path.mkdir(parents=True, exist_ok=True)
+        tmpname = "Store_Item_Report.pdf"
+        pdf.output(os.path.join(directory_path, tmpname))
+        os.chmod(os.path.join(directory_path, tmpname), 0o777)
+        # print("3439")
+        return JsonResponse({
+            'code': 200,
+            'filename': settings.MEDIA_URL + 'reports/' + tmpname,
+            'name': tmpname
+        })
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -3314,6 +3501,9 @@ def storeTransactionList(request):
             'button_to_show': int(button_to_show),
         })
     return JsonResponse(context)
+
+
+
 
 
 @api_view(['POST'])
@@ -4072,6 +4262,45 @@ def storeTransactionDetails(request):
         })
     return JsonResponse(context)
 
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
+def storeTransactionReport(request):
+    context = {}
+    # print(request.POST)
+    from_date = request.POST.get('from_date', None)
+    to_date = request.POST.get('to_date', None)
+    store_id = request.POST.get('store_id', None)
+    data ={}
+    on_transit_details =[]
+    try:
+        if request.method == 'GET':
+            print('4277')
+            store_transaction_det = models.Store_Transaction_Detail.objects.filter(status=1,
+            deleted=0
+            ).filter(Q(store_transaction_header__transaction_type__name='MIS') | Q(store_transaction_header__transaction_type__name='GRN')).order_by('store_transaction_header__transaction_date')
+            # print(store_transaction_det)
+        else:
+            store_Item = models.Store_Item.objects.filter(store_id=store_id)
+            # print(store_transaction_det) 
+        # print(store_transaction_det)
+        for each in store_Item:
+            print(each.item.name)
+            
+                
+        # print(
+        context.update({
+            'status': 200,
+            'message': "stock Transfer report fetch Successfully.",
+            'page_items': data,
+        })
+
+    except Exception:
+        context.update({
+            'status': 538.1,
+            'message': "Internal Server Error",
+        })
+    return JsonResponse(context)
+
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
@@ -4598,7 +4827,7 @@ def getGrnInspectionTransactionDetail(request):
     # print(request.GET,"saswata")
 
     try:
-        print("4247")
+        # print("4247")
         # print(request.GET.get('ins_done'))
         # Getting grn inspection transaction details whose inspection is not done
         if int(request.GET.get('ins_done'))==0:
@@ -5188,6 +5417,248 @@ def materialOutDetailsEdit(request):
         transaction.rollback()
     return JsonResponse(context)
 
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
+def storeTransferReport(request):
+    context = {}
+    # print(request.POST)
+    from_date = request.POST.get('from_date', None)
+    to_date = request.POST.get('to_date', None)
+    data ={}
+    on_transit_details =[]
+    try:
+        if request.method == 'GET':
+        # if item_cat_id is not None and item_cat_id!="":
+            on_transit_details = list(models.On_Transit_Transaction_Details.objects.filter(status=1 , deleted = 0 ).values(
+            'pk','item__name','on_transit_transaction_header__transaction_number',
+            'on_transit_transaction_header__transaction_date',
+            'on_transit_transaction_header__transaction_in_date',
+            'on_transit_transaction_header__source_store__name',
+            'on_transit_transaction_header__destination_store__name',
+            'quantity',
+            'recieved_quntity',
+            
+            ))
+        else:
+            # print("5041")
+            on_transit_details = list(models.On_Transit_Transaction_Details.objects.filter(on_transit_transaction_header__transaction_date__range=(from_date,to_date)).values(
+            'pk','item__name','on_transit_transaction_header__transaction_number',
+            'on_transit_transaction_header__transaction_date',
+            'on_transit_transaction_header__transaction_in_date',
+            'on_transit_transaction_header__source_store__name',
+            'on_transit_transaction_header__destination_store__name',
+            'quantity',
+            'recieved_quntity',
+            ))    
+        # print(on_transit_details)
+        if(len(on_transit_details) == 0):
+            context.update({
+                'status': 200,
+                'message': "no transaction found ",
+            })
+            return JsonResponse(context)
+        # print("5417")
+        for index in range(0,len(on_transit_details)):
+            # print("5419")
+            if on_transit_details[index]['on_transit_transaction_header__transaction_number'] not in data:
+                data[on_transit_details[index]['on_transit_transaction_header__transaction_number']] =[]
+            data[on_transit_details[index]['on_transit_transaction_header__transaction_number']].append({
+                'pk':on_transit_details[index]['pk'],
+                'item': on_transit_details[index]['item__name'],
+                'source_store' : on_transit_details[index]['on_transit_transaction_header__source_store__name'],
+                'destination_store' : on_transit_details[index]['on_transit_transaction_header__destination_store__name'],
+                'material_out' : on_transit_details[index]['quantity'],
+                'material_in' : on_transit_details[index]['recieved_quntity'] if float(on_transit_details[index]['recieved_quntity']) != 0.00 else "---", 
+                'material_out_date' : on_transit_details[index]['on_transit_transaction_header__transaction_date'],
+                'material_in_date' : on_transit_details[index]['on_transit_transaction_header__transaction_in_date'] if on_transit_details[index]['on_transit_transaction_header__transaction_in_date'] != None else "---"  ,
+            })
+        # print(data)
+        context.update({
+            'status': 200,
+            'message': "stock Transfer report fetch Successfully.",
+            'page_items': data,
+        })
+
+    except Exception:
+        context.update({
+            'status': 538.1,
+            'message': "Internal Server Error",
+        })
+    return JsonResponse(context)
+@api_view(['GET'])
+def storeTransferReportExport(request):
+    # print(request.GET)
+    from_date = request.GET.get('form_date')
+    to_date = request.GET.get('to_date')
+    file_type=request.GET.get('file_type')
+    # print(from_date)
+    # print("3314")
+    # return JsonResponse({})
+    if from_date is not None and from_date != "" and to_date is not None and to_date != "" :
+        # print("3316")
+        page_items = models.On_Transit_Transaction_Details.objects.filter(on_transit_transaction_header__transaction_date__range=(from_date,to_date),status =1 , deleted=0).order_by('on_transit_transaction_header__transaction_number')
+        
+    else:
+        page_items = models.On_Transit_Transaction_Details.objects.filter(status=1 , deleted = 0 ).order_by('on_transit_transaction_header__transaction_number')
+        # page_items = models.Store_Item.objects.raw("SELECT * FROM store_items GROUP BY store_id ,item_id ")    
+    # for p in page_items:
+    #     print(p.item_id)
+    # return JsonResponse({})
+    # print(page_items)
+    # return JsonResponse({})
+    if file_type=="xlsx":
+        directory_path = settings.MEDIA_ROOT + '/reports/'
+        path = Path(directory_path)
+        path.mkdir(parents=True, exist_ok=True)
+
+        for f in os.listdir(settings.MEDIA_ROOT + '/reports/'):
+            if not f.endswith(".xlsx"):
+                continue
+            os.remove(os.path.join(settings.MEDIA_ROOT + '/reports/', f))
+
+        # tmpname = str(datetime.now().microsecond) + ".xlsx"
+        tmpname = "Stock Transfer Report" + ".xlsx"
+        wb = Workbook()
+
+        # grab the active worksheet
+        ws = wb.active
+
+        # Data can be assigned directly to cells
+        ws['A1'] = "Transaction number"
+        ws['B1'] = "Item"
+        ws['C1'] = "Source"
+        ws['D1'] = "Destination"
+        ws['E1'] = "Material Out Date"
+        ws['F1'] = "Material Out Quantity"
+        ws['G1'] = "Material IN Date"
+        ws['H1'] = "Material In Quantity"
+
+
+        # Rows can also be appended
+        for each in page_items:
+            # print(each.on_transit_transaction_header.transaction_date)
+            
+            mat_in_date= each.on_transit_transaction_header.transaction_in_date if each.on_transit_transaction_header.transaction_in_date != None else ""
+            mat_in_quantity = str(each.recieved_quntity) if float(each.recieved_quntity)!= 0.00 else ""
+            ws.append([
+            each.on_transit_transaction_header.transaction_number,
+            each.item.name, 
+            each.on_transit_transaction_header.source_store.name,
+            each.on_transit_transaction_header.destination_store.name,
+            str(each.on_transit_transaction_header.transaction_date),
+            str(each.quantity),
+            str(mat_in_date),
+            mat_in_quantity ])
+        # return JsonResponse({})
+        # Save the file
+        wb.save(settings.MEDIA_ROOT + '/reports/' + tmpname)
+        os.chmod(settings.MEDIA_ROOT + '/reports/' + tmpname, 0o777)
+        return JsonResponse({
+            'code': 200,
+            'filename': settings.MEDIA_URL + 'reports/' + tmpname,
+            'name':  tmpname
+        })
+    elif file_type == "csv":
+        directory_path = settings.MEDIA_ROOT + '/reports/'
+        path = Path(directory_path)
+        path.mkdir(parents=True, exist_ok=True)
+
+        # Clean up any existing CSV files in the directory
+        for f in os.listdir(settings.MEDIA_ROOT + '/reports/'):
+            if not f.endswith(".csv"):
+                continue
+            os.remove(os.path.join(settings.MEDIA_ROOT + '/reports/', f))
+
+        tmpname = "Stock Transfer Report" + ".csv"
+
+        with open(os.path.join(directory_path, tmpname), 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(["Transaction number", 
+            "Item","Source", 
+            "Destination", 
+            "Material Out Date",
+            "Material Out Quantity",
+            "Material In Date",
+            "Material In Quantity"])
+            for each in page_items:
+                
+                mat_in_date= each.on_transit_transaction_header.transaction_in_date if each.on_transit_transaction_header.transaction_in_date != None else ""
+                mat_in_quantity = str(each.recieved_quntity) if float(each.recieved_quntity)!= 0.00 else ""
+                writer.writerow(
+                    [
+                        each.on_transit_transaction_header.transaction_number,
+                        each.item.name, 
+                        each.on_transit_transaction_header.source_store.name,
+                        each.on_transit_transaction_header.destination_store.name,
+                        str(each.on_transit_transaction_header.transaction_date), 
+                        str(each.quantity),
+                        str(mat_in_date),
+                        mat_in_quantity
+                    ])
+
+        os.chmod(settings.MEDIA_ROOT + '/reports/' + tmpname, 0o777)
+        return JsonResponse({
+            'code': 200,
+            'filename': settings.MEDIA_URL + 'reports/' + tmpname,
+            'name': tmpname
+        })
+
+    elif file_type == "pdf":
+        # print("3395")
+        # Create a new PDF document with smaller margins
+        pdf = FPDF(orientation='P', unit='mm', format='A3')  # Adjust unit and format if needed
+        pdf.set_left_margin(5)
+        pdf.set_top_margin(5)
+
+        pdf.add_page()
+        pdf.set_font("Arial", size=9)
+
+        # Add a header row with bold text
+        pdf.set_font("Arial", size=9, style='B')  # Set font style to bold
+        pdf.cell(9, 10, txt="S.No.", border=1, align='C')  # Add S.No. column
+        pdf.cell(50, 10, txt="Item", border=1, align='C')
+        pdf.cell(50, 10, txt="Source", border=1, align='C')
+        pdf.cell(50, 10, txt="Destination", border=1, align='C')
+        pdf.cell(30, 10, txt="Material out Date", border=1, align='C')
+        pdf.cell(30, 10, txt="Material Out", border=1, align='C')
+        pdf.cell(30, 10, txt="Material In date ", border=1, align='C')
+        pdf.cell(20, 10, txt="Material In", border=1, align='C')
+        pdf.set_font("Arial", size=9)  # Reset font style to normal
+        pdf.ln(10)  # Move to the next line
+
+        # Cell height (adjust as needed)
+        cell_height = 10
+
+        # Add data rows
+        counter = 1  # Counter for serial numbers
+        for each in page_items:
+            mat_in_date= each.on_transit_transaction_header.transaction_in_date if each.on_transit_transaction_header.transaction_in_date != None else ""
+            mat_in_quantity = str(each.recieved_quntity) if float(each.recieved_quntity)!= 0.00 else ""
+            pdf.cell(9, 10, txt=str(counter), border=1, align='C')  # Add S.No. for each row
+            pdf.cell(50, 10, txt=each.item.name, border=1)
+            pdf.cell(50, 10, txt=each.on_transit_transaction_header.source_store.name, border=1)
+            pdf.cell(50, 10, txt=each.on_transit_transaction_header.destination_store.name, border=1)
+            pdf.cell(30, 10, txt=str(each.on_transit_transaction_header.transaction_date), border=1)
+            pdf.cell(30, 10, txt=str(each.quantity), border=1)
+            pdf.cell(30, 10, txt=str(mat_in_date), border=1)
+            # Right align price for each data row
+            pdf.cell(20, 10, txt= mat_in_quantity, border=1)
+            pdf.ln(10)
+            counter += 1  # Increment counter for next row
+
+        # Save the PDF file
+        directory_path = settings.MEDIA_ROOT + '/reports/'
+        path = Path(directory_path)
+        path.mkdir(parents=True, exist_ok=True)
+        tmpname = "Stock_Transfer_Report.pdf"
+        pdf.output(os.path.join(directory_path, tmpname))
+        os.chmod(os.path.join(directory_path, tmpname), 0o777)
+        # print("3439")
+        return JsonResponse({
+            'code': 200,
+            'filename': settings.MEDIA_URL + 'reports/' + tmpname,
+            'name': tmpname
+        })
 
 #material in 
 @api_view(['POST'])
@@ -5563,7 +6034,7 @@ def purchaseBillDetailsAdd(request):
             # print("5283")
             purcahse_bill_header.transaction_number = env("PURCHASE_BILL_TRANSACTION_SEQ").replace(
             "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(purchase_bill_head_count + 1).zfill(5))
-            print( purcahse_bill_header.vechical_no)
+            # print( purcahse_bill_header.vechical_no)
             purcahse_bill_header.transaction_date = request.POST['issue_date']
             purcahse_bill_header.vendor_id = request.POST['vendor']
             purcahse_bill_header.invoice_no =  request.POST['invoice']

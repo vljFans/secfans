@@ -824,7 +824,3 @@ class Purchase_Bill_Details(models.Model):
         managed = True
         db_table = 'purchase_bill_details'
         verbose_name_plural = 'purchase_bill_details'
-
-
-
-

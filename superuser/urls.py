@@ -90,11 +90,13 @@ urlpatterns = [
     path('store-item-list', views.storeItemList, name='storeItemList'),
     path('store-item-add', views.storeItemAdd, name='storeItemAdd'),
     path('store-item-edit/<int:id>', views.storeItemEdit, name='storeItemEdit'),
+    path('storewise-item-report', views.storeItemReport, name='storeItemReport'),
 
     path('store-transaction-list', views.storeTransactionList, name='storeTransactionList'),
     path('store-transaction-add', views.storeTransactionAdd, name='storeTransactionAdd'),
     path('store-transaction-edit/<int:id>', views.storeTransactionEdit, name='storeTransactionEdit'),
     path('store-transaction-view/<int:id>', views.storeTransactionView, name='storeTransactionView'),
+    path('store-transaction-Report', views.storeTransactionReport, name='storeTransactionReport'),
 
     path('job-order-list', views.jobOrderList, name='jobOrderList'),
     path('job-order-add', views.jobOrderAdd, name='jobOrderAdd'),
@@ -126,7 +128,9 @@ urlpatterns = [
     path('material-out-add',views.materialOutAdd, name='materialOutAdd'),
     path('material-out-edit/<int:id>',views.materialOutEdit, name='materialOutEdit'),
     path('material-out-view/<int:id>',views.materialOutView, name='materialOutView'),
-    path('material-out-print/<int:id>',views.materialOutPrint, name='materialOutPrint'),
+    path('material-out-print/<int:id>',views.materialOutPrint, name='materialOutPrint'), 
+    path('stock-transfer-report',views.stocktransferReport, name='stocktransferReport'),
+
 
     # material in 
     path('material-in-list',views.materialInList, name='materialInList'),
