@@ -66,7 +66,6 @@ urlpatterns = [
     path('item-list', views.itemList, name='itemList'),
     path('item-add', views.itemAdd, name='itemAdd'),
     path('item-edit/<int:id>', views.itemEdit, name='itemEdit'),
-    path('item-report', views.itemReport, name='itemReport'),
 
     path('store-list', views.storeList, name='storeList'),
     path('store-add', views.storeAdd, name='storeAdd'),
@@ -120,7 +119,6 @@ urlpatterns = [
     path('material-return-edit/<int:id>',views.materialReturnEdit, name='materialReturnEdit'),
     path('material-return-view/<int:id>',views.materialReturnView, name='materialReturnView'),
 
-
     # path on transit transaction ---developed by saswata
 
     # material out
@@ -128,9 +126,7 @@ urlpatterns = [
     path('material-out-add',views.materialOutAdd, name='materialOutAdd'),
     path('material-out-edit/<int:id>',views.materialOutEdit, name='materialOutEdit'),
     path('material-out-view/<int:id>',views.materialOutView, name='materialOutView'),
-     path('material-out-print/<int:id>',views.materialOutPrint, name='materialOutPrint'),
-
-
+    path('material-out-print/<int:id>',views.materialOutPrint, name='materialOutPrint'),
 
     # material in 
     path('material-in-list',views.materialInList, name='materialInList'),
@@ -148,6 +144,6 @@ urlpatterns = [
     path('purchase-bill-edit/<int:id>',views.purchaseBillEdit, name='purchaseBillEdit'),
     path('purchase-bill-view/<int:id>',views.purchaseBillView, name='purchaseBillView'),
    
-
+    path('report-item-tracking-report',views.reportItemTrackingReport, name='reportItemTrackingReport'),
 
 ]
