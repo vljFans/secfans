@@ -4280,17 +4280,13 @@ def storeTransactionReport(request):
             ).filter(Q(store_transaction_header__transaction_type__name='MIS') | Q(store_transaction_header__transaction_type__name='GRN')).order_by('store_transaction_header__transaction_date')
             # print(store_transaction_det)
         else:
-            store_transaction_det = models.Store_Transaction_Detail.objects.filter(Q(store_transaction_header__transaction_type__name='MIS') | 
-            Q(store_transaction_header__transaction_type__name='GRN')).filter(store_id=store_id).filter(store_transaction_header__transaction_date__range = (from_date,to_date)).order_by('store_transaction_header__transaction_date')
+            store_Item = models.Store_Item.objects.filter(store_id=store_id)
             # print(store_transaction_det) 
-        print()
-        for each in store_transaction_det:
-            transaction_type_id = each.store_transaction_header.transaction_type_id
-            print(transaction_type_id)
-            transaction_type = models.Transaction_Type.objects.filter(pk=2).exists()
-            print(models.Transaction_Type.objects.all().order_by('pk'))
-            if transaction_type_name.name == 'MIS':
-                print(each.store_transaction_header.transaction_number)
+        # print(store_transaction_det)
+        for each in store_Item:
+            print(each.item.name)
+            
+                
         # print(
         context.update({
             'status': 200,
