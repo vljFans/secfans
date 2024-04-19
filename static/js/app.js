@@ -182,7 +182,8 @@ $(document).ready(function() {
             if((sub_menu.length)&&(!body.hasClass('page-sidebar-collapsed'))) {
                 
                 if(!parent_list_el.hasClass('open')) {
-                    if(active_list_element.length) {
+                    console.log($(this).closest('ul').closest('li').hasClass("open"))
+                    if(active_list_element.length && !$(this).closest('ul').closest('li').hasClass("open")) {
                         hide_active_menu();
                     };
                     show_sub_menu();

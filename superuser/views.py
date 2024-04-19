@@ -1287,7 +1287,7 @@ def reportItemTrackingReport(request):
 def reportInventorySummary(request):
     context.update({
         'page_title': "Inventory Summary",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Inventory"}, {'name': "Reports"}, {'name': "Inventory Summary", 'url': reverse('superuser:reportInventorySummary')}]
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports"}, {'name': "Inventory"}, {'name': "Inventory Summary", 'url': reverse('superuser:reportInventorySummary')}]
     })
     return render(request, 'portal/Report/Inventory/InventorySummary.html', context)
 
@@ -1296,7 +1296,7 @@ def reportInventorySummary(request):
 def reportInventoryStorewise(request):
     context.update({
         'page_title': "Inventory Storewise",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Inventory"}, {'name': "Reports"}, {'name': "Storewise", 'url': reverse('superuser:reportInventoryStorewise')}]
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports"}, {'name': "Inventory"}, {'name': "Inventory Storewise", 'url': reverse('superuser:reportInventoryStorewise')}]
     })
     return render(request, 'portal/Report/Inventory/InventoryStorewise.html', context)
 
@@ -1309,3 +1309,11 @@ def reportStockTransfer(request):
     })
     return render(request, 'portal/Report/StockTransfer.html', context)
 
+
+@login_required
+def reportPurchaseOrderByVendor(request):
+    context.update({
+        'page_title': "Purchase Order By Vendor",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports"}, {'name': "Purchase Orders"}, {'name': "Storewise", 'url': reverse('superuser:reportInventoryStorewise')}]
+    })
+    return render(request, 'portal/Report/Purchase Order/PurchaseOrderByVendor.html', context)

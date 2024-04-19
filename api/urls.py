@@ -72,7 +72,6 @@ urlpatterns = [
     path('item-edit', views.itemEdit, name='itemEdit'),
     path('item-delete', views.itemDelete, name='itemDelete'),
     path('item-export', views.itemExport, name='itemExport'),
-    path('item-report', views.reportItemTrackingReport, name='reportItemTrackingReport'),
 
     path('store-list', views.storeList, name='storeList'),
     path('store-add', views.storeAdd, name='storeAdd'),
@@ -102,7 +101,6 @@ urlpatterns = [
     path('store-item-edit', views.storeItemEdit, name='storeItemEdit'),
     path('store-item-delete', views.storeItemDelete, name='storeItemDelete'),
     path('store-item-export', views.storeItemExport, name='storeItemExport'),
-    path('store-item-report', views.reportInventoryStorewise, name='reportInventoryStorewise'),
     # path('store-item-report-export', views.storeItemReportExport, name='storeItemReportExport'),
 
 
@@ -111,7 +109,6 @@ urlpatterns = [
     path('store-transaction-edit', views.storeTransactionEdit, name='storeTransactionEdit'),
     path('store-transaction-delete', views.storeTransactionDelete, name='storeTransactionDelete'),
     path('store-transaction-details', views.storeTransactionDetails, name='storeTransactionDetails'),
-    path('store-transaction-report', views.reportInventorySummary, name='reportInventorySummary'),
 
     path('job-order-list', views.jobOrderList, name='jobOrderList'),
     path('job-order-add', views.jobOrderAdd, name='jobOrderAdd'),
@@ -136,7 +133,6 @@ urlpatterns = [
 
     path('on-transit-transaction-list', views.getOnTransitTransactionHeadersList, name='getOnTransitTransactionHeadersList'),
     path('on-transit-transaction-all-list', views.getOnTransitTransactionDetalisList, name='getOnTransitTransactionDetalisList'),
-    path('store-transfer-report', views.reportStockTransfer, name='reportStockTransfer'),
     # path('store-transfer-report-export', views.storeTransferReportExport, name='storeTransferReportExport'),
     
     # material out
@@ -159,4 +155,10 @@ urlpatterns = [
     path('purchase-bill-details-add', views.purchaseBillDetailsAdd, name='purchaseBillDetailsAdd'),
     path('purchase-bill-details-edit', views.purchaseBillDetailsEdit, name='purchaseBillDetailsEdit'),
     path('purchase-bill-details-delete', views.purchaseBillDetailsDelete, name='purchaseBillDetailsDelete'),
+
+    path('item-tracking-report', views.reportItemTrackingReport, name='reportItemTrackingReport'),
+    path('report-inventory-summary', views.reportInventorySummary, name='reportInventorySummary'),
+    path('report-inventory-storewise', views.reportInventoryStorewise, name='reportInventoryStorewise'),
+    path('report-stock-transfer', views.reportStockTransfer, name='reportStockTransfer'),
+    path('report-purchase-order-by-vendor', views.reportPurchaseOrderByVendor, name='reportPurchaseOrderByVendor'),
 ]
