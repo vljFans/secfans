@@ -6065,20 +6065,38 @@ def reportInventorySummary(request):
     store_id = request.POST.get('store_id', None)
     data ={}
     on_transit_details =[]
+     
     try:
         if request.method == 'GET':
             print('4277')
-            store_transaction_det = models.Store_Transaction_Detail.objects.filter(status=1,
+            store_Item = models.Store_Transaction_Detail.objects.filter(status=1,
             deleted=0
             ).filter(Q(store_transaction_header__transaction_type__name='MIS') | Q(store_transaction_header__transaction_type__name='GRN')).order_by('store_transaction_header__transaction_date')
-            # print(store_transaction_det)
+            print(store_Item)
         else:
             store_Item = models.Store_Item.objects.filter(store_id=store_id)
             # print(store_transaction_det) 
         # print(store_transaction_det)
         for each in store_Item:
-            print(each.item.name)
-            
+            print('6080')
+            # store_transaction_det = models.Store_Transaction_Detail.objects.filter(store_transaction_header__transaction_type__name = 'MIS')
+            # print(store_transaction_det,'sas')
+            store_transactions_MIS = models.Store_Transaction_Detail.objects.filter(store_id=store_id , item_id = each.item_id,store_transaction_header__transaction_type__name = 'MIS').filter(store_transaction_header__transaction_date__range =(from_date,to_date)).order_by('item_id')
+            print(store_transactions_MIS)
+            store_transactions_GRN = models.Store_Transaction_Detail.objects.filter(store_id=store_id , item_id = each.item_id,store_transaction_header__transaction_type__name = 'GRN').filter(store_transaction_header__transaction_date__range =(from_date,to_date)).order_by('item_id')
+            print(store_transactions_GRN)
+            # if store_transactions_MIS :
+            #     for store_transaction in store_transactions_MIS:
+            #         if store_transaction.store_transaction_header.purchase_order_header_id is None:
+            #             data.append({
+            #                     'item':each.item.name,
+            #                     'Quantity order':'---',
+            #                     'Stock in' : '---',
+            #                     'Stock Out' : 
+
+            #                 })
+                            
+            # print(store_transaction)
                 
         # print(
         context.update({
