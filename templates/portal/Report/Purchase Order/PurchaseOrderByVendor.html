@@ -43,9 +43,9 @@
     <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
         <div class="row">
             <div class="col-md-4 mb-3">
-                <label>Item Category<span class="required-indicator">*</span></label>
+                <label>Vendor<span class="required-indicator">*</span></label>
                 <div class="input-group">
-                    <select class="custom-select selectpicker" id="item_cat_id" name="item_cat_id">
+                    <select class="custom-select selectpicker" id="vendor_id" name="vendor_id">
                         <option value="">Choose...</option>
                     </select>
                 </div>
@@ -84,12 +84,17 @@
                 </div>
                 <div class="card-body pd-0">
                     <div class="table-responsive">
-                        <h5></h5>
                         <table class="table">
                             <thead>
-                                
+                                <tr>
+                                    <th>#</th>
+                                    <th>Vendor</th>
+                                    <th>Order Number</th>
+                                    <th>Order Date</th>
+                                    <th>Total Price</th>
+                                </tr>
                             </thead>
-                            <tbody class="table_data">
+                            <tbody>
                             </tbody>
                         </table>
                     </div>
@@ -130,16 +135,16 @@
         }, false);
     })();
 </script>
+
 <script>
-    var keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
-    var url = ""
+    
     $('.selectpicker').select2({
         placeholder: ''
     });
 
     $(document).ready(function () {
         $.ajax({
-            url: "{% url 'api:itemCategoryList' %}?find_all=1",
+            url: "{% url 'api:vendorList' %}?find_all=1",
             type: 'GET',
             data: ({}),
             headers: {
@@ -147,11 +152,11 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    var item_options_text = `<option value="">Choose...</option>`;
+                    var vendor_options_text = `<option value="">Choose...</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
-                        item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                        vendor_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
-                    $('#item_cat_id').html(item_options_text);
+                    $('#vendor_id').html(vendor_options_text);
                 } else {
                     alert(response.message);
                 }
@@ -160,79 +165,18 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
-        
-
-    });
-
-    $(document).ready(function () {
-        $.ajax({
-            url: "{% url 'api:reportInventoryStorewise' %}?find_all=1",
-            type: 'GET',
-            data: ({}),
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                if (response.status == 200) {
-                    var table_html = ``;
-                    $.each(response.page_items, function (storeName, storeData) {
-                        table_html += `
-                            <h5 style="padding: 20px;">${storeName}</h5>
-                            <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Item Category</th>
-                                    <th>Item</th>
-                                    <th>On Hand Quantity</th>
-                                    <th>value</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                        `;
-
-                        $.each(storeData, function (index, transaction) {
-                            table_html += `
-                                <tr>
-                                <td>${++index}</td>
-                                <td>${transaction.item_category}</td>
-                                <td>${transaction.item}</td>
-                                <td>${transaction.on_hand_qty}</td>
-                                <td>${transaction.value}</td>
-                                </tr>
-                            `;
-                        });
-
-                        table_html += `
-                        </tbody>
-                        </table>
-                        `;
-                    });
-                    $('.table-responsive').html(table_html);
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });
-        pdfDownload()
-        xlsxDownload()
-        csvDownload()
 
     });
 
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
         var formData = new FormData(create_form);
-        keyword = formData.get('item_cat_id')
         $.ajax({
             type: "POST",
             evalScripts: true,
             contentType: false,
             processData: false,
-            url: "{% url 'api:reportInventoryStorewise' %}",
+            url: "{% url 'api:reportPurchaseOrderByVendor' %}",
             data: formData,
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -240,41 +184,23 @@
             success: function (response) {
                 if (response.status == 200) {
                     var table_html = ``;
-                    $.each(response.page_items, function (storeName, storeData) {
-                        table_html += `
-                            <h5 style="padding: 20px;">${storeName}</h5>
-                            <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Item Category</th>
-                                    <th>Item</th>
-                                    <th>On Hand Quantity</th>
-                                    <th>value</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                        `;
-
-                        $.each(storeData, function (index, transaction) {
-                            table_html += `
-                                <tr>
-                                <td>${++index}</td>
-                                <td>${transaction.item_category}</td>
-                                <td>${transaction.item}</td>
-                                <td>${transaction.on_hand_qty}</td>
-                                <td>${transaction.value}</td>
-                                </tr>
+                    page_items = response.page_items;
+                    tbody_text = ``;
+                    page_items = response.page_items;
+                    tbody_text = ``;
+                    for (let index = 0; index < page_items.length; index++) {
+                        const element = page_items[index];
+                        tbody_text += `
+                            <tr>
+                                <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
+                                <td>${element.vendor__name}</td>
+                                <td>${element.order_number}</td>
+                                <td>${element.order_date}</td>
+                                <td>₹${element.total_amount}</td>
+                            </tr>
                             `;
-                        });
-
-                        table_html += `
-                        </tbody>
-                        </table>
-                        `;
-                    });
-
-                    $('.table-responsive').html(table_html);
+                    }
+                    $('tbody').html(tbody_text);
                 } 
                 else {
                     alert(response.message);
@@ -290,9 +216,6 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
-        // pdfDownload()
-        // xlsxDownload()
-        // csvDownload()
     });
     
     $(document).on('click', '.generate_and_download', function (e) {
@@ -336,41 +259,40 @@
             // Download Excel file
             XLSX.writeFile(wb, filename + '.xlsx');
         } 
-        
         else if (fileType === 'csv') {
-        // Initialize CSV content
-        var csvContent = '';
+            // Initialize CSV content
+            var csvContent = '';
 
-        // Loop through each table and generate CSV content for each
-        $('.table').each(function(index) {
-            var sheet_name = $(this).prev('h5').text();
+            // Loop through each table and generate CSV content for each
+            $('.table').each(function(index) {
+                var sheet_name = $(this).prev('h5').text();
 
-            // Append sheet name to CSV content
-            csvContent += sheet_name + '\n';
+                // Append sheet name to CSV content
+                csvContent += sheet_name + '\n';
 
-            // Extract table data and append to CSV content
-            $(this).find('thead th').each(function() {
-                csvContent += '"' + $(this).text().replace(/"/g, '""') + '",'; // Surround with double quotes and escape existing quotes
-            });
-            csvContent = csvContent.slice(0, -1); // Remove trailing comma
-            csvContent += '\n';
-
-            $(this).find('tbody tr').each(function() {
-                $(this).find('td').each(function() {
-                    csvContent += '"' + $(this).text().replace(/"/g, '""') + '",'; // Surround with double quotes and escape existing quotes
+                // Extract table data and append to CSV content
+                $(this).find('thead th').each(function() {
+                    csvContent += $(this).text() + ',';
                 });
                 csvContent = csvContent.slice(0, -1); // Remove trailing comma
                 csvContent += '\n';
+
+                $(this).find('tbody tr').each(function() {
+                    $(this).find('td').each(function() {
+                        csvContent += $(this).text() + ',';
+                    });
+                    csvContent = csvContent.slice(0, -1); // Remove trailing comma
+                    csvContent += '\n';
+                });
+
+                // Add sheet separator
+                csvContent += '\n';
             });
 
-            // Add sheet separator
-            csvContent += '\n';
-        });
-
-        // Create Blob and download CSV file
-        var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-        saveAs(blob, filename + '.csv');
-    }        
+            // Create Blob and download CSV file
+            var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+            saveAs(blob, filename + '.csv');
+        }
         else if (fileType === 'pdf') {
             window.jsPDF = window.jspdf.jsPDF
             // Initialize jsPDF
@@ -418,6 +340,6 @@
         }
     });
 
-   
+    
 </script>
 {% endblock %}
