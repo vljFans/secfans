@@ -27,6 +27,7 @@ import math
 import environ
 import csv
 from fpdf import FPDF
+from django.db.models import Avg, Count, Min, Sum
 
 env = environ.Env()
 environ.Env.read_env()
@@ -1517,7 +1518,7 @@ def itemTypeList(request):
 @permission_classes([IsAuthenticated])
 def itemTypeAdd(request):
     context = {}
-    if not request.POST['name'] or not request.POST['item_category_id'] or not request.POST['hsn_code'] or not request.POST['gst_percentage']:
+    if not request.POST['name'] or not request.POST['item_category_id']  or not request.POST['gst_percentage']:
         context.update({
             'status': 552,
             'message': "Name/Item Category/HSN Code/GST Percentage has not been provided."
@@ -6062,8 +6063,11 @@ def reportInventorySummary(request):
     from_date = request.POST.get('from_date', None)
     to_date = request.POST.get('to_date', None)
     store_id = request.POST.get('store_id', None)
-    data ={}
+    data =[]
     on_transit_details =[]
+    total_stockOut = 0.00
+    total_stockIn = 0.00
+    total_order = 0.00
      
     try:
         if request.method == 'GET':
@@ -6081,26 +6085,97 @@ def reportInventorySummary(request):
             # store_transaction_det = models.Store_Transaction_Detail.objects.filter(store_transaction_header__transaction_type__name = 'MIS')
             # print(store_transaction_det,'sas')
             store_transactions_MIS = models.Store_Transaction_Detail.objects.filter(store_id=store_id , item_id = each.item_id,store_transaction_header__transaction_type__name = 'MIS').filter(store_transaction_header__transaction_date__range =(from_date,to_date)).order_by('item_id')
-            print(store_transactions_MIS)
+            # print(store_transactions_MIS)
             store_transactions_GRN = models.Store_Transaction_Detail.objects.filter(store_id=store_id , item_id = each.item_id,store_transaction_header__transaction_type__name = 'GRN').filter(store_transaction_header__transaction_date__range =(from_date,to_date)).order_by('item_id')
-            print(store_transactions_GRN)
-            # if store_transactions_MIS :
-            #     for store_transaction in store_transactions_MIS:
-            #         if store_transaction.store_transaction_header.purchase_order_header_id is None:
-            #             data.append({
-            #                     'item':each.item.name,
-            #                     'Quantity order':'---',
-            #                     'Stock in' : '---',
-            #                     'Stock Out' : 
+            # print(store_transactions_GRN)
+            if store_transactions_MIS :
+                print('6091')
+                for store_transaction in store_transactions_MIS:
+                    print('6093')
+                    total_stockOut += float(store_transaction.quantity)
+                    print(store_transaction.store_transaction_header.purchase_order_header_id)
+                    if store_transaction.store_transaction_header.purchase_order_header_id == None:
+                        print(each.on_hand_qty,data)
+                        index = next((index for index, d in enumerate(data) if d.get('item') == each.item.name and d.get('stock_in') == '---' and d.get('quantity_order') == '---' ), None)
+                        # pair_found = any(d.get('item') == each.item.name and d.get('stock_in') == '---' and d.get('quantity_order') == '---'  for d in data)
+                        if index is  None:
+                            data.append({
+                                    'item':each.item.name,
+                                    'item_category': each.item.item_type.item_category.name,
+                                    'quantity_order':'---',
+                                    'stock_in' : '---',
+                                    'stock_out' : total_stockOut,
+                                    'onHand_quantity' : each.on_hand_qty
 
-            #                 })
-                            
+                                })
+                        else:
+                            data[index]['data'] = total_stockIn
+                        print('6105')
+                    else:
+                        purchase_order_total = models.Purchase_Order_Detail.objects.filter(item_id=each.item_id,purchase_order_header_id = store_transaction.store_transaction_header.purchase_order_header_id).aggregate(total=Sum('quantity'))['total'] 
+                        print('6108')
+                        index = next((index for index, d in enumerate(data) if d.get('item') == each.item.name and d.get('stock_in') == '---' and d.get('quantity_order') != '---' ), None)
+                        if index is  None:
+                            data.append({
+                                    'item':each.item.name,
+                                    'item_category': each.item.item_type.item_category.name,
+                                    'quantity_order':purchase_order_total,
+                                    'stock_in' : '---',
+                                    'stock_out' : total_stockOut,
+                                    'onHand_quantity' : each.on_hand_qty
+
+                                })
+                        else:
+                            data[index]['data'] = total_stockIn
+                        print('6118')
+            if store_transactions_GRN :
+                print('6105')
+                for store_transaction in store_transactions_GRN:
+                    print('6122')
+                    total_stockIn += float(store_transaction.quantity)
+                    if store_transaction.store_transaction_header.purchase_order_header_id == None:
+                        print('6125')
+                        index = next((index for index, d in enumerate(data) if d.get('item') == each.item.name and d.get('stock_in') == '---' and d.get('quantity_order') == '---' ), None)
+                        if index is  None:
+                            data.append({
+                                    'item':each.item.name,
+                                    'item_category': each.item.item_type.item_category.name,
+                                    'quantity_order':'---',
+                                    'stock_in' : total_stockIn,
+                                    'stock_out' : '---',
+                                    'onHand_quantity' : each.on_hand_qty
+
+                                })
+                        else:
+                            data[index]['data'] = total_stockIn
+                        print('6135')
+                    else:
+                        print('6137')
+                        # purchase_order_total = models.Purchase_Order_Detail.objects.filter(item_id=each.item_id,purchase_order_header_id = store_transaction.store_transaction_header.purchase_order_header_id)
+                        purchase_order_total = models.Purchase_Order_Detail.objects.filter(item_id=each.item_id,purchase_order_header_id = store_transaction.store_transaction_header.purchase_order_header_id).aggregate(total=Sum('quantity'))['total'] 
+                        print(purchase_order_total)
+                        index = next((index for index, d in enumerate(data) if d.get('item') == each.item.name and d.get('stock_in') == '---' and d.get('quantity_order') != '---' ), None)
+                        if index is  None:
+                            data.append({
+                                    'item':each.item.name,
+                                    'item_category': each.item.item_type.item_category.name,
+                                    'quantity_order':'',
+                                    'stock_in' : total_stockIn,
+                                    'stock_out' : purchase_order_total,
+                                    'onHand_quantity' : each.on_hand_qty
+                            })
+                        else:
+                            data[index]['data'] = total_stockIn
+                        print('6147')
+
+        print(data)
+
             # print(store_transaction)
                 
         # print(
         context.update({
             'status': 200,
-            'message': "stock Transfer report fetch Successfully.",
+            'message': "Inventory Report Summary  fetch Successfully.",
             'page_items': data,
         })
 

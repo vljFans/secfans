@@ -252,17 +252,16 @@
             },
             success: function (response) {
                 if (response.status == 200) {
+                    console.log("hi");
                     var table_html = ``;
-                    $.each(response.page_items, function (storeName, storeData) {
+                    $.each(response.page_items, function (inventorySummaryName, inventorySummaryData) {
                         table_html += `
-                            <h5 style="padding: 20px;">${storeName}</h5>
                             <table class="table">
                             <thead>
                                 <tr>
                                     <th>#</th>
                                     <th>Item </th>
                                     <th>Catagory</th>
-                                    <th>Store</th>
                                     <th>On Hand Quantity</th>
                                     <th>Order Quantity</th>
                                     <th>Stock In</th>
@@ -272,14 +271,16 @@
                             <tbody>
                         `;
 
-                        $.each(storeData, function (index, transaction) {
+                        $.each(inventorySummaryData, function (index, transaction) {
                             table_html += `
                                 <tr>
                                 <td>${++index}</td>
-                                <td>${transaction.item_category}</td>
                                 <td>${transaction.item}</td>
-                                <td>${transaction.on_hand_qty}</td>
-                                <td>${transaction.value}</td>
+                                <td>${transaction.item_category}</td> 
+                                <td>${transaction.onHand_quantity}</td>
+                                <td>${transaction.quantity_order}</td>
+                                <td>${transaction.stock_in}</td>
+                                <td>${transaction.stock_out}</td>
                                 </tr>
                             `;
                         });
