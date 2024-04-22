@@ -11,14 +11,14 @@
     <!--================================-->
     <div class="pageheader pd-t-25 pd-b-35">
         <div class="row">
-            <div class="col-3 d-flex justify-content-between">
+            <div class="col-6 d-flex justify-content-between">
                 <div class="clearfix">
                     <div class="pd-t-5 pd-b-5">
                         <h1 class="pd-0 mg-0 tx-20 tx-dark">{{parent_page_title}} {{page_title}}</h1>
                     </div>
                     <div class="breadcrumb pd-0 mg-0">
                         {% for breadcrumb in breadcrumbs %}
-                        {% if forloop.counter != breadcrumbs|length %}
+                        {% if forloop.counter == 1 or forloop.counter == 3%}
                         <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
                         {% else %}
                         <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
@@ -27,29 +27,11 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-9">
+            <div class="col-md-6">
                 <div class="float-end d-flex justify-content-end" style="padding-top: 10px;">
-                    <a 
-                    href="javascript:void(0);" 
-                    id = "pdf"
-                    class="mr-3 btn btn-info btn-sm excel_download"
-                    style="padding: 4.8px 12.8px 4.8px 12.8px;">
-                        PDF
-                    </a>
-                    <a 
-                    href="javascript:void(0);" 
-                    id = "csv"
-                    class="mr-3 btn btn-info btn-sm excel_download"
-                    style="padding: 4.8px 12.8px 4.8px 12.8px;">
-                        CSV
-                    </a>
-                    <a 
-                    href="javascript:void(0);" 
-                    id = "xlsx"
-                    class="mr-3 btn btn-info btn-sm excel_download"
-                    style="padding: 4.8px 12.8px 4.8px 12.8px;">
-                        Excel
-                    </a>
+                    <button type="button" file_type="pdf" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">PDF</button>
+                    <button type="button" file_type="csv" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">CSV</button>
+                    <button type="button" file_type="xlsx" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">Excel</button>
                 </div>
             </div>
         </div>
@@ -60,13 +42,15 @@
     <!-- Filter box Start -->
     <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
         <div class="row">
-            <div class="col-md-4 mb-3">
-                <label>Item Category<span class="required-indicator">*</span></label>
-                <div class="input-group">
-                    <select class="custom-select selectpicker" id="item_cat_id" name="item_cat_id">
-                        <option value="">Choose...</option>
-                    </select>
-                </div>
+            <div class="col-md-2 mb-3">
+                <label> From  Date <span class="required-indicator">*</span></label>
+                <input type="date" name="from_date" class="form-control from_date" placeholder="from date"
+                required>
+            </div>
+            <div class="col-md-2 mb-3">
+                <label> To Date <span class="required-indicator">*</span></label>
+                <input type="date" name="to_date" class="form-control to_date" placeholder="to date"
+                required>
             </div>
             <div class="col-md-2 mb-3" style="padding-top: 29px;">
                 <button type="submit" class="btn btn-success submit-btn">Submit</button>
@@ -96,29 +80,6 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
-                                <a href="{% url 'superuser:storeItemAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
-                                {% endif %}
-                                <a href="" class="mr-3"><i class="ti-reload"></i></a>
-                                <!-- <div class="dropdown" data-toggle="dropdown">
-                                    <a href=""><i class="ti-more-alt"></i></a>
-                                    <div class="dropdown-menu dropdown-menu-right">
-                                        <a href="" class="dropdown-item"><i data-feather="info"
-                                                class="wd-16 mr-2"></i>View Details</a>
-                                        <a href="" class="dropdown-item"><i data-feather="share"
-                                                class="wd-16 mr-2"></i>Share</a>
-                                        <a href="" class="dropdown-item"><i data-feather="download"
-                                                class="wd-16 mr-2"></i>Download</a>
-                                        <a href="" class="dropdown-item"><i data-feather="copy"
-                                                class="wd-16 mr-2"></i>Copy to</a>
-                                        <a href="" class="dropdown-item"><i data-feather="folder"
-                                                class="wd-16 mr-2"></i>Move to</a>
-                                        <a href="" class="dropdown-item"><i data-feather="edit"
-                                                class="wd-16 mr-2"></i>Rename</a>
-                                        <a href="" class="dropdown-item"><i data-feather="trash"
-                                                class="wd-16 mr-2"></i>Delete</a>
-                                    </div>
-                                </div> -->
                             </div>
                         </div>
                     </div>
@@ -147,6 +108,10 @@
 {% endblock %}
 
 {% block js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
 <script>
     // Example starter JavaScript for disabling form submissions if there are invalid fields
     (function () {
@@ -203,7 +168,7 @@
 
     $(document).ready(function () {
         $.ajax({
-            url: "{% url 'api:storeItemReport' %}?find_all=1",
+            url: "{% url 'api:reportStockTransfer' %}?find_all=1",
             type: 'GET',
             data: ({}),
             headers: {
@@ -214,15 +179,18 @@
                     var table_html = ``;
                     $.each(response.page_items, function (storeName, storeData) {
                         table_html += `
-                            <h5 style="padding: 20px;">${storeName}</h5>
+                            <h5 style="padding: 20px;"> Transaction no: ${storeName}</h5>
                             <table class="table">
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Item Category</th>
-                                    <th>Item</th>
-                                    <th>On Hand Quantity</th>
-                                    <th>value</th>
+                                    <th>Item </th>
+                                    <th>Source Store</th>
+                                    <th>Destination Store</th>
+                                    <th>material Out date</th>
+                                    <th>material Out</th>
+                                    <th>material In date</th>
+                                    <th>material In</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -231,11 +199,14 @@
                         $.each(storeData, function (index, transaction) {
                             table_html += `
                                 <tr>
-                                <td>${++index}</td>
-                                <td>${transaction.item_category}</td>
-                                <td>${transaction.item}</td>
-                                <td>${transaction.on_hand_qty}</td>
-                                <td>${transaction.value}</td>
+                                    <td>${++index}</td>
+                                    <td>${transaction.item}</td>
+                                    <td>${transaction.source_store}</td>
+                                    <td>${transaction.destination_store}</td>
+                                    <td>${transaction.material_out_date}</td>
+                                    <td>${transaction.material_out}</td>
+                                    <td>${transaction.material_in_date}</td>
+                                    <td>${transaction.material_in}</td>
                                 </tr>
                             `;
                         });
@@ -254,9 +225,9 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
-        pdfDownload()
-        xlsxDownload()
-        csvDownload()
+        // pdfDownload()
+        // xlsxDownload()
+        // csvDownload()
 
     });
 
@@ -269,7 +240,7 @@
             evalScripts: true,
             contentType: false,
             processData: false,
-            url: "{% url 'api:storeItemReport' %}",
+            url: "{% url 'api:reportStockTransfer' %}",
             data: formData,
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -279,15 +250,18 @@
                     var table_html = ``;
                     $.each(response.page_items, function (storeName, storeData) {
                         table_html += `
-                            <h5 style="padding: 20px;">${storeName}</h5>
+                        <h5 style="padding: 20px;"> Transaction no: ${storeName}</h5>
                             <table class="table">
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Item Category</th>
-                                    <th>Item</th>
-                                    <th>On Hand Quantity</th>
-                                    <th>value</th>
+                                    <th>Item </th>
+                                    <th>Source Store</th>
+                                    <th>Destination Store</th>
+                                    <th>material Out date</th>
+                                    <th>material Out</th>
+                                    <th>material In date</th>
+                                    <th>material In</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -296,11 +270,14 @@
                         $.each(storeData, function (index, transaction) {
                             table_html += `
                                 <tr>
-                                <td>${++index}</td>
-                                <td>${transaction.item_category}</td>
-                                <td>${transaction.item}</td>
-                                <td>${transaction.on_hand_qty}</td>
-                                <td>${transaction.value}</td>
+                                    <td>${++index}</td>
+                                    <td>${transaction.item}</td>
+                                    <td>${transaction.source_store}</td>
+                                    <td>${transaction.destination_store}</td>
+                                    <td>${transaction.material_out_date}</td>
+                                    <td>${transaction.material_out}</td>
+                                    <td>${transaction.material_in_date}</td>
+                                    <td>${transaction.material_in}</td>
                                 </tr>
                             `;
                         });
@@ -327,30 +304,132 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
-        pdfDownload()
-        xlsxDownload()
-        csvDownload()
+        // pdfDownload()
+        // xlsxDownload()
+        // csvDownload()
     });
-    function pdfDownload(){
-        let text = $('select#item_cat_id option:selected').val();
-        let keyword = text ? text : "";
-        file_name = "pdf"
-        url = "{% url 'api:storeItemReportExport' %}?keyword="+keyword+"&file_type="+file_name ;
-        $('#pdf').attr('url',url)
-    }
-    function xlsxDownload(){
-        let text = $('select#item_cat_id option:selected').val();
-        let keyword = text ? text : "";
-        file_name = "xlsx"
-        url = "{% url 'api:storeItemReportExport' %}?keyword="+keyword+"&file_type="+file_name ;
-        $('#xlsx').attr('url',url)
-    }
-    function csvDownload(){
-        let text = $('select#item_cat_id option:selected').val();
-        let keyword = text ? text : "";
-        file_name ="csv"
-        url = "{% url 'api:storeItemReportExport' %}?keyword="+keyword+"&file_type="+file_name ;
-        $('#csv').attr('url',url)
-    }
+    
+    $(document).on('click', '.generate_and_download', function (e) {
+        e.preventDefault();
+
+        // Get the file type from the clicked button's attribute
+        var fileType = $(this).attr('file_type');
+
+        var filename = "Inventory Storewise";
+
+        // Generate and download Excel or CSV file
+        if (fileType === 'xlsx') {
+            // Create workbook for Excel file
+            var wb = XLSX.utils.book_new();
+
+            // Loop through each table and add it as a separate sheet in the Excel file
+            $('.table').each(function(index) {
+                var ws_data = [[]];
+                var sheet_name = $(this).prev('h5').text();
+
+                // Extract table data
+                $(this).find('thead th').each(function() {
+                    ws_data[0].push($(this).text());
+                });
+
+                $(this).find('tbody tr').each(function() {
+                    var row_data = [];
+                    $(this).find('td').each(function() {
+                        row_data.push($(this).text());
+                    });
+                    ws_data.push(row_data);
+                });
+
+                // Add worksheet to workbook
+                var ws = XLSX.utils.aoa_to_sheet(ws_data);
+                XLSX.utils.book_append_sheet(wb, ws, sheet_name);
+            });
+
+            // Download Excel file
+            XLSX.writeFile(wb, filename + '.xlsx');
+        } 
+        
+        else if (fileType === 'csv') {
+        // Initialize CSV content
+        var csvContent = '';
+
+        // Loop through each table and generate CSV content for each
+        $('.table').each(function(index) {
+            var sheet_name = $(this).prev('h5').text();
+
+            // Append sheet name to CSV content
+            csvContent += sheet_name + '\n';
+
+            // Extract table data and append to CSV content
+            $(this).find('thead th').each(function() {
+                csvContent += '"' + $(this).text().replace(/"/g, '""') + '",'; // Surround with double quotes and escape existing quotes
+            });
+            csvContent = csvContent.slice(0, -1); // Remove trailing comma
+            csvContent += '\n';
+
+            $(this).find('tbody tr').each(function() {
+                $(this).find('td').each(function() {
+                    csvContent += '"' + $(this).text().replace(/"/g, '""') + '",'; // Surround with double quotes and escape existing quotes
+                });
+                csvContent = csvContent.slice(0, -1); // Remove trailing comma
+                csvContent += '\n';
+            });
+
+            // Add sheet separator
+            csvContent += '\n';
+        });
+
+        // Create Blob and download CSV file
+        var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+        saveAs(blob, filename + '.csv');
+    }        
+        else if (fileType === 'pdf') {
+            window.jsPDF = window.jspdf.jsPDF
+            // Initialize jsPDF
+            var doc = new jsPDF();
+
+            // Loop through each table and generate PDF content for each
+            $('.table').each(function(index) {
+                // Extract store name
+                var storeName = $(this).prev('h5').text();
+
+                // Add store name as heading
+                doc.text(storeName, 10, 10);
+
+                // Extract table data
+                var headers = [];
+                var data = [];
+
+                $(this).find('thead th').each(function() {
+                    headers.push($(this).text());
+                });
+
+                $(this).find('tbody tr').each(function() {
+                    var row = [];
+                    $(this).find('td').each(function() {
+                        row.push($(this).text());
+                    });
+                    data.push(row);
+                });
+
+                // Generate PDF table
+                doc.autoTable({
+                    head: [headers],
+                    body: data,
+                    startY: 20 // Start table below heading
+                });
+
+                // Add page break if not the last table
+                if (index < $('.table').length - 1) {
+                    doc.addPage();
+                }
+            });
+
+            // Download PDF file
+            doc.save(filename + '.pdf');
+        }
+    });
+
+
 </script>
 {% endblock %}
