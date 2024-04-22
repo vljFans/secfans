@@ -548,20 +548,21 @@ def vendorList(request):
 @permission_classes([IsAuthenticated])
 def vendorAdd(request):
     context = {}
-    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['gst_no'] or not request.POST['pin'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
+    if not request.POST['name'] or not request.POST['contact_name']  or not request.POST['gst_no'] or not request.POST['pin'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
         context.update({
             'status': 517,
-            'message': "Name/Contact Name/Contact Email/Contact No/GST Number/Pin/Address/Country/State/City has not been provided."
+            'message': "Name/Contact Name/GST Number/Pin/Address/Country/State/City has not been provided."
         })
         return JsonResponse(context)
-    exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
-        contact_no__iexact=request.POST['contact_no'])).filter(deleted=0)
-    if len(exist_data) > 0:
-        context.update({
-            'status': 518,
-            'message': "Vendor with this email or phone number already exists."
-        })
-        return JsonResponse(context)
+    if request.POST.get('contact_email',None) or request.POST.get('contact_no',None):
+        exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
+            contact_no__iexact=request.POST['contact_no'])).filter(deleted=0)
+        if len(exist_data) > 0:
+            context.update({
+                'status': 518,
+                'message': "Vendor with this email or phone number already exists."
+            })
+            return JsonResponse(context)
     try:
         with transaction.atomic():
             vendor = models.Vendor()
@@ -594,20 +595,21 @@ def vendorAdd(request):
 @permission_classes([IsAuthenticated])
 def vendorEdit(request):
     context = {}
-    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['gst_no'] or not request.POST['pin'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
+    if not request.POST['name'] or not request.POST['contact_name']  or not request.POST['gst_no'] or not request.POST['pin'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
         context.update({
             'status': 520,
-            'message': "Name/Contact Name/Contact Email/Contact No/GST Number/Pin/Address/Country/State/City has not been provided."
+            'message': "Name/Contact Name/GST Number/Pin/Address/Country/State/City has not been provided."
         })
         return JsonResponse(context)
-    exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
-        contact_no__iexact=request.POST['contact_no'])).exclude(id=request.POST['id']).filter(deleted=0)
-    if len(exist_data) > 0:
-        context.update({
-            'status': 521,
-            'message': "Vendor with this email or phone number already exists."
-        })
-        return JsonResponse(context)
+    if request.POST.get('contact_email',None) or request.POST.get('contact_no',None):
+        exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
+            contact_no__iexact=request.POST['contact_no'])).filter(deleted=0)
+        if len(exist_data) > 0:
+            context.update({
+                'status': 518,
+                'message': "Vendor with this email or phone number already exists."
+            })
+            return JsonResponse(context)
     try:
         with transaction.atomic():
             vendor = models.Vendor.objects.get(pk=request.POST['id'])
@@ -1557,7 +1559,7 @@ def itemTypeAdd(request):
 @permission_classes([IsAuthenticated])
 def itemTypeEdit(request):
     context = {}
-    if not request.POST['name'] or not request.POST['item_category_id'] or not request.POST['hsn_code'] or not request.POST['gst_percentage']:
+    if not request.POST['name'] or not request.POST['item_category_id']  or not request.POST['gst_percentage']:
         context.update({
             'status': 555,
             'message': "Name/Item Category/HSN Code/GST Percentage has not been provided."
