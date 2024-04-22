@@ -1314,6 +1314,24 @@ def reportStockTransfer(request):
 def reportPurchaseOrderByVendor(request):
     context.update({
         'page_title': "Purchase Order By Vendor",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports"}, {'name': "Purchase Orders"}, {'name': "Storewise", 'url': reverse('superuser:reportInventoryStorewise')}]
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports"}, {'name': "Purchase Orders"}, {'name': "Purchase Order By Vendor", 'url': reverse('superuser:reportPurchaseOrderByVendor')}]
     })
     return render(request, 'portal/Report/Purchase Order/PurchaseOrderByVendor.html', context)
+
+
+@login_required
+def reportPurchaseOrderByItem(request):
+    context.update({
+        'page_title': "Purchase Order By Item",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports"}, {'name': "Purchase Orders"}, {'name': "Purchase Order By Item", 'url': reverse('superuser:reportPurchaseOrderByItem')}]
+    })
+    return render(request, 'portal/Report/Purchase Order/PurchaseOrderByItem.html', context)
+
+
+@login_required
+def reportActivePurchaseOrder(request):
+    context.update({
+        'page_title': "Active Purchase Order",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports"}, {'name': "Purchase Orders"}, {'name': "Active Purchase Order", 'url': reverse('superuser:reportActivePurchaseOrder')}]
+    })
+    return render(request, 'portal/Report/Purchase Order/ActivePurchaseOrder.html', context)

@@ -548,20 +548,21 @@ def vendorList(request):
 @permission_classes([IsAuthenticated])
 def vendorAdd(request):
     context = {}
-    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['gst_no'] or not request.POST['pin'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
+    if not request.POST['name'] or not request.POST['contact_name']  or not request.POST['gst_no'] or not request.POST['pin'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
         context.update({
             'status': 517,
-            'message': "Name/Contact Name/Contact Email/Contact No/GST Number/Pin/Address/Country/State/City has not been provided."
+            'message': "Name/Contact Name/GST Number/Pin/Address/Country/State/City has not been provided."
         })
         return JsonResponse(context)
-    exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
-        contact_no__iexact=request.POST['contact_no'])).filter(deleted=0)
-    if len(exist_data) > 0:
-        context.update({
-            'status': 518,
-            'message': "Vendor with this email or phone number already exists."
-        })
-        return JsonResponse(context)
+    if request.POST.get('contact_email',None) or request.POST.get('contact_no',None):
+        exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
+            contact_no__iexact=request.POST['contact_no'])).filter(deleted=0)
+        if len(exist_data) > 0:
+            context.update({
+                'status': 518,
+                'message': "Vendor with this email or phone number already exists."
+            })
+            return JsonResponse(context)
     try:
         with transaction.atomic():
             vendor = models.Vendor()
@@ -594,20 +595,21 @@ def vendorAdd(request):
 @permission_classes([IsAuthenticated])
 def vendorEdit(request):
     context = {}
-    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['gst_no'] or not request.POST['pin'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
+    if not request.POST['name'] or not request.POST['contact_name']  or not request.POST['gst_no'] or not request.POST['pin'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
         context.update({
             'status': 520,
-            'message': "Name/Contact Name/Contact Email/Contact No/GST Number/Pin/Address/Country/State/City has not been provided."
+            'message': "Name/Contact Name/GST Number/Pin/Address/Country/State/City has not been provided."
         })
         return JsonResponse(context)
-    exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
-        contact_no__iexact=request.POST['contact_no'])).exclude(id=request.POST['id']).filter(deleted=0)
-    if len(exist_data) > 0:
-        context.update({
-            'status': 521,
-            'message': "Vendor with this email or phone number already exists."
-        })
-        return JsonResponse(context)
+    if request.POST.get('contact_email',None) or request.POST.get('contact_no',None):
+        exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
+            contact_no__iexact=request.POST['contact_no'])).filter(deleted=0)
+        if len(exist_data) > 0:
+            context.update({
+                'status': 518,
+                'message': "Vendor with this email or phone number already exists."
+            })
+            return JsonResponse(context)
     try:
         with transaction.atomic():
             vendor = models.Vendor.objects.get(pk=request.POST['id'])
@@ -1557,7 +1559,7 @@ def itemTypeAdd(request):
 @permission_classes([IsAuthenticated])
 def itemTypeEdit(request):
     context = {}
-    if not request.POST['name'] or not request.POST['item_category_id'] or not request.POST['hsn_code'] or not request.POST['gst_percentage']:
+    if not request.POST['name'] or not request.POST['item_category_id']  or not request.POST['gst_percentage']:
         context.update({
             'status': 555,
             'message': "Name/Item Category/HSN Code/GST Percentage has not been provided."
@@ -6356,10 +6358,52 @@ def reportPurchaseOrderByVendor(request):
 @permission_classes([IsAuthenticated])
 def reportPurchaseOrderByVendor(request):
     context = {}
-    vendor_id = request.POST.get('item_id', None)
+    vendor_id = request.POST.get('vendor_id', None)
     purchaseOrders = models.Purchase_Order.objects.filter(vendor_id=vendor_id)
     purchaseOrders = list(purchaseOrders.values('pk', 'order_number', 'order_date','total_amount','vendor__name'))
 
+    context.update({
+        'status': 200,
+        'message': "Items Fetched Successfully.",
+        'page_items': purchaseOrders,
+    })
+
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def reportPurchaseOrderByItem(request):
+    context = {}
+    item_id = request.POST.get('item_id', None)
+    purchaseOrderDetails = models.Purchase_Order_Detail.objects.filter(item_id=item_id)
+    purchaseOrderDetails = list(purchaseOrderDetails.values(
+        'pk',
+        'purchase_order_header__order_number',
+        'purchase_order_header__order_date',
+        'purchase_order_header__vendor__name',
+        'quantity',
+        'amount_with_gst',
+        'delivered_quantity',
+        'delivered_amount_with_gst'
+    ))
+
+    context.update({
+        'status': 200,
+        'message': "Items Fetched Successfully.",
+        'page_items': purchaseOrderDetails,
+    })
+
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def reportActivePurchaseOrder(request):
+    context = {}
+    purchaseOrders = models.Purchase_Order.objects.filter(delivery_status__in=[1, 2])
+    purchaseOrders = list(purchaseOrders.values('pk', 'order_number', 'order_date','total_amount','vendor__name'))
+    print(purchaseOrders)
     context.update({
         'status': 200,
         'message': "Items Fetched Successfully.",

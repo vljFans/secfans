@@ -43,9 +43,9 @@
     <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
         <div class="row">
             <div class="col-md-4 mb-3">
-                <label>Vendor<span class="required-indicator">*</span></label>
+                <label>Item<span class="required-indicator">*</span></label>
                 <div class="input-group">
-                    <select class="custom-select selectpicker" id="vendor_id" name="vendor_id">
+                    <select class="custom-select selectpicker" id="item_id" name="item_id">
                         <option value="">Choose...</option>
                     </select>
                 </div>
@@ -88,11 +88,13 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Vendor</th>
                                     <th>Order Number</th>
                                     <th>Order Date</th>
-                                    <th>Total Price</th>
-                                    <th>Action</th>
+                                    <th>Vendor</th>
+                                    <th>Quantity</th>
+                                    <th>Amount with GST</th>
+                                    <th>Deliver Quantity</th>
+                                    <th>Delivered Amount with GST</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -145,7 +147,7 @@
 
     $(document).ready(function () {
         $.ajax({
-            url: "{% url 'api:vendorList' %}?find_all=1",
+            url: "{% url 'api:itemList' %}?find_all=1",
             type: 'GET',
             data: ({}),
             headers: {
@@ -153,11 +155,11 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    var vendor_options_text = `<option value="">Choose...</option>`;
+                    var item_options_text = `<option value="">Choose...</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
-                        vendor_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                        item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
-                    $('#vendor_id').html(vendor_options_text);
+                    $('#item_id').html(item_options_text);
                 } else {
                     alert(response.message);
                 }
@@ -177,14 +179,13 @@
             evalScripts: true,
             contentType: false,
             processData: false,
-            url: "{% url 'api:reportPurchaseOrderByVendor' %}",
+            url: "{% url 'api:reportPurchaseOrderByItem' %}",
             data: formData,
             headers: {
                 'Authorization': getCookieValue("accessToken")
             },
             success: function(response){
                 if (response.status == 200) {
-                    view_url = "{% url 'superuser:purchaseOrderView' 1 %}";
                     var table_html = ``;
                     page_items = response.page_items;
                     tbody_text = ``;
@@ -195,15 +196,13 @@
                         tbody_text += `
                             <tr>
                                 <td>${ index + 1}</td>
-                                <td>${element.vendor__name}</td>
-                                <td>${element.order_number}</td>
-                                <td>${element.order_date}</td>
-                                <td>₹${element.total_amount}</td>
-                                <td>
-                                {% if request.user.is_superuser == 1 or 'view_purchase_order_detail'|get_session_permission:request is not None %}
-                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
-                                {% endif %}
-                                </td>
+                                <td>${element.purchase_order_header__order_number}</td>
+                                <td>${element.purchase_order_header__order_date}</td>
+                                <td>${element.purchase_order_header__vendor__name}</td>
+                                <td>₹${element.quantity}</td>
+                                <td>${element.amount_with_gst}</td>
+                                <td>${element.delivered_quantity}</td>
+                                <td>${element.delivered_amount_with_gst}</td>
                             </tr>
                             `;
                     }
@@ -231,9 +230,9 @@
         // Get the file type from the clicked button's attribute
         var fileType = $(this).attr('file_type');
 
-        // Set filename based on selected vendor
-        var selectedVendor = $('#vendor_id option:selected').text();
-        var filename = "Purchase Order Of Vendor - " +  selectedVendor
+        // Set filename based on selected item
+        var selectedItem = $('#item_id option:selected').text();
+        var filename = "Purchase Order Of Item - " +  selectedItem
         
         // Get the table element
         var table = $('.table');

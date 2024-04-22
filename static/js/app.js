@@ -175,16 +175,21 @@ $(document).ready(function() {
                     parent_list_el.removeClass('open');
                 },
                 hide_active_menu = function() {
-                    $('.accordion-menu > li.open > .sub-menu').slideUp(submenu_animation_speed);
-                    active_list_element.removeClass('open');
+                    $('.accordion-menu li.open > .sub-menu').slideUp(submenu_animation_speed);
+                    $('.accordion-menu li.open').removeClass('open');
                 };
             
             if((sub_menu.length)&&(!body.hasClass('page-sidebar-collapsed'))) {
                 
                 if(!parent_list_el.hasClass('open')) {
-                    // console.log($(this).closest('ul').closest('li').hasClass("open"))
-                    if(active_list_element.length && !$(this).closest('ul').closest('li').hasClass("open")) {
-                        hide_active_menu();
+                    if(active_list_element.length) {
+                        if ( !$(this).closest('ul').closest('li').hasClass("open")  ){
+                            hide_active_menu();
+                        }
+                        else{
+                            $(this).closest("ul").find('li.open').find('.sub-menu').slideUp(submenu_animation_speed);
+                            $(this).closest("ul").find('li.open').removeClass('open');
+                        }
                     };
                     show_sub_menu();
                 } else {
