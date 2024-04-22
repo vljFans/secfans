@@ -252,17 +252,16 @@
             },
             success: function (response) {
                 if (response.status == 200) {
+                    console.log("hi");
                     var table_html = ``;
-                    $.each(response.page_items, function (storeName, storeData) {
+                    $.each(response.page_items, function (inventorySummaryName, inventorySummaryData) {
                         table_html += `
-                            <h5 style="padding: 20px;">${storeName}</h5>
                             <table class="table">
                             <thead>
                                 <tr>
                                     <th>#</th>
                                     <th>Item </th>
                                     <th>Catagory</th>
-                                    <th>Store</th>
                                     <th>On Hand Quantity</th>
                                     <th>Order Quantity</th>
                                     <th>Stock In</th>
@@ -272,14 +271,16 @@
                             <tbody>
                         `;
 
-                        $.each(storeData, function (index, transaction) {
+                        $.each(inventorySummaryData, function (index, transaction) {
                             table_html += `
                                 <tr>
                                 <td>${++index}</td>
-                                <td>${transaction.item_category}</td>
                                 <td>${transaction.item}</td>
-                                <td>${transaction.on_hand_qty}</td>
-                                <td>${transaction.value}</td>
+                                <td>${transaction.item_category}</td> 
+                                <td>${transaction.onHand_quantity}</td>
+                                <td>${transaction.quantity_order}</td>
+                                <td>${transaction.stock_in}</td>
+                                <td>${transaction.stock_out}</td>
                                 </tr>
                             `;
                         });
@@ -317,9 +318,7 @@
         // Get the file type from the clicked button's attribute
         var fileType = $(this).attr('file_type');
 
-        // Set filename based on selected item
-        var selectedItem = $('#item_id option:selected').text();
-        var filename = selectedItem + " Tracking Report";
+        var filename = "Inventory Storewise";
 
         // Generate and download Excel or CSV file
         if (fileType === 'xlsx') {
@@ -352,40 +351,41 @@
             // Download Excel file
             XLSX.writeFile(wb, filename + '.xlsx');
         } 
+        
         else if (fileType === 'csv') {
-            // Initialize CSV content
-            var csvContent = '';
+        // Initialize CSV content
+        var csvContent = '';
 
-            // Loop through each table and generate CSV content for each
-            $('.table').each(function(index) {
-                var sheet_name = $(this).prev('h5').text();
+        // Loop through each table and generate CSV content for each
+        $('.table').each(function(index) {
+            var sheet_name = $(this).prev('h5').text();
 
-                // Append sheet name to CSV content
-                csvContent += sheet_name + '\n';
+            // Append sheet name to CSV content
+            csvContent += sheet_name + '\n';
 
-                // Extract table data and append to CSV content
-                $(this).find('thead th').each(function() {
-                    csvContent += $(this).text() + ',';
+            // Extract table data and append to CSV content
+            $(this).find('thead th').each(function() {
+                csvContent += '"' + $(this).text().replace(/"/g, '""') + '",'; // Surround with double quotes and escape existing quotes
+            });
+            csvContent = csvContent.slice(0, -1); // Remove trailing comma
+            csvContent += '\n';
+
+            $(this).find('tbody tr').each(function() {
+                $(this).find('td').each(function() {
+                    csvContent += '"' + $(this).text().replace(/"/g, '""') + '",'; // Surround with double quotes and escape existing quotes
                 });
                 csvContent = csvContent.slice(0, -1); // Remove trailing comma
                 csvContent += '\n';
-
-                $(this).find('tbody tr').each(function() {
-                    $(this).find('td').each(function() {
-                        csvContent += $(this).text() + ',';
-                    });
-                    csvContent = csvContent.slice(0, -1); // Remove trailing comma
-                    csvContent += '\n';
-                });
-
-                // Add sheet separator
-                csvContent += '\n';
             });
 
-            // Create Blob and download CSV file
-            var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-            saveAs(blob, filename + '.csv');
-        }
+            // Add sheet separator
+            csvContent += '\n';
+        });
+
+        // Create Blob and download CSV file
+        var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+        saveAs(blob, filename + '.csv');
+    }        
         else if (fileType === 'pdf') {
             window.jsPDF = window.jspdf.jsPDF
             // Initialize jsPDF
