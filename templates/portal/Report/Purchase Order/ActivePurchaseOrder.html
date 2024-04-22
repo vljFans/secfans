@@ -133,7 +133,6 @@
                 if (response.status == 200) {
                     view_url = "{% url 'superuser:purchaseOrderView' 1 %}";
                     page_items = response.page_items;
-                    console.log(page_items);
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index];
