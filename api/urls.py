@@ -161,4 +161,6 @@ urlpatterns = [
     path('report-inventory-storewise', views.reportInventoryStorewise, name='reportInventoryStorewise'),
     path('report-stock-transfer', views.reportStockTransfer, name='reportStockTransfer'),
     path('report-purchase-order-by-vendor', views.reportPurchaseOrderByVendor, name='reportPurchaseOrderByVendor'),
+    path('report-purchase-order-by-item', views.reportPurchaseOrderByItem, name='reportPurchaseOrderByItem'),
+    path('report-active-purchase-order', views.reportActivePurchaseOrder, name='reportActivePurchaseOrder'),
 ]

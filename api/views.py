@@ -6263,10 +6263,52 @@ def reportPurchaseOrderByVendor(request):
 @permission_classes([IsAuthenticated])
 def reportPurchaseOrderByVendor(request):
     context = {}
-    vendor_id = request.POST.get('item_id', None)
+    vendor_id = request.POST.get('vendor_id', None)
     purchaseOrders = models.Purchase_Order.objects.filter(vendor_id=vendor_id)
     purchaseOrders = list(purchaseOrders.values('pk', 'order_number', 'order_date','total_amount','vendor__name'))
 
+    context.update({
+        'status': 200,
+        'message': "Items Fetched Successfully.",
+        'page_items': purchaseOrders,
+    })
+
+    return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def reportPurchaseOrderByItem(request):
+    context = {}
+    item_id = request.POST.get('item_id', None)
+    purchaseOrderDetails = models.Purchase_Order_Detail.objects.filter(item_id=item_id)
+    purchaseOrderDetails = list(purchaseOrderDetails.values(
+        'pk',
+        'purchase_order_header__order_number',
+        'purchase_order_header__order_date',
+        'purchase_order_header__vendor__name',
+        'quantity',
+        'amount_with_gst',
+        'delivered_quantity',
+        'delivered_amount_with_gst'
+    ))
+
+    context.update({
+        'status': 200,
+        'message': "Items Fetched Successfully.",
+        'page_items': purchaseOrderDetails,
+    })
+
+    return JsonResponse(context)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def reportActivePurchaseOrder(request):
+    context = {}
+    purchaseOrders = models.Purchase_Order.objects.filter(delivery_status__in=[1, 2])
+    purchaseOrders = list(purchaseOrders.values('pk', 'order_number', 'order_date','total_amount','vendor__name'))
+    print(purchaseOrders)
     context.update({
         'status': 200,
         'message': "Items Fetched Successfully.",

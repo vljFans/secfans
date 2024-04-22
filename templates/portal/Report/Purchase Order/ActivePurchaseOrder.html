@@ -38,25 +38,6 @@
     </div>
     <!--/ Breadcrumb End -->
     <!--================================-->
-    <!--================================-->
-    <!-- Filter box Start -->
-    <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <label>Vendor<span class="required-indicator">*</span></label>
-                <div class="input-group">
-                    <select class="custom-select selectpicker" id="vendor_id" name="vendor_id">
-                        <option value="">Choose...</option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-2 mb-3" style="padding-top: 29px;">
-                <button type="submit" class="btn btn-success submit-btn">Submit</button>
-            </div>
-        </div>
-    </form>
-    <!--/ Filter box End -->
-    <!--================================-->
     <!-- Form Element Start -->
     <!--================================-->
     <div class="row row-xs clearfix">
@@ -139,87 +120,42 @@
 
 <script>
     
-    $('.selectpicker').select2({
-        placeholder: ''
-    });
-
     $(document).ready(function () {
         $.ajax({
-            url: "{% url 'api:vendorList' %}?find_all=1",
-            type: 'GET',
+            type: "GET",
+            url: "{% url 'api:reportActivePurchaseOrder' %}",
             data: ({}),
             headers: {
                 'Authorization': getCookieValue("accessToken")
             },
             success: function (response) {
-                if (response.status == 200) {
-                    var vendor_options_text = `<option value="">Choose...</option>`;
-                    for (let index = 0; index < response.page_items.length; index++) {
-                        vendor_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
-                    }
-                    $('#vendor_id').html(vendor_options_text);
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });
-
-    });
-
-    $(document).on('submit', '#create_form', function (e) {
-        e.preventDefault();
-        var formData = new FormData(create_form);
-        $.ajax({
-            type: "POST",
-            evalScripts: true,
-            contentType: false,
-            processData: false,
-            url: "{% url 'api:reportPurchaseOrderByVendor' %}",
-            data: formData,
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function(response){
+                $('.error-msg-txt').text("");
                 if (response.status == 200) {
                     view_url = "{% url 'superuser:purchaseOrderView' 1 %}";
-                    var table_html = ``;
                     page_items = response.page_items;
-                    tbody_text = ``;
-                    page_items = response.page_items;
+                    console.log(page_items);
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index];
-                        tbody_text += `
-                            <tr>
+                        tbody_text += `<tr>
                                 <td>${ index + 1}</td>
                                 <td>${element.vendor__name}</td>
                                 <td>${element.order_number}</td>
                                 <td>${element.order_date}</td>
                                 <td>₹${element.total_amount}</td>
                                 <td>
-                                {% if request.user.is_superuser == 1 or 'view_purchase_order_detail'|get_session_permission:request is not None %}
+                                {% if request.user.is_superuser == 1 or 'view_purchase_order'|get_session_permission:request is not None %}
                                 <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
                                 {% endif %}
                                 </td>
-                            </tr>
-                            `;
+                            </tr>`;
                     }
                     $('tbody').html(tbody_text);
-                } 
-                else{
+                } else {
                     alert(response.message);
                 }
             },
             error: function (error) {
-                $('.submit-btn').text('Submitting...');
-                $('.submit-btn').prop('disabled', false);
-                // locationAfterMessageStore(error.responseJSON.detail, 'error');
-                $('.success-msg-txt').text("");
-                $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
-                $('.error-msg-txt').addClass('text-danger');
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
@@ -231,9 +167,7 @@
         // Get the file type from the clicked button's attribute
         var fileType = $(this).attr('file_type');
 
-        // Set filename based on selected vendor
-        var selectedVendor = $('#vendor_id option:selected').text();
-        var filename = "Purchase Order Of Vendor - " +  selectedVendor
+        var filename = "Active Purchase Orders" 
         
         // Get the table element
         var table = $('.table');

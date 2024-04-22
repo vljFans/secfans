@@ -676,6 +676,8 @@ class Store_Transaction_Detail(models.Model):
 
 # on transit transaction -- developed by saswata 
 # transaction_date date when material out  happned flag be 1 if material in on that particular transaction occured
+
+
 class On_Transit_Transaction(models.Model):
     transaction_number = models.CharField(max_length=25, blank=True, null=True)
     transaction_date = models.DateField(blank=True, null=True)
@@ -698,7 +700,8 @@ class On_Transit_Transaction(models.Model):
         managed = True
         db_table = 'on_transit_transaction_headers'
         verbose_name_plural = 'on_transit_transaction_headers'
-    
+
+
 class On_Transit_Transaction_Details(models.Model):
     on_transit_transaction_header = models.ForeignKey(On_Transit_Transaction, on_delete=models.CASCADE, blank=True, null=True)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
@@ -744,6 +747,7 @@ class Physical_Inspection(models.Model):
         db_table = 'physical_inspection_headers'
         verbose_name_plural = 'physical_inspection_headers'
 
+
 class Physical_Inspection_Details(models.Model):
     physical_inspection_header = models.ForeignKey(Physical_Inspection, on_delete=models.CASCADE, blank=True, null=True)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
@@ -765,6 +769,7 @@ class Physical_Inspection_Details(models.Model):
         managed = True
         db_table = 'physical_inspection_details'
         verbose_name_plural = 'physical_inspection_details'
+
 
 # purchase bill ---developed by saswata
 class Purchase_Bill(models.Model):
@@ -795,6 +800,7 @@ class Purchase_Bill(models.Model):
         managed = True
         db_table = 'purchase_bill_header'
         verbose_name_plural = 'purchase_bill_header'
+
 
 class Purchase_Bill_Details(models.Model):
     purchase_bill_header = models.ForeignKey(Purchase_Bill, on_delete=models.CASCADE, blank=True, null=True)
