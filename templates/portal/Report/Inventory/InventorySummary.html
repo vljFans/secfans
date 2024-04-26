@@ -97,6 +97,15 @@
                         <h5></h5>
                         <table class="table">
                             <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Item </th>
+                                    <th>Catagory</th>
+                                    <th>On Hand Quantity</th>
+                                    <th>Order Quantity</th>
+                                    <th>Stock In</th>
+                                    <th>Stock Out</th>
+                                </tr>
                                 
                             </thead>
                             <tbody class="table_data">
@@ -170,7 +179,15 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
-        
+        ('.selectpicker').select2({
+        placeholder: '',
+        templateResult: function(option) {
+            if(option.element && (option.element).hasAttribute('hidden')){
+                return null;
+            }
+            return option.text;
+        }
+    });
 
     });
 
@@ -253,45 +270,22 @@
             success: function (response) {
                 if (response.status == 200) {
                     console.log("hi");
-                    var table_html = ``;
-                    $.each(response.page_items, function (inventorySummaryName, inventorySummaryData) {
-                        table_html += `
-                            <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Item </th>
-                                    <th>Catagory</th>
-                                    <th>On Hand Quantity</th>
-                                    <th>Order Quantity</th>
-                                    <th>Stock In</th>
-                                    <th>Stock Out</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                        `;
+                    var table_data = ``;
 
-                        $.each(inventorySummaryData, function (index, transaction) {
-                            table_html += `
-                                <tr>
-                                <td>${++index}</td>
-                                <td>${transaction.item}</td>
-                                <td>${transaction.item_category}</td> 
-                                <td>${transaction.onHand_quantity}</td>
-                                <td>${transaction.quantity_order}</td>
-                                <td>${transaction.stock_in}</td>
-                                <td>${transaction.stock_out}</td>
-                                </tr>
-                            `;
-                        });
-
-                        table_html += `
-                        </tbody>
-                        </table>
-                        `;
-                    });
-
-                    $('.table-responsive').html(table_html);
+                    console.log(response.page_items);
+                    for (let index=0 ; index < response.page_items.length ;index++ ){
+                        table_data += `<tr>
+                                             <td>${index+1}</td>
+                                             <td>${response.page_items[index].item}</td>
+                                             <td>${response.page_items[index].item_category}</td>                                 
+                                             <td>${response.page_items[index].onHand_quantity}</td>
+                                             <td>${response.page_items[index].quantity_order}</td>
+                                             <td>${response.page_items[index].stock_in}</td>
+                                             <td>${response.page_items[index].stock_out}</td>
+                            
+                                        </tr>`
+                    }
+                    $('.table_data').html(table_data);
                 } 
                 else {
                     alert(response.message);
@@ -318,7 +312,7 @@
         // Get the file type from the clicked button's attribute
         var fileType = $(this).attr('file_type');
 
-        var filename = "Inventory Storewise";
+        var filename = "Inventory Summary";
 
         // Generate and download Excel or CSV file
         if (fileType === 'xlsx') {
