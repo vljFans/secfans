@@ -1482,8 +1482,7 @@ def itemTypeList(request):
     else:
         if keyword is not None and keyword != "":
             itemTypes = list(models.Item_Type.objects.filter(
-                Q(name__icontains=keyword) | Q(item_category__name__icontains=keyword) | Q(
-                    hsn_code__icontains=keyword)
+                Q(name__icontains=keyword) | Q(item_category__name__icontains=keyword) 
             ).filter(status=1, deleted=0).values(
                 'pk', 'name', 'item_category__name', 'gst_percentage'))
         else:
