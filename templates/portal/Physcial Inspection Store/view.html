@@ -2,6 +2,13 @@
 {% load template_func %}
 
 {% block css %}
+
+<style>
+    /* Customize text color */
+    .custom-swal-text-color .swal-text {
+        color: blue; /* Change color as needed */
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -128,4 +135,5 @@
 
 {% block js %}
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
 {% endblock %}

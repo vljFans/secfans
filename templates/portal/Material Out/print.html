@@ -73,25 +73,25 @@
     </div>
     <div style="width: 100%;">
         <table style="border-width:0px; border-spacing:0px; width: 100%;">
-        <tr>
-            <th style="border-top: 1px solid black;border-bottom:1px solid black; border-left: white; border-right: white;">Item Name</th>
-            <th style="border-top: 1px solid black;border-bottom:1px solid black; border-left: white; border-right: white;">Quantity</th>
-            <th style="border-top: 1px solid black;border-bottom:1px solid black; border-left: white; border-right: white;">Rate</th>
-            <th style="border-top: 1px solid black;border-bottom:1px solid black; border-left: white; border-right: white;">Amount</th>
-        </tr>
-        {% for materialOutDet in materialOut.on_transit_transaction_details_set.all %}
-        <tr>
-            <td style="border-color: white;" class="fs-10 ">{{materialOutDet.item.name}}</td>
-            <td style="border-color: white;" >{{materialOutDet.quantity}}</td> 
-            <td style="border-color: white;" >{{materialOutDet.rate}}</td>
-            <td style="border-color: white;" >{{materialOutDet.amount}}</td>
-        </tr>
-        {% endfor %}
-        </table>
-        <table style="border-width:0px; border-spacing:0px; width: 100%; float: right; padding-left: 300px; padding-top: 50px;">
             <tr>
-                <th rowspan="100" style="border-color: white;">TOTAL PICES: {{total_quantity}} PICES</th>     
-                <th rowspan="100" style="border-color: white;" >TOTAL AMOUNT: &#8377;{{total_amount}}</th>
+                <th style="border-top: 1px solid black;border-bottom:1px solid black; border-left: white; border-right: white;">Item Name</th>
+                <th style="border-top: 1px solid black;border-bottom:1px solid black; border-left: white; border-right: white;">Quantity</th>
+                <th style="border-top: 1px solid black;border-bottom:1px solid black; border-left: white; border-right: white;">Rate</th>
+                <th style="border-top: 1px solid black;border-bottom:1px solid black; border-left: white; border-right: white;">Amount</th>
+            </tr>
+            {% for materialOutDet in materialOut.on_transit_transaction_details_set.all %}
+            <tr>
+                <td style="border-color: white;" class="fs-10 ">{{materialOutDet.item.name}}</td>
+                <td style="border-color: white;" >{{materialOutDet.quantity}}</td> 
+                <td style="border-color: white;" >{{materialOutDet.rate}}</td>
+                <td style="border-color: white;" >{{materialOutDet.amount}}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td style="border-left: white; border-right: white;"></td>
+                <td style="border-left: white; border-right: white;" ></td> 
+                <td style="border-left: white; border-right: white;" >{{total_quantity}} PICES </td>
+                <td style="border-left: white; border-right: white;">&#8377;{{total_amount}}</td>
             </tr>
         </table>
     </div>

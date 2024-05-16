@@ -830,3 +830,47 @@ class Purchase_Bill_Details(models.Model):
         managed = True
         db_table = 'purchase_bill_details'
         verbose_name_plural = 'purchase_bill_details'
+
+class Item_Stock_Report(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, blank=True, null=True)
+    opening_quantity = models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    opening_value = models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.item
+
+    class Meta:
+        managed = True
+        db_table = 'item_stock_report_header'
+        verbose_name_plural = 'item_stock_report_header'
+
+class Item_Stock_Report_Details(models.Model):
+    item_stock_report_header =  models.ForeignKey(Item_Stock_Report, on_delete=models.CASCADE, blank=True, null=True)
+    store_transaction_header = models.ForeignKey(Store_Transaction, on_delete=models.CASCADE, blank=True, null=True) 
+    store_transaction_detail = models.ForeignKey(Store_Transaction_Detail, on_delete=models.CASCADE, blank=True, null=True)
+    transaction_type = models.ForeignKey(Transaction_Type, on_delete=models.CASCADE, blank=True, null=True)
+    transaction_number = models.CharField(max_length=50, blank=True, null=True)
+    transaction_date = models.DateField(blank=True, null=True)
+    quantity = models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    value = models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.item_stock_report_header.item
+
+    class Meta:
+        managed = True
+        db_table = 'item_stock_report_details'
+        verbose_name_plural = 'item_stock_report_details'
