@@ -4466,7 +4466,7 @@ def materialIssueAdd(request):
 
     try:
         with transaction.atomic():
-            print('4469')
+            # print('4469')
             # transation_type = models.Transaction_Type.objects.get(name = 'MIS')
             store_transaction_count = models.Store_Transaction.objects.all().count()
             storeTransactionHeader=models.Store_Transaction()
@@ -5480,10 +5480,10 @@ def materialInDetailsAdd(request):
         # pass
         with transaction.atomic():
             # print("saswata")
-            print('ooooooooo')
+            # print('ooooooooo')
             #material added on on transit transaction heder flag be 1 
             transitTransactionHeader = models.On_Transit_Transaction.objects.get(pk=request.POST['transactionNumber'])
-            print(transitTransactionHeader.id)
+            # print(transitTransactionHeader.id)
             transitTransactionHeader.flag = 1
             transitTransactionHeader.transaction_in_date = request.POST['issue_date']
             transitTransactionHeader.updated_at = datetime.now()
@@ -5499,7 +5499,7 @@ def materialInDetailsAdd(request):
             storeTransactionHeader.transaction_date = request.POST['issue_date']
             storeTransactionHeader.reference_id =  int(transitTransactionHeader.id)
             storeTransactionHeader.save()
-            print("4987")
+            # print("4987")
            
             order_details = []
             for index in range(0,len(request.POST.getlist('item_id'))):
@@ -5526,7 +5526,7 @@ def materialInDetailsAdd(request):
                         
                     )
                 )
-                print("5021")
+                # print("5021")
 
                 # item added to destination store
 
@@ -6459,7 +6459,7 @@ def cornJobStoreItemQuantityUpdate(request):
                     # print(store_transact_det.store_transaction_header.transaction_type.name)
                     transaction_type = store_transact_det.store_transaction_header.transaction_type.name
                     quantity = float(store_transact_det.quantity)
-                    print("item=",store_item.item.name, 'store=',store_item.store.name,'quantity=', quantity,'total_quantity=',total_quantity)
+                    # print("item=",store_item.item.name, 'store=',store_item.store.name,'quantity=', quantity,'total_quantity=',total_quantity)
                     if transaction_type == 'GRN' or transaction_type == 'MIN' :
                         # print('hhhhh') 
                         total_In_quantity += quantity
@@ -6494,6 +6494,11 @@ def cornJobStoreItemQuantityUpdate(request):
                 item_stock_report.opening_value = total_value
                 item_stock_report.rate = item_rate
                 item_stock_report.save()
+                store_item = models.Store_Item.objects.get(item=store_item.item , store = store_item.store)
+                store_item.opening_qty = total_quantity
+                store_item.closing_qty  = total_quantity
+                store_item.updated_at = datetime.now()
+                store_item.save()
 
                 # print(item_rate)
 
