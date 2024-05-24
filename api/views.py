@@ -1482,8 +1482,7 @@ def itemTypeList(request):
     else:
         if keyword is not None and keyword != "":
             itemTypes = list(models.Item_Type.objects.filter(
-                Q(name__icontains=keyword) | Q(item_category__name__icontains=keyword) | Q(
-                    hsn_code__icontains=keyword)
+                Q(name__icontains=keyword) | Q(item_category__name__icontains=keyword) 
             ).filter(status=1, deleted=0).values(
                 'pk', 'name', 'item_category__name', 'gst_percentage'))
         else:
@@ -4467,24 +4466,29 @@ def materialIssueAdd(request):
 
     try:
         with transaction.atomic():
+            # print('4469')
             # transation_type = models.Transaction_Type.objects.get(name = 'MIS')
             store_transaction_count = models.Store_Transaction.objects.all().count()
             storeTransactionHeader=models.Store_Transaction()
             if request.POST['vendor_id']:
                 storeTransactionHeader.vendor_id = request.POST['vendor_id']
+            
+            # print(models.Transaction_Type.objects.get(name = 'MIS'))
             storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'MIS')
+           
             storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                     "${CURRENT_YEAR}", datetime.today().strftime('%Y')
                 ).replace(
                     "${AI_DIGIT_5}",str(store_transaction_count + 1).zfill(5)
                 )
+            
             storeTransactionHeader.transaction_date=request.POST['issue_date']
             storeTransactionHeader.job_order_id = request.POST['job_order_id']
             storeTransactionHeader.total_amount = request.POST['total_amount']
             if request.POST['vehicle']!="" and request.POST.get('vehicle',None):
                 storeTransactionHeader.vehicle = request.POST['vehicle']
             storeTransactionHeader.save()
-
+            
             store_transaction_details = []
             store_items_add=[]
             for index, elem in enumerate(request.POST.getlist('item_id')):
@@ -4498,10 +4502,12 @@ def materialIssueAdd(request):
                         amount = float(request.POST.getlist('amount')[index])
                     )
                 )
-
+                
                 if request.POST['vendor_id']:
+                    print('jjj')
                     vendor_store=models.Store.objects.get(vendor_id=request.POST['vendor_id'])
                     # If the item exists in vendor store
+                    
                     if models.Store_Item.objects.filter(store=vendor_store, item_id=elem).exists():
                         store_item=models.Store_Item.objects.get(store=vendor_store, item_id=elem)
                         store_item.on_hand_qty+=Decimal(request.POST.getlist('quantity_sent')[index])
@@ -4520,7 +4526,7 @@ def materialIssueAdd(request):
                                 closing_qty=float(request.POST.getlist('quantity_sent')[index]),
                             )
                         )
-
+                    
                 # In house store items being reduced
                 in_house_store=models.Store.objects.get(id=request.POST['store_id'])
                 store_item = models.Store_Item.objects.get(store=in_house_store, item_id=elem)
@@ -4528,7 +4534,7 @@ def materialIssueAdd(request):
                 store_item.closing_qty -= Decimal(request.POST.getlist('quantity_sent')[index])
                 store_item.updated_at = datetime.now()
                 store_item.save()
-
+                
             models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
             models.Store_Item.objects.bulk_create(store_items_add)
 
@@ -5149,7 +5155,7 @@ def materialOutDetailsAdd(request):
             # print("hi")
             store_transaction_count = models.Store_Transaction.objects.all().count()
             storeTransactionHeader = models.Store_Transaction()
-            storeTransactionHeader.transaction_type_id = 6
+            storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'MOUT')
             storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                 "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
             storeTransactionHeader.transaction_date = request.POST['issue_date']
@@ -5473,7 +5479,8 @@ def materialInDetailsAdd(request):
     try:
         # pass
         with transaction.atomic():
-            # print("4982")
+            # print("saswata")
+            # print('ooooooooo')
             #material added on on transit transaction heder flag be 1 
             transitTransactionHeader = models.On_Transit_Transaction.objects.get(pk=request.POST['transactionNumber'])
             # print(transitTransactionHeader.id)
@@ -5482,11 +5489,11 @@ def materialInDetailsAdd(request):
             transitTransactionHeader.updated_at = datetime.now()
 
             transitTransactionHeader.save()
-
+            # print('54kc91')
             #store transaction created for material in
             store_transaction_count = models.Store_Transaction.objects.all().count()
             storeTransactionHeader= models.Store_Transaction()
-            storeTransactionHeader.transaction_type_id = 7
+            storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'MIN')
             storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                 "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
             storeTransactionHeader.transaction_date = request.POST['issue_date']
@@ -5668,7 +5675,7 @@ def physicalInspectionDetailsAdd(request):
              #store transaction created for material in
             store_transaction_count = models.Store_Transaction.objects.all().count()
             storeTransactionHeader= models.Store_Transaction()
-            storeTransactionHeader.transaction_type_id = 8
+            storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'PHY')
             storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                 "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
             storeTransactionHeader.transaction_date = request.POST['issue_date']
@@ -5680,7 +5687,7 @@ def physicalInspectionDetailsAdd(request):
             for index in range(0,len(request.POST.getlist('item_id'))):
                 if request.POST.getlist('physical_quantity')[index]!='':
 
-                    adjustQuan = float(request.POST.getlist('book_quantity')[index]) - float( request.POST.getlist('physical_quantity')[index])
+                    adjustQuan = (float( request.POST.getlist('physical_quantity')[index]) - float(request.POST.getlist('book_quantity')[index])) if float(request.POST.getlist('book_quantity')[index]) > 0 else  (float(request.POST.getlist('book_quantity')[index]) + float( request.POST.getlist('physical_quantity')[index]))
 
                     phyInsDet.append(
                         models.Physical_Inspection_Details(
@@ -6410,3 +6417,104 @@ def reportActivePurchaseOrder(request):
     })
 
     return JsonResponse(context)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def cornJobStoreItemQuantityUpdate(request):
+    context ={}
+    # print('inside cornjob')
+    # start_date = '2024-01-01' #for testing 
+    end_date = datetime.now().date()
+    start_date = end_date.replace(day=1)
+    # SECRET_KEY = env("SECRET_KEY") 
+    # print(SECRET_KEY)
+    
+    try:
+        store_items = models.Store_Item.objects.select_related('store').prefetch_related(
+            'store__store_transaction_detail_set'
+        )
+        for store_item in store_items:
+            total_In_quantity = 0.00
+            total_Out_quantity = 0.00
+            total_Out_Value = 0.00
+            total_IN_Value = 0.00
+            total_quantity = float(store_item.opening_qty)
+            total_value =  total_quantity * float(store_item.item.price)
+            item_rate =0.00
+            # Access the related store transaction details directly
+            # print(store_item.item.name)
+            store_transaction_dets = store_item.store.store_transaction_detail_set.filter(
+                item=store_item.item , store = store_item.store
+            ).filter(store_transaction_header__transaction_date__range=(start_date,end_date))
+
+            if store_transaction_dets :
+                item_stock_report = models.Item_Stock_Report()
+                item_stock_report.item = store_item.item
+                item_stock_report.store = store_item.store
+                item_stock_report.start_date = start_date
+                item_stock_report.end_date = end_date
+                item_stock_report.save()
+                order_details =[]
+                for store_transact_det in store_transaction_dets:
+                    # print(store_transact_det.store_transaction_header.transaction_type.name)
+                    transaction_type = store_transact_det.store_transaction_header.transaction_type.name
+                    quantity = float(store_transact_det.quantity)
+                    # print("item=",store_item.item.name, 'store=',store_item.store.name,'quantity=', quantity,'total_quantity=',total_quantity)
+                    if transaction_type == 'GRN' or transaction_type == 'MIN' :
+                        # print('hhhhh') 
+                        total_In_quantity += quantity
+                        total_IN_Value += (float(store_transact_det.rate) * quantity) if float(store_transact_det.rate) > 0.00 else (float(store_transact_det.item.price) * quantity)
+                    elif transaction_type == 'MIS' or transaction_type == 'MOUT':
+                        
+                        total_Out_quantity += quantity
+                        total_Out_Value += (float(store_transact_det.rate) * quantity) if float(store_transact_det.rate) > 0.00 else (float(store_transact_det.item.price) * quantity)
+                    else:
+                        total_quantity -= quantity
+                        total_value -= (float(store_transact_det.rate) * quantity) if float(store_transact_det.rate) > 0.00 else (float(store_transact_det.item.price) * quantity)
+                    # print(total_rate,"storeName=",store_item.store.name,'item=',store_item.item.name)
+                    order_details.append(
+                        models.Item_Stock_Report_Details(
+                            item_stock_report_header_id = item_stock_report.id,
+                            store_transaction_header_id = store_transact_det.store_transaction_header_id,
+                            store_transaction_detail_id = store_transact_det.id,
+                            transaction_type_id = store_transact_det.store_transaction_header.transaction_type_id,
+                            transaction_number = store_transact_det.store_transaction_header.transaction_number,
+                            transaction_date = store_transact_det.store_transaction_header.transaction_date,
+                            quantity = store_transact_det.quantity,
+                            rate = store_transact_det.rate,
+                            value = float(store_transact_det.quantity) * float(store_transact_det.rate) 
+
+                        )
+                    )
+                models.Item_Stock_Report_Details.objects.bulk_create(order_details)
+                total_quantity = (total_quantity + total_In_quantity) - total_Out_quantity
+                total_value = (total_value + total_IN_Value) - total_Out_Value
+                item_rate = total_value/total_quantity if total_quantity >0.00 else 0.00
+                item_stock_report.opening_quantity = total_quantity
+                item_stock_report.opening_value = total_value
+                item_stock_report.rate = item_rate
+                item_stock_report.save()
+                store_item = models.Store_Item.objects.get(item=store_item.item , store = store_item.store)
+                store_item.opening_qty = total_quantity
+                store_item.closing_qty  = total_quantity
+                store_item.updated_at = datetime.now()
+                store_item.save()
+
+                # print(item_rate)
+
+            # print("item=",store_item.item.name, 'store=',store_item.store.name,total_quantity,total_rate)
+        context.update({
+            'status': 200,
+            'message': "store Item Quantity  updated sucessfully"
+        })
+    except Exception:
+
+        context.update({
+            'status': 539,
+            'message': "Somethings went wrong please try again!"
+        })
+    
+
+    return JsonResponse(context)
+
+

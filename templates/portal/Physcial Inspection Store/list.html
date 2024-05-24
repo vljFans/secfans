@@ -39,6 +39,9 @@
         <input type="text" id="search" name="search" style="width: 180px; height: 30px;" value="{{request.GET.keyword}}"
             placeholder="" />
     </div>
+    <!-- <div>
+        <button id="cornJob" class="btn btn-success cornJob"> Corn-Job </button>
+    </div> -->
     <!--/ Search box End -->
     <!--================================-->
     <!-- Form Element Start -->
@@ -106,7 +109,7 @@
 <script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
     function getPhysivcalInspectList(keyword) {
-        console.log("123")
+        // console.log("123")
         $.ajax({
             type: "GET",
             url: "{% url 'api:getPhysicalInspectionHeadersList' %}?keyword=" + keyword,
@@ -170,6 +173,29 @@
         getPhysivcalInspectList(keyword)
     })
 
+    $(document).on('click','#cornJob',function(){
+        $.ajax({
+            type: "GET",
+            url: "{% url 'api:cornJobStoreItemQuantityUpdate' %}",
+            data:{},
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                $('.error-msg-txt').text("");
+                if (response.status == 200) {
+                    alert(response.message)
+                    // edit_url = "{% url 'superuser:physicalInspectionView' 1 %}";
+                   
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    })
    
 </script>
 {% endblock %}
