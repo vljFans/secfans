@@ -66,7 +66,7 @@
                             <div class="col-md-3 mb-3">
                                 <label>Source Store<span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker" id="sourceStore" name="sourceStore" required>
+                                    <select class="custom-select selectpicker store" id="sourceStore" name="sourceStore" required>
                                         <option value="">Choose...</option>
                                         {% for store in store_list %}
                                         <option value="{{store.pk}}">{{store.name}}</option>
@@ -78,7 +78,7 @@
                             <div class="col-md-3 mb-3">
                                 <label>Destination Store<span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker" id="desStore" name="desStore" required>
+                                    <select class="custom-select selectpicker store" id="desStore" name="desStore" required>
                                         <option value="">Choose...</option>
                                         {% for store in store_list %}
                                         <option value="{{store.pk}}">{{store.name}}</option>
@@ -94,7 +94,7 @@
 
                             <div class="col-md-2 mb-3">
                                 <label> Transaction  Date <span class="required-indicator">*</span></label>
-                                <input type="date" name="issue_date" class="form-control issue_date" placeholder="Order Date"
+                                <input type="date" name="issue_date" id="issue_date" class="form-control issue_date" placeholder="Order Date"
                                 required>
                             </div>
 
@@ -154,15 +154,84 @@
 </script>
 
 <script>
-    var item_options_text =``
+    var item_options_text = ``;
     var page_item_len = 0
+    var item_options_used_pk = [];
+    var store_opt_used_pk =[];
+    function renderItemDropdown(){
+        $('.item_id').each(function(){
+            let selected_item_id=$(this).val()
+            $(this).children("option").each(function(index, element){
+                if($(this).val()!==selected_item_id && item_options_used_pk.includes($(this).val()) ){
+                    $(this).prop("hidden",true)
+                }
+                else{
+                    $(this).prop("hidden",false)
+                }
+            })
+        })
+    }
+    function update_item_options_used_pk(){
+        item_options_used_pk=[]
+        $('.item_id').each(function(){
+            item_options_used_pk.push($(this).val())
+        }); 
+    }
+    function renderStoreDropdown(){
+        console.log('181');
+        $('.store').each(function(){
+            let selected_store_id=$(this).val()
+            $(this).children("option").each(function(index, element){
+                if($(this).val()!==selected_store_id && store_opt_used_pk.includes($(this).val()) ){
+                    $(this).prop("hidden",true)
+                }
+                else{
+                    $(this).prop("hidden",false)
+                }
+            })
+        })
+    }
+    function update_store_options_used_pk(){
+        console.log('195');
+        store_opt_used_pk=[]
+        $('.store').each(function(){
+            store_opt_used_pk.push($(this).val())
+        }); 
+    }
+    $(document).on('change','.store',function(){
+        console.log('ok');
+        update_store_options_used_pk()
+        renderStoreDropdown()
+        
+    })
+    function callback(){
+        var callbacks = $.Callbacks();
+        callbacks.add(update_item_options_used_pk);
+        callbacks.fire();
+        callbacks.add(renderItemDropdown);
+        callbacks.fire();
+        
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });
+    }
+    
+    $(document).ready(function(){
+        $("#issue_date").val(new Date().toISOString().slice(0, 10))
+    })
     $(document).on('change','#sourceStore',function(){
              
             $('#table_form').removeAttr('hidden')
             $('#table_form').html(``)
             let storeId = $('select#sourceStore option:selected').val()
             
-            console.log(sourceStore);
+            // console.log(sourceStore);
 
             $.ajax({
             url: "{% url 'api:storeItemList' %}?storeId="+storeId ,
@@ -288,6 +357,7 @@
                                 </div>`                    
 
             $('#table_form').append(text_inp);
+            callback()
             $('.selectpicker').select2({
                 placeholder: '',
                 templateResult: function(option) {
@@ -301,6 +371,7 @@
 
     $(document).on('click', '.remove_btn', function () {
         $(this).parents().closest('.content_parent').remove();
+        callback()
     });
 
     $(document).on('change','.item_id',function(){
@@ -358,7 +429,7 @@
                 }
             });
 
-            
+            callback()
 
             
 
