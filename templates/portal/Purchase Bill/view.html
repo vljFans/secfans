@@ -142,30 +142,24 @@
                                     <td>{{purchaseBillDet.amount_with_gst}}</td>
                                 </tr>
                                 {% endfor %}
+                                <tr>
+                                    <td> Total  </td>
+                                    <td>  </td>
+                                    <td>   </td>
+                                    <td>-----</td>
+                                    <td>{{purchase_bill.total_amount}}</td>
+                                    <td>----</td>
+                                    <td>{{purchase_bill.total_igst}}</td>
+                                    <td>----</td>
+                                    <td>{{purchase_bill.total_cgst}}</td>
+                                    <td>---</td>
+                                    <td>{{purchase_bill.total_sgst}}</td>
+                                    <td>{{purchase_bill.total_gst_amount}}</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
                     <div class="form-row">
-                        <div class="col-md-2 mb-3 table_form" >
-                            <label>Total<span class="required-indicator">*</span></label>
-                            <input type="text" class="form-control total_amount" name="total" id="total_amount" value="{{purchase_bill.total_amount}}" readonly required>
-                        </div>
-                        <div class="col-md-2 mb-3 table_form" >
-                            <label>Total igst<span class="required-indicator">*</span></label>
-                            <input type="text" class="form-control total_igst" name="total_igst" id="total_igst" value ="{{purchase_bill.total_igst}}" readonly required>
-                        </div>
-                        <div class="col-md-2 mb-3 table_form" >
-                            <label>Total sgst<span class="required-indicator">*</span></label>
-                            <input type="text" class="form-control total_sgst" name="total_sgst" id="total_sgst" value="{{purchase_bill.total_sgst}}" readonly required>
-                        </div>
-                        <div class="col-md-2 mb-3 table_form" >
-                            <label>Total cgst<span class="required-indicator">*</span></label>
-                            <input type="text" class="form-control total_cgst" name="total_cgst" id="total_cgst" value="{{purchase_bill.total_cgst}}" readonly required>
-                        </div>
-                        <div class="col-md-2 mb-3 table_form" >
-                            <label>Total amount with gst<span class="required-indicator">*</span></label>
-                            <input type="text" class="form-control total_amount_with_gst" name="total_amount_with_gst" value="{{purchase_bill.total_gst_amount}}" id="total_amount_with_gst" readonly required>
-                        </div>
                         <div class="col-md-12  table_form"  >
                             <label>Notes</label>
                             <textarea name="notes" rows="5" class="form-control note" placeholder="Note" readonly>{{purchase_bill.notes}}</textarea>

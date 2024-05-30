@@ -1512,6 +1512,7 @@ def itemTypeList(request):
             'current_page': int(current_page),
             'button_to_show': int(button_to_show),
         })
+    print(context,'\n')
     return JsonResponse(context)
 
 
@@ -3358,61 +3359,67 @@ def storeItemExport(request):
 @permission_classes([IsAuthenticated])
 def storeTransactionList(request):
     context = {}
+
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
     vendor_id = request.GET.get('vendor_id', None)
     transaction_type = request.GET.get('transaction_type', None)
-    if id is not None and id != "":
-        storeTransaction = list(models.Store_Transaction.objects.filter(pk=id)[:1].values(
-            'pk', 'transaction_number', 'transaction_date', 'total_amount', 'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name'))
-        context.update({
-            'status': 200,
-            'message': "Store Transaction Fetched Successfully.",
-            'page_items': storeTransaction,
-        })
-    else:
-        if transaction_type:
-            storeTransactions = models.Store_Transaction.objects.filter(transaction_type__name=transaction_type)
+    try:
+        if id is not None and id != "":
+            print('3369')
+            storeTransaction = list(models.Store_Transaction.objects.filter(pk=id)[:1].values(
+                'pk', 'transaction_number', 'transaction_date', 'total_amount', 'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name'))
+            context.update({
+                'status': 200,
+                'message': "Store Transaction Fetched Successfully.",
+                'page_items': storeTransaction,
+            })
         else:
-            storeTransactions = models.Store_Transaction.objects.all()
+            if transaction_type:
+                storeTransactions = models.Store_Transaction.objects.filter(transaction_type__name=transaction_type)
+            else:
+                storeTransactions = models.Store_Transaction.objects.all()
 
-        if keyword is not None and keyword != "":
-            storeTransactions = list(storeTransactions.filter(Q(vendor__name__icontains=keyword) | Q(transaction_number__icontains=keyword) | Q(
-                transaction_date__icontains=keyword) | Q(total_amount__icontains=keyword)).filter(status=1, deleted=0))
-        else:
-            storeTransactions = list(storeTransactions.values('pk', 'transaction_number', 'transaction_date', 'total_amount',
-                                 'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name'))
-
-        if find_all is not None and int(find_all) == 1:
+            if keyword is not None and keyword != "":
+                storeTransactions = list(storeTransactions.filter(Q(vendor__name__icontains=keyword) | Q(transaction_number__icontains=keyword) | Q(
+                    transaction_date__icontains=keyword) | Q(total_amount__icontains=keyword)).filter(status=1, deleted=0).values('pk', 'transaction_number', 'transaction_date', 'total_amount',
+                                     'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name'))
+                
+            else:
+                storeTransactions = list(storeTransactions.values('pk', 'transaction_number', 'transaction_date', 'total_amount',
+                                     'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name'))
+                       
+            if find_all is not None and int(find_all) == 1:
+                context.update({
+                    'status': 200,
+                    'message': "Store Transactions Fetched Successfully.",
+                    'page_items': storeTransactions,
+                })
+                return JsonResponse(context)
+            per_page = int(env("PER_PAGE_DATA"))
+            button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+            current_page = request.GET.get('current_page', 1)
+            paginator = CustomPaginator(storeTransactions, per_page)
+            page_items = paginator.get_page(current_page)
+            total_pages = paginator.get_total_pages()
             context.update({
                 'status': 200,
                 'message': "Store Transactions Fetched Successfully.",
-                'page_items': storeTransactions,
+                'page_items': page_items,
+                'total_pages': total_pages,
+                'per_page': per_page,
+                'current_page': int(current_page),
+                'button_to_show': int(button_to_show),
             })
-            return JsonResponse(context)
-
-        per_page = int(env("PER_PAGE_DATA"))
-        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
-        current_page = request.GET.get('current_page', 1)
-
-        paginator = CustomPaginator(storeTransactions, per_page)
-        page_items = paginator.get_page(current_page)
-        total_pages = paginator.get_total_pages()
-
+    except Exception:
         context.update({
-            'status': 200,
-            'message': "Store Transactions Fetched Successfully.",
-            'page_items': page_items,
-            'total_pages': total_pages,
-            'per_page': per_page,
-            'current_page': int(current_page),
-            'button_to_show': int(button_to_show),
+            'status': 591.1,
+            'message': "internal error",
+
         })
+    # print(context['page_items'])
     return JsonResponse(context)
-
-
-
 
 
 @api_view(['POST'])
