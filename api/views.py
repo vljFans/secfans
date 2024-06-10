@@ -6409,3 +6409,4 @@ def reportActivePurchaseOrder(request):
     })
 
     return JsonResponse(context)
+
