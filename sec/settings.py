@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'superuser',
     'rest_framework_simplejwt',
     'superuser.templatetags',
+    'django_crontab',
 ]
 
 MIDDLEWARE = [
@@ -184,5 +185,6 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 CRONJOBS = [
-    ('0 0 1 * *', 'superuser.cron.monthlyCron')
+    ('*/1 * * * *', 'superuser.cron.monthlyCron')
+
 ]
