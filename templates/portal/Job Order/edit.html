@@ -107,30 +107,94 @@
                                     </div>
                                     <div class="col-md-4 mb-3">
                                     </div>
-                                    <div class="col-md-12 mb-3 form-row items">
-                                        {% if jobOrder.with_item == 'True' %}
-                                            {% for jobOrderDetail in jobOrder.job_order_detail_set.all %}
-                                                <div class="col-md-12 form-row item">
-                                                    <div class="col-md-4 mb-3">
-                                                        <label>Item <span class="required-indicator">*</span></label>
-                                                        <div class="input-group">
-                                                            <select class="custom-select selectpicker item_id" data-placeholder="Select item" name="item_id" required>
-                                                                <option value="">Choose...</option>
-                                                                {% for item in items %}
-                                                                <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
-                                                                {% endfor %}
-                                                            </select>
+                                    
+                                    <div class="col-md-12 mb-3 item_table pl-0 pr-0">
+                                        {% if jobOrder.with_item == 'True' %}    
+                                        <div class="container-fluid" style="border: 2px solid darkgray;">
+                                            <div class="row">
+                                    
+                                                <div class="col-md-6 px-0" style="border-right: 2px solid darkgray;">
+                                                    <div class="container-fluid outgoing_materials">
+                                                        <div class="row">
+                                                            <div class="col-md-12 d-flex align-items-center py-2" style="border-bottom: 2px solid darkgray;">
+                                                                <h5 class="text-center flex-grow-1 mb-0">
+                                                                    Outgoing Materials
+                                                                </h5> 
+                                                                <button type="button" class="btn add_btn  mr-2"> 
+                                                                    <i class="fa fa-plus"></i> 
+                                                                </button>
+                                                                <button type="button" class="btn remove_btn" disabled>
+                                                                    <i class="fa fa-minus"></i>
+                                                                </button>
+                                                            </div>
+                                                            {% for jobOrderDetail in outgoing_details %}
+                                                                <div class="col-md-8 py-2">
+                                                                    <label>Item<span class="required-indicator">*</span></label>
+                                                                    <div class="input-group">
+                                                                        <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required>
+                                                                            <option value="">Choose...</option>
+                                                                            {% for item in items %}
+                                                                            <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
+                                                                            {% endfor %}
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-4 py-2">
+                                                                    <label>Quantity<span class="required-indicator">*</span></label>
+                                                                    <input type="text" onkeyup="checkMaxMin(this)"
+                                                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                                        name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
+                                                                        value="{{jobOrderDetail.quantity}}"
+                                                                        required>
+                                                                </div>
+                                                            {% endfor %}
+                                                            
                                                         </div>
                                                     </div>
-                                                    <div class="col-md-1 mb-4 text-center ">
-                                                        {% if forloop.counter == 1 %}
-                                                        <button type="button" class="btn add_btn mt-1"><i class="fa fa-plus"></i></button>
-                                                        {% else %}
-                                                        <button type="button" class="btn remove_btn mt-1"><i class="fa fa-minus"></i></button>
-                                                        {% endif %}
+                                                </div>
+                                    
+                                                <div class="col-md-6 px-0" style="border-right: 2px solid darkgray;">
+                                                    <div class="container-fluid incoming_materials">
+                                                        <div class="row">
+                                                            <div class="col-md-12 d-flex align-items-center py-2" style="border-bottom: 2px solid darkgray;">
+                                                                <h5 class="text-center flex-grow-1 mb-0">
+                                                                    Incoming Materials
+                                                                </h5> 
+                                                                <button type="button" class="btn add_btn  mr-2"> 
+                                                                    <i class="fa fa-plus"></i> 
+                                                                </button>
+                                                                <button type="button" class="btn remove_btn" disabled>
+                                                                    <i class="fa fa-minus"></i>
+                                                                </button>
+                                                            </div>
+                                                            {% for jobOrderDetail in incoming_details %}
+                                                                <div class="col-md-8 py-2">
+                                                                    <label>Item<span class="required-indicator">*</span></label>
+                                                                    <div class="input-group">
+                                                                        <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required>
+                                                                            <option value="">Choose...</option>
+                                                                            {% for item in items %}
+                                                                            <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
+                                                                            {% endfor %}
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-4 py-2">
+                                                                    <label>Quantity<span class="required-indicator">*</span></label>
+                                                                    <input type="text" onkeyup="checkMaxMin(this)"
+                                                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                                        name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
+                                                                        value="{{jobOrderDetail.quantity}}"
+                                                                        required>
+                                                                </div>
+                                                            {% endfor %}
+                                                            
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            {% endfor %}
+                                    
+                                            </div>
+                                        </div>
                                         {% endif %}
                                     </div>
                                 {% endif %}
@@ -176,9 +240,10 @@
 </script>
 <script>
     var vendor_options_text;
-    var item_options_text = ``;
-    var item_options_used_pk = [];
-    var itemsData;
+    var outgoing_item_options_text = ``;
+    var incoming_item_options_text = ``;
+    var outgoing_item_options_used_pk = [];
+    var incoming_item_options_used_pk = [];
 
     $('.selectpicker').select2({
         placeholder: '',
@@ -190,49 +255,130 @@
         }
     });
 
-    function renderItemDropdown(){
-        // console.log(item_options_used_pk)
-        $('.item_id').each(function(){
-            let selected_item_id=$(this).val()
-            $(this).children("option").each(function(index, element){
-                if($(this).val()!==selected_item_id && item_options_used_pk.includes($(this).val()) ){
-                    $(this).prop("hidden",true)
-                }
-                else{
-                    $(this).prop("hidden",false)
-                }
-            })
-        })
-    }
-
-    function update_item_options_used_pk(){
-        item_options_used_pk=[]
-        $('.item_id').each(function(){
-            item_options_used_pk.push($(this).val())
-        }); 
-    }
-
-    function callback(){
-        var callbacks = $.Callbacks();
-        callbacks.add(update_item_options_used_pk);
-        callbacks.fire();
-        callbacks.add(renderItemDropdown);
-        callbacks.fire();
-        
-        $('.selectpicker').select2({
-            placeholder: '',
-            templateResult: function(option) {
-                if(option.element && (option.element).hasAttribute('hidden')){
-                    return null;
-                }
-                return option.text;
+    function checkMaxMin(element) {
+        if ($(element).val() == "") {
+            $(element).val($(element).attr('min'));
+        } else {
+            if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
+                $(element).val($(element).attr('max'));
             }
-        });
+            if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
+                $(element).val($(element).attr('min'));
+            }
+        }
+    }
+
+    function render_item_dropdown(direction){
+        if(direction=="outgoing"){
+            $('.outgoing_item_id').each(function(){
+                let selected_outgoing_item_id=$(this).val()
+                $(this).children("option").each(function(index, element){
+                    if($(this).val()!==selected_outgoing_item_id && outgoing_item_options_used_pk.includes($(this).val()) ){
+                        $(this).prop("hidden",true)
+                    }
+                    else{
+                        $(this).prop("hidden",false)
+                    }
+                })
+            })
+        }
+        else if(direction=="incoming"){
+            $('.incoming_item_id').each(function(){
+                let selected_incoming_item_id=$(this).val()
+                $(this).children("option").each(function(index, element){
+                    if($(this).val()!==selected_incoming_item_id && incoming_item_options_used_pk.includes($(this).val()) ){
+                        $(this).prop("hidden",true)
+                    }
+                    else{
+                        $(this).prop("hidden",false)
+                    }
+                })
+            })
+        }
+    }
+
+    function update_item_options_used_pk(direction){
+        if(direction=="outgoing"){
+            outgoing_item_options_used_pk=[]
+            $('.outgoing_item_id').each(function(){
+                outgoing_item_options_used_pk.push($(this).val())
+            }); 
+        }
+        else if(direction=="incoming"){
+            incoming_item_options_used_pk=[]
+            $('.incoming_item_id').each(function(){
+                incoming_item_options_used_pk.push($(this).val())
+            });             
+        }
+    }
+    
+    function callback(direction){
+        if (direction=="outgoing"){
+            var callbacks = $.Callbacks();
+            callbacks.add(function() {
+                update_item_options_used_pk("outgoing");
+            });
+            callbacks.fire();
+            callbacks.add(function() {
+                render_item_dropdown("outgoing");
+            });
+            callbacks.fire();
+            
+            $('.selectpicker').select2({
+                placeholder: '',
+                templateResult: function(option) {
+                    if(option.element && (option.element).hasAttribute('hidden')){
+                        return null;
+                    }
+                    return option.text;
+                }
+            });
+        }
+        else if (direction=="incoming"){
+            var callbacks = $.Callbacks();
+            callbacks.add(function() {
+                update_item_options_used_pk("incoming");
+            });
+            callbacks.fire();
+            callbacks.add(function() {
+                render_item_dropdown("incoming");
+            });
+            callbacks.fire();
+            
+            $('.selectpicker').select2({
+                placeholder: '',
+                templateResult: function(option) {
+                    if(option.element && (option.element).hasAttribute('hidden')){
+                        return null;
+                    }
+                    return option.text;
+                }
+            });
+        }
+    }
+
+    function updateMinusButtonState(direction) {
+        if (direction == "outgoing"){
+            var minusButton = $('.outgoing_materials').find('.remove_btn');
+            var itemCount = $('.outgoing_materials').find('.row').children().length;
+            if (itemCount > 3) {
+                minusButton.prop('disabled', false);
+            } else {
+                minusButton.prop('disabled', true);
+            }
+        }
+        else if (direction == "incoming"){
+            var minusButton = $('.incoming_materials').find('.remove_btn');
+            var itemCount = $('.incoming_materials').find('.row').children().length;
+            if (itemCount > 3) {
+                minusButton.prop('disabled', false);
+            } else {
+                minusButton.prop('disabled', true);
+            }
+        }
     }
 
     $(document).ready(function () {
-        callback()
-
         $.ajax({
             url: "{% url 'api:vendorList' %}?find_all=1",
             type: 'GET',
@@ -264,9 +410,11 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    item_options_text += `<option value="">Choose item</option>`;
+                    outgoing_item_options_text += `<option value="">Choose item</option>`;
+                    incoming_item_options_text += `<option value="">Choose order item</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
-                        item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                        outgoing_item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                        incoming_item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
                     $('.selectpicker').select2({
                         placeholder: '',
@@ -286,6 +434,11 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
+    
+        callback("outgoing");
+        callback("incoming");
+        updateMinusButtonState("outgoing")
+        updateMinusButtonState("incoming")
     });
 
     $(document).on('change', '.manufacturing_type', function(){
@@ -293,7 +446,6 @@
             $(".third_party").empty()
         }
         if($(this).val()==="Third party"){
-
             $(".third_party").html(`
                 <div class="col-md-4 mb-3">
                     <label>Vendor<span class="required-indicator">*</span></label>
@@ -315,8 +467,7 @@
                 </div>
                 <div class="col-md-4 mb-3">
                 </div>
-                <div class="col-md-12 mb-3 form-row items">
-                </div>
+                <div class="col-md-12 mb-3 item_table pl-0 pr-0"></div>
             `)
         }
         $('.selectpicker').select2({
@@ -325,30 +476,110 @@
     })
     
     $(document).on('change', '.with_item', function(){
-    
+        
         if($(this).val()==="False"){
-            $(".items").empty()
+            $(".item_table").empty()
         }
 
         if($(this).val()==="True"){
+            $(".item_table").html(`
+                <div class="container-fluid" style="border: 2px solid darkgray;">
+                    <div class="row">
 
-            $(".items").html(`
-                <div class="col-md-12 mb-3 form-row item">
-                    <div class="col-md-4 mb-3">
-                        <label>Item<span class="required-indicator">*</span></label>
-                        <div class="input-group">
-                            <select class="custom-select selectpicker item_id" name="item_id" required>
-                                ${item_options_text}
-                            </select>
+                        <div class="col-md-6 px-0" style="border-right: 2px solid darkgray;">
+                            <div class="container-fluid outgoing_materials">
+                                <div class="row">
+                                    <div class="col-md-12 d-flex align-items-center py-2" style="border-bottom: 2px solid darkgray;">
+                                        <h5 class="text-center flex-grow-1 mb-0">
+                                            Outgoing Materials
+                                        </h5> 
+                                        <button type="button" class="btn add_btn  mr-2"> 
+                                            <i class="fa fa-plus"></i> 
+                                        </button>
+                                        <button type="button" class="btn remove_btn" disabled>
+                                            <i class="fa fa-minus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-md-8 py-2">
+                                        <label>Item<span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required>
+                                                ${outgoing_item_options_text}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 py-2">
+                                        <label>Quantity<span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
+                                            placeholder="Quantity" required>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-1 mb-4 text-center ">
-                        <button type="button" class="btn add_btn mt-1">
-                            <i class="fa fa-plus"></i>
-                        </button>
+
+                        <div class="col-md-6 px-0">
+                            <div class="container-fluid incoming_materials">
+                                <div class="row">
+                                    <div class="col-md-12 d-flex align-items-center py-2" style="border-bottom: 2px solid darkgray;">
+                                        <h5 class="text-center flex-grow-1 mb-0">
+                                            Incoming Materials
+                                        </h5> 
+                                        <button type="button" class="btn add_btn  mr-2"> 
+                                            <i class="fa fa-plus"></i> 
+                                        </button>
+                                        <button type="button" class="btn remove_btn" disabled>
+                                            <i class="fa fa-minus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-md-8 py-2">
+                                        <label>Item<span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required>
+                                                ${incoming_item_options_text}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 py-2">
+                                        <label>Quantity<span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
+                                            placeholder="Quantity" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-            `)
+            `)  
+            // $(".items").html(`
+            //     <div class="col-md-12 mb-3 form-row item">
+            //         <div class="col-md-3 mb-3">
+            //             <label>Item<span class="required-indicator">*</span></label>
+            //             <div class="input-group">
+            //                 <select class="custom-select selectpicker item_id" name="item_id" data-placeholder="Select Item" required>
+            //                     ${item_options_text}
+            //                 </select>
+            //             </div>
+            //         </div>
+            //         <div class="col-md-2 mb-3">
+            //             <label>Quantity<span class="required-indicator">*</span></label>
+            //             <input type="text" onkeyup="checkMaxMin(this)"
+            //                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+            //                 name="quantity" min="0.0001" class="form-control quantity"
+            //                 placeholder="Quantity" required>
+            //         </div>
+            //         <div class="col-md-1 mb-4 text-center ">
+            //             <button type="button" class="btn add_btn mt-1">
+            //                 <i class="fa fa-plus"></i>
+            //             </button>
+            //         </div>
+            //     </div>
+            // `)
+        
         }
         
         $('.selectpicker').select2({
@@ -360,46 +591,95 @@
                 return option.text;
             }
         });
-        callback()
+        // callback()
     })
     
-    $(document).on('change', '.item_id', function () {
-        callback();
+    $(document).on('change', '.outgoing_item_id', function () {
+        callback("outgoing");
+    });
+
+    $(document).on('change', '.incoming_item_id', function () {
+        callback("incoming");
     });
 
     $(document).on('click', '.add_btn', function () {
-        $(".items").append(`
-                <div class="col-md-12 mb-3 form-row item">
-                    <div class="col-md-4 mb-3">
-                        <label>Item<span class="required-indicator">*</span></label>
-                        <div class="input-group">
-                            <select class="custom-select selectpicker item_id" name="item_id" required>
-                                ${item_options_text}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-1 mb-4 text-center ">
-                        <button type="button" class="btn remove_btn mt-1">
-                            <i class="fa fa-minus"></i>
-                        </button>
+        if ($(this).closest(".container-fluid").hasClass("outgoing_materials")){
+            let element=$(this).closest(".container-fluid").find(".row")
+            element.append(`
+                <div class="col-md-8 py-2">
+                    <label>Item<span class="required-indicator">*</span></label>
+                    <div class="input-group">
+                        <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required>
+                            ${outgoing_item_options_text}
+                        </select>
                     </div>
                 </div>
+                <div class="col-md-4 py-2">
+                    <label>Quantity<span class="required-indicator">*</span></label>
+                    <input type="text" onkeyup="checkMaxMin(this)"
+                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                        name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
+                        placeholder="Quantity" required>
+                </div>
             `)
-        $('.selectpicker').select2({
-            placeholder: '',
-            templateResult: function(option) {
-                if(option.element && (option.element).hasAttribute('hidden')){
-                    return null;
+            $('.selectpicker').select2({
+                placeholder: '',
+                templateResult: function(option) {
+                    if(option.element && (option.element).hasAttribute('hidden')){
+                        return null;
+                    }
+                    return option.text;
                 }
-                return option.text;
-            }
-        });  
-        callback();
+            });  
+            callback("outgoing");
+            updateMinusButtonState("outgoing");
+        }
+
+        else if ($(this).closest(".container-fluid").hasClass("incoming_materials")){
+            let element=$(this).closest(".container-fluid").find(".row")
+            element.append(`
+                <div class="col-md-8 py-2">
+                    <label>Item<span class="required-indicator">*</span></label>
+                    <div class="input-group">
+                        <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required>
+                            ${incoming_item_options_text}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4 py-2">
+                    <label>Quantity<span class="required-indicator">*</span></label>
+                    <input type="text" onkeyup="checkMaxMin(this)"
+                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                        name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
+                        placeholder="Quantity" required>
+                </div>
+            `)
+            $('.selectpicker').select2({
+                placeholder: '',
+                templateResult: function(option) {
+                    if(option.element && (option.element).hasAttribute('hidden')){
+                        return null;
+                    }
+                    return option.text;
+                }
+            });  
+            callback("incoming");
+            updateMinusButtonState("incoming");
+        }
+
     });
 
     $(document).on('click', '.remove_btn', function () {
-        $(this).closest('.item').remove();
-        callback();
+        if ($(this).closest(".container-fluid").hasClass("outgoing_materials")){
+            $('.outgoing_materials').find('.row').children().slice(-2).remove();
+            callback("outgoing");
+            updateMinusButtonState("outgoing");
+        }
+        else if ($(this).closest(".container-fluid").hasClass("incoming_materials")){
+            $('.incoming_materials').find('.row').children().slice(-2).remove();
+            callback("incoming")
+            updateMinusButtonState("incoming");
+        }
     });
 
     $(document).on('submit', '#create_form', function (e) {
@@ -437,5 +717,6 @@
                 }
             });
         });
+
 </script>
 {% endblock %}

@@ -29,5 +29,11 @@
     margin-right: 20px;
     margin-bottom: 20px; */
   }
-
+/* 
+  .item_table {
+    border: 2px solid transparent;
+  }
   
+  .item_table:not(:empty){ 
+    border-color: darkgray;
+  } */

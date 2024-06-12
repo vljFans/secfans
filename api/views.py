@@ -4197,7 +4197,7 @@ def jobOrderList(request):
         jobOrders = models.Job_Order.objects.filter(status=1, deleted=0)
         if keyword is not None and keyword != "":
             jobOrders = jobOrders.filter(order_number__icontains=keyword).filter(status=1, deleted=0)
-        jobOrders = list(jobOrders.values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor', 'with_item', 'notes'))
+        jobOrders = list(jobOrders.values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor_id', 'vendor__name', 'with_item', 'notes'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -4248,16 +4248,29 @@ def jobOrderAdd(request):
                 jobOrderHeader.with_item = eval(request.POST['with_item'])
             jobOrderHeader.notes = request.POST['notes']
             jobOrderHeader.save()
-
             job_order_details = []
-            for item_id in request.POST.getlist('item_id'):
+            print( zip( request.POST.getlist('incoming_item_id'),request.POST.getlist('incoming_quantity')))
+            for item_id,quantity in zip( request.POST.getlist('incoming_item_id'),request.POST.getlist('incoming_quantity') ):
                 job_order_details.append(
                     models.Job_Order_Detail(
                         job_order_header_id=jobOrderHeader.id,
-                        item_id=int(item_id)
+                        item_id=int(item_id),
+                        quantity=float(quantity),
+                        direction="incoming"
+                    )
+                )
+            print(job_order_details)
+            for item_id, quantity in zip(request.POST.getlist('outgoing_item_id'),request.POST.getlist('outgoing_quantity')):
+                job_order_details.append(
+                    models.Job_Order_Detail(
+                        job_order_header_id=jobOrderHeader.id,
+                        item_id=int(item_id),
+                        quantity=float(quantity),
+                        direction="outgoing"
                     )
                 )
             models.Job_Order_Detail.objects.bulk_create(job_order_details)
+            print(4271)
         transaction.commit()
         context.update({
             'status': 200,
@@ -4299,11 +4312,22 @@ def jobOrderEdit(request):
             jobOrderHeader.save()
             jobOrderHeader.job_order_detail_set.all().delete()
             job_order_details = []
-            for item_id in request.POST.getlist('item_id'):
+            for item_id, quantity in zip(request.POST.getlist('incoming_item_id'), request.POST.getlist('incoming_quantity')):
                 job_order_details.append(
                     models.Job_Order_Detail(
                         job_order_header_id=jobOrderHeader.id,
-                        item_id=int(item_id)
+                        item_id=int(item_id),
+                        quantity=float(quantity),
+                        direction="incoming"
+                    )
+                )
+            for item_id, quantity in zip(request.POST.getlist('outgoing_item_id'), request.POST.getlist('outgoing_quantity')):
+                job_order_details.append(
+                    models.Job_Order_Detail(
+                        job_order_header_id=jobOrderHeader.id,
+                        item_id=int(item_id),
+                        quantity=float(quantity),
+                        direction="outgoing"
                     )
                 )
             models.Job_Order_Detail.objects.bulk_create(job_order_details)
@@ -4350,7 +4374,7 @@ def jobOrderDetails(request):
     header_id = request.GET.get('header_id', None)
     if header_id is not None and header_id != "":
         header_detail = list(models.Job_Order.objects.filter(pk=header_id)[:1].values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor_id', 'vendor__name', 'with_item', 'notes'))
-        orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'item__name','item__price'))
+        orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'quantity', 'item__name','item__price', 'direction'))
         context.update({
             'status': 200,
             'message': "Job Order Details Fetched Successfully.",

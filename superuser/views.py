@@ -816,19 +816,27 @@ def jobOrderAdd(request):
     return render(request, 'portal/Job Order/add.html', context)
 
 
-@login_required
 def jobOrderEdit(request, id):
     jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
     stores = models.Store.objects.filter(status=1, deleted=0)
     vendors = models.Vendor.objects.filter(status=1, deleted=0)
     items = models.Item.objects.filter(status=1, deleted=0)
+
+    outgoing_details = jobOrder.job_order_detail_set.filter(direction='outgoing')
+    incoming_details = jobOrder.job_order_detail_set.filter(direction='incoming')
+
     context.update({
         'jobOrder': jobOrder,
-        # 'stores': stores,
         'items': items,
         'vendors': vendors,
+        'outgoing_details': outgoing_details,
+        'incoming_details': incoming_details,
         'page_title': "Job Order Edit",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "Edit"}]
+        'breadcrumbs': [
+            {'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+            {'name': "Job Order", 'url': reverse('superuser:jobOrderList')},
+            {'name': "Edit"}
+        ]
     })
     return render(request, 'portal/Job Order/edit.html', context)
 
