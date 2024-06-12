@@ -535,17 +535,20 @@ class Job_Order(models.Model):
 
 
 class Job_Order_Detail(models.Model):
+    DIRECTION_CHOICES = [
+        ('incoming', 'Incoming'),
+        ('outgoing', 'Outgoing'),
+    ]
+
     job_order_header = models.ForeignKey(Job_Order, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
-    # bill_of_material = models.ForeignKey(Bill_Of_Material, on_delete=models.CASCADE, blank=True, null=True)
-    # quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
-    # rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    # amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
 
     status = models.SmallIntegerField(default=1)
-    deleted = models.BooleanField(default=0)
+    deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=now)
     updated_at = models.DateTimeField(default=now)
+    direction = models.CharField(max_length=20, choices=DIRECTION_CHOICES, default='outgoing')
 
     def __str__(self):
         return self.job_order_header.order_number
