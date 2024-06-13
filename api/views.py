@@ -766,26 +766,45 @@ def customerList(request):
 @permission_classes([IsAuthenticated])
 def customerAdd(request):
     context = {}
-    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['landmark'] or not request.POST['pin'] or not request.POST['customer_type_id'] or not request.POST['kyc_type_id'] or not request.POST['kyc_detail'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city']:
-        context.update({
-            'status': 524,
-            'message': "Name/Contact Name/Contact Email/Contact No/Landmark/Pin/Customer Type/KYC Type/KYC Detail/Address/Country/State/City has not been provided."
-        })
-        return JsonResponse(context)
-    exist_data = models.Customer.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
-        contact_no__iexact=request.POST['contact_no'])).filter(deleted=0)
-    if len(exist_data) > 0:
+    required_fields = ['name', 'contact_name', 'contact_no', 'landmark', 'pin', 'customer_type_id',
+                       'kyc_type_id', 'kyc_detail', 'address', 'country_id', 'state_id', 'city']
+    for field in required_fields:
+        if not request.POST.get(field):
+            context.update({
+                'status': 524,
+                'message': "Name/Contact Name/Contact No/Landmark/Pin/Customer Type/KYC Type/KYC Detail/"
+                           "Address/Country/State/City has not been provided."
+            })
+            return JsonResponse(context)
+
+    contact_email = request.POST.get('contact_email')
+    # Ensure contact_email can be empty
+    if contact_email == "":
+        contact_email = None
+
+    # Set the flag for customer creation
+    customer_can_be_created = True
+
+    # Check if a customer with the same contact number or email exists for a different contact name
+    if models.Customer.objects.filter(
+            Q(Q(contact_no__iexact=request.POST.get('contact_no')) | Q(contact_email__iexact=contact_email)),
+            Q(~Q(contact_name__iexact=request.POST.get('contact_name')))
+    ).exists():
+        customer_can_be_created = False
+
+    if not customer_can_be_created:
         context.update({
             'status': 525,
-            'message': "Customer with this email or phone number already exists."
+            'message': "A customer with this email or phone number already exists for a different contact name."
         })
         return JsonResponse(context)
+
     try:
         with transaction.atomic():
             customer = models.Customer()
             customer.name = request.POST['name']
             customer.contact_name = request.POST['contact_name']
-            customer.contact_email = request.POST['contact_email']
+            customer.contact_email = request.POST['contact_email'] if request.POST['contact_email'] != "" else None
             customer.contact_no = request.POST['contact_no']
             customer.contact_no_std = request.POST['contact_no_std']
             customer.landmark = request.POST['landmark']
@@ -798,17 +817,16 @@ def customerAdd(request):
             customer.weekly_closing_day = ", ".join(request.POST.getlist(
                 'weekly_closing_day')) if 'weekly_closing_day' in request.POST.keys() else None
             customer.morning_from_time = request.POST[
-                'morning_from_time'] if request.POST['date_of_birth'] != "" else None
-            customer.morning_to_time = request.POST['morning_to_time'] if request.POST['date_of_birth'] != "" else None
+                'morning_from_time'] if request.POST['morning_from_time'] != "" else None
+            customer.morning_to_time = request.POST['morning_to_time'] if request.POST['morning_to_time'] != "" else None
             customer.evening_from_time = request.POST[
-                'evening_from_time'] if request.POST['date_of_birth'] != "" else None
-            customer.evening_to_time = request.POST['evening_to_time'] if request.POST['date_of_birth'] != "" else None
+                'evening_from_time'] if request.POST['evening_from_time'] != "" else None
+            customer.evening_to_time = request.POST['evening_to_time'] if request.POST['evening_to_time'] != "" else None
             customer.address = request.POST['address']
             customer.country_id = request.POST['country_id']
             customer.state_id = request.POST['state_id']
             customer.city = request.POST['city']
             customer.save()
-
             if 'photo' in request.FILES.keys():
                 photo = request.FILES['photo']
                 directory_path = settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
@@ -853,20 +871,39 @@ def customerAdd(request):
 @permission_classes([IsAuthenticated])
 def customerEdit(request):
     context = {}
-    if not request.POST['name'] or not request.POST['contact_name'] or not request.POST['contact_email'] or not request.POST['contact_no'] or not request.POST['landmark'] or not request.POST['pin'] or not request.POST['customer_type_id'] or not request.POST['kyc_type_id'] or not request.POST['kyc_detail'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city']:
+    required_fields = ['name', 'contact_name', 'contact_no', 'landmark', 'pin', 'customer_type_id',
+                       'kyc_type_id', 'kyc_detail', 'address', 'country_id', 'state_id', 'city']
+    for field in required_fields:
+        if not request.POST.get(field):
+            context.update({
+                'status': 524,
+                'message': "Name/Contact Name/Contact No/Landmark/Pin/Customer Type/KYC Type/KYC Detail/"
+                           "Address/Country/State/City has not been provided."
+            })
+            return JsonResponse(context)
+
+    contact_email = request.POST.get('contact_email')
+    # Ensure contact_email can be empty
+    if contact_email == "":
+        contact_email = None
+
+    # Set the flag for customer creation
+    customer_can_be_edited = True
+
+    # Check if a customer with the same contact number or email exists for a different contact name
+    if models.Customer.objects.filter(
+            Q(Q(contact_no__iexact=request.POST.get('contact_no')) | Q(contact_email__iexact=contact_email)),
+            Q(~Q(contact_name__iexact=request.POST.get('contact_name')))
+    ).exists():
+        customer_can_be_edited = False
+
+    if not customer_can_be_edited:
         context.update({
-            'status': 527,
-            'message': "Name/Contact Name/Contact Email/Contact No/Landmark/Pin/Customer Type/KYC Type/KYC Detail/Address/Country/State/City has not been provided."
+            'status': 525,
+            'message': "A customer with this email or phone number already exists for a different contact name."
         })
         return JsonResponse(context)
-    exist_data = models.Customer.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
-        contact_no__iexact=request.POST['contact_no'])).exclude(id=request.POST['id']).filter(deleted=0)
-    if len(exist_data) > 0:
-        context.update({
-            'status': 528,
-            'message': "Customer with this email or phone number already exists."
-        })
-        return JsonResponse(context)
+
     try:
         with transaction.atomic():
             customer = models.Customer.objects.get(pk=request.POST['id'])
@@ -4957,7 +4994,7 @@ def materialReturnAdd(request):
                     vendor_store_item.updated_at = datetime.now()
                     vendor_store_item.save()
 
-                    in_house_store_item = models.Store_Item.objects.get(store=in_house_store, item_id=elem)
+                    in_house_store_item = models.Store_Item.objects.get(store=in_house_store, item_id=item_id)
                     in_house_store_item.on_hand_qty += Decimal(previous_quantity)-Decimal(updated_quantity)
                     in_house_store_item.closing_qty += Decimal(previous_quantity)-Decimal(updated_quantity)
                     in_house_store_item.updated_at = datetime.now()
