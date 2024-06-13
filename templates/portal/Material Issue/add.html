@@ -331,7 +331,6 @@
 
     $(document).on('change','#job_order_id',function(){
         $(this).parents().closest('.form-row').find('.content_parent').remove();
-        $(this).parents().closest('.form-row').find('.issue_date').val("");
         callMaterialIssue()
         callback()
     });
@@ -456,7 +455,7 @@
         $('#vendor_name').val("")
         $('.vendor_id').val("")
         $.ajax({
-            url: "{% url 'api:jobOrderDetails' %}?header_id="+job_order_id,
+            url: "{% url 'api:jobOrderDetails' %}?header_id="+job_order_id+ "&direction=outgoing",
             type: 'GET',
             data: ({}),
             headers: {
@@ -479,20 +478,27 @@
                             for(let index=0 ; index<response.job_order_details.length; index++){
                                 var text_inp = `
                                     <div class="form-row content_parent">
-                                        <div class="col-md-5 mb-3">
+                                        <div class="col-md-3 mb-3">
                                             <label>Item<span class="required-indicator">*</span></label>
                                             <input type="hidden" class="item_id" name="item_id" value="${response.job_order_details[index].item_id}">
                                             <input type="text" class="form-control item_name" name="item_name" value="${response.job_order_details[index].item__name}"  readonly required>
                                         </div>
 
-                                        <div class="col-md-3 mb-3">
+                                        <div class="col-md-2 mb-3">
                                             <label>Actual quantity <span class="required-indicator">*</span></label>
                                             <input type="text" 
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                 name="actual_quantity" min="0.01" class="form-control actual_quantity"
                                                 placeholder="0.00" readonly>
                                         </div>
-                                        <div class="col-md-3 mb-3">
+                                        <div class="col-md-2 mb-3">
+                                            <label>Job quantity <span class="required-indicator">*</span></label>
+                                            <input type="text" 
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="job_quantity" min="0.01" class="form-control job_quantity" value ="${response.job_order_details[index].quantity}"
+                                                placeholder="0.00" readonly>
+                                        </div>
+                                        <div class="col-md-2 mb-3">
                                             <label>Rate <span class="required-indicator">*</span></label>
                                             <input type="text" 
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
@@ -500,14 +506,14 @@
                                                  readonly>
                                         </div>
 
-                                        <div class="col-md-3 mb-3">
+                                        <div class="col-md-2 mb-3">
                                             <label>Quantity Sent <span class="required-indicator">*</span></label>
                                             <input type="text" onkeyup="checkMaxMin(this)"
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                 name="quantity_sent" min="0.01" class="form-control quantity_sent"
                                                 placeholder="0.00" required>
                                         </div>
-                                        <div class="col-md-3 mb-3">
+                                        <div class="col-md-2 mb-3">
                                             <label>Amount <span class="required-indicator">*</span></label>
                                             <input type="text" 
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
@@ -754,6 +760,11 @@
             if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
                 $(element).val($(element).attr('min'));
             }
+        }
+        
+        if(parseFloat($(element).val())>parseFloat($(element).closest('.content_parent').find('.job_quantity').val())){
+            alert('sent quantity is more than job quantity')
+            $(element).val("")
         }
     }
     $(document).on('change keyup','.quantity_sent ',function(){
