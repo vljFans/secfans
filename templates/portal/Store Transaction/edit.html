@@ -75,12 +75,13 @@
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label>With/Without Purchase Order<span class="required-indicator">*</span></label>
+                                <label>Purchase/Job Order<span class="required-indicator">*</span></label>
                                 <div class="input-group">
                                     <select class="custom-select selectpicker" id="with_purchase_order"
-                                        name="with_purchase_order" required>
+                                        name="with_purchase_order" required disabled>
                                         <option value="1" {% if storeTransaction.purchase_order_header_id %}selected{% endif %} >With Purchase Order</option>
                                         <option value="0" {% if not storeTransaction.purchase_order_header_id %}selected{% endif %} >Without Purchase Order</option>
+                                        <option value="2" {% if  storeTransaction.job_order_id %}selected{% endif %} >With Job Order</option>
                                     </select>
                                 </div>
                             </div>
@@ -89,13 +90,22 @@
                                     <label>Purchase Order Reference<span class="required-indicator">*</span></label>
                                     <div class="input-group">
                                         <select class="custom-select selectpicker" id="purchase_order_header_id"
-                                            name="purchase_order_header_id" {% if storeTransaction.purchase_order_header_id %}required{% endif %}>
+                                            name="purchase_order_header_id" {% if storeTransaction.purchase_order_header_id %}required{% endif %} disabled>
                                             <option value="">Select Purchase Order</option>
                                             {% for purchaseOrderHeader in purchaseOrderHeaders %}
                                                 {% if storeTransaction.vendor_id == purchaseOrderHeader.vendor_id %}
                                                     <option {% if storeTransaction.purchase_order_header_id == purchaseOrderHeader.pk %}selected{% endif %} value="{{purchaseOrderHeader.pk}}">{{purchaseOrderHeader.order_number}}</option>
                                                 {% endif %}
                                             {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="purchase_order_type_content" {% if not storeTransaction.job_order_id %}style="display: none;"{% endif %}>
+                                    <label>Job Order Reference<span class="required-indicator">*</span></label>
+                                    <div class="input-group">
+                                        <select class="custom-select selectpicker" 
+                                            name="purchase_order_header_id" {% if storeTransaction.job_order_id %}required{% endif %} disabled>
+                                            <option {% if storeTransaction.job_order_id %}selected{% endif %} value="{{storeTransaction.job_order_id}}">{{storeTransaction.job_order.order_number}}</option>
                                         </select>
                                     </div>
                                 </div>
