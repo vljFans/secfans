@@ -521,8 +521,9 @@ class Job_Order(models.Model):
     with_item = models.CharField(max_length=20, choices=[("True", True), ("False", False)], blank=True,null=True)
     # total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     notes = models.TextField(blank=True, null=True)
-    status = models.SmallIntegerField(default=1)
+    status = models.SmallIntegerField(default=1) #0 for not recieved 1 for recieved without inspection 2 for recived with inspection 
     deleted = models.BooleanField(default=0)
+    material_reciept = models.SmallIntegerField(default=0)
     created_at = models.DateTimeField(default=django.utils.timezone.now)
     updated_at = models.DateTimeField(default=django.utils.timezone.now)
     def __str__(self):
@@ -543,7 +544,7 @@ class Job_Order_Detail(models.Model):
     job_order_header = models.ForeignKey(Job_Order, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
-
+    quantity_result = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=now)
