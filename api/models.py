@@ -524,6 +524,7 @@ class Job_Order(models.Model):
     status = models.SmallIntegerField(default=1) #0 for not recieved 1 for recieved without inspection 2 for recived with inspection 
     deleted = models.BooleanField(default=0)
     material_reciept = models.SmallIntegerField(default=0)
+    material_issue = models.SmallIntegerField(default=0)
     created_at = models.DateTimeField(default=django.utils.timezone.now)
     updated_at = models.DateTimeField(default=django.utils.timezone.now)
     def __str__(self):
@@ -879,3 +880,42 @@ class Item_Stock_Report_Details(models.Model):
         managed = True
         db_table = 'item_stock_report_details'
         verbose_name_plural = 'item_stock_report_details'
+
+class Outgoing_Incoming_Ratio(models.Model):
+    transaction_number = models.CharField(max_length=50, blank=True, null=True)
+    transaction_date = models.DateField(blank=True, null=True)
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True)
+    job_order = models.ForeignKey(Job_Order, on_delete=models.CASCADE, blank=True, null=True) 
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.transaction_number
+
+    class Meta:
+        managed = True
+        db_table = 'outgoing_incoming_ratio_header'
+        verbose_name_plural = 'outgoing_incoming_ratio_header'
+
+class Outgoing_Incoming_Ratio_Details(models.Model):
+    outgoing_incoming_ratio_header = models.ForeignKey(Outgoing_Incoming_Ratio, on_delete=models.CASCADE, blank=True, null=True)
+    item_outgoing = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True, related_name="item_outgoing")
+    item_incomming = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True ,related_name="item_incomming")
+    numerator = models.IntegerField(default=0)
+    denominator = models.PositiveIntegerField(default=1)
+    ratio = models.CharField(max_length=50, blank=True, null=True)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.outgoing_incoming_ratio_header.transaction_number
+
+    class Meta:
+        managed = True
+        db_table = 'outgoing_incoming_ratio_details'
+        verbose_name_plural = 'outgoing_incoming_ratio_details'
+

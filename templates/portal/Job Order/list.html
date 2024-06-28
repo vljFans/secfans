@@ -137,21 +137,36 @@
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index];
+                        tbody_buttom_text =``
+                        console.log(element.material_issue);
+                        if(element.material_issue != 0){
+                            console.log('142');
+                            tbody_buttom_text = `<td>
+                                {% if request.user.is_superuser == 1 or 'change_job_order'|get_session_permission:request is not None %}
+                                <a href="#" onclick="return alert('cannot edit  as material already get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-pencil"></i> </a>    
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'delete_job_order'|get_session_permission:request is not None %}
+                                <a href="#" onclick="return alert('cannot  delete as material already  get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-trash"></i> </a>
+                                {% endif %}
+                                </td>`
+                        }
+                        else{
+                            console.log('153');
+                            tbody_buttom_text = `<td>
+                                    {% if request.user.is_superuser == 1 or 'change_job_order'|get_session_permission:request is not None %}
+                                    <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
+                                    {% endif %}
+                                    {% if request.user.is_superuser == 1 or 'delete_job_order'|get_session_permission:request is not None %}
+                                    <a id="delete-btn" data-id="${element.pk}" data-name="${element.order_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
+                                    {% endif %}
+                                    </td>`
+                        }
                         tbody_text += `<tr>
                                 <td>${((response.total_pages - 1) * response.per_page) +  index + 1}</td>
                                 <td>${element.order_number}</td>
                                 <td>${element.order_date}</td>
                                 <td>${element.manufacturing_type} manufacturing</td>
-                                <td>${element.notes}</td>
-                                <td>
-                                {% if request.user.is_superuser == 1 or 'change_job_order'|get_session_permission:request is not None %}
-                                <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'delete_job_order'|get_session_permission:request is not None %}
-                                <a id="delete-btn" data-id="${element.pk}" data-name="${element.order_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
-                                {% endif %}
-                                </td>
-                            </tr>`;
+                                <td>${element.notes}</td> `+ tbody_buttom_text+`</tr>`;
                     }
                     // pagination_text = ``;
                     // if (response.total_pages > 1) {
@@ -176,6 +191,7 @@
     }
     $(document).ready(function () {
         getJobOrderList(keyword)
+        
     });
 
     $(document).on('keyup', '#search', function () {
@@ -210,5 +226,7 @@
             });
         }
     });
+
+    
 </script>
 {% endblock %}

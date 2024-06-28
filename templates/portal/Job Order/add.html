@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="wrapper">
+<div class="wrapper">   
     <!--================================-->
     <!-- Breadcrumb Start -->
     <!--================================-->
@@ -68,7 +68,7 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>Job Order Date <span class="required-indicator">*</span></label>
-                                <input type="date" name="order_date" class="form-control" placeholder="Order Date" required>
+                                <input type="date" name="order_date" class="form-control order_date" placeholder="Order Date" required>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>Manufacturing type<span class="required-indicator">*</span></label>
@@ -83,7 +83,7 @@
 
                             <div class="col-md-12 mb-3 form-row third_party">
                             </div>
-
+                           <p class="warnText" hidden><span style="font-weight: bold;">Note:</span> You can only request one item for incoming </p>
                             <!-- <div class="col-md-4 mb-3">
                                 <label>Order Item<span class="required-indicator">*</span></label>
                                 <div class="input-group">
@@ -278,8 +278,44 @@
         }
     }
 
-    $(document).ready(function () {
+    function itemIncommingDrpDown(){
+        $.ajax({
+            url: "{% url 'api:itemList' %}?find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    
+                    incoming_item_options_text = `<option value="">Choose order item</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        incoming_item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $('.selectpicker').select2({
+                        placeholder: '',
+                        templateResult: function(option) {
+                            if(option.element && (option.element).hasAttribute('hidden')){
+                                return null;
+                            }
+                            return option.text;
+                        }
+                    });
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    
+    }
 
+    $(document).ready(function () {
+        $(".order_date").val(new Date().toISOString().slice(0, 10))
         $.ajax({
             url: "{% url 'api:vendorList' %}?find_all=1",
             type: 'GET',
@@ -377,9 +413,11 @@
         
         if($(this).val()==="False"){
             $(".item_table").empty()
+            $('.warnText').attr('hidden',true)
         }
-
+        
         if($(this).val()==="True"){
+            $('.warnText').removeAttr('hidden')
             $(".item_table").html(`
                 <div class="container-fluid" style="border: 2px solid darkgray;">
                     <div class="row">
@@ -424,20 +462,27 @@
                                         <h5 class="text-center flex-grow-1 mb-0">
                                             Incoming Materials
                                         </h5> 
-                                        <button type="button" class="btn add_btn  mr-2"> 
+                                        
+                                        <button type="button" class="btn add_btn  mr-2" hidden> 
                                             <i class="fa fa-plus"></i> 
                                         </button>
-                                        <button type="button" class="btn remove_btn" disabled>
+                                        <button type="button" class="btn remove_btn" disabled hidden>
                                             <i class="fa fa-minus"></i>
                                         </button>
                                     </div>
                                     <div class="col-md-8 py-2">
                                         <label>Item<span class="required-indicator">*</span></label>
-                                        <div class="input-group">
-                                            <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required>
-                                                ${incoming_item_options_text}
-                                            </select>
-                                        </div>
+                                            <div class="input-group">
+                                                <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required>
+                                                    ${incoming_item_options_text}
+                                                </select>
+                                                {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                    <div class="btn float-end addForm" data-text="Add New item"
+                                                            data-form="addItem" id="addItem" data-toggle="modal" data-target="#addFormModal">
+                                                            <i class="fa fa-plus"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
                                     </div>
                                     <div class="col-md-4 py-2">
                                         <label>Quantity<span class="required-indicator">*</span></label>
