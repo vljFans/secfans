@@ -3479,9 +3479,9 @@ def storeTransactionAdd(request):
     try:
         # print("3130")
         inspect = request.POST.getlist('inspect')
-        if "1" in inspect:
-            # print("SAswata")
-            pass
+        # if "1" in inspect:
+        #     # print("SAswata")
+        #     pass
         with transaction.atomic():
             # print("3481")
             if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) == 2):
@@ -3636,14 +3636,18 @@ def storeTransactionAdd(request):
                                 request.POST.getlist('item_quantity')[index])
                             storeItem.updated_at = datetime.now()
                             storeItem.save()
+                        # print('3639')
                         if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) == 2):
+                            # print('3641')
                             job_order_details= models.Job_Order_Detail.objects.filter(item_id=elem, 
-                                                job_order_header_id= request.POST['purchase_job_order_header_id'])
-                            job_order_details.quantity_result -= request.POST.getlist('item_quantity')[index] 
+                                                job_order_header_id= request.POST['purchase_job_order_header_id']).get()
+                            print(request.POST.getlist('item_quantity')[index])
+                            job_order_details.quantity_result -=  Decimal(request.POST.getlist('item_quantity')[index]) 
+                            # print('3646')
                             job_order_details.updated_at = datetime.now()
                             job_order_details.save()
                             material_reciept_all = 0 if float(job_order_details.quantity_result)>0.00 else 1 
-                    # print("3170")
+                    print("3170")
  
                 models.Store_Transaction_Detail.objects.bulk_create(order_details)
                 storeTransactionHeader.total_amount = total_amounts
@@ -3656,7 +3660,7 @@ def storeTransactionAdd(request):
                     job_order.material_reciept = 1
                     job_order.updated_at = datetime.now()   
                     job_order.save()
-                # print('3589')
+                print('3589')
                 if request.POST['with_purchase_job_order'] != "" and int(request.POST['with_purchase_job_order']) != 0 and int(request.POST['with_purchase_job_order']) != 2 :
                     for index, elem in enumerate(request.POST.getlist('detail_id')):
                         purchaseOrderItem = models.Purchase_Order_Detail.objects.get(
@@ -4375,7 +4379,7 @@ def jobOrderAdd(request):
             jobOrderHeader.save()
             job_order_details = []
 
-            if (request.POST.getlist('incoming_item_id')) and (request.POST.getlist('outgoing_item_id')) and 'with_item' in request.POST:
+            if (request.POST.getlist('incoming_item_id')) and (request.POST.getlist('outgoing_item_id')) and ('with_item' in request.POST):
                 outgoingIncommingratioHeadCount = models.Outgoing_Incoming_Ratio.objects.all().count() 
                 outgoingIncommingratioHead = models.Outgoing_Incoming_Ratio()
                 outgoingIncommingratioHead.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
@@ -4393,15 +4397,15 @@ def jobOrderAdd(request):
 
                 outInDetailRatio = []
 
-                print(request.POST.getlist('outgoing_item_id'))
+                # print(request.POST.getlist('outgoing_item_id'))
                 for item_id,quantity in zip( request.POST.getlist('outgoing_item_id'),request.POST.getlist('outgoing_quantity') ):
-                    ratio = Fraction(int(quantity) , int(request.POST.getlist('incoming_quantity')[0]))
-                    print(ratio)
-                    print('id',outgoingIncommingratioHead.id)
-                    print('item',int(request.POST.getlist('incoming_item_id')[0]))
-                    print('neu', ratio.numerator)
-                    print('deno', ratio.denominator)
-                    print('eato',str(ratio) )
+                    ratio = Fraction(int(quantity) , int(request.POST.getlist('incoming_quantity')[0])) #ratio = outgoing : income
+                    # print(ratio)
+                    # print('id',outgoingIncommingratioHead.id)
+                    # print('item',int(request.POST.getlist('incoming_item_id')[0]))
+                    # print('neu', ratio.numerator)
+                    # print('deno', ratio.denominator)
+                    # print('eato',str(ratio) )
                     outInDetailRatio.append(
                         models.Outgoing_Incoming_Ratio_Details(
                             outgoing_incoming_ratio_header_id = outgoingIncommingratioHead.id,
@@ -4479,7 +4483,30 @@ def jobOrderEdit(request):
             jobOrderHeader.save()
             jobOrderHeader.job_order_detail_set.all().delete()
             job_order_details = []
-            
+
+            # out going incomming ratio table updation
+            if (request.POST.getlist('incoming_item_id')) and (request.POST.getlist('outgoing_item_id')) and ('with_item' in request.POST):
+                outgoingIncommingratioHead = models.Outgoing_Incoming_Ratio.objects.prefetch_related('outgoing_incoming_ratio_details_set').get(job_order_id = request.POST['id'])
+                outgoingIncommingratioHead.updated_at = now()
+                outgoingIncommingratioHead.Save()
+
+                outgoingIncommingratioHead.outgoing_incoming_ratio_details_set.all().delete()
+
+                for item_id, quantity in zip(request.POST.getlist('outgoing_item_id'), request.POST.getlist('outgoing_quantity')):
+                    ratio = Fraction(int(quantity) , int(request.POST.getlist('incoming_quantity')[0])) #ratio = outgoing : incomeG
+                    outInDetailRatio.append(
+                        models.Outgoing_Incoming_Ratio_Details(
+                            outgoing_incoming_ratio_header_id = outgoingIncommingratioHead.id,
+                            item_outgoing_id = int(item_id),
+                            item_incomming_id = int(request.POST.getlist('incoming_item_id')[0]),
+                            numerator = ratio.numerator,
+                            denominator = ratio.denominator,
+                            ratio = str(ratio)  
+
+                        )
+                    )
+                models.Outgoing_Incoming_Ratio_Details.objects.bulk_create(outInDetailRatio)
+
             for item_id, quantity in zip(request.POST.getlist('incoming_item_id'), request.POST.getlist('incoming_quantity')):
                 job_order_details.append(
                     models.Job_Order_Detail(
