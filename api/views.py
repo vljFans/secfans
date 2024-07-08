@@ -3476,6 +3476,7 @@ def storeTransactionAdd(request):
             'message': "Transaction Type/Vendor/Transaction Date/Total Amount has not been provided."
         })
         return JsonResponse(context)
+    message = 'Something Went Wrong. Please Try Again.'
     try:
         # print("3130")
         inspect = request.POST.getlist('inspect')
@@ -3484,8 +3485,78 @@ def storeTransactionAdd(request):
         #     pass
         with transaction.atomic():
             # print("3481")
+
+            #-------for job order present with_purchase_job_order ==2 means joborder---------
+
             if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) == 2):
-                
+               
+                # -----out going material for that job deduction from vendore store----------
+                store_transact_job_ord_det_income_mat = list(models.Store_Transaction_Detail.objects.filter(store_transaction_header__job_order_id = request.POST['purchase_job_order_header_id'],
+                                                store_transaction_header__vendor_id = request.POST['vendor_id'],
+                                                store_transaction_header__transaction_type = models.Transaction_Type.objects.get(name = 'MIS')
+                                            ))
+                # print(store_transact_job_ord_det_income_mat)
+
+                store_transaction_count = models.Store_Transaction.objects.all().count()
+                storeTransactionHeaderVOut = models.Store_Transaction()
+                storeTransactionHeaderVOut.vendor_from_id  = request.POST['vendor_id']
+                storeTransactionHeaderVOut.transaction_type = models.Transaction_Type.objects.get(name = 'MIS')
+                if(int(request.POST['with_purchase_job_order']) == 2):
+                    storeTransactionHeaderVOut.job_order_id =  request.POST[
+                        'purchase_job_order_header_id']
+                storeTransactionHeaderVOut.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
+                storeTransactionHeaderVOut.transaction_date = request.POST['transaction_date']
+                storeTransactionHeaderVOut.notes = request.POST['notes']
+                storeTransactionHeaderVOut.save()
+                order_details = []
+                total_amounts = 0 
+                flag = 0 
+                for index in range(0,len(store_transact_job_ord_det_income_mat)):
+                    out_in_det_neu_ratio = models.Outgoing_Incoming_Ratio_Details.objects.filter(
+                        outgoing_incoming_ratio_header__job_order_id = request.POST['purchase_job_order_header_id'],
+                        outgoing_incoming_ratio_header__vendor_id = request.POST['vendor_id'],
+                        item_outgoing_id = store_transact_job_ord_det_income_mat[index].item_id
+                        ).first()
+                    incomming_vendor_material_store = float(request.POST.getlist('item_quantity')[0]) * float(out_in_det_neu_ratio.numerator)
+                    order_details.append(
+                            models.Store_Transaction_Detail(
+                                store_transaction_header_id=storeTransactionHeaderVOut.id,
+                                item_id=store_transact_job_ord_det_income_mat[index].item_id,
+                                store_id=store_transact_job_ord_det_income_mat[index].store_id ,
+                                quantity=incomming_vendor_material_store,
+                                rate=store_transact_job_ord_det_income_mat[index].rate,
+                                amount=incomming_vendor_material_store * float(store_transact_job_ord_det_income_mat[index].rate),
+                                gst_percentage=store_transact_job_ord_det_income_mat[index].gst_percentage,
+                            )
+                        )
+                    storeItem = models.Store_Item.objects.filter(
+                                    item_id=store_transact_job_ord_det_income_mat[index].item_id, store__vendor_id=request.POST['vendor_id']).first()
+                    # print(storeItem.on_hand_qty , incomming_vendor_material_store )
+                    manageQuantity = float(storeItem.on_hand_qty) - float(incomming_vendor_material_store)
+                    flag = 1 if manageQuantity < 0 else 0 
+                    storeItem.on_hand_qty -= Decimal(
+                                incomming_vendor_material_store)
+                    storeItem.closing_qty -= Decimal(
+                                incomming_vendor_material_store)
+                    # storeItem.updated_at = datetime.now()
+                    storeItem.save() 
+                    total_amounts += incomming_vendor_material_store
+                if flag == 1:
+                    message = 'material issue quantity exccede in vendor store can not deducted '
+                    context.update({
+                        'status': 588,
+                        'message': message
+                    })
+                    transaction.rollback()
+                    return JsonResponse(context)
+                print('3504')
+
+                models.Store_Transaction_Detail.objects.bulk_create(order_details)
+                storeTransactionHeaderVOut.total_amount = total_amounts
+                storeTransactionHeaderVOut.save()
+                print('3558')
+                # -----virtual incomming material deduction from vendore store---------
                 for index, elem in enumerate(request.POST.getlist('item_id')):
                     # print(request.POST['vendor_id'])
                     # print(models.Store_Item.objects.filter(
@@ -3525,12 +3596,13 @@ def storeTransactionAdd(request):
                 grnTransactionheader.notes = request.POST['notes']
                 # print("3153")
                 grnTransactionheader.save()
-                # print("3148")
+                print("3148")
                
                 order_details = []
                 total_amounts = 0 
                 material_reciept_all = 0
                 for index, elem in enumerate(request.POST.getlist('item_id')):
+                    # print('3605')
                     if inspect[index] == "1":
                         check1 +=1
                         # print( request.POST.getlist(
@@ -3552,12 +3624,16 @@ def storeTransactionAdd(request):
                             )
                         )
                         if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) == 2):
+                            # print('3627')
                             job_order_details= models.Job_Order_Detail.objects.filter(item_id=elem, 
-                                                job_order_header_id= request.POST['purchase_job_order_header_id'])
-                            job_order_details.quantity_result -= request.POST.getlist('item_quantity')[index] 
+                                                job_order_header_id= request.POST['purchase_job_order_header_id']).get()
+                            print(job_order_details.quantity_result - Decimal(request.POST.getlist('item_quantity')[index]))
+                            job_order_details.quantity_result -= Decimal(request.POST.getlist('item_quantity')[index]) 
+                            # print('3632')
                             job_order_details.updated_at = datetime.now()
                             job_order_details.save()
-                            material_reciept_all = 0 if float(job_order_details.quantity_result)>0.00 else 1 
+                            material_reciept_all = 0 if float(job_order_details.quantity_result)>0.00 else 1
+                        #     print('3634') 
                         # print("3170")
                 models.Grn_Inspection_Transaction_Detail.objects.bulk_create(order_details)
                 grnTransactionheader.total_amount = total_amounts
@@ -3647,7 +3723,7 @@ def storeTransactionAdd(request):
                             job_order_details.updated_at = datetime.now()
                             job_order_details.save()
                             material_reciept_all = 0 if float(job_order_details.quantity_result)>0.00 else 1 
-                    print("3170")
+                    # print("3170")
  
                 models.Store_Transaction_Detail.objects.bulk_create(order_details)
                 storeTransactionHeader.total_amount = total_amounts
@@ -3660,7 +3736,7 @@ def storeTransactionAdd(request):
                     job_order.material_reciept = 1
                     job_order.updated_at = datetime.now()   
                     job_order.save()
-                print('3589')
+                # print('3589')
                 if request.POST['with_purchase_job_order'] != "" and int(request.POST['with_purchase_job_order']) != 0 and int(request.POST['with_purchase_job_order']) != 2 :
                     for index, elem in enumerate(request.POST.getlist('detail_id')):
                         purchaseOrderItem = models.Purchase_Order_Detail.objects.get(
@@ -3696,10 +3772,10 @@ def storeTransactionAdd(request):
             'message': "Store Transaction Created Successfully."
         })
     except Exception:
-        # print(test)
+        print('test')
         context.update({
             'status': 588,
-            'message': "Something Went Wrong. Please Try Again."
+            'message': message
         })
         transaction.rollback()
     return JsonResponse(context)

@@ -633,7 +633,8 @@ class Grn_Inspection_Transaction_Detail(models.Model):
 
 
 class Store_Transaction(models.Model):
-    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True)
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True,related_name="vendor" )
+    vendor_from = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True, related_name="vendor_from")
     transaction_type = models.ForeignKey(Transaction_Type, on_delete=models.CASCADE, blank=True, null=True)
     purchase_order_header = models.ForeignKey(Purchase_Order, on_delete=models.CASCADE, blank=True, null=True)
     transaction_number = models.CharField(max_length=25, blank=True, null=True)
