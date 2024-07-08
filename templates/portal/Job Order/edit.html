@@ -160,10 +160,10 @@
                                                                 <h5 class="text-center flex-grow-1 mb-0">
                                                                     Incoming Materials
                                                                 </h5> 
-                                                                <button type="button" class="btn add_btn  mr-2"> 
+                                                                <button type="button" class="btn add_btn  mr-2" hidden> 
                                                                     <i class="fa fa-plus"></i> 
                                                                 </button>
-                                                                <button type="button" class="btn remove_btn" disabled>
+                                                                <button type="button" class="btn remove_btn" disabled hidden>
                                                                     <i class="fa fa-minus"></i>
                                                                 </button>
                                                             </div>
@@ -194,7 +194,11 @@
                                                 </div>
                                     
                                             </div>
+                                            
                                         </div>
+                                        {% if incoming_details %}
+                                        <p class="warnText"><span style="font-weight: bold;">Note:</span> You can only request one item for incoming & each out going quantity must be greater than incomming quantity </p>
+                                        {% endif %}
                                         {% endif %}
                                     </div>
                                 {% endif %}
