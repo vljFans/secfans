@@ -632,9 +632,9 @@ def vendorEdit(request):
     #         return JsonResponse(context)
     try:
         with transaction.atomic():
-            print('649',request.POST)
+            
             vendor = models.Vendor.objects.get(pk=request.POST['id'])
-            print('vendor')
+            
             vendor.name = request.POST['name']
             vendor.contact_name = request.POST['contact_name']
             vendor.contact_email = request.POST['contact_email']
@@ -645,14 +645,14 @@ def vendorEdit(request):
             vendor.country_id = request.POST['country_id']
             vendor.state_id = request.POST['state_id']
             vendor.city_id = request.POST['city_id']
-            print('anc')
+            
             vendor.store_present = 1 if int(request.POST['createStore']) == 1 else 0
-            print('650')
+           
             vendor.updated_at = datetime.now()
             vendor.save()
-            print('649',request.POST)
+           
             if int(request.POST['createStore']) == 1:
-                print(vendor.id)
+                
                 store = models.Store()
                 store.name = request.POST['name']
                 store.address = request.POST['address']
@@ -666,9 +666,9 @@ def vendorEdit(request):
 
                 store.vendor_id = vendor.id
                 store.save()
-                print('669')
+
             elif int(request.POST['createStore']) == 0 and models.Store.objects.filter(vendor_id = request.POST['id'] ).exists() :
-                print('670')
+               
                 store = models.Store.objects.get(vendor_id = request.POST['id'] )
                 store.delete()
 
