@@ -27,6 +27,7 @@ context['client_gst_number'] = env("CLIENT_GST_NUMBER")
 
 def getAjaxFormType(request):
     if request.method == "POST":
+        print(request.POST,'123')
         form_type = request.POST['form_type']
         selector = request.POST['selector']
         if form_type == "addItemCategory":
@@ -980,26 +981,27 @@ def grnInspectionEdit(request,id):
 def grnInspectionView(request,id):
     context = {}
     # print("928")
-    grn_inspection_head = list(models.Grn_Inspection_Transaction.objects.filter(pk=id).values('pk',
-    'vendor__name',
-    'transaction_number',
-    'purchase_order_header__order_number',
-    ))
+    grn_inspection_head = models.Grn_Inspection_Transaction.objects.filter(pk=id).get()
+    # grn_inspection_head = list(models.Grn_Inspection_Transaction.objects.filter(pk=id).values('pk',
+    # 'vendor__name',
+    # 'transaction_number',
+    # 'purchase_order_header__order_number',
+    # ))
     # print(grn_inspection_head)
-    grn_inspection_det = list(models.Grn_Inspection_Transaction_Detail.objects.filter(grn_inspection_transaction_header_id=id , ins_done =1).values('pk',
-    'item__name',
-    'store__name',
-    'accepted_quantity',
-    'reject_quantity',
-    'inspection_date',
-    'rate',
-    'amount',
-    'gst_percentage'
+    # grn_inspection_det = list(models.Grn_Inspection_Transaction_Detail.objects.filter(grn_inspection_transaction_header_id=id , ins_done =1).values('pk',
+    # 'item__name',
+    # 'store__name',
+    # 'accepted_quantity',
+    # 'reject_quantity',
+    # 'inspection_date',
+    # 'rate',
+    # 'amount',
+    # 'gst_percentage'
 
-    ))
+    # ))
+    # grn_inspection_det = (models.Grn_Inspection_Transaction_Detail.objects.filter(grn_inspection_transaction_header_id=id , ins_done =1)
     context.update ({
         'grn_inspection_heads' : grn_inspection_head,
-        'grn_inspection_dets' : grn_inspection_det,
         'page_title': "Grn Inspection View",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Grn Inspection", 'url': reverse('superuser:grnInspectionListView')}, {'name': "view"}]
     })
@@ -1095,6 +1097,8 @@ def materialOutEdit(request,id):
     })
 
     return render(request, 'portal/Material Out/edit.html', context)
+   
+    
 
 
 @login_required

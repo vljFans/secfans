@@ -73,10 +73,11 @@
                             </div>
 
                             <div class="col-md-3 mb-3">
-                                <label>Purchase Order Reference<span class="required-indicator">*</span></label>
+                                <label><span id="purchase_job_order_name"></span><span class="required-indicator">*</span></label>
                                 <input type="text" id="purchase_order_ref_name" name="purchase_order_ref_name" class="form-control" placeholder=""
                                     readonly >
                                 <input type="hidden" class="purchase_order_ref_id" name="purchase_order_header_id"  >
+                                <input type="hidden" class="job_order_ref_id" name="job_order_header_id"  >
                             </div>
                             
 
@@ -155,7 +156,7 @@
     $(document).ready(function () {
 
         $(".issue_date").val(new Date().toISOString().slice(0, 10))
-
+        $('#purchase_job_order_name').text('Purchase/Job Order Reference')
         var item_options_text = ``;
         $.ajax({
             url: "{% url 'api:grnInspectionHeaderList' %}?ins_completed=0",
@@ -227,6 +228,7 @@
     function callMaterialIssue(){
         // console.log("246")
         var insId = $('select#insTraId option:selected').val()
+        //Purchase/Job Order Reference
         // console.log(insId);
         $('#vendor_name').val("")
         $('.vendor_id').val("")
@@ -246,9 +248,22 @@
 
                        $('#vendor_name').val(response.page_items[0].grn_inspection_transaction_header__vendor__name)
                        $('.vendor_id').val(response.page_items[0].grn_inspection_transaction_header__vendor_id)
-                       $('#purchase_order_ref_name').val(response.page_items[0].grn_inspection_transaction_header__purchase_order_header__order_number)
-                       $('.purchase_order_ref_id').val(response.page_items[0].grn_inspection_transaction_header__purchase_order_header_id)
+                       
+                       //if job order
+                       if(response.page_items[0].grn_inspection_transaction_header__job_order_id != null){
 
+                           $('#purchase_job_order_name').text('Job Order Reference')
+                           $('#purchase_order_ref_name').val(response.page_items[0].grn_inspection_transaction_header__job_order__order_number)
+                           $('.job_order_ref_id').val(response.page_items[0].grn_inspection_transaction_header__job_order_id)
+                           $('.purchase_order_ref_id').val("")
+                       }
+                       // if not job order
+                       else{
+                            $('#purchase_job_order_name').text('Purchase Order Reference')
+                            $('#purchase_order_ref_name').val(response.page_items[0].grn_inspection_transaction_header__purchase_order_header__order_number)
+                            $('.purchase_order_ref_id').val(response.page_items[0].grn_inspection_transaction_header__purchase_order_header_id)
+                            $('.job_order_ref_id').val("")
+                       }
                    }
                    else{
                     $('#vendor_name').val("none")
