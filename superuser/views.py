@@ -27,6 +27,7 @@ context['client_gst_number'] = env("CLIENT_GST_NUMBER")
 
 def getAjaxFormType(request):
     if request.method == "POST":
+        print(request.POST,'123')
         form_type = request.POST['form_type']
         selector = request.POST['selector']
         if form_type == "addItemCategory":
@@ -1096,6 +1097,8 @@ def materialOutEdit(request,id):
     })
 
     return render(request, 'portal/Material Out/edit.html', context)
+   
+    
 
 
 @login_required

@@ -5176,6 +5176,7 @@ def addGrnDetailisInsTransaction(request):
                 grn_ins_head.ins_done = 1
                 grn_ins_head.ins_completed = ins_completed
                 grn_ins_head.save()
+                # print('5179')
                 storeTranscHeadPresent = models.Store_Transaction.objects.filter(grn_inspection_id = request.POST['insTraId']).first()
                 if storeTranscHeadPresent is not None:
                     storeTransactionHeader = storeTranscHeadPresent
@@ -5200,6 +5201,7 @@ def addGrnDetailisInsTransaction(request):
                     storeTransactionHeader.grn_inspection_id = request.POST['insTraId']
                     storeTransactionHeader.notes = grn_ins_head.notes
                     storeTransactionHeader.save()
+                # print('5204')
                 order_details =[]
                 material_reciept_all = 0
                 for index in  range(0,len(request.POST.getlist('accp_quantity'))):
@@ -5214,7 +5216,7 @@ def addGrnDetailisInsTransaction(request):
                                     'actualPrice')[index]
                         grn_ins_det.updated_at = datetime.now()
                         grn_ins_det.save()
-
+                        # print('5219')
                         order_details.append(
                             models.Store_Transaction_Detail(
                                 store_transaction_header_id=storeTransactionHeader.id,
@@ -5230,6 +5232,7 @@ def addGrnDetailisInsTransaction(request):
                         )
                         storeItem = models.Store_Item.objects.filter(
                             item_id=request.POST.getlist('item_id')[index], store_id=request.POST.getlist('store_id')[index]).first()
+                        # print('5235')
                         if storeItem is None:
                             storeItem = models.Store_Item()
                             storeItem.opening_qty = Decimal(request.POST.getlist('accp_quantity')[index])
@@ -5243,15 +5246,20 @@ def addGrnDetailisInsTransaction(request):
                             storeItem.closing_qty += Decimal(request.POST.getlist('accp_quantity')[index])
                             storeItem.updated_at = datetime.now()
                             storeItem.save()
+                        # print('5249')
                         if (request.POST.get('job_order_header_id',None) and request.POST['job_order_header_id']!=""):
+                            # print('5251')
                             job_order_details= models.Job_Order_Detail.objects.filter(item_id=request.POST.getlist('item_id')[index], 
-                                                job_order_header_id=request.POST['job_order_header_id'])
-                            job_order_details.quantity_result += request.POST.getlist('rej_quantity')[index] 
+                                                job_order_header_id=request.POST['job_order_header_id']).first()
+                            print(job_order_details.quantity_result)
+                            job_order_details.quantity_result += Decimal(request.POST.getlist('rej_quantity')[index] )
                             job_order_details.updated_at = datetime.now()
                             job_order_details.save()
+                            # print('5257')
                             material_reciept_all = 0 if float(job_order_details.quantity_result)>0.00 else 1 
-
+                        # print('5257')
                 models.Store_Transaction_Detail.objects.bulk_create(order_details)
+                # print('5257')
                 if (material_reciept_all == 1):
                     job_order = models.Job_Order.objects.filter(pk=request.POST['job_order_header_id']).get() 
                     # print(job_order)

@@ -1,0 +1,81 @@
+{% load template_func %}
+{% load static %}
+<form id="updateVechicleMOutForm">
+    <div class="form-row">
+        <div class="col-md-6 mb-3">
+            <label>Vechicle <span class="required-indicator">*</span></label>
+            <input type="text" name="name" class="form-control" placeholder="Name" required>
+        </div>
+    </div>
+    {% if request.user.is_superuser == 1 or 'add_uom'|get_session_permission:request is not None %}
+    <button class="btn btn-success submit-modal-btn" type="submit">Submit</button>
+    {% endif %}
+</form>
+
+<script>
+    $('.selectpicker').select2({
+        dropdownParent: $('#addFormModal')
+    });
+
+    $(function () {
+        $('#cp-component').colorpicker();
+    });
+
+    $('#addUomForm').on('submit', function (e) {
+        e.preventDefault();
+        $('.submit-modal-btn').text('Submitting...');
+        $('.submit-modal-btn').prop('disabled', true);
+        var formData = new FormData(addUomForm);
+        $.ajax({
+            type: "POST",
+            evalScripts: true,
+            contentType: false,
+            processData: false,
+            url: "{% url 'api:uomAdd' %}",
+            data: formData,
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                $('.submit-modal-btn').text('Submit');
+                $('.submit-modal-btn').prop('disabled', false);
+                if (response.status == 200) {
+                    getUom();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.submit-modal-btn').text('Submit');
+                $('.submit-modal-btn').prop('disabled', false);
+                alert(error.responseJSON.detail);
+            }
+        });
+    });
+
+    function getUom() {
+        $.ajax({
+            url: "{% url 'api:uomList' %}?&find_all=1",
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    var options_text = `<option value="">Choose...</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $("#{{selector}}").parents('.input-group').find('select').html(options_text);
+                    $('#addFormModal').modal('hide');
+                    $('.selectpicker').select2({
+                        placeholder: ''
+                    });
+                } else {
+                    alert(response.message);
+                }
+            },
+        });
+    }
+</script>
