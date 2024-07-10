@@ -3578,7 +3578,7 @@ def storeTransactionAdd(request):
                 grn_inspection_transaction_count = models.Grn_Inspection_Transaction.objects.all().count()
                 grnTransactionheader = models.Grn_Inspection_Transaction()
                 grnTransactionheader.vendor_id = request.POST['vendor_id']
-                grnTransactionheader.transaction_type_id = request.POST['transaction_type_id']
+                grnTransactionheader.transaction_type = models.Transaction_Type.objects.get(name = 'GRNI')
                 grnTransactionheader.transaction_number = env("GRN_TRANSACTION_INSPECTION_SEQ").replace(
                     "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(5))
                 # print("3143")
@@ -3651,7 +3651,7 @@ def storeTransactionAdd(request):
                 store_transaction_count = models.Store_Transaction.objects.all().count()
                 storeTransactionHeader = models.Store_Transaction()
                 storeTransactionHeader.vendor_id = request.POST['vendor_id']
-                storeTransactionHeader.transaction_type_id = request.POST['transaction_type_id']
+                storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
                 # print("3182")
                 if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) != 2):
                     storeTransactionHeader.purchase_order_header_id = request.POST[
@@ -5187,7 +5187,7 @@ def addGrnDetailisInsTransaction(request):
                     store_transaction_count = models.Store_Transaction.objects.all().count()
                     storeTransactionHeader = models.Store_Transaction()
                     storeTransactionHeader.vendor_id = request.POST['vendor_id']
-                    storeTransactionHeader.transaction_type_id = 2
+                    storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
                     if (request.POST.get('purchase_order_header_id',None) and request.POST['purchase_order_header_id']!=""):
                         storeTransactionHeader.purchase_order_header_id = request.POST[
                             'purchase_order_header_id']
