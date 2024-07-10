@@ -567,6 +567,7 @@ def vendorAdd(request):
             return JsonResponse(context)
     try:
         with transaction.atomic():
+            
             vendor = models.Vendor()
             vendor.name = request.POST['name']
             vendor.contact_name = request.POST['contact_name']
@@ -578,7 +579,24 @@ def vendorAdd(request):
             vendor.country_id = request.POST['country_id']
             vendor.state_id = request.POST['state_id']
             vendor.city_id = request.POST['city_id']
+            vendor.store_present = 1 if int(request.POST['createStore']) == 1 else 0
             vendor.save()
+           
+            if int(request.POST['createStore']) == 1:
+                print(vendor.id)
+                store = models.Store()
+                store.name = request.POST['name']
+                store.address = request.POST['address']
+                store.country_id = request.POST['country_id']
+                store.state_id = request.POST['state_id']
+                store.city_id = request.POST['city_id']
+                store.pin = request.POST['pin']
+                store.contact_name = request.POST['contact_name']
+                store.contact_no = request.POST['contact_no']
+                store.contact_email = request.POST['contact_email']
+
+                store.vendor_id = vendor.id
+                store.save()
         transaction.commit()
         context.update({
             'status': 200,
@@ -603,18 +621,20 @@ def vendorEdit(request):
             'message': "Name/Contact Name/GST Number/Pin/Address/Country/State/City has not been provided."
         })
         return JsonResponse(context)
-    if request.POST.get('contact_email',None) or request.POST.get('contact_no',None):
-        exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
-            contact_no__iexact=request.POST['contact_no'])).filter(deleted=0)
-        if len(exist_data) > 0:
-            context.update({
-                'status': 518,
-                'message': "Vendor with this email or phone number already exists."
-            })
-            return JsonResponse(context)
+    # if request.POST.get('contact_email',None) or request.POST.get('contact_no',None):
+    #     exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
+    #         contact_no__iexact=request.POST['contact_no'])).filter(deleted=0)
+    #     if len(exist_data) > 0:
+    #         context.update({
+    #             'status': 518,
+    #             'message': "Vendor with this email or phone number already exists."
+    #         })
+    #         return JsonResponse(context)
     try:
         with transaction.atomic():
+            print('649',request.POST)
             vendor = models.Vendor.objects.get(pk=request.POST['id'])
+            print('vendor')
             vendor.name = request.POST['name']
             vendor.contact_name = request.POST['contact_name']
             vendor.contact_email = request.POST['contact_email']
@@ -625,8 +645,33 @@ def vendorEdit(request):
             vendor.country_id = request.POST['country_id']
             vendor.state_id = request.POST['state_id']
             vendor.city_id = request.POST['city_id']
+            print('anc')
+            vendor.store_present = 1 if int(request.POST['createStore']) == 1 else 0
+            print('650')
             vendor.updated_at = datetime.now()
             vendor.save()
+            print('649',request.POST)
+            if int(request.POST['createStore']) == 1:
+                print(vendor.id)
+                store = models.Store()
+                store.name = request.POST['name']
+                store.address = request.POST['address']
+                store.country_id = request.POST['country_id']
+                store.state_id = request.POST['state_id']
+                store.city_id = request.POST['city_id']
+                store.pin = request.POST['pin']
+                store.contact_name = request.POST['contact_name']
+                store.contact_no = request.POST['contact_no']
+                store.contact_email = request.POST['contact_email']
+
+                store.vendor_id = vendor.id
+                store.save()
+                print('669')
+            elif int(request.POST['createStore']) == 0 and models.Store.objects.filter(vendor_id = request.POST['id'] ).exists() :
+                print('670')
+                store = models.Store.objects.get(vendor_id = request.POST['id'] )
+                store.delete()
+
         transaction.commit()
         context.update({
             'status': 200,

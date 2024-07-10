@@ -148,6 +148,7 @@ class Vendor(models.Model):
     contact_no = models.CharField(max_length=15, blank=True, null=True)
     contact_name = models.CharField(max_length=50, blank=True, null=True)
     contact_email = models.CharField(max_length=100, blank=True, null=True)
+    store_present = models.SmallIntegerField(default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)

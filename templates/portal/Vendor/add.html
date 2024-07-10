@@ -127,11 +127,16 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-md-5 mb-3">
+                                <label for="createStore">Create Store</label><br>
+                                <input type="hidden" name="createStore" value="0"><input type="checkbox"  onclick="this.previousSibling.value=1-this.previousSibling.value" style="transform: scale(2);margin-top: 12px;">
+                            </div>
                             <div class="col-md-12 mb-3">
                                 <label>Address <span class="required-indicator">*</span></label>
                                 <textarea name="address" required class="form-control" rows="3"
                                     placeholder="Address"></textarea>
                             </div>
+                            
                         </div>
                         {% if request.user.is_superuser == 1 or 'add_vendor'|get_session_permission:request is not None %}
                         <button class="btn btn-success submit-btn" type="submit">Submit</button>
