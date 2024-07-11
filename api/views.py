@@ -4809,6 +4809,7 @@ def materialIssueDetails(request):
 @permission_classes([IsAuthenticated])
 def materialIssueAdd(request):
     context = {}
+    message = 'Something Went Wrong. Please Try Again.'
     if not request.POST['job_order_id'] or not request.POST['issue_date'] or not request.POST['store_id']:
         context.update({
             'status': 594,
@@ -4824,7 +4825,18 @@ def materialIssueAdd(request):
             # transation_type = models.Transaction_Type.objects.get(name = 'MIS')
             
             job_order_income_detalis = list(models.Job_Order_Detail.objects.filter(job_order_header_id = request.POST['job_order_id'] , direction = 'incoming' ))
-        
+
+            #vendor store exist  for third party stock add 
+            venStoreExist = models.Store.objects.filter(vendor_id =request.POST['vendor_id']).exists()
+            if request.POST['vendor_id'] and (len(job_order_income_detalis) > 0) and (venStoreExist is False):
+                message = 'no store present for third party please create a store for third party'
+                context.update({
+                'status': 595,
+                'message': message
+
+                })
+                transaction.rollback()
+                return JsonResponse(context)
             #for out going
             vendor_store = ''
             # print('4645')
@@ -4867,7 +4879,8 @@ def materialIssueAdd(request):
             thirdPartyInQuantity = 0.00
             itemInThrdParty = ''
 
-
+            
+            
             if request.POST['vendor_id'] and len(job_order_income_detalis) > 0:
 
                 # store transaction of virtual incomming material on thrid party stock
@@ -4990,8 +5003,7 @@ def materialIssueAdd(request):
     except Exception:
         context.update({
             'status': 595,
-            'message': "Something Went Wrong. Please Try Again."
-
+            'message': message
         })
         transaction.rollback()
     return JsonResponse(context)
