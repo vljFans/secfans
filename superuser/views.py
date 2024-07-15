@@ -1288,7 +1288,11 @@ def purchaseBillView(request,id):
 
 @login_required
 def reportItemTrackingReport(request):
+    stores = models.Store.objects.filter(Q(store_item__isnull=False)).distinct()
+    store_items=models.Store_Item.objects.all()
     context.update({
+        'stores': stores,
+        'store_items':store_items,
         'page_title': "Item Tracking Report",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports"}, {'name': "Item Tracking Report", 'url': reverse('superuser:reportItemTrackingReport')}]
     })
