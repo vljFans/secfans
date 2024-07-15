@@ -138,6 +138,10 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-md-5 mb-3">
+                                <label for="createStore">Create Store</label><br>
+                                <input type="hidden" name="createStore" value="{{vendor.store_present}}"><input type="checkbox"  onclick="this.previousSibling.value=1-this.previousSibling.value" style="transform: scale(2);margin-top: 12px;" {% if vendor.store_present == 1 %}checked{% endif %}>
+                            </div>
                             <div class="col-md-12 mb-3">
                                 <label>Address <span class="required-indicator">*</span></label>
                                 <textarea name="address" required class="form-control" rows="3"

@@ -567,6 +567,7 @@ def vendorAdd(request):
             return JsonResponse(context)
     try:
         with transaction.atomic():
+            
             vendor = models.Vendor()
             vendor.name = request.POST['name']
             vendor.contact_name = request.POST['contact_name']
@@ -578,7 +579,24 @@ def vendorAdd(request):
             vendor.country_id = request.POST['country_id']
             vendor.state_id = request.POST['state_id']
             vendor.city_id = request.POST['city_id']
+            vendor.store_present = 1 if int(request.POST['createStore']) == 1 else 0
             vendor.save()
+           
+            if int(request.POST['createStore']) == 1:
+                print(vendor.id)
+                store = models.Store()
+                store.name = request.POST['name']
+                store.address = request.POST['address']
+                store.country_id = request.POST['country_id']
+                store.state_id = request.POST['state_id']
+                store.city_id = request.POST['city_id']
+                store.pin = request.POST['pin']
+                store.contact_name = request.POST['contact_name']
+                store.contact_no = request.POST['contact_no']
+                store.contact_email = request.POST['contact_email']
+
+                store.vendor_id = vendor.id
+                store.save()
         transaction.commit()
         context.update({
             'status': 200,
@@ -603,18 +621,20 @@ def vendorEdit(request):
             'message': "Name/Contact Name/GST Number/Pin/Address/Country/State/City has not been provided."
         })
         return JsonResponse(context)
-    if request.POST.get('contact_email',None) or request.POST.get('contact_no',None):
-        exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
-            contact_no__iexact=request.POST['contact_no'])).filter(deleted=0)
-        if len(exist_data) > 0:
-            context.update({
-                'status': 518,
-                'message': "Vendor with this email or phone number already exists."
-            })
-            return JsonResponse(context)
+    # if request.POST.get('contact_email',None) or request.POST.get('contact_no',None):
+    #     exist_data = models.Vendor.objects.filter(Q(contact_email__iexact=request.POST['contact_email']) | Q(
+    #         contact_no__iexact=request.POST['contact_no'])).filter(deleted=0)
+    #     if len(exist_data) > 0:
+    #         context.update({
+    #             'status': 518,
+    #             'message': "Vendor with this email or phone number already exists."
+    #         })
+    #         return JsonResponse(context)
     try:
         with transaction.atomic():
+            
             vendor = models.Vendor.objects.get(pk=request.POST['id'])
+            
             vendor.name = request.POST['name']
             vendor.contact_name = request.POST['contact_name']
             vendor.contact_email = request.POST['contact_email']
@@ -625,8 +645,33 @@ def vendorEdit(request):
             vendor.country_id = request.POST['country_id']
             vendor.state_id = request.POST['state_id']
             vendor.city_id = request.POST['city_id']
+            
+            vendor.store_present = 1 if int(request.POST['createStore']) == 1 else 0
+           
             vendor.updated_at = datetime.now()
             vendor.save()
+           
+            if int(request.POST['createStore']) == 1:
+                
+                store = models.Store()
+                store.name = request.POST['name']
+                store.address = request.POST['address']
+                store.country_id = request.POST['country_id']
+                store.state_id = request.POST['state_id']
+                store.city_id = request.POST['city_id']
+                store.pin = request.POST['pin']
+                store.contact_name = request.POST['contact_name']
+                store.contact_no = request.POST['contact_no']
+                store.contact_email = request.POST['contact_email']
+
+                store.vendor_id = vendor.id
+                store.save()
+
+            elif int(request.POST['createStore']) == 0 and models.Store.objects.filter(vendor_id = request.POST['id'] ).exists() :
+               
+                store = models.Store.objects.get(vendor_id = request.POST['id'] )
+                store.delete()
+
         transaction.commit()
         context.update({
             'status': 200,
@@ -3578,7 +3623,7 @@ def storeTransactionAdd(request):
                 grn_inspection_transaction_count = models.Grn_Inspection_Transaction.objects.all().count()
                 grnTransactionheader = models.Grn_Inspection_Transaction()
                 grnTransactionheader.vendor_id = request.POST['vendor_id']
-                grnTransactionheader.transaction_type_id = request.POST['transaction_type_id']
+                grnTransactionheader.transaction_type = models.Transaction_Type.objects.get(name = 'GRNI')
                 grnTransactionheader.transaction_number = env("GRN_TRANSACTION_INSPECTION_SEQ").replace(
                     "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(5))
                 # print("3143")
@@ -3651,7 +3696,7 @@ def storeTransactionAdd(request):
                 store_transaction_count = models.Store_Transaction.objects.all().count()
                 storeTransactionHeader = models.Store_Transaction()
                 storeTransactionHeader.vendor_id = request.POST['vendor_id']
-                storeTransactionHeader.transaction_type_id = request.POST['transaction_type_id']
+                storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
                 # print("3182")
                 if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) != 2):
                     storeTransactionHeader.purchase_order_header_id = request.POST[
@@ -4764,6 +4809,7 @@ def materialIssueDetails(request):
 @permission_classes([IsAuthenticated])
 def materialIssueAdd(request):
     context = {}
+    message = 'Something Went Wrong. Please Try Again.'
     if not request.POST['job_order_id'] or not request.POST['issue_date'] or not request.POST['store_id']:
         context.update({
             'status': 594,
@@ -4779,7 +4825,18 @@ def materialIssueAdd(request):
             # transation_type = models.Transaction_Type.objects.get(name = 'MIS')
             
             job_order_income_detalis = list(models.Job_Order_Detail.objects.filter(job_order_header_id = request.POST['job_order_id'] , direction = 'incoming' ))
-        
+
+            #vendor store exist  for third party stock add 
+            venStoreExist = models.Store.objects.filter(vendor_id =request.POST['vendor_id']).exists()
+            if request.POST['vendor_id'] and (len(job_order_income_detalis) > 0) and (venStoreExist is False):
+                message = 'no store present for third party please create a store for third party'
+                context.update({
+                'status': 595,
+                'message': message
+
+                })
+                transaction.rollback()
+                return JsonResponse(context)
             #for out going
             vendor_store = ''
             # print('4645')
@@ -4822,7 +4879,8 @@ def materialIssueAdd(request):
             thirdPartyInQuantity = 0.00
             itemInThrdParty = ''
 
-
+            
+            
             if request.POST['vendor_id'] and len(job_order_income_detalis) > 0:
 
                 # store transaction of virtual incomming material on thrid party stock
@@ -4945,8 +5003,7 @@ def materialIssueAdd(request):
     except Exception:
         context.update({
             'status': 595,
-            'message': "Something Went Wrong. Please Try Again."
-
+            'message': message
         })
         transaction.rollback()
     return JsonResponse(context)
@@ -5187,7 +5244,7 @@ def addGrnDetailisInsTransaction(request):
                     store_transaction_count = models.Store_Transaction.objects.all().count()
                     storeTransactionHeader = models.Store_Transaction()
                     storeTransactionHeader.vendor_id = request.POST['vendor_id']
-                    storeTransactionHeader.transaction_type_id = 2
+                    storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
                     if (request.POST.get('purchase_order_header_id',None) and request.POST['purchase_order_header_id']!=""):
                         storeTransactionHeader.purchase_order_header_id = request.POST[
                             'purchase_order_header_id']
