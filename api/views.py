@@ -6511,6 +6511,7 @@ def purchaseBillDetailsDelete(request):
 def reportItemTrackingReport(request):
     context = {}
     item_id = request.POST.get('item_id', None)
+    store_id = request.POST.get('store_id', None)
     from_date = request.POST.get('from_date', None)
     to_date = request.POST.get('to_date', None)
 
@@ -6519,27 +6520,27 @@ def reportItemTrackingReport(request):
     to_date = datetime.strptime(to_date, '%Y-%m-%d').date()
 
     item = models.Item.objects.filter(pk=item_id)
-
-    data = {}
+    store = models.Store.objects.filter(pk=store_id)
+    data = []
     if item.exists():
         item = item.first()
+        store = store.first()
         # Get all store_transaction_details for the item within the date range
         store_transaction_details = models.Store_Transaction_Detail.objects.filter(
             item=item,
+            store=store,
             created_at__range=(from_date, to_date + timedelta(days=1)),  # Include to_date
         ).select_related('store_transaction_header', 'store_transaction_header__transaction_type')
 
         # Group store_transaction_details by store
         for store_transaction_detail in store_transaction_details:
-            store = store_transaction_detail.store
-            if store.name not in data:
-                data[store.name] = []
-            data[store.name].append({
+            data.append({
                 'quantity': store_transaction_detail.quantity,
                 'rate': store_transaction_detail.rate,
                 'amount': store_transaction_detail.amount,
                 'gst_percentage': store_transaction_detail.gst_percentage,
                 'amount_with_gst': store_transaction_detail.amount_with_gst,
+                'transaction_number': store_transaction_detail.store_transaction_header.transaction_number,
                 'transaction_type': store_transaction_detail.store_transaction_header.transaction_type.name,
                 'updated_at': store_transaction_detail.updated_at.date()
             })

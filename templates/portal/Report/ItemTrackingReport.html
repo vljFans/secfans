@@ -50,10 +50,23 @@
                 <label>To Date <span class="required-indicator">*</span></label>
                 <input type="date" name="to_date" class="form-control" placeholder="To Date" required>
             </div>
-            <div class="col-md-4 mb-3">
+            <div class="col-md-3 mb-3">
+                <label>Store<span class="required-indicator">*</span></label>
+                <div class="input-group">
+                    <select class="custom-select selectpicker" id="store_id" name="store_id" required>
+                        <option value="">Choose...</option>
+                        {% for store in stores %}
+                            <option value="{{store.id}}">
+                                {{store.name}}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
                 <label>Item<span class="required-indicator">*</span></label>
                 <div class="input-group">
-                    <select class="custom-select selectpicker" id="item_id" name="item_id">
+                    <select class="custom-select selectpicker" id="item_id" name="item_id" required>
                         <option value="">Choose...</option>
                     </select>
                 </div>
@@ -92,14 +105,15 @@
                 </div>
                 <div class="card-body pd-0">
                     <div class="table-responsive">
-                        <h5></h5>
                         <table class="table">
                             <thead>
                                 <tr>
                                     <th>#</th>
                                     <th>Date</th>
+                                    <th>Transaction Number</th>
                                     <th>Transaction Type</th>
                                     <th>Rate</th>
+                                    <th>Quantity</th>
                                     <th>Amount</th>
                                     <th>GST Percentage</th>
                                     <th>Amount with GST</th>
@@ -140,7 +154,7 @@
                         event.preventDefault();
                         event.stopPropagation();
                     }
-                    // form.classList.add('was-validated');
+                    form.classList.add('was-validated');
                 }, false);
             });
         }, false);
@@ -153,34 +167,65 @@
         placeholder: ''
     });
 
-    $(document).ready(function () {
-        $.ajax({
-            url: "{% url 'api:itemList' %}?find_all=1",
-            type: 'GET',
-            data: ({}),
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                if (response.status == 200) {
-                    var item_options_text = `<option value="">Choose...</option>`;
-                    for (let index = 0; index < response.page_items.length; index++) {
-                        item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
-                    }
-                    $('#item_id').html(item_options_text);
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });
+    // $(document).ready(function () {
+    //     $.ajax({
+    //         url: "{% url 'api:itemList' %}?find_all=1",
+    //         type: 'GET',
+    //         data: ({}),
+    //         headers: {
+    //             'Authorization': getCookieValue("accessToken")
+    //         },
+    //         success: function (response) {
+    //             if (response.status == 200) {
+    //                 var item_options_text = `<option value="">Choose...</option>`;
+    //                 for (let index = 0; index < response.page_items.length; index++) {
+    //                     item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+    //                 }
+    //                 $('#item_id').html(item_options_text);
+    //             } else {
+    //                 alert(response.message);
+    //             }
+    //         },
+    //         error: function (error) {
+    //             $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+    //         }
+    //     });
 
-    });
+    // });
+
+    $(document).on('change', '#store_id', function (){
+        let store_id = $(this).val();
+        console.log(store_id)
+        $(document).ready(function () {
+            $.ajax({
+                url: "{% url 'api:storeItemList' %}?storeId="+store_id,
+                type: 'GET',
+                data: ({}),
+                headers: {
+                    'Authorization': getCookieValue("accessToken")
+                },
+                success: function (response) {
+                    if (response.status == 200) {
+                        var item_options_text = `<option value="">Choose...</option>`;
+                        for (let index = 0; index < response.page_items.length; index++) {
+                            item_options_text += `<option value="${response.page_items[index].item_id}">${response.page_items[index].item__name}</option>`;
+                        }
+                        $('#item_id').html(item_options_text);
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function (error) {
+                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                }
+            });
+        });
+    })
 
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
+        $('.submit-btn').text('Submitting...');
+        $('.submit-btn').prop('disabled', true);
         var formData = new FormData(create_form);
         $.ajax({
             type: "POST",
@@ -194,47 +239,27 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    var table_html = ``;
+                    var tbody_html = ``;
 
-                    $.each(response.page_items, function (storeName, storeData) {
-                        table_html += `
-                            <h5 style="padding: 20px;">${storeName}</h5>
-                            <table class="table">
-                            <thead>
-                                <tr>
-                                <th>#</th>
-                                <th>Date</th>
-                                <th>Transaction Type</th>
-                                <th>Rate</th>
-                                <th>Amount</th>
-                                <th>GST Percentage</th>
-                                <th>Amount with GST</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                        `;
-
-                        $.each(storeData, function (index, transaction) {
-                            table_html += `
-                                <tr>
-                                <td>${++index}</td>
+                    $.each(response.page_items, function (index, transaction) {
+                        tbody_html += `
+                            <tr>
+                                <td>${index + 1}</td>
                                 <td>${transaction.updated_at}</td>
+                                <td>${transaction.transaction_number}</td>
                                 <td>${transaction.transaction_type}</td>
                                 <td>${transaction.rate}</td>
+                                <td>${transaction.quantity}</td>
                                 <td>${transaction.amount}</td>
                                 <td>${transaction.gst_percentage}</td>
                                 <td>${transaction.amount_with_gst}</td>
-                                </tr>
-                            `;
-                        });
-
-                        table_html += `
-                        </tbody>
-                        </table>
+                            </tr>
                         `;
                     });
 
-                    $('.table-responsive').html(table_html);
+                    $('.table-responsive tbody').html(tbody_html);
+                    $('.submit-btn').text('Submit');
+                    $('.submit-btn').prop('disabled', false);
                 } 
                 else {
                     alert(response.message);
