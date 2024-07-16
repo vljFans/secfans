@@ -451,6 +451,12 @@
                                             name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
                                             placeholder="Quantity" required>
                                     </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label>UOM <span class="required-indicator">*</span></label>
+                                        <input type="text" 
+                                            name="uom"  class="form-control uom"
+                                            placeholder="" readonly>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -490,6 +496,12 @@
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
                                             placeholder="Quantity" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label>UOM <span class="required-indicator">*</span></label>
+                                        <input type="text" 
+                                            name="uom"  class="form-control uom"
+                                            placeholder="" readonly>
                                     </div>
                                 </div>
                             </div>
@@ -564,6 +576,12 @@
                         name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
                         placeholder="Quantity" required>
                 </div>
+                <div class="col-md-3 mb-3">
+                    <label>UOM <span class="required-indicator">*</span></label>
+                    <input type="text" 
+                        name="uom"  class="form-control uom"
+                        placeholder="" readonly>
+                </div>
             `)
             $('.selectpicker').select2({
                 placeholder: '',
@@ -595,6 +613,12 @@
                         onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                         name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
                         placeholder="Quantity" required>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label>UOM <span class="required-indicator">*</span></label>
+                    <input type="text" 
+                        name="uom"  class="form-control uom"
+                        placeholder="" readonly>
                 </div>
             `)
             $('.selectpicker').select2({
@@ -660,6 +684,50 @@
                 }
             });
         });
+
+    $(document).on('change','.item_id',function(){
+        let selected_item_pk=$(this).val()
+        //console.log(selected_item_pk);
+        
+        let uom = $(this).closest('.row').find('.uom')
+        // console.log(quantity_sents.html());
+        $.ajax({
+            url: "{% url 'api:getActualQuantity' %}?",
+            type: 'GET',
+            data: ({
+                'item_id':selected_item_pk,
+                'store_id':store_id
+            }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    actual_quantitys.val(response.on_hand_qty_res)
+                    quantity_sents.attr('max',response.on_hand_qty_res)
+                    rate.val(response.item_price)
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                        $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                    }
+        });
+        
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });
+    
+    });
+
 </script>
 {% endblock %}
 <!-- <div class="col-md-1 mb-4 text-center ">

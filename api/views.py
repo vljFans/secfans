@@ -4906,13 +4906,24 @@ def materialIssueAdd(request):
 
                 store_transaction_details = []
                 store_items_add=[]
-                
+               
 
                 for index in range(0, len(job_order_income_detalis)):
                     thirdPartyInQuantity = float(job_order_income_detalis[index].quantity)
                     itemInThrdParty = job_order_income_detalis[index].item_id
-                    
+                    # print(job_order_income_detalis[index].item.price)
+                    store_transaction_details.append(
+                        models.Store_Transaction_Detail(
+                        store_transaction_header=storeTransactionHeaderIn,
+                        item_id=itemInThrdParty,
+                        store=vendor_store,
+                        quantity=Decimal(thirdPartyInQuantity),
+                        rate = float(job_order_income_detalis[index].item.price),
+                        amount =thirdPartyInQuantity * float(job_order_income_detalis[index].item.price)
+                    )
+                    )
 
+                   
                     # virual added incomming material in thrid party stock
                     if models.Store_Item.objects.filter(store=vendor_store, item_id=job_order_income_detalis[index].item_id).exists():
                         store_item=models.Store_Item.objects.get(store=vendor_store, item_id=job_order_income_detalis[index].item_id)
