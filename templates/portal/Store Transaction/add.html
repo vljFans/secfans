@@ -367,6 +367,12 @@
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
                                                 ${item_options_text}
                                             </select>
+                                            {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                    <div class="btn float-end addForm" data-text="Add New item"
+                                                            data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                            <i class="fa fa-plus"></i>
+                                                    </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="col-md-1 mb-3">
@@ -711,6 +717,12 @@
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
                                                 ${item_options_text}
                                             </select>
+                                            {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                    <div class="btn float-end addForm" data-text="Add New item"
+                                                            data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                            <i class="fa fa-plus"></i>
+                                                    </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="col-md-1 mb-3">

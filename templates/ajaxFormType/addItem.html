@@ -97,7 +97,8 @@
                         options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
                     $("#{{selector}}").parents('.input-group').find('select').html(options_text);
-                    console.log($("#{{selector}}").parents('.input-group').find('select'));
+                    $("#{{selector}}").parents('#create_form').find('.item_id').html(options_text);
+                    console.log($("#{{selector}}").parents('.content_parent').html());
                     $('#addFormModal').modal('hide');
                     $('.selectpicker').select2({
                         placeholder: ''
