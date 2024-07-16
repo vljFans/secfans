@@ -127,34 +127,35 @@
                                                                     <i class="fa fa-minus"></i>
                                                                 </button>
                                                             </div>
-                                                            {% for jobOrderDetail in outgoing_details %}
-                                                                <div class="col-md-8 py-2">
-                                                                    <label>Item<span class="required-indicator">*</span></label>
-                                                                    <div class="input-group">
-                                                                        <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required>
-                                                                            <option value="">Choose...</option>
-                                                                            {% for item in items %}
-                                                                            <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
-                                                                            {% endfor %}
-                                                                        </select>
+                                                            <div class="container-fluid">
+                                                                {% for jobOrderDetail in outgoing_details %}
+                                                                    <div class="row outgoing_row">
+                                                                        <div class="col-md-5 py-2">
+                                                                            <label>Item<span class="required-indicator">*</span></label>
+                                                                            <div class="input-group">
+                                                                                <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required>
+                                                                                    <option value="">Choose...</option>
+                                                                                    {% for item in items %}
+                                                                                    <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
+                                                                                    {% endfor %}
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-md-4 py-2">
+                                                                            <label>Quantity<span class="required-indicator">*</span></label>
+                                                                            <input type="text" onkeyup="checkMaxMin(this)"
+                                                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                                                name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
+                                                                                value="{{jobOrderDetail.quantity}}"
+                                                                                required>
+                                                                        </div>
+                                                                        <div class="col-md-3  py-2">
+                                                                            <label>UOM <span class="required-indicator">*</span></label>
+                                                                            <input type="text" name="uom"  class="form-control uom" value="{{jobOrderDetail.item.uom.name}}" readonly>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                                <div class="col-md-4 py-2">
-                                                                    <label>Quantity<span class="required-indicator">*</span></label>
-                                                                    <input type="text" onkeyup="checkMaxMin(this)"
-                                                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                                                        name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
-                                                                        value="{{jobOrderDetail.quantity}}"
-                                                                        required>
-                                                                </div>
-                                                                <div class="col-md-3 mb-3">
-                                                                    <label>UOM <span class="required-indicator">*</span></label>
-                                                                    <input type="text" 
-                                                                        name="uom"  class="form-control uom"
-                                                                        placeholder="" readonly>
-                                                                </div>
-                                                            {% endfor %}
-                                                            
+                                                                {% endfor %}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -162,7 +163,7 @@
                                                 <div class="col-md-6 px-0">
                                                     <div class="container-fluid incoming_materials">
                                                         <div class="row">
-                                                            <div class="col-md-12 d-flex align-items-center py-2" style="border-bottom: 2px solid darkgray;">
+                                                            <div class="col-md-12 d-flex align-items-center" style="border-bottom: 2px solid darkgray; padding-top: 13px; padding-bottom: 13px;">
                                                                 <h5 class="text-center flex-grow-1 mb-0">
                                                                     Incoming Materials
                                                                 </h5> 
@@ -173,34 +174,35 @@
                                                                     <i class="fa fa-minus"></i>
                                                                 </button>
                                                             </div>
-                                                            {% for jobOrderDetail in incoming_details %}
-                                                                <div class="col-md-8 py-2">
-                                                                    <label>Item<span class="required-indicator">*</span></label>
-                                                                    <div class="input-group">
-                                                                        <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required>
-                                                                            <option value="">Choose...</option>
-                                                                            {% for item in items %}
-                                                                            <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
-                                                                            {% endfor %}
-                                                                        </select>
+                                                            <div class="container-fluid">
+                                                                {% for jobOrderDetail in incoming_details %}
+                                                                    <div class="row incoming_row">
+                                                                        <div class="col-md-5 py-2">
+                                                                            <label>Item<span class="required-indicator">*</span></label>
+                                                                            <div class="input-group">
+                                                                                <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required>
+                                                                                    <option value="">Choose...</option>
+                                                                                    {% for item in items %}
+                                                                                    <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
+                                                                                    {% endfor %}
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-md-4 py-2">
+                                                                            <label>Quantity<span class="required-indicator">*</span></label>
+                                                                            <input type="text" onkeyup="checkMaxMin(this)"
+                                                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                                                name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
+                                                                                value="{{jobOrderDetail.quantity}}"
+                                                                                required>
+                                                                        </div>
+                                                                        <div class="col-md-3 py-2">
+                                                                            <label>UOM <span class="required-indicator">*</span></label>
+                                                                            <input type="text" name="uom"  class="form-control uom" value="{{jobOrderDetail.item.uom.name}}" readonly>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                                <div class="col-md-4 py-2">
-                                                                    <label>Quantity<span class="required-indicator">*</span></label>
-                                                                    <input type="text" onkeyup="checkMaxMin(this)"
-                                                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                                                        name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
-                                                                        value="{{jobOrderDetail.quantity}}"
-                                                                        required>
-                                                                </div>
-                                                                <div class="col-md-3 mb-3">
-                                                                    <label>UOM <span class="required-indicator">*</span></label>
-                                                                    <input type="text" 
-                                                                        name="uom"  class="form-control uom"
-                                                                        placeholder="" readonly>
-                                                                </div>
-                                                            {% endfor %}
-                                                            
+                                                                {% endfor %}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -516,20 +518,30 @@
                                             <i class="fa fa-minus"></i>
                                         </button>
                                     </div>
-                                    <div class="col-md-8 py-2">
-                                        <label>Item<span class="required-indicator">*</span></label>
-                                        <div class="input-group">
-                                            <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required>
-                                                ${outgoing_item_options_text}
-                                            </select>
+                                    <div class="container-fluid">
+                                        <div class="row outgoing_row">
+                                            <div class="col-md-5 py-2">
+                                                <label>Item<span class="required-indicator">*</span></label>
+                                                <div class="input-group">
+                                                    <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required>
+                                                        ${outgoing_item_options_text}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 py-2">
+                                                <label>Quantity<span class="required-indicator">*</span></label>
+                                                <input type="text" onkeyup="checkMaxMin(this)"
+                                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                    name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
+                                                    placeholder="Quantity" required>
+                                            </div>
+                                            <div class="col-md-3 py-2">
+                                                <label>UOM <span class="required-indicator">*</span></label>
+                                                <input type="text" 
+                                                    name="uom"  class="form-control uom"
+                                                    placeholder="" readonly>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="col-md-4 py-2">
-                                        <label>Quantity<span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
-                                            placeholder="Quantity" required>
                                     </div>
                                 </div>
                             </div>
@@ -538,31 +550,47 @@
                         <div class="col-md-6 px-0">
                             <div class="container-fluid incoming_materials">
                                 <div class="row">
-                                    <div class="col-md-12 d-flex align-items-center py-2" style="border-bottom: 2px solid darkgray;">
+                                    <div class="col-md-12 d-flex align-items-center" style="border-bottom: 2px solid darkgray;padding-top: 13px;padding-bottom: 13px;">
                                         <h5 class="text-center flex-grow-1 mb-0">
                                             Incoming Materials
                                         </h5> 
-                                        <button type="button" class="btn add_btn  mr-2"> 
+                                        <button type="button" class="btn add_btn  mr-2" hidden> 
                                             <i class="fa fa-plus"></i> 
                                         </button>
-                                        <button type="button" class="btn remove_btn" disabled>
+                                        <button type="button" class="btn remove_btn" disabled hidden>
                                             <i class="fa fa-minus"></i>
                                         </button>
                                     </div>
-                                    <div class="col-md-8 py-2">
-                                        <label>Item<span class="required-indicator">*</span></label>
-                                        <div class="input-group">
-                                            <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required>
-                                                ${incoming_item_options_text}
-                                            </select>
+                                    <div class="container-fluid">
+                                        <div class="row incoming_row">
+                                            <div class="col-md-5 py-2">
+                                                <label>Item<span class="required-indicator">*</span></label>
+                                                    <div class="input-group">
+                                                        <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required>
+                                                            ${incoming_item_options_text}
+                                                        </select>
+                                                        {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                            <div class="btn float-end addForm" data-text="Add New item"
+                                                                    data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                                    <i class="fa fa-plus"></i>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                            </div>
+                                            <div class="col-md-4 py-2">
+                                                <label>Quantity<span class="required-indicator">*</span></label>
+                                                <input type="text" onkeyup="checkMaxMin(this)"
+                                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                    name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
+                                                    placeholder="Quantity" required>
+                                            </div>
+                                            <div class="col-md-3 py-2">
+                                                <label>UOM <span class="required-indicator">*</span></label>
+                                                <input type="text" 
+                                                    name="uom"  class="form-control uom"
+                                                    placeholder="" readonly>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="col-md-4 py-2">
-                                        <label>Quantity<span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
-                                            placeholder="Quantity" required>
                                     </div>
                                 </div>
                             </div>
@@ -611,31 +639,103 @@
     })
     
     $(document).on('change', '.outgoing_item_id', function () {
-        callback("outgoing");
+        let element=$(this)
+        let item_id = element.val()
+        if (item_id != null && item_id != "") {
+            $.ajax({
+                url: "{% url 'api:itemList' %}?id="+item_id,
+                type: 'GET',
+                data: ({}),
+                headers: {
+                    'Authorization': getCookieValue("accessToken")
+                },
+                success: function (response) {
+                    if (response.status == 200) {
+                        callback("outgoing");
+                        element.closest('.outgoing_row').find('.uom').val(response.page_items[0].uom__name);
+                        $('.selectpicker').select2({
+                            placeholder: '',
+                            templateResult: function(option) {
+                                if(option.element && (option.element).hasAttribute('hidden')){
+                                    return null;
+                                }
+                                return option.text;
+                            }
+                        });
+                        
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function (error) {
+                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                }
+            });
+        }
     });
 
     $(document).on('change', '.incoming_item_id', function () {
-        callback("incoming");
+        let element=$(this)
+        let item_id = element.val()
+        if (item_id != null && item_id != "") {
+            $.ajax({
+                url: "{% url 'api:itemList' %}?id="+item_id,
+                type: 'GET',
+                data: ({}),
+                headers: {
+                    'Authorization': getCookieValue("accessToken")
+                },
+                success: function (response) {
+                    if (response.status == 200) {
+                        callback("incoming");
+                        element.closest('.incoming_row').find('.uom').val(response.page_items[0].uom__name);
+                        $('.selectpicker').select2({
+                            placeholder: '',
+                            templateResult: function(option) {
+                                if(option.element && (option.element).hasAttribute('hidden')){
+                                    return null;
+                                }
+                                return option.text;
+                            }
+                        });
+                        
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function (error) {
+                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                }
+            });
+        }
     });
 
     $(document).on('click', '.add_btn', function () {
         if ($(this).closest(".container-fluid").hasClass("outgoing_materials")){
-            let element=$(this).closest(".container-fluid").find(".row")
+            let element=$(this).closest(".container-fluid").find(".container-fluid")
             element.append(`
-                <div class="col-md-8 py-2">
-                    <label>Item<span class="required-indicator">*</span></label>
-                    <div class="input-group">
-                        <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required>
-                            ${outgoing_item_options_text}
-                        </select>
+                <div class="row outgoing_row">
+                    <div class="col-md-5 py-2">
+                        <label>Item<span class="required-indicator">*</span></label>
+                        <div class="input-group">
+                            <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required>
+                                ${outgoing_item_options_text}
+                            </select>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-4 py-2">
-                    <label>Quantity<span class="required-indicator">*</span></label>
-                    <input type="text" onkeyup="checkMaxMin(this)"
-                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                        name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
-                        placeholder="Quantity" required>
+                    <div class="col-md-4 py-2">
+                        <label>Quantity<span class="required-indicator">*</span></label>
+                        <input type="text" onkeyup="checkMaxMin(this)"
+                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                            name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
+                            placeholder="Quantity" required>
+                    </div>
+                    <div class="col-md-3 py-2">
+                        <label>UOM <span class="required-indicator">*</span></label>
+                        <input type="text" 
+                            name="uom"  class="form-control uom"
+                            placeholder="" readonly>
+                    </div>
                 </div>
             `)
             $('.selectpicker').select2({
@@ -669,6 +769,12 @@
                         name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
                         placeholder="Quantity" required>
                 </div>
+                <div class="col-md-3 mb-3">
+                    <label>UOM <span class="required-indicator">*</span></label>
+                    <input type="text" 
+                        name="uom"  class="form-control uom"
+                        placeholder="" readonly>
+                </div>
             `)
             $('.selectpicker').select2({
                 placeholder: '',
@@ -687,7 +793,7 @@
 
     $(document).on('click', '.remove_btn', function () {
         if ($(this).closest(".container-fluid").hasClass("outgoing_materials")){
-            $('.outgoing_materials').find('.row').children().slice(-2).remove();
+            $('.outgoing_materials').find('.outgoing_row').last().remove();
             callback("outgoing");
             updateMinusButtonState("outgoing");
         }

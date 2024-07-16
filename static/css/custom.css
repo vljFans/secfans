@@ -1,34 +1,35 @@
 .logo a.logo-img img {
-    max-height: 50px;
+  max-height: 50px;
 }
 
 .selectpicker {
-    height: 100px;
+  height: 100px;
 }
 
 .required-indicator {
-    color: red;
+  color: red;
 }
 
 .input-group-addon {
-    border: 1px solid #e7e7e7;
-    background: #f7f7f7;
+  border: 1px solid #e7e7e7;
+  background: #f7f7f7;
 }
 
 .colorpicker-alpha {
-    display: none !important;
+  display: none !important;
 }
 
-.content_child{
-    border: 1px solid black;            
-    border-radius: 5px; 
-    /* max-width: 83%; */
-    margin: auto;
-    /* margin-left: 20px; */
-    /* margin-left: 20px;
+.content_child {
+  border: 1px solid black;
+  border-radius: 5px;
+  /* max-width: 83%; */
+  margin: auto;
+  /* margin-left: 20px; */
+  /* margin-left: 20px;
     margin-right: 20px;
     margin-bottom: 20px; */
-  }
+}
+
 /* 
   .item_table {
     border: 2px solid transparent;
@@ -37,3 +38,18 @@
   .item_table:not(:empty){ 
     border-color: darkgray;
   } */
+
+
+.icon-button {
+  display: flex;
+  align-items: center;
+  height: auto;
+  /* Ensure the button height adjusts based on content */
+  padding: 0.5em;
+  /* Adjust padding for better visual alignment */
+}
+
+.icon-button i {
+  font-size: inherit;
+  /* Inherit font size from the button */
+}
