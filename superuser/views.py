@@ -1351,3 +1351,23 @@ def reportActivePurchaseOrder(request):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports"}, {'name': "Purchase Orders"}, {'name': "Active Purchase Order", 'url': reverse('superuser:reportActivePurchaseOrder')}]
     })
     return render(request, 'portal/Report/Purchase Order/ActivePurchaseOrder.html', context)
+
+@login_required
+def reportActivePurchaseMaterialIssue(request):
+    stores = models.Store.objects.filter(Q(store_item__isnull=False),Q(vendor_id__isnull=True)).distinct()
+    context.update({
+        'stores': stores,
+        'page_title': "Purchase and Material Issue ",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports"}, {'name': "Purchase and Material Issue"}, {'name': "Active Purchase and Material Issue", 'url': reverse('superuser:reportActivePurchaseMaterialIssue')}]
+    })
+    return render(request, 'portal/Report/purchaseAndMaterialSendForJob.html', context)
+
+@login_required
+def reportActiveVendorIssueReciept(request):
+    stores = models.Store.objects.filter(Q(store_item__isnull=False),Q(vendor_id__isnull=False)).distinct()
+    context.update({
+        'stores': stores,
+        'page_title': "Vendor JobOrder Material Issue and Reciept ",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports"}, {'name': "VendorJobOrderIssueReciept"}, {'name': "Active VendorJobOrderIssueReciept", 'url': reverse('superuser:reportActiveVendorIssueReciept')}]
+    })
+    return render(request, 'portal/Report/vendorJobOrderIssueRecep.html', context)

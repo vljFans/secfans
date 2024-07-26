@@ -51,7 +51,7 @@
                 <input type="date" name="to_date" class="form-control" placeholder="To Date" required>
             </div>
             <div class="col-md-3 mb-3">
-                <label>Store<span class="required-indicator">*</span></label>
+                <label>VendoreStore<span class="required-indicator">*</span></label>
                 <div class="input-group">
                     <select class="custom-select selectpicker" id="store_id" name="store_id" required>
                         <option value="">Choose...</option>
@@ -108,15 +108,28 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>#</th>
-                                    <th>Date</th>
-                                    <th>Transaction Number</th>
-                                    <th>Transaction Type</th>
-                                    <th>Rate</th>
-                                    <th>Quantity</th>
-                                    <th>Amount</th>
-                                    <th>GST Percentage</th>
-                                    <th>Amount with GST</th>
+                                  <th rowspan="2">SlNo</th>
+                                  <th rowspan="2">Date</th>
+                                  <th rowspan="2">Particulars</th>
+                                  <th rowspan="2">Vch Type</th>
+                                  <th rowspan="2">Vch No.</th>
+                                  <th colspan="4" style="text-align: center;">Inwards</th>
+                                  <th colspan="4" style="text-align: center;">Outwards</th>
+                                  <th colspan="4" style="text-align: center;">Closing</th>
+                                </tr>
+                                <tr>
+                                  <th>TransQuantity</th> 
+                                  <th>TotalQuantity</th>
+                                  <th>Rate</th>
+                                  <th>Value</th>
+                                  <th>TransQuantity</th> 
+                                  <th>TotalQuantity</th>
+                                  <th>Rate</th>
+                                  <th>Value</th>
+                                  <th>TransQuantity</th> 
+                                  <th>TotalQuantity</th>
+                                  <th>Rate</th>
+                                  <th>Value</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -232,30 +245,80 @@
             evalScripts: true,
             contentType: false,
             processData: false,
-            url: "{% url 'api:reportItemTrackingReport' %}",
+            url: "{% url 'api:reportVendorIssueRecp' %}",
             data: formData,
             headers: {
                 'Authorization': getCookieValue("accessToken")
             },
             success: function (response) {
                 if (response.status == 200) {
+                    let data = response.page_items
+                    console.log(data , 'hi');
                     var tbody_html = ``;
+                   
+                    for(let index = 0 ; index < data.length ; index++){
+                        // console.log(data[index+1].transaction_date);
+                        const element = data[index];
+                        tbody_html += `<tr>
+                                     <td>${index + 1}</td>
+                                     <td>${element.transaction_date}</td>
+                                     <td>${element.jobOrder}</td>
+                                     <td>${element.transaction_type_name}</td>
+                                     <td></td>
+                                `
+                        console.log(element.transaction_type_name );
+                        if(element.transaction_type_name == 'RECIEPT' || element.transaction_type_name == 'OPENING'){
+                           console.log('278');
+                            tbody_html+= `
+                                           <td>${parseFloat(element.tranquantity).toString()}</td>
+                                           <td>${element.totquantity}</td>
+                                           <td>${element.rate}</td>
+                                           <td>${element.amount}</td>
+                                           <td></td>
+                                           <td></td>
+                                           <td></td>
+                                           <td></td>
+                                           <td>${element.tranquantity}</td>
+                                           <td>${element.totquantity}</td>
+                                           <td>${element.rate}</td>
+                                           <td>${element.amount}</td>
+                                           `
+                                           
+                        }
+                        else{
+                            console.log('292');
+                            tbody_html+= ` <td></td>
+                                           <td></td>
+                                           <td></td>
+                                           <td></td>
+                                           <td>${element.tranquantity}</td>
+                                           <td>${element.totquantity}</td>
+                                           <td>${element.rate}</td>
+                                           <td>${element.amount}</td>
+                                           <td>${element.tranquantity}</td>
+                                           <td>${element.totquantity}</td>
+                                           <td>${element.rate}</td>
+                                           <td>${element.amount}</td>
+                                           `
+                        }
+                        tbody_html+= `</tr>`
+                    }
 
-                    $.each(response.page_items, function (index, transaction) {
-                        tbody_html += `
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td>${transaction.updated_at}</td>
-                                <td>${transaction.transaction_number}</td>
-                                <td>${transaction.transaction_type}</td>
-                                <td>${transaction.rate}</td>
-                                <td>${transaction.quantity}</td>
-                                <td>${transaction.amount}</td>
-                                <td>${transaction.gst_percentage}</td>
-                                <td>${transaction.amount_with_gst}</td>
-                            </tr>
-                        `;
-                    });
+                    // $.each(response.page_items, function (index, transaction) {
+                    //     tbody_html += `
+                    //         <tr>
+                    //             <td>${index + 1}</td>
+                    //             <td>${transaction.updated_at}</td>
+                    //             <td>${transaction.transaction_number}</td>
+                    //             <td>${transaction.transaction_type}</td>
+                    //             <td>${transaction.rate}</td>
+                    //             <td>${transaction.quantity}</td>
+                    //             <td>${transaction.amount}</td>
+                    //             <td>${transaction.gst_percentage}</td>
+                    //             <td>${transaction.amount_with_gst}</td>
+                    //         </tr>
+                    //     `;
+                    // });
 
                     $('.table-responsive tbody').html(tbody_html);
                     $('.submit-btn').text('Submit');
