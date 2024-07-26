@@ -33,7 +33,7 @@ from fractions import Fraction
 
 env = environ.Env()
 environ.Env.read_env()
-
+format = lambda x: f'{x.normalize():f}'
 
 class CustomPaginator:
     def __init__(self, items, per_page):
@@ -3568,7 +3568,7 @@ def storeTransactionAdd(request):
                             models.Store_Transaction_Detail(
                                 store_transaction_header_id=storeTransactionHeaderVOut.id,
                                 item_id=store_transact_job_ord_det_income_mat[index].item_id,
-                                store_id=store_transact_job_ord_det_income_mat[index].store_id ,
+                                store = models.Store.objects.get(vendor_id = request.POST['vendor_id']),
                                 quantity=incomming_vendor_material_store,
                                 rate=store_transact_job_ord_det_income_mat[index].rate,
                                 amount=incomming_vendor_material_store * float(store_transact_job_ord_det_income_mat[index].rate),
@@ -3601,11 +3601,27 @@ def storeTransactionAdd(request):
                 storeTransactionHeaderVOut.total_amount = total_amounts
                 storeTransactionHeaderVOut.save()
                 print('3558')
+                order_details = []
                 # -----virtual incomming material deduction from vendore store---------
                 for index, elem in enumerate(request.POST.getlist('item_id')):
                     # print(request.POST['vendor_id'])
                     # print(models.Store_Item.objects.filter(
                     #                 item_id=elem).first().id)
+                    
+                    order_details.append(
+                        models.Store_Transaction_Detail(
+                            store_transaction_header_id=storeTransactionHeaderVOut.id,
+                            item_id=elem,
+                            store=models.Store.objects.get(vendor_id = request.POST['vendor_id']),
+                            quantity=request.POST.getlist('item_quantity')[index],
+                            rate=request.POST.getlist('rate')[index],
+                            amount=request.POST.getlist('item_price')[index],
+                            gst_percentage=request.POST.getlist(
+                                'gst_percentage')[index],
+                            amount_with_gst=request.POST.getlist(
+                                'amount_with_gst')[index]
+                        )
+                    )
                     storeItem = models.Store_Item.objects.filter(
                                     item_id=elem, store__vendor_id=request.POST['vendor_id']).get()
                     # print(storeItem.on_hand_qty)
@@ -3615,6 +3631,7 @@ def storeTransactionAdd(request):
                                 request.POST.getlist('item_quantity')[index])
                     # storeItem.updated_at = datetime.now()
                     storeItem.save() 
+                models.Store_Transaction_Detail.objects.bulk_create(order_details)
             #     print("3496")  
             # print("3497")
 
@@ -4951,6 +4968,8 @@ def materialIssueAdd(request):
             store_transaction_details = []
             store_items_add=[]
             outgoing_incomming_details = []
+
+            # material issue for godown
             
             for index, elem in enumerate(request.POST.getlist('item_id')):
                 sendQuantity = float(request.POST.getlist('quantity_sent')[index])
@@ -4964,10 +4983,24 @@ def materialIssueAdd(request):
                         amount = float(request.POST.getlist('amount')[index])
                     )
                 )
-               
+
+                
             
                 if request.POST['vendor_id']:
                     # print('jjj')
+
+                    # third party grn transaction 
+
+                    outgoing_incomming_details.append(
+                        models.Store_Transaction_Detail(
+                            store_transaction_header=storeTransactionHeaderIn,
+                            item_id=elem,
+                            store=vendor_store,
+                            quantity=sendQuantity,
+                            rate = float(request.POST.getlist('rate')[index]),
+                            amount = float(request.POST.getlist('amount')[index])
+                        )
+                    )
                     
                     # If the item exists in vendor store
                     
@@ -5002,6 +5035,7 @@ def materialIssueAdd(request):
                 
               
             models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
+            models.Store_Transaction_Detail.objects.bulk_create(outgoing_incomming_details)
             models.Store_Item.objects.bulk_create(store_items_add)
 
         transaction.commit()
@@ -6927,6 +6961,7 @@ def cornJobStoreItemQuantityUpdate(request):
     # start_date = '2024-01-01' #for testing 
     end_date = datetime.now().date()
     start_date = end_date.replace(day=1)
+    next_month_start_date = (start_date.replace(day=1) + timedelta(days=31))
     # SECRET_KEY = env("SECRET_KEY") 
     # print(SECRET_KEY)
     
@@ -6934,6 +6969,9 @@ def cornJobStoreItemQuantityUpdate(request):
         store_items = models.Store_Item.objects.select_related('store').prefetch_related(
             'store__store_transaction_detail_set'
         )
+        # for store_item in store_items:
+        #     print(store_item.closing_qty)
+        # return
         for store_item in store_items:
             total_In_quantity = 0.00
             total_Out_quantity = 0.00
@@ -6948,20 +6986,24 @@ def cornJobStoreItemQuantityUpdate(request):
                 item=store_item.item , store = store_item.store
             ).filter(store_transaction_header__transaction_date__range=(start_date,end_date))
 
+            item_stock_report = models.Item_Stock_Report()
+            item_stock_report.item = store_item.item
+            item_stock_report.store = store_item.store
+            item_stock_report.start_date = start_date
+            item_stock_report.end_date = end_date
+            item_stock_report.next_month_start_date = next_month_start_date
+            item_stock_report.closing_quantity = store_item.closing_qty
+            item_stock_report.closing_value = float(store_item.closing_qty) * float(store_item.item.price)
+            item_stock_report.rate = store_item.item.price
+            item_stock_report.save()
             if store_transaction_dets :
-                item_stock_report = models.Item_Stock_Report()
-                item_stock_report.item = store_item.item
-                item_stock_report.store = store_item.store
-                item_stock_report.start_date = start_date
-                item_stock_report.end_date = end_date
-                item_stock_report.save()
                 order_details =[]
                 for store_transact_det in store_transaction_dets:
                     # print(store_transact_det.store_transaction_header.transaction_type.name)
                     transaction_type = store_transact_det.store_transaction_header.transaction_type.name
                     quantity = float(store_transact_det.quantity)
                     # print("item=",store_item.item.name, 'store=',store_item.store.name,'quantity=', quantity,'total_quantity=',total_quantity)
-                    if transaction_type == 'GRN' or transaction_type == 'MIN' :
+                    if transaction_type == 'GRN' or transaction_type == 'MIN' or transaction_type == 'GRNT' :
                         # print('hhhhh') 
                         total_In_quantity += quantity
                         total_IN_Value += (float(store_transact_det.rate) * quantity) if float(store_transact_det.rate) > 0.00 else (float(store_transact_det.item.price) * quantity)
@@ -6991,8 +7033,8 @@ def cornJobStoreItemQuantityUpdate(request):
                 total_quantity = (total_quantity + total_In_quantity) - total_Out_quantity
                 total_value = (total_value + total_IN_Value) - total_Out_Value
                 item_rate = total_value/total_quantity if total_quantity >0.00 else 0.00
-                item_stock_report.opening_quantity = total_quantity
-                item_stock_report.opening_value = total_value
+                item_stock_report.closing_quantity = total_quantity
+                item_stock_report.closing_value = total_value
                 item_stock_report.rate = item_rate
                 item_stock_report.save()
                 store_item = models.Store_Item.objects.get(item=store_item.item , store = store_item.store)
@@ -7018,4 +7060,164 @@ def cornJobStoreItemQuantityUpdate(request):
 
     return JsonResponse(context)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def reportPurchaseMaterailIssue(request):
+    context = {}
+    try:
 
+        item_id = request.POST['item_id']
+        store_id = request.POST['store_id']
+        from_date = request.POST['from_date']
+        to_date = request.POST['to_date']
+        
+        storeTransactionDetails = models.Store_Transaction_Detail.objects.filter(Q(store_transaction_header__transaction_type__name="MIS")|
+                                    Q(store_transaction_header__transaction_type__name="GRN")).filter(
+                                        store_transaction_header__transaction_date__range =(from_date,to_date)
+                                    ).filter(
+                                        item_id = item_id ,store_id =store_id
+                                    ).order_by('store_transaction_header__transaction_date')
+        # print(storeTransactionDetails)
+        storeTransactionDetails = list(storeTransactionDetails.all())
+        data =[]
+        # print(len(storeTransactionDetails))
+
+        item_stock_report_head_bool = models.Item_Stock_Report.objects.filter(store_id = store_id , 
+                                        item_id = item_id).filter(next_month_start_date = from_date).exists()
+        # print(item_stock_report_head_bool,"7056")
+        if(item_stock_report_head_bool):
+            item_stock_report_head = models.Item_Stock_Report.objects.filter(store_id = store_id , 
+                                    item_id = item_id).filter(next_month_start_date = from_date).first()
+            closing_qty = item_stock_report_head.closing_quantity
+        else:
+            store_Item_head = models.Store_Item.objects.filter(store_id = store_id , 
+                                    item_id = item_id).first()
+            closing_qty = store_Item_head.opening_qty
+        for index in range(0,len(storeTransactionDetails)):
+            # print(storeTransactionDetails[index].store_transaction_header.id,index,storeTransactionDetails[index].item.name)
+            transaction_type_name = 'RECIEPT' if storeTransactionDetails[index].store_transaction_header.transaction_type.name == 'GRN' else 'ISSUE'
+            # print(storeTransactionDetails[index].store_transaction_header.vendor.name)
+              
+            if(transaction_type_name == 'RECIEPT'):
+                closing_qty = (closing_qty) + (storeTransactionDetails[index].quantity) 
+            else:
+                closing_qty = (closing_qty) - (storeTransactionDetails[index].quantity) 
+            # print(closing_qty)
+            data.append({
+                'item_name': storeTransactionDetails[index].item.name,
+                'transaction_date' :  storeTransactionDetails[index].store_transaction_header.transaction_date,
+                'vendor_name': storeTransactionDetails[index].store_transaction_header.vendor.name,
+                'transaction_type_name': transaction_type_name,
+                'tranQuantity': format(storeTransactionDetails[index].quantity),
+                'quantity' : format(closing_qty),
+                'rate' :  format(storeTransactionDetails[index].rate),
+                'amount' :format(closing_qty * (storeTransactionDetails[index].rate))
+            })
+            # print(data)
+        
+
+        context.update({
+            'status': 200,
+            'message': "Items Fetched Successfully.",
+            'page_items' : data
+        })
+    except Exception:
+        context.update({
+            'status': 540,
+            'message': "Somethings went wrong please try again!",
+        })
+    return JsonResponse(context)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def reportVendorIssueRecp(request):
+    context = {}
+    try:
+
+        item_id = request.POST['item_id']
+        store_id = request.POST['store_id']
+        from_date = request.POST['from_date']
+        to_date = request.POST['to_date']
+        
+        storeTransactionDetails = models.Store_Transaction_Detail.objects.filter(Q(store_transaction_header__transaction_type__name="MIS")|
+                                    Q(store_transaction_header__transaction_type__name="GRNT")).filter(
+                                        store_transaction_header__transaction_date__range =(from_date,to_date)
+                                    ).filter(
+                                        item_id = item_id ,store_id =store_id
+                                    ).order_by('store_transaction_header__transaction_date')
+       
+        storeTransactionDetails = list(storeTransactionDetails.all())
+        # print(storeTransactionDetails)
+        data =[]
+        # print(len(storeTransactionDetails))
+
+        item_stock_report_head_bool = models.Item_Stock_Report.objects.filter(store_id = store_id , 
+                                        item_id = item_id).filter(next_month_start_date = from_date).exists()
+        print(item_stock_report_head_bool,"7056")
+        if(item_stock_report_head_bool):
+            item_stock_report_head = models.Item_Stock_Report.objects.filter(store_id = store_id , 
+                                    item_id = item_id).filter(next_month_start_date = from_date).first()
+            closing_qty = item_stock_report_head.closing_quantity
+            rate = item_stock_report_head.item.price
+        else:
+            store_Item_head = models.Store_Item.objects.filter(store_id = store_id , 
+                                    item_id = item_id).first()
+            closing_qty = store_Item_head.opening_qty
+            rate = store_Item_head.item.price
+        # print(closing_qty)
+
+        data.append({
+                'item_name': '',
+                'transaction_date' :  str(request.POST['from_date']),
+                'jobOrder' : '',
+                'transaction_type_name': 'OPENING',
+                'tranquantity' : format(closing_qty),
+                'totquantity' : format(closing_qty),
+                'rate' : format( rate),
+                'amount' :format(closing_qty * rate)
+            })
+        
+        # print(data)
+        for index in range(0,len(storeTransactionDetails)):
+            # print(storeTransactionDetails[index].store_transaction_header.id,index,storeTransactionDetails[index].item.name)
+            transaction_type_name = 'RECIEPT' if storeTransactionDetails[index].store_transaction_header.transaction_type.name == 'GRNT' else 'ISSUE'
+            print(transaction_type_name)
+            
+               
+            if(transaction_type_name == 'RECIEPT'):
+                closing_qty = (closing_qty) + (storeTransactionDetails[index].quantity) 
+            else:
+                closing_qty = (closing_qty) - (storeTransactionDetails[index].quantity) 
+            data.append({
+                'item_name': storeTransactionDetails[index].item.name,
+                'transaction_date' :  storeTransactionDetails[index].store_transaction_header.transaction_date,
+                'jobOrder' : storeTransactionDetails[index].store_transaction_header.job_order.order_number,
+                'transaction_type_name': transaction_type_name,
+                'tranquantity' : format(storeTransactionDetails[index].quantity),
+                'totquantity' : format(closing_qty),
+                'rate' :  format(storeTransactionDetails[index].rate),
+                'amount' :format(closing_qty * (storeTransactionDetails[index].rate))
+            })
+            # print(data)
+        # purchaseOrderDetails = list(purchaseOrderDetails.values(
+        #     'pk',
+        #     'purchase_order_header__order_number',
+        #     'purchase_order_header__order_date',
+        #     'purchase_order_header__vendor__name',
+        #     'quantity',
+        #     'amount_with_gst',
+        #     'delivered_quantity',
+        #     'delivered_amount_with_gst'
+        # ))
+
+        context.update({
+            'status': 200,
+            'message': "Items Fetched Successfully.",
+            'page_items' : data
+        })
+    except Exception:
+        context.update({
+            'status': 540,
+            'message': "Somethings went wrong please try again!",
+        })
+    return JsonResponse(context)

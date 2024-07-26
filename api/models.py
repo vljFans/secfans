@@ -91,6 +91,22 @@ class User(AbstractBaseUser):
         # Simplest possible answer: All admins are staff
         return self.is_superuser
 
+class Configuration_User(models.Model):
+    client_name = models.CharField(max_length=50, blank=True, null=True)
+    client_address = models.CharField(max_length=50, blank=True, null=True)
+    client_work_address = models.CharField(max_length=50, blank=True, null=True)
+    client_gst = models.CharField(max_length=50, blank=True, null=True)
+    client_contact = models.CharField(max_length=50, blank=True, null=True)
+
+
+    def __str__(self):
+        return self.client_name
+
+    class Meta:
+        managed = True
+        db_table = 'configuration_user'
+        verbose_name_plural = 'configuration_user'
+
 
 class Country(models.Model):
     name = models.CharField(max_length=50)
@@ -635,7 +651,7 @@ class Grn_Inspection_Transaction_Detail(models.Model):
 
 class Store_Transaction(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True,related_name="vendor" )
-    vendor_from = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True, related_name="vendor_from")
+    vendor_from = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True, related_name="vendor_from")
     transaction_type = models.ForeignKey(Transaction_Type, on_delete=models.CASCADE, blank=True, null=True)
     purchase_order_header = models.ForeignKey(Purchase_Order, on_delete=models.CASCADE, blank=True, null=True)
     transaction_number = models.CharField(max_length=25, blank=True, null=True)
@@ -842,18 +858,19 @@ class Purchase_Bill_Details(models.Model):
 class Item_Stock_Report(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
     store = models.ForeignKey(Store, on_delete=models.CASCADE, blank=True, null=True)
-    opening_quantity = models.DecimalField(max_digits=30, decimal_places=5, default=0)
-    opening_value = models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    closing_quantity = models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    closing_value = models.DecimalField(max_digits=30, decimal_places=5, default=0)
     rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
+    next_month_start_date = models.DateField(blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
     updated_at = models.DateTimeField(default=now)
 
     def __str__(self):
-        return self.item
+        return f'Item_Stock_Report: {self.pk}'
 
     class Meta:
         managed = True
@@ -876,7 +893,8 @@ class Item_Stock_Report_Details(models.Model):
     updated_at = models.DateTimeField(default=now)
 
     def __str__(self):
-        return self.item_stock_report_header.item
+        
+        return f'Item_Stock_Report: {self.item_stock_report_header.id}'
 
     class Meta:
         managed = True

@@ -1,0 +1,466 @@
+{% extends 'portal/base.html' %}
+{% load template_func %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<div class="wrapper">
+    <!--================================-->
+    <!-- Breadcrumb Start -->
+    <!--================================-->
+    <div class="pageheader pd-t-25 pd-b-35">
+        <div class="row">
+            <div class="col-6 d-flex justify-content-between">
+                <div class="clearfix">
+                    <div class="pd-t-5 pd-b-5">
+                        <h1 class="pd-0 mg-0 tx-20 tx-dark">{{parent_page_title}} {{page_title}}</h1>
+                    </div>
+                    <div class="breadcrumb pd-0 mg-0">
+                        {% for breadcrumb in breadcrumbs %}
+                        {% if forloop.counter == 1 or forloop.counter == 3%}
+                        <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                        {% else %}
+                        <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="float-end d-flex justify-content-end" style="padding-top: 10px;">
+                    <button type="button" file_type="pdf" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">PDF</button>
+                    <button type="button" file_type="csv" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">CSV</button>
+                    <button type="button" file_type="xlsx" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">Excel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Breadcrumb End -->
+    <!--================================-->
+    <!--================================-->
+    <!-- Filter box Start -->
+    <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
+        <div class="row">
+            <div class="col-md-2 mb-3">
+                <label>From Date <span class="required-indicator">*</span></label>
+                <input type="date" name="from_date" class="form-control" placeholder="From Date" required>
+            </div>
+            <div class="col-md-2 mb-3">
+                <label>To Date <span class="required-indicator">*</span></label>
+                <input type="date" name="to_date" class="form-control" placeholder="To Date" required>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label>VendoreStore<span class="required-indicator">*</span></label>
+                <div class="input-group">
+                    <select class="custom-select selectpicker" id="store_id" name="store_id" required>
+                        <option value="">Choose...</option>
+                        {% for store in stores %}
+                            <option value="{{store.id}}">
+                                {{store.name}}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label>Item<span class="required-indicator">*</span></label>
+                <div class="input-group">
+                    <select class="custom-select selectpicker" id="item_id" name="item_id" required>
+                        <option value="">Choose...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2 mb-3" style="padding-top: 29px;">
+                <button type="submit" class="btn btn-success submit-btn">Submit</button>
+            </div>
+        </div>
+    </form>
+    <!--/ Filter box End -->
+    <!--================================-->
+    <!-- Form Element Start -->
+    <!--================================-->
+    <div class="row row-xs clearfix">
+        <div class="col-md-12 col-lg-12">
+            {% if messages %}
+            {% for message in messages %}
+            {% if forloop.counter == messages|length %}
+            <div class="{{ message.tags }} success-msg-txt" style="height: 30px; text-align: center;">{{ message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            <div class="error-msg-txt" style="height: 30px; text-align: center;"></div>
+            <div class="card mg-b-30">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-header-title tx-13 mb-0">{{parent_page_title}} {{page_title}}</h6>
+                        </div>
+                        <div class="text-right">
+                            <div class="d-flex">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body pd-0">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                  <th rowspan="2">SlNo</th>
+                                  <th rowspan="2">Date</th>
+                                  <th rowspan="2">Particulars</th>
+                                  <th rowspan="2">Vch Type</th>
+                                  <th rowspan="2">Vch No.</th>
+                                  <th colspan="4" style="text-align: center;">Inwards</th>
+                                  <th colspan="4" style="text-align: center;">Outwards</th>
+                                  <th colspan="4" style="text-align: center;">Closing</th>
+                                </tr>
+                                <tr>
+                                  <th>TransQuantity</th> 
+                                  <th>TotalQuantity</th>
+                                  <th>Rate</th>
+                                  <th>Value</th>
+                                  <th>TransQuantity</th> 
+                                  <th>TotalQuantity</th>
+                                  <th>Rate</th>
+                                  <th>Value</th>
+                                  <th>TransQuantity</th> 
+                                  <th>TotalQuantity</th>
+                                  <th>Rate</th>
+                                  <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                    <nav>
+                        <ul id="pagination" class="pagination justify-content-center">
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Form Element End -->
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+
+<script>
+    
+    $('.selectpicker').select2({
+        placeholder: ''
+    });
+
+    // $(document).ready(function () {
+    //     $.ajax({
+    //         url: "{% url 'api:itemList' %}?find_all=1",
+    //         type: 'GET',
+    //         data: ({}),
+    //         headers: {
+    //             'Authorization': getCookieValue("accessToken")
+    //         },
+    //         success: function (response) {
+    //             if (response.status == 200) {
+    //                 var item_options_text = `<option value="">Choose...</option>`;
+    //                 for (let index = 0; index < response.page_items.length; index++) {
+    //                     item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+    //                 }
+    //                 $('#item_id').html(item_options_text);
+    //             } else {
+    //                 alert(response.message);
+    //             }
+    //         },
+    //         error: function (error) {
+    //             $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+    //         }
+    //     });
+
+    // });
+
+    $(document).on('change', '#store_id', function (){
+        let store_id = $(this).val();
+        console.log(store_id)
+        $(document).ready(function () {
+            $.ajax({
+                url: "{% url 'api:storeItemList' %}?storeId="+store_id,
+                type: 'GET',
+                data: ({}),
+                headers: {
+                    'Authorization': getCookieValue("accessToken")
+                },
+                success: function (response) {
+                    if (response.status == 200) {
+                        var item_options_text = `<option value="">Choose...</option>`;
+                        for (let index = 0; index < response.page_items.length; index++) {
+                            item_options_text += `<option value="${response.page_items[index].item_id}">${response.page_items[index].item__name}</option>`;
+                        }
+                        $('#item_id').html(item_options_text);
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function (error) {
+                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                }
+            });
+        });
+    })
+
+    $(document).on('submit', '#create_form', function (e) {
+        e.preventDefault();
+        $('.submit-btn').text('Submitting...');
+        $('.submit-btn').prop('disabled', true);
+        var formData = new FormData(create_form);
+        $.ajax({
+            type: "POST",
+            evalScripts: true,
+            contentType: false,
+            processData: false,
+            url: "{% url 'api:reportVendorIssueRecp' %}",
+            data: formData,
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    let data = response.page_items
+                    console.log(data , 'hi');
+                    var tbody_html = ``;
+                   
+                    for(let index = 0 ; index < data.length ; index++){
+                        // console.log(data[index+1].transaction_date);
+                        const element = data[index];
+                        tbody_html += `<tr>
+                                     <td>${index + 1}</td>
+                                     <td>${element.transaction_date}</td>
+                                     <td>${element.jobOrder}</td>
+                                     <td>${element.transaction_type_name}</td>
+                                     <td></td>
+                                `
+                        console.log(element.transaction_type_name );
+                        if(element.transaction_type_name == 'RECIEPT' || element.transaction_type_name == 'OPENING'){
+                           console.log('278');
+                            tbody_html+= `
+                                           <td>${parseFloat(element.tranquantity).toString()}</td>
+                                           <td>${element.totquantity}</td>
+                                           <td>${element.rate}</td>
+                                           <td>${element.amount}</td>
+                                           <td></td>
+                                           <td></td>
+                                           <td></td>
+                                           <td></td>
+                                           <td>${element.tranquantity}</td>
+                                           <td>${element.totquantity}</td>
+                                           <td>${element.rate}</td>
+                                           <td>${element.amount}</td>
+                                           `
+                                           
+                        }
+                        else{
+                            console.log('292');
+                            tbody_html+= ` <td></td>
+                                           <td></td>
+                                           <td></td>
+                                           <td></td>
+                                           <td>${element.tranquantity}</td>
+                                           <td>${element.totquantity}</td>
+                                           <td>${element.rate}</td>
+                                           <td>${element.amount}</td>
+                                           <td>${element.tranquantity}</td>
+                                           <td>${element.totquantity}</td>
+                                           <td>${element.rate}</td>
+                                           <td>${element.amount}</td>
+                                           `
+                        }
+                        tbody_html+= `</tr>`
+                    }
+
+                    // $.each(response.page_items, function (index, transaction) {
+                    //     tbody_html += `
+                    //         <tr>
+                    //             <td>${index + 1}</td>
+                    //             <td>${transaction.updated_at}</td>
+                    //             <td>${transaction.transaction_number}</td>
+                    //             <td>${transaction.transaction_type}</td>
+                    //             <td>${transaction.rate}</td>
+                    //             <td>${transaction.quantity}</td>
+                    //             <td>${transaction.amount}</td>
+                    //             <td>${transaction.gst_percentage}</td>
+                    //             <td>${transaction.amount_with_gst}</td>
+                    //         </tr>
+                    //     `;
+                    // });
+
+                    $('.table-responsive tbody').html(tbody_html);
+                    $('.submit-btn').text('Submit');
+                    $('.submit-btn').prop('disabled', false);
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', false);
+                // locationAfterMessageStore(error.responseJSON.detail, 'error');
+                $('.success-msg-txt').text("");
+                $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
+                $('.error-msg-txt').addClass('text-danger');
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    });
+    
+    $(document).on('click', '.generate_and_download', function (e) {
+        e.preventDefault();
+
+        // Get the file type from the clicked button's attribute
+        var fileType = $(this).attr('file_type');
+
+        var filename = "Inventory Storewise";
+
+        // Generate and download Excel or CSV file
+        if (fileType === 'xlsx') {
+            // Create workbook for Excel file
+            var wb = XLSX.utils.book_new();
+
+            // Loop through each table and add it as a separate sheet in the Excel file
+            $('.table').each(function(index) {
+                var ws_data = [[]];
+                var sheet_name = $(this).prev('h5').text();
+
+                // Extract table data
+                $(this).find('thead th').each(function() {
+                    ws_data[0].push($(this).text());
+                });
+
+                $(this).find('tbody tr').each(function() {
+                    var row_data = [];
+                    $(this).find('td').each(function() {
+                        row_data.push($(this).text());
+                    });
+                    ws_data.push(row_data);
+                });
+
+                // Add worksheet to workbook
+                var ws = XLSX.utils.aoa_to_sheet(ws_data);
+                XLSX.utils.book_append_sheet(wb, ws, sheet_name);
+            });
+
+            // Download Excel file
+            XLSX.writeFile(wb, filename + '.xlsx');
+        } 
+        
+        else if (fileType === 'csv') {
+        // Initialize CSV content
+        var csvContent = '';
+
+        // Loop through each table and generate CSV content for each
+        $('.table').each(function(index) {
+            var sheet_name = $(this).prev('h5').text();
+
+            // Append sheet name to CSV content
+            csvContent += sheet_name + '\n';
+
+            // Extract table data and append to CSV content
+            $(this).find('thead th').each(function() {
+                csvContent += '"' + $(this).text().replace(/"/g, '""') + '",'; // Surround with double quotes and escape existing quotes
+            });
+            csvContent = csvContent.slice(0, -1); // Remove trailing comma
+            csvContent += '\n';
+
+            $(this).find('tbody tr').each(function() {
+                $(this).find('td').each(function() {
+                    csvContent += '"' + $(this).text().replace(/"/g, '""') + '",'; // Surround with double quotes and escape existing quotes
+                });
+                csvContent = csvContent.slice(0, -1); // Remove trailing comma
+                csvContent += '\n';
+            });
+
+            // Add sheet separator
+            csvContent += '\n';
+        });
+
+        // Create Blob and download CSV file
+        var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+        saveAs(blob, filename + '.csv');
+    }        
+        else if (fileType === 'pdf') {
+            window.jsPDF = window.jspdf.jsPDF
+            // Initialize jsPDF
+            var doc = new jsPDF();
+
+            // Loop through each table and generate PDF content for each
+            $('.table').each(function(index) {
+                // Extract store name
+                var tableName = $(this).prev('h5').text();
+
+                // Add store name as heading
+                doc.text(tableName, 10, 10);
+
+                // Extract table data
+                var headers = [];
+                var data = [];
+
+                $(this).find('thead th').each(function() {
+                    headers.push($(this).text());
+                });
+
+                $(this).find('tbody tr').each(function() {
+                    var row = [];
+                    $(this).find('td').each(function() {
+                        row.push($(this).text());
+                    });
+                    data.push(row);
+                });
+
+                // Generate PDF table
+                doc.autoTable({
+                    head: [headers],
+                    body: data,
+                    startY: 20 // Start table below heading
+                });
+
+                // Add page break if not the last table
+                if (index < $('.table').length - 1) {
+                    doc.addPage();
+                }
+            });
+
+            // Download PDF file
+            doc.save(filename + '.pdf');
+        }
+    });
+
+    
+</script>
+{% endblock %}

@@ -190,14 +190,14 @@
         
         {% if request.user.is_superuser == 1 or 'view_item'|get_session_permission:request is not None %}
         <li
-        class="{% if request.path == '/report-item-tracking-report' or request.path == '/report-inventory-summary' or request.path == '/report-inventory-storewise' or request.path == '/report-stock-transfer' or request.path == '/report-purchase-order-by-vendor' or request.path == '/report-purchase-order-by-item' or request.path == '/report-active-purchase-order' %}open active{% endif %}"
+        class="{% if request.path == '/report-item-tracking-report' or request.path == '/report-inventory-summary' or request.path == '/report-inventory-storewise' or request.path == '/report-stock-transfer' or request.path == '/report-purchase-order-by-vendor' or request.path == '/report-purchase-order-by-item' or request.path == '/report-active-purchase-order' or  request.path == '/report-active-purchase-materialIssue' or request.path == '/report-active-vendor-Reciept-materialIssue' %}open active{% endif %}"
         >
             <a href="javascript:void(0)"><i data-feather="layout"></i>
                 <span>Reports</span><i class="accordion-icon fa fa-angle-left"></i>
             </a>
             <ul 
             class="sub-menu"
-            style="display: {% if request.path == '/report-item-tracking-report' or request.path == '/report-inventory-summary' or request.path == '/report-inventory-storewise' or request.path == '/report-stock-transfer' or request.path == '/report-purchase-order-by-vendor' or request.path == '/report-purchase-order-by-item' or request.path == '/report-active-purchase-order' %}block{% else %}none{% endif %};"
+            style="display: {% if request.path == '/report-item-tracking-report' or request.path == '/report-inventory-summary' or request.path == '/report-inventory-storewise' or request.path == '/report-stock-transfer' or request.path == '/report-purchase-order-by-vendor' or request.path == '/report-purchase-order-by-item' or request.path == '/report-active-purchase-order' or request.path == '/report-active-purchase-materialIssue' or request.path == '/report-active-vendor-Reciept-materialIssue' %}block{% else %}none{% endif %};"
             >
                 {% if request.user.is_superuser == 1 or 'view_item'|get_session_permission:request is not None %}
                 <li class="{% if request.path == '/report-item-tracking-report' %} active {% endif %}">
@@ -259,6 +259,16 @@
                         </li>
                         {% endif %}
                     </ul>
+                </li>
+                {% endif %}
+                {% if request.user.is_superuser == 1 or 'view_item_stock_report'|get_session_permission:request is not None %}
+                <li class="{% if request.path == '/report-active-purchase-materialIssue' %}active{% endif %}">
+                    <a href="{% url 'superuser:reportActivePurchaseMaterialIssue' %}">Purchase and MateialIssue</a>
+                </li>
+                {% endif %}
+                {% if request.user.is_superuser == 1 or 'view_store'|get_session_permission:request is not None %}
+                <li class="{% if request.path == '/report-active-vendor-Reciept-materialIssue' %}active{% endif %}">
+                    <a href="{% url 'superuser:reportActiveVendorIssueReciept' %}">Vendor JobOrder Issue and Reciept</a>
                 </li>
                 {% endif %}
             </ul>

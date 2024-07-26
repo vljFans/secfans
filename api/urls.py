@@ -163,6 +163,8 @@ urlpatterns = [
     path('report-purchase-order-by-vendor', views.reportPurchaseOrderByVendor, name='reportPurchaseOrderByVendor'),
     path('report-purchase-order-by-item', views.reportPurchaseOrderByItem, name='reportPurchaseOrderByItem'),
     path('report-active-purchase-order', views.reportActivePurchaseOrder, name='reportActivePurchaseOrder'),
+    path('report-active-purchase-MaterialIssue', views.reportPurchaseMaterailIssue, name='reportPurchaseMaterailIssue'),
+    path('report-active-vendor-IssueRecep', views.reportVendorIssueRecp, name='reportVendorIssueRecp'),
 
     path('corn-job-store-item-quantity-update', views.cornJobStoreItemQuantityUpdate, name='cornJobStoreItemQuantityUpdate'),
 ]
