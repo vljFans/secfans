@@ -97,6 +97,12 @@ class Configuration_User(models.Model):
     client_work_address = models.CharField(max_length=50, blank=True, null=True)
     client_gst = models.CharField(max_length=50, blank=True, null=True)
     client_contact = models.CharField(max_length=50, blank=True, null=True)
+    finacial_year_start = models.DateField(blank=True, null=True)
+    finacial_year_end =models.DateField(blank=True, null=True)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
 
 
     def __str__(self):
