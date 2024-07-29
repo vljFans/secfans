@@ -144,7 +144,6 @@
                 $('.submit-btn').text('Submitting...');
                 $('.submit-btn').prop('disabled', false);
                 if (response.status == 200) {
-                    alert(response.message)
                     locationAfterMessageStore(response.message, 'success', "{% url 'superuser:clientConfigList' %}");
                 } else {
                     alert(response.message);
