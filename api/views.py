@@ -759,6 +759,65 @@ def vendorExport(request):
         'name':  tmpname
     })
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def configUserAdd(request):
+    context = {}
+    print(request.POST)
+    try:
+        with transaction.atomic():
+           userConfigadd = models.Configuration_User()
+           userConfigadd.client_name = request.POST['name']
+           userConfigadd.client_address = request.POST['client_address']
+           userConfigadd.client_work_address  = request.POST['client_work_address']
+           userConfigadd.client_gst = request.POST['gst_no']
+           userConfigadd.client_contact = request.POST['contact_no']
+           userConfigadd.finacial_year_start = request.POST['finacial_year_start']
+           userConfigadd.finacial_year_end = request.POST['finacial_year_end']
+           userConfigadd.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "client config added successfully"
+        })
+    except Exception:
+        context.update({
+            'status': 526.1,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def configUserEdit(request):
+    context = {}
+    print(request.POST)
+    try:
+        with transaction.atomic():
+           userConfigadd = models.Configuration_User.objects.get(pk=request.POST['pk'])
+           userConfigadd.client_name = request.POST['name']
+           userConfigadd.client_address = request.POST['client_address']
+           userConfigadd.client_work_address  = request.POST['client_work_address']
+           userConfigadd.client_gst = request.POST['gst_no']
+           userConfigadd.client_contact = request.POST['contact_no']
+           userConfigadd.finacial_year_start = request.POST['finacial_year_start']
+           userConfigadd.finacial_year_end = request.POST['finacial_year_end']
+           userConfigadd.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "client config Update successfully"
+        })
+    except Exception:
+        context.update({
+            'status': 526.2,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

@@ -33,6 +33,10 @@ urlpatterns = [
     path('user-add', views.userAdd, name='userAdd'),
     path('user-edit/<int:id>', views.userEdit, name='userEdit'),
 
+    path('client-config-list', views.clientConfigList, name='clientConfigList'),
+    path('client-config-add', views.clientConfigAdd, name='clientConfigAdd'),
+     path('client-config-edit/<int:id>', views.clientConfigEdit, name='clientConfigEdit'),
+
     path('vendor-list', views.vendorList, name='vendorList'),
     path('vendor-add', views.vendorAdd, name='vendorAdd'),
     path('vendor-edit/<int:id>', views.vendorEdit, name='vendorEdit'),

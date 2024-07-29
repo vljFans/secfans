@@ -150,12 +150,40 @@ def roleView(request, id):
 
 
 @login_required
+def clientConfigList(request):
+    configList = models.Configuration_User.objects.all()
+    context.update({
+        'configList': configList,
+        'page_title': "Client Config ",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "ClientConfig", 'url': reverse('superuser:clientConfigList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/client config/list.html', context)
+
+@login_required
+def clientConfigAdd(request):
+    context.update({
+        'page_title': "Client Config Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "ClientConfig", 'url': reverse('superuser:clientConfigList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/client config/add.html', context)
+
+@login_required
+def clientConfigEdit(request,id):
+    configUser = models.Configuration_User.objects.get(pk=id)
+    context.update({
+        'configUser':configUser,
+        'page_title': "Client Config Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "ClientConfig", 'url': reverse('superuser:clientConfigList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/client config/edit.html', context)
+
+@login_required
 def userList(request):
     context.update({
         'page_title': "User List",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "User", 'url': reverse('superuser:userList')}, {'name': "List"}]
     })
-    return render(request, 'portal/User/list.html', context)
+    return render(request, 'portal/client config/list.html', context)
 
 
 @login_required

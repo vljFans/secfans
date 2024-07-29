@@ -36,6 +36,9 @@ urlpatterns = [
     path('vendor-delete', views.vendorDelete, name='vendorDelete'),
     path('vendor-export', views.vendorExport, name='vendorExport'),
 
+    path('config-user-add', views.configUserAdd, name='configUserAdd'),
+    path('config-user-edit', views.configUserEdit, name='configUserEdit'),
+
     path('customer-list', views.customerList, name='customerList'),
     path('customer-add', views.customerAdd, name='customerAdd'),
     path('customer-edit', views.customerEdit, name='customerEdit'),
