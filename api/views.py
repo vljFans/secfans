@@ -803,6 +803,7 @@ def configUserEdit(request):
            userConfigadd.client_contact = request.POST['contact_no']
            userConfigadd.finacial_year_start = request.POST['finacial_year_start']
            userConfigadd.finacial_year_end = request.POST['finacial_year_end']
+           userConfigadd.updated_at = datetime.now()
            userConfigadd.save()
         transaction.commit()
         context.update({
@@ -3654,12 +3655,12 @@ def storeTransactionAdd(request):
                     })
                     transaction.rollback()
                     return JsonResponse(context)
-                print('3504')
+                # print('3504')
 
                 models.Store_Transaction_Detail.objects.bulk_create(order_details)
                 storeTransactionHeaderVOut.total_amount = total_amounts
                 storeTransactionHeaderVOut.save()
-                print('3558')
+                # print('3558')
                 order_details = []
                 # -----virtual incomming material deduction from vendore store---------
                 for index, elem in enumerate(request.POST.getlist('item_id')):
@@ -3717,7 +3718,7 @@ def storeTransactionAdd(request):
                 grnTransactionheader.notes = request.POST['notes']
                 # print("3153")
                 grnTransactionheader.save()
-                print("3148")
+                # print("3148")
                
                 order_details = []
                 total_amounts = 0 
@@ -3748,7 +3749,7 @@ def storeTransactionAdd(request):
                             # print('3627')
                             job_order_details= models.Job_Order_Detail.objects.filter(item_id=elem, 
                                                 job_order_header_id= request.POST['purchase_job_order_header_id']).get()
-                            print(job_order_details.quantity_result - Decimal(request.POST.getlist('item_quantity')[index]))
+                            # print(job_order_details.quantity_result - Decimal(request.POST.getlist('item_quantity')[index]))
                             job_order_details.quantity_result -= Decimal(request.POST.getlist('item_quantity')[index]) 
                             # print('3632')
                             job_order_details.updated_at = datetime.now()
@@ -3838,7 +3839,7 @@ def storeTransactionAdd(request):
                             # print('3641')
                             job_order_details= models.Job_Order_Detail.objects.filter(item_id=elem, 
                                                 job_order_header_id= request.POST['purchase_job_order_header_id']).get()
-                            print(request.POST.getlist('item_quantity')[index])
+                            # print(request.POST.getlist('item_quantity')[index])
                             job_order_details.quantity_result -=  Decimal(request.POST.getlist('item_quantity')[index]) 
                             # print('3646')
                             job_order_details.updated_at = datetime.now()
@@ -5412,7 +5413,7 @@ def addGrnDetailisInsTransaction(request):
                             # print('5251')
                             job_order_details= models.Job_Order_Detail.objects.filter(item_id=request.POST.getlist('item_id')[index], 
                                                 job_order_header_id=request.POST['job_order_header_id']).first()
-                            print(job_order_details.quantity_result)
+                            # print(job_order_details.quantity_result)
                             job_order_details.quantity_result += Decimal(request.POST.getlist('rej_quantity')[index] )
                             job_order_details.updated_at = datetime.now()
                             job_order_details.save()
