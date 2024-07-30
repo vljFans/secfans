@@ -72,9 +72,8 @@
                             <div class="col-md-4 mb-3">
                                 <label> Contact Number<span class="required-indicator">*</span></label>
                                 <input type="text" onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                                    maxlength="10" name="contact_no" class="form-control" placeholder="Contact Number" value="{{configUser.client_contact}}"
+                                    maxlength="12" name="contact_no" class="form-control" placeholder="Contact Number" value="{{configUser.client_contact}}"
                                     required>
-                                <div class="invalid-feedback">Enter a 10 digit number.</div>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>Financial Start Year</label>
@@ -87,7 +86,7 @@
                             
                         </div>
                         {% if request.user.is_superuser == 1 or 'add_configuration_user'|get_session_permission:request is not None %}
-                        <button class="btn btn-success submit-btn" type="submit">Submit</button>
+                        <button class="btn btn-success submit-btn" type="submit">Submit</button>        
                         {% endif %}
                     </form>
                 </div>
