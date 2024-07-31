@@ -945,3 +945,16 @@ class Outgoing_Incoming_Ratio_Details(models.Model):
         db_table = 'outgoing_incoming_ratio_details'
         verbose_name_plural = 'outgoing_incoming_ratio_details'
 
+class Test_Corn_Job(models.Model):
+    test_message =  models.CharField(max_length=10, blank=True, null=True)
+   
+    created_at = models.DateTimeField(default=now)
+    
+    def __str__(self):
+        return self.test_message
+
+    class Meta:
+        managed = True
+        db_table = 'test_corn_job'
+        verbose_name_plural = 'test_corn_job'
+
