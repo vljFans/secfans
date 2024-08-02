@@ -39,9 +39,9 @@
         <input type="text" id="search" name="search" style="width: 180px; height: 30px;" value="{{request.GET.keyword}}"
             placeholder="" />
     </div>
-    <!-- <div>
+    <div>
         <button id="cornJob" class="btn btn-success cornJob"> Corn-Job </button>
-    </div> -->
+    </div>
     <!--/ Search box End -->
     <!--================================-->
     <!-- Form Element Start -->
@@ -165,6 +165,22 @@
     }
     $(document).ready(function () {
         // console.log("168");
+        function isLastDayOfMonth(date) {
+                var month = date.getMonth();
+                var year = date.getFullYear();
+                var nextMonth = new Date(year, month + 1, 1);
+                var lastDayOfMonth = new Date(nextMonth - 1);
+                return date.getDate() === lastDayOfMonth.getDate();
+            }
+
+            var today = new Date();
+            if (isLastDayOfMonth(today)) {
+                console.log("Today is the last day of the month.");
+                $('.cornJob').attr('disabled',false)
+            } else {
+                $('.cornJob').prop('disabled', true);
+                console.log("Today is not the last day of the month.");
+            }
         getPhysivcalInspectList(keyword)
     });
 
