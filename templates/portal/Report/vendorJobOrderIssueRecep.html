@@ -29,9 +29,12 @@
             </div>
             <div class="col-md-6">
                 <div class="float-end d-flex justify-content-end" style="padding-top: 10px;">
-                    <button type="button" file_type="pdf" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">PDF</button>
-                    <button type="button" file_type="csv" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">CSV</button>
-                    <button type="button" file_type="xlsx" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">Excel</button>
+                    <button type="button" file_type="pdf" class="mr-3 btn btn-info btn-sm generate_and_download"
+                        style="padding: 4.8px 12.8px 4.8px 12.8px;">PDF</button>
+                    <button type="button" file_type="csv" class="mr-3 btn btn-info btn-sm generate_and_download"
+                        style="padding: 4.8px 12.8px 4.8px 12.8px;">CSV</button>
+                    <button type="button" file_type="xlsx" class="mr-3 btn btn-info btn-sm generate_and_download"
+                        style="padding: 4.8px 12.8px 4.8px 12.8px;">Excel</button>
                 </div>
             </div>
         </div>
@@ -44,11 +47,11 @@
         <div class="row">
             <div class="col-md-2 mb-3">
                 <label>From Date <span class="required-indicator">*</span></label>
-                <input type="date" name="from_date" class="form-control" placeholder="From Date" required>
+                <input type="date" name="from_date" class="form-control" placeholder="From Date" id="to_date" required>
             </div>
             <div class="col-md-2 mb-3">
                 <label>To Date <span class="required-indicator">*</span></label>
-                <input type="date" name="to_date" class="form-control" placeholder="To Date" required>
+                <input type="date" name="to_date" class="form-control" placeholder="To Date" id="from_date" required>
             </div>
             <div class="col-md-3 mb-3">
                 <label>VendoreStore<span class="required-indicator">*</span></label>
@@ -56,9 +59,9 @@
                     <select class="custom-select selectpicker" id="store_id" name="store_id" required>
                         <option value="">Choose...</option>
                         {% for store in stores %}
-                            <option value="{{store.id}}">
-                                {{store.name}}
-                            </option>
+                        <option value="{{store.id}}">
+                            {{store.name}}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
@@ -108,28 +111,28 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                  <th rowspan="2">SlNo</th>
-                                  <th rowspan="2">Date</th>
-                                  <th rowspan="2">Particulars</th>
-                                  <th rowspan="2">Vch Type</th>
-                                  <th rowspan="2">Vch No.</th>
-                                  <th colspan="4" style="text-align: center;">Inwards</th>
-                                  <th colspan="4" style="text-align: center;">Outwards</th>
-                                  <th colspan="4" style="text-align: center;">Closing</th>
+                                    <th rowspan="2">SlNo</th>
+                                    <th rowspan="2">Date</th>
+                                    <th rowspan="2">Particulars</th>
+                                    <th rowspan="2">Vch Type</th>
+                                    <th rowspan="2">Vch No.</th>
+                                    <th colspan="4" style="text-align: center;">Inwards</th>
+                                    <th colspan="4" style="text-align: center;">Outwards</th>
+                                    <th colspan="4" style="text-align: center;">Closing</th>
                                 </tr>
                                 <tr>
-                                  <th>TransQuantity</th> 
-                                  <th>TotalQuantity</th>
-                                  <th>Rate</th>
-                                  <th>Value</th>
-                                  <th>TransQuantity</th> 
-                                  <th>TotalQuantity</th>
-                                  <th>Rate</th>
-                                  <th>Value</th>
-                                  <th>TransQuantity</th> 
-                                  <th>TotalQuantity</th>
-                                  <th>Rate</th>
-                                  <th>Value</th>
+                                    <th>TransQuantity</th>
+                                    <th>TotalQuantity</th>
+                                    <th>Rate</th>
+                                    <th>Value</th>
+                                    <th>TransQuantity</th>
+                                    <th>TotalQuantity</th>
+                                    <th>Rate</th>
+                                    <th>Value</th>
+                                    <th>TransQuantity</th>
+                                    <th>TotalQuantity</th>
+                                    <th>Rate</th>
+                                    <th>Value</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -151,8 +154,9 @@
 {% block js %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.2.1/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.21/jspdf.plugin.autotable.min.js"></script>
 <script>
     // Example starter JavaScript for disabling form submissions if there are invalid fields
     (function () {
@@ -175,7 +179,7 @@
 </script>
 
 <script>
-    
+
     $('.selectpicker').select2({
         placeholder: ''
     });
@@ -206,12 +210,12 @@
 
     // });
 
-    $(document).on('change', '#store_id', function (){
+    $(document).on('change', '#store_id', function () {
         let store_id = $(this).val();
         console.log(store_id)
         $(document).ready(function () {
             $.ajax({
-                url: "{% url 'api:storeItemList' %}?storeId="+store_id,
+                url: "{% url 'api:storeItemList' %}?storeId=" + store_id,
                 type: 'GET',
                 data: ({}),
                 headers: {
@@ -253,10 +257,10 @@
             success: function (response) {
                 if (response.status == 200) {
                     let data = response.page_items
-                    console.log(data , 'hi');
+                    console.log(data, 'hi');
                     var tbody_html = ``;
-                   
-                    for(let index = 0 ; index < data.length ; index++){
+
+                    for (let index = 0; index < data.length; index++) {
                         // console.log(data[index+1].transaction_date);
                         const element = data[index];
                         tbody_html += `<tr>
@@ -266,10 +270,10 @@
                                      <td>${element.transaction_type_name}</td>
                                      <td></td>
                                 `
-                        console.log(element.transaction_type_name );
-                        if(element.transaction_type_name == 'RECIEPT' || element.transaction_type_name == 'OPENING'){
-                           console.log('278');
-                            tbody_html+= `
+                        console.log(element.transaction_type_name);
+                        if (element.transaction_type_name == 'RECIEPT' || element.transaction_type_name == 'OPENING') {
+                            console.log('278');
+                            tbody_html += `
                                            <td>${parseFloat(element.tranquantity).toString()}</td>
                                            <td>${element.totquantity}</td>
                                            <td>${element.rate}</td>
@@ -283,11 +287,11 @@
                                            <td>${element.rate}</td>
                                            <td>${element.amount}</td>
                                            `
-                                           
+
                         }
-                        else{
+                        else {
                             console.log('292');
-                            tbody_html+= ` <td></td>
+                            tbody_html += ` <td></td>
                                            <td></td>
                                            <td></td>
                                            <td></td>
@@ -301,7 +305,7 @@
                                            <td>${element.amount}</td>
                                            `
                         }
-                        tbody_html+= `</tr>`
+                        tbody_html += `</tr>`
                     }
 
                     // $.each(response.page_items, function (index, transaction) {
@@ -323,7 +327,7 @@
                     $('.table-responsive tbody').html(tbody_html);
                     $('.submit-btn').text('Submit');
                     $('.submit-btn').prop('disabled', false);
-                } 
+                }
                 else {
                     alert(response.message);
                 }
@@ -339,128 +343,265 @@
             }
         });
     });
-    
+
     $(document).on('click', '.generate_and_download', function (e) {
         e.preventDefault();
 
         // Get the file type from the clicked button's attribute
         var fileType = $(this).attr('file_type');
 
-        var filename = "Inventory Storewise";
+        var filename = "Vendor Job Order Issue Recap";
 
         // Generate and download Excel or CSV file
         if (fileType === 'xlsx') {
-            // Create workbook for Excel file
-            var wb = XLSX.utils.book_new();
+            const ExcelJS = window.ExcelJS; // Ensure ExcelJS is available in the global scope
 
-            // Loop through each table and add it as a separate sheet in the Excel file
-            $('.table').each(function(index) {
-                var ws_data = [[]];
+            // Fetch the table element
+            const table = $('.table');
+
+            // Create a new workbook and worksheet
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('Sheet 1'); // Set the sheet name to "Sheet 1"
+
+            // Determine the number of rows in header
+            const thead_tr_count = table.find('thead tr').length;
+
+            // Determine the number of columns
+            const col_count = table.find('tbody tr:first td').length;
+
+            const isMerged = cell => cell.model && cell.model.master;
+
+            // Add headers to worksheet with bold and centered text
+            table.find('thead tr').each(function (i) {
+                const row_no = i + 1
+                const row = worksheet.getRow(row_no);
+                let col_no = 1
+                $(this).find('th').each(function (index) {
+                    while (isMerged(row.getCell(col_no))) {
+                        col_no++;
+                    }
+                    // creating cell
+                    let cell = row.getCell(col_no)
+                    // setting value
+                    cell.value = $(this).text();
+                    // making merges on the cells
+                    if ($(this).attr("rowspan")) {
+                        worksheet.mergeCells(row_no, col_no, (row_no + Number($(this).attr("rowspan")) - 1), col_no);
+                    }
+                    else if ($(this).attr("colspan")) {
+                        worksheet.mergeCells(row_no, col_no, row_no, (col_no + Number($(this).attr("colspan")) - 1));
+                    }
+                    col_no++;
+                })
+                row.eachCell({ includeEmpty: true }, cell => {
+                    row.eachCell({ includeEmpty: true }, cell => {
+                        cell.style = {
+                            fill: {
+                                type: 'pattern',
+                                pattern: 'solid',
+                                fgColor: { argb: 'FF969696' } // Background color
+                            },
+                            font: {
+                                bold: true // Bold text
+                            },
+                            alignment: {
+                                vertical: 'middle', // Vertical alignment
+                                horizontal: 'center' // Horizontal alignment
+                            },
+                            border: {
+                                top: { style: 'thin', color: { argb: 'FF000000' } }, // Top border
+                                left: { style: 'thin', color: { argb: 'FF000000' } }, // Left border
+                                bottom: { style: 'thin', color: { argb: 'FF000000' } }, // Bottom border
+                                right: { style: 'thin', color: { argb: 'FF000000' } } // Right border
+                            }
+                        };
+                    });
+                });
+            });
+
+            // Add data rows to worksheet
+            table.find('tbody tr').each(function () {
+                const dataRow = [];
+                $(this).find('td').each(function () {
+                    const cellText = $(this).text();
+                    // Try to parse the cell text as a number
+                    const cellValue = isNaN(cellText) ? cellText : Number(cellText);
+                    dataRow.push(cellValue);
+                });
+                const row = worksheet.addRow(dataRow);
+                row.eachCell({ includeEmpty: true }, cell => {
+                    cell.style.border = {
+                        top: { style: 'thin', color: { argb: 'FF000000' } },
+                        left: { style: 'thin', color: { argb: 'FF000000' } },
+                        bottom: { style: 'thin', color: { argb: 'FF000000' } },
+                        right: { style: 'thin', color: { argb: 'FF000000' } }
+                    };
+                });
+            });
+
+            // Auto adjust column widths
+            worksheet.columns.forEach(column => {
+                let maxLength = 0;
+                column.eachCell({ includeEmpty: true }, cell => {
+                    const cellLength = cell.value ? cell.value.toString().length : 0;
+                    maxLength = Math.max(maxLength, cellLength);
+                });
+                column.width = maxLength + 2; // Add some padding
+            });
+            // Save workbook to file
+            workbook.xlsx.writeBuffer().then(buffer => {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+                a.download = filename + '.xlsx';
+                a.click();
+            });
+
+        }
+
+        else if (fileType === 'csv') {
+            // Initialize CSV content
+            var csvContent = '';
+
+            // Loop through each table and generate CSV content for each
+            $('.table').each(function (index) {
                 var sheet_name = $(this).prev('h5').text();
 
-                // Extract table data
-                $(this).find('thead th').each(function() {
-                    ws_data[0].push($(this).text());
-                });
+                // Append sheet name to CSV content
+                csvContent += sheet_name + '\n';
 
-                $(this).find('tbody tr').each(function() {
-                    var row_data = [];
-                    $(this).find('td').each(function() {
-                        row_data.push($(this).text());
-                    });
-                    ws_data.push(row_data);
-                });
-
-                // Add worksheet to workbook
-                var ws = XLSX.utils.aoa_to_sheet(ws_data);
-                XLSX.utils.book_append_sheet(wb, ws, sheet_name);
-            });
-
-            // Download Excel file
-            XLSX.writeFile(wb, filename + '.xlsx');
-        } 
-        
-        else if (fileType === 'csv') {
-        // Initialize CSV content
-        var csvContent = '';
-
-        // Loop through each table and generate CSV content for each
-        $('.table').each(function(index) {
-            var sheet_name = $(this).prev('h5').text();
-
-            // Append sheet name to CSV content
-            csvContent += sheet_name + '\n';
-
-            // Extract table data and append to CSV content
-            $(this).find('thead th').each(function() {
-                csvContent += '"' + $(this).text().replace(/"/g, '""') + '",'; // Surround with double quotes and escape existing quotes
-            });
-            csvContent = csvContent.slice(0, -1); // Remove trailing comma
-            csvContent += '\n';
-
-            $(this).find('tbody tr').each(function() {
-                $(this).find('td').each(function() {
+                // Extract table data and append to CSV content
+                $(this).find('thead th').each(function () {
                     csvContent += '"' + $(this).text().replace(/"/g, '""') + '",'; // Surround with double quotes and escape existing quotes
                 });
                 csvContent = csvContent.slice(0, -1); // Remove trailing comma
                 csvContent += '\n';
+
+                $(this).find('tbody tr').each(function () {
+                    $(this).find('td').each(function () {
+                        csvContent += '"' + $(this).text().replace(/"/g, '""') + '",'; // Surround with double quotes and escape existing quotes
+                    });
+                    csvContent = csvContent.slice(0, -1); // Remove trailing comma
+                    csvContent += '\n';
+                });
+
+                // Add sheet separator
+                csvContent += '\n';
             });
 
-            // Add sheet separator
-            csvContent += '\n';
-        });
+            // Create Blob and download CSV file
+            var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+            saveAs(blob, filename + '.csv');
+        }
 
-        // Create Blob and download CSV file
-        var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-        saveAs(blob, filename + '.csv');
-    }        
         else if (fileType === 'pdf') {
-            window.jsPDF = window.jspdf.jsPDF
-            // Initialize jsPDF
-            var doc = new jsPDF();
+            let from_date = new Date($('#from_date').val()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            let to_date = new Date($('#to_date').val()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            let item_name = $('#item_id option:selected').text().trim();
+            let store_name = $('#store_id option:selected').text().trim();
+            const name = "{{config.client_name}}";
+            const address = "{{config.client_address}}";
+            const work_address = "{{config.client_work_address}}";
+            const gst = "{{config.client_gst}}";
+            const contact = "{{config.client_contact}}";
 
-            // Loop through each table and generate PDF content for each
-            $('.table').each(function(index) {
-                // Extract store name
-                var tableName = $(this).prev('h5').text();
+            let headingLines = [
+                { text: name, bold: true },
+                address,
+                work_address,
+                `Contact - ${contact}`,
+                `GST NO: ${gst}`,
+                { text: item_name, bold: true },
+                `Godown : ${store_name}`,
+                `${from_date} to ${to_date}`
+            ];
 
-                // Add store name as heading
-                doc.text(tableName, 10, 10);
+            let { jsPDF } = window.jspdf;
+            let doc = new jsPDF();
 
-                // Extract table data
-                var headers = [];
-                var data = [];
+            // Add the heading text
+            let y = 15;
+            headingLines.forEach(line => {
+                if (typeof line === 'string') {
+                    doc.setFontSize(10); // Set font size for non-bold text
+                    doc.setFont("Helvetica", "normal"); // Set font to normal
+                    let textWidth = doc.getTextWidth(line);
+                    let x = (doc.internal.pageSize.width - textWidth) / 2; // Center align horizontally
+                    doc.text(line, x, y); // Position the heading
+                } else if (typeof line === 'object' && line.bold) {
+                    doc.setFontSize(12); // Set font size for bold text
+                    doc.setFont("Helvetica", "bold"); // Set font to bold
+                    let textWidth = doc.getTextWidth(line.text);
+                    let x = (doc.internal.pageSize.width - textWidth) / 2; // Center align horizontally
+                    doc.text(line.text, x, y); // Position the heading
+                }
+                y += 6; // Adjust vertical spacing between lines
 
-                $(this).find('thead th').each(function() {
-                    headers.push($(this).text());
-                });
-
-                $(this).find('tbody tr').each(function() {
-                    var row = [];
-                    $(this).find('td').each(function() {
-                        row.push($(this).text());
-                    });
-                    data.push(row);
-                });
-
-                // Generate PDF table
-                doc.autoTable({
-                    head: [headers],
-                    body: data,
-                    startY: 20 // Start table below heading
-                });
-
-                // Add page break if not the last table
-                if (index < $('.table').length - 1) {
-                    doc.addPage();
+                // Add a black line after the GST NO and before the item text
+                if (line === `GST NO: ${gst}`) {
+                    doc.setDrawColor(0); // Set color to black
+                    doc.setLineWidth(0.2); // Set line width
+                    let lineX = (doc.internal.pageSize.width - 100) / 2; // Center the line
+                    doc.line(lineX, y - 4, lineX + 100, y - 4); // Draw the line
+                    y += 1; // Adjust y position for the line
                 }
             });
 
-            // Download PDF file
+
+
+            // Fetch table data to determine column types
+            const $table = $('.table');
+            const $rows = $table.find('tbody tr');
+            const colCount = $table.find('thead th').length;
+
+            let columnTypes = new Array(colCount).fill('text'); // Default all columns to 'text'
+
+            $rows.each(function () {
+                $(this).find('td').each(function (index) {
+                    const cellText = $(this).text().trim();
+                    if (!isNaN(cellText) && cellText !== '') {
+                        columnTypes[index] = 'number'; // Mark column as 'number' if it contains numeric data
+                    }
+                });
+            });
+
+            // Set column styles based on detected column types
+            let columnStyles = {};
+            columnTypes.forEach((type, index) => {
+                if (type === 'number') {
+                    columnStyles[index] = { halign: 'right' }; // Right align numeric columns
+                }
+            });
+
+            // Add the table below the heading
+            doc.autoTable({
+                html: '.table',
+                theme: 'grid',
+                styles: {
+                    fontSize: 6 // Reduce font size
+                },
+                headStyles: {
+                    halign: 'center', // Center align header cell text horizontally
+                    valign: 'middle', // Middle align header cell text vertically
+                    lineWidth: 0.1, // Borders between header cells
+                    cellPadding: 1 // Adjust padding if needed
+                },
+                bodyStyles: {
+                    cellPadding: 1 // Adjust padding for body cells
+                },
+                columnStyles: columnStyles, // Apply dynamic column styles
+                margin: { top: 0, left: 0, right: 0, bottom: 0 }, // Adjust margin to account for heading
+                startY: 70, // Position the table below the heading
+                didDrawPage: function (data) {
+                    // Custom margin around the page
+                    doc.setDrawColor(0); // Border color
+                    doc.rect(data.settings.margin.left, data.settings.margin.top, doc.internal.pageSize.width - data.settings.margin.left - data.settings.margin.right, doc.internal.pageSize.height - data.settings.margin.top - data.settings.margin.bottom);
+                }
+            });
+
             doc.save(filename + '.pdf');
         }
     });
 
-    
+
 </script>
 {% endblock %}

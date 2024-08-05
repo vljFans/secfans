@@ -1383,7 +1383,9 @@ def reportActivePurchaseOrder(request):
 @login_required
 def reportActivePurchaseMaterialIssue(request):
     stores = models.Store.objects.filter(Q(store_item__isnull=False),Q(vendor_id__isnull=True)).distinct()
+    config = models.Configuration_User.objects.first()
     context.update({
+        'config': config,
         'stores': stores,
         'page_title': "Purchase and Material Issue ",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports"}, {'name': "Purchase and Material Issue"}, {'name': "Active Purchase and Material Issue", 'url': reverse('superuser:reportActivePurchaseMaterialIssue')}]
@@ -1393,8 +1395,10 @@ def reportActivePurchaseMaterialIssue(request):
 @login_required
 def reportActiveVendorIssueReciept(request):
     stores = models.Store.objects.filter(Q(store_item__isnull=False),Q(vendor_id__isnull=False)).distinct()
+    config = models.Configuration_User.objects.first()
     context.update({
         'stores': stores,
+        'config': config,
         'page_title': "Vendor JobOrder Material Issue and Reciept ",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports"}, {'name': "VendorJobOrderIssueReciept"}, {'name': "Active VendorJobOrderIssueReciept", 'url': reverse('superuser:reportActiveVendorIssueReciept')}]
     })
