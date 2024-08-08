@@ -803,6 +803,26 @@ def configUserEdit(request):
            userConfigadd.client_contact = request.POST['contact_no']
            userConfigadd.finacial_year_start = request.POST['finacial_year_start']
            userConfigadd.finacial_year_end = request.POST['finacial_year_end']
+           userConfigadd.pan_no = request.POST['pan_no']
+           userConfigadd.cin_no = request.POST['cin_no']
+           userConfigadd.ice_code = request.POST['ice_code']
+           userConfigadd.udyam_no = request.POST['udyam_no']
+           userConfigadd.mail_id = request.POST['email']
+           userConfigadd.website = request.POST['website']
+           print('812')
+           if 'photo' in request.FILES.keys():
+            print('814')
+            photo = request.FILES['photo']
+            print(photo)
+            directory_path = settings.MEDIA_ROOT + "/" + env("CLIENT_MEDIA_COMPANY_LOGO") + "/photo/"
+            print(directory_path)
+            path = Path(directory_path)
+            path.mkdir(parents=True, exist_ok=True)
+            fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + env("CLIENT_MEDIA_COMPANY_LOGO") + "/photo/")
+            saved_file = fs.save(photo.name, photo)
+            photo_path = settings.MEDIA_ROOT + "/" + env("CLIENT_MEDIA_COMPANY_LOGO") + "/photo/" + saved_file
+            userConfigadd.logo = photo_path
+            print('823')
            userConfigadd.updated_at = datetime.now()
            userConfigadd.save()
         transaction.commit()
@@ -1045,6 +1065,7 @@ def customerEdit(request):
                 photo = request.FILES['photo']
                 directory_path = settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
                     "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/"
+                print(directory_path,'1068')
                 path = Path(directory_path)
                 path.mkdir(parents=True, exist_ok=True)
                 fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
