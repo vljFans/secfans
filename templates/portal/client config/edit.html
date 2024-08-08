@@ -62,6 +62,13 @@
                                 <input type="text" name="client_work_address" class="form-control"
                                 value="{{configUser.client_work_address}}"  placeholder="client work address">
                             </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label> Contact Number<span class="required-indicator">*</span></label>
+                                <input type="text" onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                    maxlength="12" name="contact_no" class="form-control" placeholder="Contact Number" value="{{configUser.client_contact}}"
+                                    required>
+                            </div>
                             <div class="col-md-4 mb-3">
                                 <label>GST Number <span class="required-indicator">*</span></label>
                                 <input type="text" 
@@ -70,10 +77,48 @@
                                 
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label> Contact Number<span class="required-indicator">*</span></label>
-                                <input type="text" onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                                    maxlength="12" name="contact_no" class="form-control" placeholder="Contact Number" value="{{configUser.client_contact}}"
-                                    required>
+                                <label>PAN No</label>
+                                <input type="text" 
+                                     name="pan_no" class="form-control" placeholder="PAN Number" value="{{configUser.pan_no}}"
+                                    >
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label> CIN  Numbe</label>
+                                <input type="text" 
+                                     name="cin_no" class="form-control" placeholder="CIN  Number" value="{{configUser.cin_no}}"
+                                    >
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>IEC Code</label>
+                                <input type="text" 
+                                     name="ice_code" class="form-control" placeholder=" IEC CODE" value="{{configUser.ice_code}}"
+                                    >
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label>Udyam no</label>
+                                <input type="text"
+                                     name="udyam_no" class="form-control" placeholder="Udyam no" value="{{configUser.udyam_no}}"
+                                    >
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label> Email</label>
+                                <input type="email" 
+                                     name="email" class="form-control" placeholder="email" value="{{configUser.mail_id}}"
+                                    ><div class="invalid-feedback"> Please provide a valid email.</div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Website</label>
+                                <input type="text" 
+                                     name="website" class="form-control" placeholder="website" value="{{configUser.mail_id}}"
+                                    >
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label> company logo<span class="required-indicator">*</span></label>
+                                <input type="file" name="photo" class="form-control" placeholder="photo" accept="image/*">
+                                {% if configUser.logo is not None %}
+                                <a href="{{configUser.logo}}" target="_blank" rel="noopener noreferrer">Preview</a>
+                                {% endif %}
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>Financial Start Year</label>
