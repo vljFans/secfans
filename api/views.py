@@ -4817,6 +4817,7 @@ def jobOrderEdit(request):
             jobOrderHeader.save()
             jobOrderHeader.job_order_detail_set.all().delete()
             job_order_details = []
+            outInDetailRatio = []
 
             # out going incomming ratio table updation
             if (request.POST.getlist('incoming_item_id')) and (request.POST.getlist('outgoing_item_id')) and ('with_item' in request.POST):
