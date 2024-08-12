@@ -183,7 +183,7 @@ def userList(request):
         'page_title': "User List",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "User", 'url': reverse('superuser:userList')}, {'name': "List"}]
     })
-    return render(request, 'portal/client config/list.html', context)
+    return render(request, 'portal/User/list.html', context)
 
 
 @login_required

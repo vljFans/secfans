@@ -15,7 +15,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.hashers import make_password, check_password
 from datetime import datetime, timedelta
 from django.utils.timezone import now
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 from django.db import transaction
 from django.db.models import Q
 from django.conf import settings
@@ -29,6 +29,8 @@ import csv
 from fpdf import FPDF
 from django.db.models import Avg, Count, Min, Sum
 from fractions import Fraction
+import pandas as pd
+from django.contrib.auth.models import Permission
 
 
 env = environ.Env()
@@ -51,17 +53,57 @@ class CustomPaginator:
         return math.ceil(len(self.items) / self.per_page)
 
 
+def set_user_permissions_in_session(user, request):
+    # Fetch the role associated with the user
+    role = user.role
+
+    # If the user has a role, fetch the permissions associated with that role
+    if role:
+        permissions = models.Role_Permission.objects.filter(role=role, status=1, deleted=0, permitted=1)
+        
+        # Create a list of dictionaries to mimic what you're checking in `get_session_permission`
+        role_permissions = [{'permission__codename': perm.permission.codename} for perm in permissions]
+
+        # Store this list in the session
+        request.session['role_permissions'] = role_permissions
+    else:
+        # If no role is assigned, the user has no permissions
+        request.session['role_permissions'] = []
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def loginUser(request):
     context = {}
-    user = models.User.objects.get(pk=request.user.id)
-    if user is not None:
-        login(request, user)
-        context.update({'status': 200, 'message': ""})
-    else:
+    try:
+        user = models.User.objects.get(pk=request.user.id)
+        if user is not None:
+            login(request, user)
+
+            # Set user permissions in session
+            set_user_permissions_in_session(user, request)
+
+            context.update({'status': 200, 'message': ""})
+        else:
+            context.update({'status': 501, 'message': "User Not Found."})
+    except models.User.DoesNotExist:
         context.update({'status': 501, 'message': "User Not Found."})
+    
     return Response(context)
+
+
+
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def loginUser(request):
+#     context = {}
+#     user = models.User.objects.get(pk=request.user.id)
+#     if user is not None:
+#         login(request, user)
+#         context.update({'status': 200, 'message': ""})
+#     else:
+#         context.update({'status': 501, 'message': "User Not Found."})
+#     return Response(context)
 
 
 @api_view(['POST'])
@@ -2130,11 +2172,12 @@ def itemExport(request):
         ws['C1'] = "Item Category"
         ws['D1'] = "UOM"
         ws['E1'] = "Price"
+        ws['F1'] = "HSN Code"
 
         # Rows can also be appended
         for each in page_items:
             ws.append([each.name, each.item_type.name,
-                      each.item_type.item_category.name, each.uom.name, each.price])
+                      each.item_type.item_category.name, each.uom.name, each.price, each.hsn_code])
 
         # Save the file
         wb.save(settings.MEDIA_ROOT + '/reports/' + tmpname)
@@ -2160,10 +2203,10 @@ def itemExport(request):
 
         with open(os.path.join(directory_path, tmpname), 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(["Name", "Item Type", "Item Category", "UOM", "Price"])
+            writer.writerow(["Name", "Item Type", "Item Category", "UOM", "Price", "HSN Code"])
             for item in page_items:
                 writer.writerow(
-                    [item.name, item.item_type.name, item.item_type.item_category.name, item.uom.name, item.price])
+                    [item.name, item.item_type.name, item.item_type.item_category.name, item.uom.name, item.price, item.hsn_code])
 
         os.chmod(settings.MEDIA_ROOT + '/reports/' + tmpname, 0o777)
         return JsonResponse({
@@ -2184,11 +2227,12 @@ def itemExport(request):
         # Add a header row with bold text
         pdf.set_font("Arial", size=9, style='B')  # Set font style to bold
         pdf.cell(9, 10, txt="S.No.", border=1, align='C')  # Add S.No. column
-        pdf.cell(65, 10, txt="Name", border=1, align='C')
-        pdf.cell(43, 10, txt="Item Type", border=1, align='C')
-        pdf.cell(43, 10, txt="Item Category", border=1, align='C')
-        pdf.cell(20, 10, txt="UOM", border=1, align='C')
+        pdf.cell(55, 10, txt="Name", border=1, align='C')
+        pdf.cell(38, 10, txt="Item Type", border=1, align='C')
+        pdf.cell(38, 10, txt="Item Category", border=1, align='C')
+        pdf.cell(18, 10, txt="UOM", border=1, align='C')
         pdf.cell(20, 10, txt="Price", border=1, align='C')
+        pdf.cell(20, 10, txt="HSN Code", border=1, align='C')
         pdf.set_font("Arial", size=9)  # Reset font style to normal
         pdf.ln(10)  # Move to the next line
 
@@ -2199,12 +2243,13 @@ def itemExport(request):
         counter = 1  # Counter for serial numbers
         for item in page_items:
             pdf.cell(9, 10, txt=str(counter), border=1, align='C')  # Add S.No. for each row
-            pdf.cell(65, 10, txt=item.name, border=1)
-            pdf.cell(43, 10, txt=item.item_type.name, border=1)
-            pdf.cell(43, 10, txt=item.item_type.item_category.name, border=1)
-            pdf.cell(20, 10, txt=item.uom.name, border=1)
+            pdf.cell(55, 10, txt=item.name, border=1)
+            pdf.cell(38, 10, txt=item.item_type.name, border=1)
+            pdf.cell(38, 10, txt=item.item_type.item_category.name, border=1)
+            pdf.cell(18, 10, txt=item.uom.name, border=1)
             # Right align price for each data row
             pdf.cell(20, 10, txt=str(item.price), align='R', border=1)
+            pdf.cell(20, 10, txt=item.hsn_code if item.hsn_code else "", border=1)
             pdf.ln(10)
             counter += 1  # Increment counter for next row
 
@@ -2221,6 +2266,77 @@ def itemExport(request):
             'filename': settings.MEDIA_URL + 'reports/' + tmpname,
             'name': tmpname
         })
+
+
+@api_view(['POST'])
+def itemImport(request):
+    context = {}
+    if request.FILES.get('file'):
+        excel = request.FILES['file']
+        # trying to process files without error
+        try:
+            df = pd.read_excel(excel)
+            df.columns = [col.strip().lower() for col in df.columns]
+            for index, row in df.iterrows():
+                # trying to fetch required cells from 
+                try:
+                    name = row['name']
+                    item_type_name = row['item type']
+                    item_category_name = row['item category']
+                    uom_name = row['uom']
+                    price = row['price']
+                    hsn_code = row['hsn code']
+
+                    # Skip the row if any required field is empty
+                    if not all([name, item_type_name, item_category_name, uom_name, price, hsn_code]):
+                        continue  # Skip this row and move to the next one
+
+                    if not models.Item.objects.filter(name__iexact=name).exists():
+                        if (
+                            models.Item_Type.objects.filter(name__iexact=item_type_name).exists()
+                            and models.Item_Category.objects.filter(name__iexact=item_category_name).exists()
+                            and models.Uom.objects.filter(name__iexact=uom_name).exists()
+                        ):
+                            try:
+                                with transaction.atomic():
+                                    obj = models.Item(
+                                        name=name, 
+                                        item_type=models.Item_Type.objects.get(name__iexact=item_type_name),
+                                        uom=models.Uom.objects.get(name__iexact=uom_name),
+                                        price=Decimal(price),
+                                        hsn_code=hsn_code
+                                    )
+                                    obj.save()
+                                transaction.commit()
+                                context.update({
+                                    'status': 200,
+                                    'message': "Items Created Successfully."
+                                })
+                            except Exception:
+                                context.update({
+                                    'status': 568,
+                                    'message': "Items cannot be created something wrong"
+                                })
+                                transaction.rollback()
+                            
+                except KeyError as e:
+                    # Handle missing columns
+                    context.update({
+                        'status': 568,
+                        'message': "Required column missing"
+                    })
+                    return JsonResponse(context)
+        except Exception as e:
+            context.update({
+                'status': 568,
+                'message': "Error processing file"
+            })
+    else:
+        context.update({
+            'status': 568,
+            'message': "File has not been uploaded"
+        })
+    return JsonResponse(context)
 
 
 @api_view(['GET'])
@@ -4701,6 +4817,7 @@ def jobOrderEdit(request):
             jobOrderHeader.save()
             jobOrderHeader.job_order_detail_set.all().delete()
             job_order_details = []
+            outInDetailRatio =[]
 
             # out going incomming ratio table updation
             if (request.POST.getlist('incoming_item_id')) and (request.POST.getlist('outgoing_item_id')) and ('with_item' in request.POST):
