@@ -114,7 +114,16 @@
                                 <a href="{% url 'superuser:itemAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
                                 {% endif %}
                                 {% if request.user.is_superuser == 1 or 'view_item'|get_session_permission:request is not None %}
-                                <a href="javascript:void(0);" url="{% url 'api:itemExport' %}?&keyword={{request.GET.keyword}}" class="mr-3 excel_download"><i class="fa fa-download"></i></a>
+                                <!-- <a href="javascript:void(0);" 
+                                url="{% url 'api:itemExport' %}?&keyword={{request.GET.keyword}}" 
+                                class="mr-3">
+                                    <i class="fa fa-upload"></i>
+                                </a> -->
+                                <a href="javascript:$('#fileInput').click();" class="mr-3">
+                                    <i class="fa fa-upload"></i>
+                                </a>
+                                
+                                <input type="file" id="fileInput" style="display: none;" accept=".xlsx" />                                
                                 {% endif %}
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                                 <!-- <div class="dropdown" data-toggle="dropdown">
@@ -431,5 +440,33 @@
 
     })
 
+    $(document).on("change", "#fileInput", function() {
+        var formData = new FormData();
+        formData.append('file', $('#fileInput')[0].files[0]);
+        $.ajax({
+            url: "{% url 'api:itemImport' %}",
+            type: 'POST',
+            data: formData,
+            headers: {
+                'Authorization': getCookieValue("accessToken"),
+            },
+            processData: false,  // Prevent jQuery from processing the data
+            contentType: false,
+            success: function(response) {
+                if (response.status === 200) {
+                    alert('File successfully uploaded and items created.');
+                    location.reload();
+                } 
+                else {
+                    alert('Error: ' + response.message);
+                }
+                $('#fileInput').val('');
+            },
+            error: function(xhr, status, error) {
+                // Handle error
+                alert('Error uploading file:', error);
+            }
+        });
+    });
 </script>
 {% endblock %}
