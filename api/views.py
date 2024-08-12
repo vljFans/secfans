@@ -29,6 +29,7 @@ import csv
 from fpdf import FPDF
 from django.db.models import Avg, Count, Min, Sum
 from fractions import Fraction
+from django.contrib.auth.models import Permission
 
 
 env = environ.Env()
@@ -51,17 +52,57 @@ class CustomPaginator:
         return math.ceil(len(self.items) / self.per_page)
 
 
+def set_user_permissions_in_session(user, request):
+    # Fetch the role associated with the user
+    role = user.role
+
+    # If the user has a role, fetch the permissions associated with that role
+    if role:
+        permissions = models.Role_Permission.objects.filter(role=role, status=1, deleted=0, permitted=1)
+        
+        # Create a list of dictionaries to mimic what you're checking in `get_session_permission`
+        role_permissions = [{'permission__codename': perm.permission.codename} for perm in permissions]
+
+        # Store this list in the session
+        request.session['role_permissions'] = role_permissions
+    else:
+        # If no role is assigned, the user has no permissions
+        request.session['role_permissions'] = []
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def loginUser(request):
     context = {}
-    user = models.User.objects.get(pk=request.user.id)
-    if user is not None:
-        login(request, user)
-        context.update({'status': 200, 'message': ""})
-    else:
+    try:
+        user = models.User.objects.get(pk=request.user.id)
+        if user is not None:
+            login(request, user)
+
+            # Set user permissions in session
+            set_user_permissions_in_session(user, request)
+
+            context.update({'status': 200, 'message': ""})
+        else:
+            context.update({'status': 501, 'message': "User Not Found."})
+    except models.User.DoesNotExist:
         context.update({'status': 501, 'message': "User Not Found."})
+    
     return Response(context)
+
+
+
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def loginUser(request):
+#     context = {}
+#     user = models.User.objects.get(pk=request.user.id)
+#     if user is not None:
+#         login(request, user)
+#         context.update({'status': 200, 'message': ""})
+#     else:
+#         context.update({'status': 501, 'message': "User Not Found."})
+#     return Response(context)
 
 
 @api_view(['POST'])
