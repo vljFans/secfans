@@ -211,7 +211,7 @@
                     <a href="{% url 'superuser:reportItemTrackingReport' %}">Item Tracking Report</a>
                 </li>
                 {% endif %}
-                {% if request.user.is_superuser == 1 or 'view_item'|get_session_permission:request is not None %}
+                {% if request.user.is_superuser == 1 or 'view_item,view_store'|get_session_permission:request is not None %}
                 <li
                 class="{% if request.path == '/report-inventory-summary' or request.path == '/report-inventory-storewise'%}open active{% endif %}"
                 >
