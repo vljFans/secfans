@@ -4641,6 +4641,7 @@ def jobOrderList(request):
     vendor = request.GET.get('vendor_id', None)
     with_item = request.GET.get('with_item', None)
     material_reciept = request.GET.get('material_reciept', None)
+    material_issue= request.GET.get('material_issue', None)
     # print(vendor)
     if id is not None and id != "":
         jobOrder = list(models.Job_Order.objects.filter(pk=id)[:1].values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor_id', 'vendor__name', 'with_item', 'notes','material_issue'))
@@ -4659,7 +4660,8 @@ def jobOrderList(request):
                 jobOrders = jobOrders.filter(vendor_id=vendor ,with_item=with_item ).filter(status=1, deleted=0)
                 if material_reciept is not None and material_reciept != "":
                     jobOrders = jobOrders.filter(material_reciept=material_reciept ).filter(status=1, deleted=0)
-
+        elif material_issue is not None and material_issue != "":
+                    jobOrders = jobOrders.filter(material_issue=material_issue ).filter(status=1, deleted=0)
         jobOrders = list(jobOrders.values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor_id', 'vendor__name', 'with_item', 'notes','material_issue'))
         if find_all is not None and int(find_all) == 1:
             context.update({

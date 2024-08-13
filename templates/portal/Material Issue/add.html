@@ -253,7 +253,7 @@
         });
 
         $.ajax({
-            url: "{% url 'api:jobOrderList' %}?find_all=1",
+            url: "{% url 'api:jobOrderList' %}?find_all=1&material_issue=0",
             type: 'GET',
             data: ({}),
             headers: {
