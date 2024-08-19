@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+from django.core.files.storage import default_storage
 # Create your views here.
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
@@ -996,28 +996,40 @@ def customerAdd(request):
             customer.save()
             if 'photo' in request.FILES.keys():
                 photo = request.FILES['photo']
+                customer_name=(customer.name).replace(' ', '_')
+                custom_file_name = customer_name + "_photo" + Path(photo.name).suffix
+                
                 directory_path = settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
-                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/"
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer_name) + "/photo/"
+                
                 path = Path(directory_path)
                 path.mkdir(parents=True, exist_ok=True)
+                
                 fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
-                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/")
-                saved_file = fs.save(photo.name, photo)
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer_name) + "/photo/")
+                saved_file = fs.save(custom_file_name, photo)
+                
                 photo_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace(
-                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/" + saved_file
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer_name) + "/photo/" + saved_file
                 customer.photo = photo_path
                 customer.save()
             if 'kyc_image' in request.FILES.keys():
                 kyc_image = request.FILES['kyc_image']
+                customer_name=(customer.name).replace(' ', '_')
+                custom_file_name = customer_name + "_kyc_image" + Path(kyc_image.name).suffix
+                
                 directory_path = settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
-                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/"
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer_name) + "/kyc/"
+                
                 path = Path(directory_path)
                 path.mkdir(parents=True, exist_ok=True)
+                
                 fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
-                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/")
-                saved_file = fs.save(kyc_image.name, kyc_image)
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer_name) + "/kyc/")
+                saved_file = fs.save(custom_file_name, kyc_image)
+                
                 kyc_image_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace(
-                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/" + saved_file
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer_name) + "/kyc/" + saved_file
                 customer.kyc_image = kyc_image_path
                 customer.save()
         transaction.commit()
@@ -1102,31 +1114,47 @@ def customerEdit(request):
             customer.save()
 
             if 'photo' in request.FILES.keys():
+                # Remove old photo if it exists
+                if customer.photo:
+                    old_photo_path = customer.photo.replace(settings.MEDIA_URL, settings.MEDIA_ROOT)
+                    if os.path.isfile(old_photo_path):
+                        os.remove(old_photo_path)
+    
                 photo = request.FILES['photo']
+                customer_name=(customer.name).replace(' ', '_')
+                custom_file_name = customer_name + "_kyc_image" + Path(photo.name).suffix
                 directory_path = settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
-                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/"
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer_name) + "/photo/"
                 print(directory_path,'1068')
                 path = Path(directory_path)
                 path.mkdir(parents=True, exist_ok=True)
                 fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
-                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/")
-                saved_file = fs.save(photo.name, photo)
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer_name) + "/photo/")
+                saved_file = fs.save(custom_file_name, photo)
                 photo_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace(
-                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/photo/" + saved_file
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer_name) + "/photo/" + saved_file
                 print(photo_path)
                 customer.photo = photo_path
                 customer.save()
             if 'kyc_image' in request.FILES.keys():
+                # Remove old kyc_image if it exists
+                if customer.kyc_image:
+                    old_kyc_image_path = customer.kyc_image.replace(settings.MEDIA_URL, settings.MEDIA_ROOT)
+                    if os.path.isfile(old_kyc_image_path):
+                        os.remove(old_kyc_image_path)
                 kyc_image = request.FILES['kyc_image']
+                customer_name=(customer.name).replace(' ', '_')
+                custom_file_name = customer_name + "_kyc_image" + Path(kyc_image.name).suffix
+                print("AAAA")
                 directory_path = settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
-                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/"
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer_name) + "/kyc/"
                 path = Path(directory_path)
                 path.mkdir(parents=True, exist_ok=True)
                 fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
-                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/")
-                saved_file = fs.save(kyc_image.name, kyc_image)
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer_name) + "/kyc/")
+                saved_file = fs.save(custom_file_name, kyc_image)
                 kyc_image_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace(
-                    "${CUSTOMER}", str(customer.pk) + "~~" + customer.name) + "/kyc/" + saved_file
+                    "${CUSTOMER}", str(customer.pk) + "~~" + customer_name) + "/kyc/" + saved_file
                 customer.kyc_image = kyc_image_path
                 customer.save()
         transaction.commit()
