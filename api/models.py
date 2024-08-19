@@ -91,6 +91,7 @@ class User(AbstractBaseUser):
         # Simplest possible answer: All admins are staff
         return self.is_superuser
 
+
 class Configuration_User(models.Model):
     client_name = models.CharField(max_length=50, blank=True, null=True)
     client_address = models.CharField(max_length=50, blank=True, null=True)

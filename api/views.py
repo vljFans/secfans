@@ -83,7 +83,7 @@ def loginUser(request):
             # Set user permissions in session
             set_user_permissions_in_session(user, request)
 
-            context.update({'status': 200, 'message': ""})
+            context.update({'status': 200, 'message': "", 'user_id': user.pk})
         else:
             context.update({'status': 501, 'message': "User Not Found."})
     except models.User.DoesNotExist:

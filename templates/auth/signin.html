@@ -141,6 +141,7 @@
           if (response.status == 200) {
             // sessionStorage.setItem("accessToken", "Bearer " + tokenDetails.access);
             setCookie("accessToken", "Bearer " + tokenDetails.access)
+            setCookie("userId", response.user_id);
             locationAfterMessageStore(response.message, 'success', "{% url 'superuser:dashboard' %}");
           } else {
             alert(response.message);
