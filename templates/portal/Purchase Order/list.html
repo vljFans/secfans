@@ -190,13 +190,14 @@
     })
 
     $(document).on('click', '#delete-btn', function () {
+        var userId = getCookieValue('userId');
         id = $(this).attr('data-id');
         name = $(this).attr('data-name');
         if (window.confirm('Are you sure to delete ' + name + '?')) {
             $.ajax({
                 type: "POST",
                 url: "{% url 'api:purchaseOrderDelete' %}",
-                data: ({ id: id }),
+                data: ({ id: id , creator_id : userId}),
                 headers: {
                     'Authorization': getCookieValue("accessToken"),
                 },

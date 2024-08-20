@@ -30,6 +30,8 @@ urlpatterns = [
     path('user-edit', views.userEdit, name='userEdit'),
     path('user-delete', views.userDelete, name='userDelete'),
 
+    path('user-log-details-list', views.userLogDetailsList, name='userLogDetailsList'),
+
     path('vendor-list', views.vendorList, name='vendorList'),
     path('vendor-add', views.vendorAdd, name='vendorAdd'),
     path('vendor-edit', views.vendorEdit, name='vendorEdit'),

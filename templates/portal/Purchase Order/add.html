@@ -61,6 +61,8 @@
                 <div class="card-body">
                     <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
                         <div class="form-row">
+                            <input type="hidden" id="user_id" name="user_id" class="form-control"
+                                     required>
                             <div class="col-md-4 mb-3">
                                 <label>Vendor <span class="required-indicator">*</span></label>
                                 <div class="input-group">
@@ -262,6 +264,8 @@
     });
 
     $(document).ready(function () {
+        var userId = getCookieValue('userId');
+        $('#user_id').val(userId)
         $.ajax({
             url: "{% url 'api:vendorList' %}?find_all=1",
             type: 'GET',

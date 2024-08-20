@@ -71,6 +71,19 @@ def set_user_permissions_in_session(user, request):
         request.session['role_permissions'] = []
 
 
+def user_log_details_add(user,task_name):
+    try:
+        with transaction.atomic():
+            user_log_details = models.User_Log_Details()
+            user_log_details.user_id = user
+            user_log_details.task_name = task_name
+            user_log_details.save()
+            # print(user_log_details)
+       
+    except Exception as e:
+        print(f'Something went wrong: {e}')
+        transaction.rollback()
+    
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def loginUser(request):
@@ -244,6 +257,7 @@ def roleList(request):
 @permission_classes([IsAuthenticated])
 def roleAdd(request):
     context = {}
+    userId = request.COOKIES.get('userId', None)
     if not request.POST['name']:
         context.update({
             'status': 502,
@@ -268,6 +282,8 @@ def roleAdd(request):
                 role_permission_details.append(models.Role_Permission(
                     permission_id=elem, role_id=role.id, permitted=1))
             models.Role_Permission.objects.bulk_create(role_permission_details)
+            user_log_details_add(userId,'Add Role')
+
         transaction.commit()
         context.update({
             'status': 200,
@@ -286,6 +302,8 @@ def roleAdd(request):
 @permission_classes([IsAuthenticated])
 def roleEdit(request):
     context = {}
+    userId = request.COOKIES.get('userId', None)
+
     if not request.POST['name']:
         context.update({
             'status': 505,
@@ -313,6 +331,7 @@ def roleEdit(request):
                 role_permission_details.append(models.Role_Permission(
                     permission_id=elem, role_id=role.id, permitted=1))
             models.Role_Permission.objects.bulk_create(role_permission_details)
+            user_log_details_add(userId,'Edit Role ')
         transaction.commit()
         context.update({
             'status': 200,
@@ -331,6 +350,9 @@ def roleEdit(request):
 @permission_classes([IsAuthenticated])
 def roleDelete(request):
     context = {}
+    userId = request.COOKIES.get('userId', None)
+    
+
     role = models.Role.objects.prefetch_related(
         'role_permission_set', 'user_set').get(pk=request.POST['id'])
     if len(role.user_set.all()) > 0:
@@ -342,6 +364,7 @@ def roleDelete(request):
     try:
         with transaction.atomic():
             role.delete()
+            user_log_details_add(userId,'delete Role ')
         transaction.commit()
         context.update({
             'status': 200,
@@ -411,6 +434,8 @@ def userList(request):
 @permission_classes([IsAuthenticated])
 def userAdd(request):
     context = {}
+    userId = request.COOKIES.get('userId', None)
+
     if not request.POST['name'] or not request.POST['role_id'] or not request.POST['email'] or not request.POST['phone'] or not request.POST['password'] or not request.POST['confirm_password']:
         context.update({
             'status': 508,
@@ -444,6 +469,26 @@ def userAdd(request):
             user.is_superuser = 0
             user.status = 1
             user.save()
+            if 'photo' in request.FILES.keys():
+                photo = request.FILES['photo']
+                user_name=(user.name).replace(' ', '_')
+                user_file_name = user_name + "_sign" + Path(photo.name).suffix
+                
+                directory_path = settings.MEDIA_ROOT + "/" + env("USER_MEDIA_PROFILE").replace(
+                    "${USER}", str(user.pk) + "~~" + user_name) + "/photo/"
+                
+                path = Path(directory_path)
+                path.mkdir(parents=True, exist_ok=True)
+                
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + env("USER_MEDIA_PROFILE").replace(
+                    "${USER}", str(user.pk) + "~~" + user_name) + "/photo/")
+                saved_file = fs.save(user_file_name, photo)
+                
+                photo_path = settings.MEDIA_URL + env("USER_MEDIA_PROFILE").replace(
+                    "${USER}", str(user.pk) + "~~" + user_name) + "/photo/" + saved_file
+                user.user_sign = photo_path
+                user.save()
+                user_log_details_add(userId,'Add New User ')
         transaction.commit()
         context.update({
             'status': 200,
@@ -462,8 +507,9 @@ def userAdd(request):
 @permission_classes([IsAuthenticated])
 def userEdit(request):
     context = {}
-    if not request.POST['name'] or not request.POST['role_id'] or not request.POST['email'] or not request.POST['phone'] or \
-            request.POST['password'] or not request.POST['confirm_password']:
+    userId = request.COOKIES.get('userId', None)
+
+    if not request.POST['name'] or not request.POST['role_id'] or not request.POST['email'] or not request.POST['phone'] :
         context.update({
             'status': 512,
             'message': "Name/Role/Email/Phone/Password/Confirmed Password has not been provided."
@@ -484,6 +530,7 @@ def userEdit(request):
             'message': "User with this email or phone number already exists."
         })
         return JsonResponse(context)
+    
     try:
         with transaction.atomic():
             user = models.User.objects.get(pk=request.POST['id'])
@@ -497,6 +544,32 @@ def userEdit(request):
             user.role_id = request.POST['role_id']
             user.updated_at = datetime.now()
             user.save()
+            if 'photo' in request.FILES.keys():
+                # Remove old photo if it exists
+                if user.user_sign:
+                    old_photo_path = user.user_sign.replace(settings.MEDIA_URL, settings.MEDIA_ROOT)
+                    if os.path.isfile(old_photo_path):
+                        os.remove(old_photo_path)
+
+                photo = request.FILES['photo']
+                user_name=(user.name).replace(' ', '_')
+                user_file_name = user_name + "_sign" + Path(photo.name).suffix
+                
+                directory_path = settings.MEDIA_ROOT + "/" + env("USER_MEDIA_PROFILE").replace(
+                    "${USER}", str(user.pk) + "~~" + user_name) + "/photo/"
+                
+                path = Path(directory_path)
+                path.mkdir(parents=True, exist_ok=True)
+                
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + env("USER_MEDIA_PROFILE").replace(
+                    "${USER}", str(user.pk) + "~~" + user_name) + "/photo/")
+                saved_file = fs.save(user_file_name, photo)
+                
+                photo_path = settings.MEDIA_URL + env("USER_MEDIA_PROFILE").replace(
+                    "${USER}", str(user.pk) + "~~" + user_name) + "/photo/" + saved_file
+                user.user_sign = photo_path
+                user.save()
+                user_log_details_add(userId,'Edit User ')
         transaction.commit()
         context.update({
             'status': 200,
@@ -515,10 +588,13 @@ def userEdit(request):
 @permission_classes([IsAuthenticated])
 def userDelete(request):
     context = {}
+    userId = request.COOKIES.get('userId', None)
+
     user = models.User.objects.get(pk=request.POST['id'])
     try:
         with transaction.atomic():
             user.delete()
+            user_log_details_add(userId,'delete User ')
         transaction.commit()
         context.update({
             'status': 200,
@@ -532,6 +608,58 @@ def userDelete(request):
         transaction.rollback()
     return JsonResponse(context)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def userLogDetailsList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
+
+    if id is not None and id != "":
+        userLogDetailsHead = list(models.User_Log_Details.objects.filter(pk=id).values(
+            'pk', 'user_id', 'user__name', 'task_name', 'time_stamp'))
+        context.update({
+            'status': 200,
+            'message': "User Log Details Fetched Successfully.",
+            'page_items': userLogDetailsHead,  # Ensure this is userLogDetailsHead, not 'user'
+        })
+    else:
+        if keyword is not None and keyword != "":
+            userLogDetailsHead = list(models.User_Log_Details.objects.filter(
+                Q(user__name__icontains=keyword) | Q(task_name__icontains=keyword) | Q(
+                    time_stamp__icontains=keyword)
+            ).filter(status=1, deleted=0).values('pk', 'user_id', 'user__name', 'task_name', 'time_stamp'))
+        else:
+            userLogDetailsHead = list(models.User_Log_Details.objects.filter(
+                status=1, deleted=0).values('pk', 'user_id', 'user__name', 'task_name', 'time_stamp'))
+
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Users Log Fetched Successfully.",
+                'page_items': userLogDetailsHead,
+            })
+            return JsonResponse(context)
+
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(userLogDetailsHead, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Users Log Fetched Successfully.",
+            'page_items': list(page_items),  # Convert page_items to a list if it isn't one already
+            'total_pages': total_pages,
+            'per_page': per_page,
+            'current_page': int(current_page),
+            'button_to_show': button_to_show,
+        })
+    return JsonResponse(context)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -592,6 +720,7 @@ def vendorList(request):
 @permission_classes([IsAuthenticated])
 def vendorAdd(request):
     context = {}
+    
     if not request.POST['name'] or not request.POST['contact_name']  or not request.POST['gst_no'] or not request.POST['pin'] or not request.POST['address'] or not request.POST['country_id'] or not request.POST['state_id'] or not request.POST['city_id']:
         context.update({
             'status': 517,
@@ -623,7 +752,7 @@ def vendorAdd(request):
             vendor.city_id = request.POST['city_id']
             vendor.store_present = 1 if int(request.POST['createStore']) == 1 else 0
             vendor.save()
-           
+            
             if int(request.POST['createStore']) == 1:
                 print(vendor.id)
                 store = models.Store()
@@ -639,6 +768,8 @@ def vendorAdd(request):
 
                 store.vendor_id = vendor.id
                 store.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Add New Vendor')
         transaction.commit()
         context.update({
             'status': 200,
@@ -713,7 +844,8 @@ def vendorEdit(request):
                
                 store = models.Store.objects.get(vendor_id = request.POST['id'] )
                 store.delete()
-
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Edit Vendor')
         transaction.commit()
         context.update({
             'status': 200,
@@ -736,6 +868,8 @@ def vendorDelete(request):
     try:
         with transaction.atomic():
             vendor.delete()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Delete Vendor')
         transaction.commit()
         context.update({
             'status': 200,
@@ -805,7 +939,7 @@ def vendorExport(request):
 @permission_classes([IsAuthenticated])
 def configUserAdd(request):
     context = {}
-    print(request.POST)
+    # print(request.POST)
     try:
         with transaction.atomic():
            userConfigadd = models.Configuration_User()
@@ -854,9 +988,9 @@ def configUserEdit(request):
         #    print('812')
            if 'photo' in request.FILES.keys():
             photo = request.FILES['photo']
-            print(photo)
+            # print(photo)
             directory_path = settings.MEDIA_ROOT + "/" + env("CLIENT_MEDIA_COMPANY_LOGO") + "/photo/"
-            print(directory_path)
+            # print(directory_path)
             path = Path(directory_path)
             path.mkdir(parents=True, exist_ok=True)
             fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + env("CLIENT_MEDIA_COMPANY_LOGO") + "/photo/")
@@ -1032,6 +1166,8 @@ def customerAdd(request):
                     "${CUSTOMER}", str(customer.pk) + "~~" + customer_name) + "/kyc/" + saved_file
                 customer.kyc_image = kyc_image_path
                 customer.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Add New Customer')
         transaction.commit()
         context.update({
             'status': 200,
@@ -1125,7 +1261,7 @@ def customerEdit(request):
                 custom_file_name = customer_name + "_kyc_image" + Path(photo.name).suffix
                 directory_path = settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
                     "${CUSTOMER}", str(customer.pk) + "~~" + customer_name) + "/photo/"
-                print(directory_path,'1068')
+                # print(directory_path,'1068')
                 path = Path(directory_path)
                 path.mkdir(parents=True, exist_ok=True)
                 fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
@@ -1133,7 +1269,7 @@ def customerEdit(request):
                 saved_file = fs.save(custom_file_name, photo)
                 photo_path = settings.MEDIA_URL + env("CUSTOMER_MEDIA_PROFILE").replace(
                     "${CUSTOMER}", str(customer.pk) + "~~" + customer_name) + "/photo/" + saved_file
-                print(photo_path)
+                # print(photo_path)
                 customer.photo = photo_path
                 customer.save()
             if 'kyc_image' in request.FILES.keys():
@@ -1145,7 +1281,7 @@ def customerEdit(request):
                 kyc_image = request.FILES['kyc_image']
                 customer_name=(customer.name).replace(' ', '_')
                 custom_file_name = customer_name + "_kyc_image" + Path(kyc_image.name).suffix
-                print("AAAA")
+                # print("AAAA")
                 directory_path = settings.MEDIA_ROOT + "/" + env("CUSTOMER_MEDIA_PROFILE").replace(
                     "${CUSTOMER}", str(customer.pk) + "~~" + customer_name) + "/kyc/"
                 path = Path(directory_path)
@@ -1157,6 +1293,8 @@ def customerEdit(request):
                     "${CUSTOMER}", str(customer.pk) + "~~" + customer_name) + "/kyc/" + saved_file
                 customer.kyc_image = kyc_image_path
                 customer.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Edit Customer')
         transaction.commit()
         context.update({
             'status': 200,
@@ -1179,6 +1317,8 @@ def customerDelete(request):
     try:
         with transaction.atomic():
             customer.delete()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Customer Delete')
         transaction.commit()
         context.update({
             'status': 200,
@@ -1316,6 +1456,8 @@ def uomAdd(request):
             uom = models.Uom()
             uom.name = request.POST['name']
             uom.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'UOM Add')
         transaction.commit()
         context.update({
             'status': 200,
@@ -1354,6 +1496,8 @@ def uomEdit(request):
             uom.name = request.POST['name']
             uom.updated_at = datetime.now()
             uom.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Uom Edit')
         transaction.commit()
         context.update({
             'status': 200,
@@ -1376,6 +1520,8 @@ def uomDelete(request):
     try:
         with transaction.atomic():
             uom.delete()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Uom Delete')
         transaction.commit()
         context.update({
             'status': 200,
@@ -1465,7 +1611,10 @@ def childUomAdd(request):
             childUom.uom_id = request.POST['uom_id']
             childUom.conversion_rate = request.POST['conversion_rate']
             childUom.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Child UOM Add')
         transaction.commit()
+
         context.update({
             'status': 200,
             'message': "Child UOM Created Successfully."
@@ -1505,6 +1654,8 @@ def childUomEdit(request):
             childUom.conversion_rate = request.POST['conversion_rate']
             childUom.updated_at = datetime.now()
             childUom.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Child UOM Edit')
         transaction.commit()
         context.update({
             'status': 200,
@@ -1527,6 +1678,8 @@ def childUomDelete(request):
     try:
         with transaction.atomic():
             childUom.delete()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Child UOM Delete')
         transaction.commit()
         context.update({
             'status': 200,
@@ -1613,6 +1766,8 @@ def itemCategoryAdd(request):
             itemCategory = models.Item_Category()
             itemCategory.name = request.POST['name']
             itemCategory.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Item Catagory Add')
         transaction.commit()
         context.update({
             'status': 200,
@@ -1652,6 +1807,8 @@ def itemCategoryEdit(request):
             itemCategory.name = request.POST['name']
             itemCategory.updated_at = datetime.now()
             itemCategory.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Item Category Edit')
         transaction.commit()
         context.update({
             'status': 200,
@@ -1674,6 +1831,8 @@ def itemCategoryDelete(request):
     try:
         with transaction.atomic():
             itemCategory.delete()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Item Category Delete')
         transaction.commit()
         context.update({
             'status': 200,
@@ -1775,6 +1934,8 @@ def itemTypeAdd(request):
             itemType.item_category_id = request.POST['item_category_id']
             itemType.gst_percentage = request.POST['gst_percentage']
             itemType.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Item Type Add')
         transaction.commit()
         context.update({
             'status': 200,
@@ -1815,6 +1976,8 @@ def itemTypeEdit(request):
             itemType.gst_percentage = request.POST['gst_percentage']
             itemType.updated_at = datetime.now()
             itemType.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Item Type Edit')
         transaction.commit()
         context.update({
             'status': 200,
@@ -1837,6 +2000,8 @@ def itemTypeDelete(request):
     try:
         with transaction.atomic():
             itemType.delete()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Item Type Delete')
         transaction.commit()
         context.update({
             'status': 200,
@@ -1924,6 +2089,8 @@ def itemColorAdd(request):
             itemColor.name = request.POST['name']
             itemColor.color_code = request.POST['color_code']
             itemColor.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Item Color Add')
         transaction.commit()
         context.update({
             'status': 200,
@@ -1963,6 +2130,8 @@ def itemColorEdit(request):
             itemColor.color_code = request.POST['color_code']
             itemColor.updated_at = datetime.now()
             itemColor.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Item Color Edit')
         transaction.commit()
         context.update({
             'status': 200,
@@ -1985,6 +2154,8 @@ def itemColorDelete(request):
     try:
         with transaction.atomic():
             itemColor.delete()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Item Color Delete')
         transaction.commit()
         context.update({
             'status': 200,
@@ -2066,6 +2237,8 @@ def itemList(request):
 @permission_classes([IsAuthenticated])
 def itemAdd(request):
     context = {}
+    
+    exit()
     if not request.POST['name'] or not request.POST['uom_id'] or not request.POST['item_type_id']:
         context.update({
             'status': 566,
@@ -2090,6 +2263,8 @@ def itemAdd(request):
                 item.price = request.POST['price']
             item.hsn_code = request.POST['hsn_code']
             item.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'New Item Add')
         transaction.commit()
         context.update({
             'status': 200,
@@ -2132,6 +2307,8 @@ def itemEdit(request):
             item.hsn_code = request.POST['hsn_code']
             item.updated_at = datetime.now()
             item.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Item Edit')
         transaction.commit()
         context.update({
             'status': 200,
@@ -2154,6 +2331,8 @@ def itemDelete(request):
     try:
         with transaction.atomic():
             item.delete()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Item Delete')
         transaction.commit()
         context.update({
             'status': 200,
@@ -2476,6 +2655,8 @@ def storeAdd(request):
             store.manager_name = request.POST['manager_name']
             store.vendor_id = request.POST['vendor_id'] if 'vendor_id' in request.POST.keys() else None
             store.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'New Store Add')
         transaction.commit()
         context.update({
             'status': 200,
@@ -2524,6 +2705,8 @@ def storeEdit(request):
             store.vendor_id = request.POST['vendor_id'] if 'vendor_id' in request.POST.keys() else None
             store.updated_at = datetime.now()
             store.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Store Edit')
         transaction.commit()
         context.update({
             'status': 200,
@@ -2546,6 +2729,8 @@ def storeDelete(request):
     try:
         with transaction.atomic():
             store.delete()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Store Delete')
         transaction.commit()
         context.update({
             'status': 200,
@@ -2727,6 +2912,8 @@ def billOfMaterialAdd(request):
                     price=request.POST.getlist('item_price')[index])
                 )
             models.Bill_Of_Material_Detail.objects.bulk_create(bill_of_material_details)
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'BOM add')
         transaction.commit()
         context.update({
             'status': 200,
@@ -2794,6 +2981,8 @@ def billOfMaterialEdit(request):
                                                 item_id=elem, quantity=request.POST.getlist('item_quantity')[index], price=request.POST.getlist('item_price')[index]))
             models.Bill_Of_Material_Detail.objects.bulk_create(
                 bill_of_material_details)
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'BOM Edit')
         transaction.commit()
         context.update({
             'status': 200,
@@ -2817,6 +3006,8 @@ def billOfMaterialDelete(request):
     try:
         with transaction.atomic():
             bomLevel.delete()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'BOM Delete')
         transaction.commit()
         context.update({
             'status': 200,
@@ -2970,6 +3161,7 @@ def purchaseOrderAdd(request):
             purchaseOrderHeader.delivery_at = request.POST['delivery_at']
             purchaseOrderHeader.notes = request.POST['notes']
             purchaseOrderHeader.total_amount = request.POST['total_amount']
+            purchaseOrderHeader.creator_id = request.POST['user_id']
             purchaseOrderHeader.save()
 
             purchase_order_details = []
@@ -2989,6 +3181,7 @@ def purchaseOrderAdd(request):
                 )
             models.Purchase_Order_Detail.objects.bulk_create(
                 purchase_order_details)
+            user_log_details_add(request.POST['user_id'],'add purchase order')
         transaction.commit()
         context.update({
             'status': 200,
@@ -3040,6 +3233,7 @@ def purchaseOrderEdit(request):
             purchaseOrderHeader.delivery_at = request.POST['delivery_at']
             purchaseOrderHeader.notes = request.POST['notes']
             purchaseOrderHeader.total_amount = request.POST['total_amount']
+            purchaseOrderHeader.creator_id = request.POST['user_id']
             purchaseOrderHeader.updated_at = datetime.now()
             purchaseOrderHeader.save()
             purchaseOrderHeader.purchase_order_detail_set.all().delete()
@@ -3061,6 +3255,7 @@ def purchaseOrderEdit(request):
                 )
             models.Purchase_Order_Detail.objects.bulk_create(
                 purchase_order_details)
+            user_log_details_add(request.POST['user_id'],'Edit purchase order')
         transaction.commit()
         context.update({
             'status': 200,
@@ -3083,6 +3278,7 @@ def purchaseOrderDelete(request):
     try:
         with transaction.atomic():
             purchaseOrder.delete()
+            user_log_details_add(request.POST['creator_id'],'delete purchase order')
         transaction.commit()
         context.update({
             'status': 200,
@@ -3375,6 +3571,7 @@ def storeItemList(request):
 @permission_classes([IsAuthenticated])
 def storeItemAdd(request):
     context = {}
+   
     if not request.POST['store_id'] or not request.POST['item_id'] or not request.POST['opening_qty']:
         context.update({
             'status': 586,
@@ -3398,6 +3595,8 @@ def storeItemAdd(request):
             storeItem.on_hand_qty = Decimal(request.POST['opening_qty'])
             storeItem.closing_qty = Decimal(request.POST['opening_qty'])
             storeItem.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Store Item Add')
         transaction.commit()
         context.update({
             'status': 200,
@@ -3441,6 +3640,8 @@ def storeItemEdit(request):
             storeItem.closing_qty = Decimal(request.POST['opening_qty'])
             storeItem.updated_at = datetime.now()
             storeItem.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Store Item Edit')
         transaction.commit()
         context.update({
             'status': 200,
@@ -3463,6 +3664,8 @@ def storeItemDelete(request):
     try:
         with transaction.atomic():
             storeItem.delete()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Store Item Delete')
         transaction.commit()
         context.update({
             'status': 200,
@@ -4052,6 +4255,8 @@ def storeTransactionAdd(request):
                         purchaseOrderHeader.delivery_status = 2
                     purchaseOrderHeader.updated_at = datetime.now()
                     purchaseOrderHeader.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Store Transaction Add')
         transaction.commit()
         context.update({
             'status': 200,
@@ -4573,7 +4778,8 @@ def storeTransactionEdit(request):
                         # Store Transaction Detail Delete
                         removed_store_transaction_detail = models.Store_Transaction_Detail.objects.filter(store_transaction_header=og_storeTransactionHeader, item_id=int(data.getlist('item_id')[index])).first()
                         removed_store_transaction_detail.delete()
-
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Store Transaction Edit')
         transaction.commit()
         context.update({
             'status': 200,
@@ -4621,6 +4827,8 @@ def storeTransactionDelete(request):
                 purchaseOrderHeader.delivery_status = 1
                 purchaseOrderHeader.save()
             storeTransaction.delete()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Store Transaction Delete')
         transaction.commit()
         context.update({
             'status': 200,
@@ -4806,6 +5014,8 @@ def jobOrderAdd(request):
                 )
             models.Job_Order_Detail.objects.bulk_create(job_order_details)
             # print(4271)
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Job Order Add')
         transaction.commit()
         context.update({
             'status': 200,
@@ -4891,6 +5101,8 @@ def jobOrderEdit(request):
                     )
                 )
             models.Job_Order_Detail.objects.bulk_create(job_order_details)
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Job Order Edit')
         transaction.commit()
         context.update({
             'status': 200,
@@ -4913,6 +5125,8 @@ def jobOrderDelete(request):
     try:
         with transaction.atomic():
             jobOrder.delete()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Job Order Delete')
         transaction.commit()
         context.update({
             'status': 200,
@@ -5054,6 +5268,7 @@ def materialIssueDetails(request):
 def materialIssueAdd(request):
     context = {}
     message = 'Something Went Wrong. Please Try Again.'
+    userId = request.COOKIES.get('userId', None)
     if not request.POST['job_order_id'] or not request.POST['issue_date'] or not request.POST['store_id']:
         context.update({
             'status': 594,
@@ -5103,6 +5318,7 @@ def materialIssueAdd(request):
             storeTransactionHeader.transaction_date=request.POST['issue_date']
             storeTransactionHeader.job_order_id = request.POST['job_order_id']
             storeTransactionHeader.total_amount = request.POST['total_amount']
+            storeTransactionHeader.creator_id = userId
             if request.POST['vehicle']!="" and request.POST.get('vehicle',None):
                 storeTransactionHeader.vehicle = request.POST['vehicle']
             storeTransactionHeader.save()
@@ -5264,7 +5480,8 @@ def materialIssueAdd(request):
             models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
             models.Store_Transaction_Detail.objects.bulk_create(outgoing_incomming_details)
             models.Store_Item.objects.bulk_create(store_items_add)
-
+            
+            user_log_details_add(userId,'Material Issue add')
         transaction.commit()
 
         context.update({
@@ -5285,6 +5502,7 @@ def materialIssueAdd(request):
 @permission_classes([IsAuthenticated])
 def materialIssueEdit(request):
     context = {}
+    userId = request.COOKIES.get('userId', None)
     if not request.POST['issue_date']:
         context.update({
             'status': 596,
@@ -5304,6 +5522,7 @@ def materialIssueEdit(request):
             storeTransactionHeader.total_amount = request.POST['total_amount']
             if request.POST['vehicle']!="" and request.POST.get('vehicle',None):
                 storeTransactionHeader.vehicle = request.POST['vehicle']
+            storeTransactionHeader.creator_id = userId
             storeTransactionHeader.save()
 
             for index in range(0,len(item_id)):
@@ -5326,7 +5545,8 @@ def materialIssueEdit(request):
                 store_item_update.closing_qty =(float(store_item_update.closing_qty)+ float(request.POST.getlist('quantity_sent_og')[0])) - float(request.POST.getlist('quantity_sent')[0])
                 store_item_update.updated_at =  datetime.now()
                 store_item_update.save()
-
+            
+            user_log_details_add(userId,'Material Issue Edit')
         transaction.commit()
         context.update({
             'status': 200,
@@ -5625,7 +5845,8 @@ def addGrnDetailisInsTransaction(request):
                         purchaseOrderHeader.delivery_status = 2
                     purchaseOrderHeader.updated_at = datetime.now()
                     purchaseOrderHeader.save()  
-           
+                userId = request.COOKIES.get('userId', None)
+                user_log_details_add(userId,'GRN INspection Add')
             transaction.commit()
             context ={
                 'status':200,
@@ -5724,7 +5945,8 @@ def materialReturnAdd(request):
                             )
                         )
                 models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
-
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Material Return Add')
 
         transaction.commit()
         context.update({
@@ -5964,7 +6186,8 @@ def materialOutDetailsAdd(request):
             models.On_Transit_Transaction_Details.objects.bulk_create(on_transit_transaction_details)
             models.Store_Transaction_Detail.objects.bulk_create(order_details)
 
-
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Material Out Add')
         transaction.commit()
         context.update({
             'status': 200,
@@ -6011,6 +6234,8 @@ def materialOutDetailsDelete(request):
                 
                 storeItem.save()
                 # print("4902")
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Material Out Delete')
         transaction.commit()
         context.update({
             'status': 200,
@@ -6041,6 +6266,8 @@ def materialOutDetailsEdit(request):
            
             on_transit_transaction_header.vechical_no = request.POST['vehicle_no']
             on_transit_transaction_header.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Material Out Edit')
         transaction.commit()
         context.update({
             'status': 200,
@@ -6307,6 +6534,8 @@ def materialInDetailsAdd(request):
                     storeItem.updated_at = datetime.now()
                 storeItem.save()
             models.Store_Transaction_Detail.objects.bulk_create(order_details)
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Material In Add')
         transaction.commit()
         context.update({
             'status': 200,
@@ -6472,6 +6701,8 @@ def physicalInspectionDetailsAdd(request):
 
             models.Physical_Inspection_Details.objects.bulk_create(phyInsDet)
             models.Store_Transaction_Detail.objects.bulk_create(order_details)           
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Physical Inspection Add')
         transaction.commit()
         context.update({
             'status': 200,
@@ -6673,6 +6904,8 @@ def purchaseBillDetailsAdd(request):
                     )
                     # print("5345")
                 models.Purchase_Bill_Details.objects.bulk_create(bill_details)
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'purchase Bill Add')
         transaction.commit()
         context.update({
             'status': 200,
@@ -6738,6 +6971,8 @@ def purchaseBillDetailsEdit(request):
                 purcahse_bill_details_update.updated_at = datetime.now()
                 purcahse_bill_details_update.save()
                 # print("5510")
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Purchase bill edit')
         transaction.commit()
         context.update({
             'status': 200,
@@ -6762,6 +6997,8 @@ def purchaseBillDetailsDelete(request):
         with transaction.atomic():
             purchas_bill_head = models.Purchase_Bill.objects.get(pk=request.POST['id'])
             purchas_bill_head.delete()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Purchase Bill Delete')
         transaction.commit()
         context.update({
             'status': 546,

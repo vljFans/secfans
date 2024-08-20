@@ -53,6 +53,7 @@ class User(AbstractBaseUser):
     pswd_token = models.CharField(max_length=255, blank=True, null=True)
     username = models.CharField(max_length=100, blank=True, null=True)
     phone = models.CharField(max_length=15, blank=True, null=True)
+    user_sign = models.CharField(max_length=250, blank=True, null=True)
     role = models.ForeignKey(
         Role, on_delete=models.CASCADE, blank=True, null=True)
     is_superuser = models.BooleanField(default=False)
@@ -487,6 +488,7 @@ class Purchase_Order(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     delivered_total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     delivery_status = models.SmallIntegerField(default=1)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE,blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -680,6 +682,8 @@ class Store_Transaction(models.Model):
     job_order = models.ForeignKey(Job_Order, on_delete=models.CASCADE, blank=True, null=True)
     grn_inspection =  models.ForeignKey(Grn_Inspection_Transaction, on_delete=models.CASCADE, blank=True, null=True)
     reference_id = models.SmallIntegerField(default=0)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE,blank=True, null=True)
+
 
     def __str__(self):
         return self.transaction_number
@@ -725,6 +729,7 @@ class On_Transit_Transaction(models.Model):
         Store, on_delete=models.CASCADE, blank=True, null=True , related_name="source_store")
     destination_store =  models.ForeignKey(
         Store, on_delete=models.CASCADE, blank=True, null=True, related_name="destination_store")
+    creator = models.ForeignKey(User, on_delete=models.CASCADE,blank=True, null=True)
     flag = models.SmallIntegerField(default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
@@ -952,6 +957,22 @@ class Outgoing_Incoming_Ratio_Details(models.Model):
         managed = True
         db_table = 'outgoing_incoming_ratio_details'
         verbose_name_plural = 'outgoing_incoming_ratio_details'
+
+class User_Log_Details(models.Model):
+    user =  models.ForeignKey(User, on_delete=models.CASCADE,blank=True, null=True)
+    task_name = models.CharField(max_length=50, blank=True, null=True)
+    time_stamp = models.DateTimeField(default=now)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+
+    def __str__(self):
+        return self.task_name
+
+    class Meta:
+        managed = True
+        db_table = 'user_log_details'
+        verbose_name_plural = 'user_log_details'
+
 
 class Test_Corn_Job(models.Model):
     test_message =  models.CharField(max_length=10, blank=True, null=True)
