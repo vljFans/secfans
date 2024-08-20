@@ -85,6 +85,7 @@
                                     minlength="10" maxlength="10" name="phone" value="{{user.phone}}" class="form-control" placeholder="Phone" required>
                                 <div class="invalid-feedback"> Please provide a phone number with 10 digit.</div>
                             </div>
+                            
                             <div class="col-md-6 mb-3">
                                 <label>Password</label>
                                 <input type="password" id="password" name="password" class="form-control" placeholder="Password">
@@ -92,6 +93,13 @@
                             <div class="col-md-6 mb-3">
                                 <label>Confirm Password</label>
                                 <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="Confirm Password">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>user sign</label>
+                                <input type="file" name="photo" class="form-control" placeholder="photo" accept="image/*">
+                                {% if user.user_sign is not None %}
+                                <a href="{{user.user_sign}}" target="_blank" rel="noopener noreferrer">Preview</a>
+                                {% endif %}
                             </div>
                         </div>
                         {% if request.user.is_superuser == 1 or 'change_user'|get_session_permission:request is not None %}

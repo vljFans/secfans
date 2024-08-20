@@ -66,6 +66,7 @@
                 <div class="card-body">
                     <form id="edit_form" class="needs-validation" novalidate>
                         <input type="hidden" id="id" name="id" value="{{purchaseOrder.id}}">
+                        <input type="hidden" id="user_id" name="user_id" class="form-control" value="{{purchaseOrder.creator_id}}" required>
                         <div class="form-row">
                             <div class="col-md-4 mb-3">
                                 <label>Vendor <span class="required-indicator">*</span></label>
@@ -279,6 +280,8 @@
 </script>
 <script>
     $(document).ready(function () {
+        var userId = getCookieValue('userId');
+        $('#user_id').val(userId)
         $.ajax({
             url: "{% url 'api:itemList' %}?find_all=1",
             type: 'GET',
