@@ -85,7 +85,7 @@
                             <div class="col-md-12 mb-3 form-row third_party">
                                 {% if jobOrder.manufacturing_type == 'Third party' %}
                                     <div class="col-md-4 mb-3">
-                                        <label>Vendor<span class="required-indicator">*</span></label>
+                                        <label>Vendor/Supplier<span class="required-indicator">*</span></label>
                                         <div class="input-group">
                                             <select class="custom-select selectpicker vendor_id" data-placeholder="Select Vendor" name="vendor_id" required>
                                                 <option value="">Choose...</option>
@@ -466,7 +466,7 @@
         if($(this).val()==="Third party"){
             $(".third_party").html(`
                 <div class="col-md-4 mb-3">
-                    <label>Vendor<span class="required-indicator">*</span></label>
+                    <label>Vendor/Supplier<span class="required-indicator">*</span></label>
                     <div class="input-group">
                         <select class="custom-select selectpicker vendor_id" data-placeholder="Select Vendor" name="vendor_id" required>
                             ${vendor_options_text}

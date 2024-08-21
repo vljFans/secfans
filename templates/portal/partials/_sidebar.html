@@ -46,7 +46,7 @@
             {% endif %}
             {% if request.user.is_superuser == 1 or 'view_vendor'|get_session_permission:request is not None %}
             <li class="{% if request.path == '/vendor-list' %}active{% endif %}">
-              <a href="{% url 'superuser:vendorList' %}">Vendor</a>
+              <a href="{% url 'superuser:vendorList' %}">Vendor/Supplier</a>
             </li>
             {% endif %}
             {% if request.user.is_superuser == 1 or 'view_customer'|get_session_permission:request is not None %}
@@ -282,6 +282,21 @@
         </li>
         {% endif %}
 
+        {% if request.user.is_superuser == 1  %}
+        <li class="{% if request.path == '/user-transaction-log' %}open active{% endif %}" >
+          <a href="javascript:void(0)"><i data-feather="shield"></i>
+            <span>Security</span><i class="accordion-icon fa fa-angle-left"></i>
+          </a>
+          <ul class="sub-menu"
+            style="display: {% if request.path == '/user-transaction-log'  %}block{% else %}none{% endif %};">
+            {% if request.user.is_superuser == 1  %}
+            <li class="{% if request.path == '/user-transaction-log' %}active{% endif %}">
+              <a href="{% url 'superuser:userTransactionLog' %}">User Log</a>
+            </li>
+            {% endif %}
+          </ul>
+        </li>
+        {% endif %}
         <!-- <li class="mg-l-20-force mg-t-25-force menu-elements">Elements</li>
         <li>
           <a href="javascript:void(0)"><i data-feather="underline"></i>
