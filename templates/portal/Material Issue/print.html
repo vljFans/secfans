@@ -226,7 +226,7 @@
                 <tr>
                     <td  colspan="2" style="text-align: center;"><p style="float: right; margin-top: 0px">for Shiva Engineering Co.</p>
                     <br>
-                    {% if materialIssue.creator.user_sign is Not None  %}
+                    {% if materialIssue.creator.user_sign is not None  %}
                     <img src="{{materialIssue.creator.user_sign}}" class="img-responsive" width="125" height="80" ><br><span >({{materialIssue.creator.name}})</span><br>
                     {% endif %}
                     <br>
