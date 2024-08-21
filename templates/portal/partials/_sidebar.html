@@ -46,7 +46,7 @@
             {% endif %}
             {% if request.user.is_superuser == 1 or 'view_vendor'|get_session_permission:request is not None %}
             <li class="{% if request.path == '/vendor-list' %}active{% endif %}">
-              <a href="{% url 'superuser:vendorList' %}">Vendor</a>
+              <a href="{% url 'superuser:vendorList' %}">Vendor/Supplier</a>
             </li>
             {% endif %}
             {% if request.user.is_superuser == 1 or 'view_customer'|get_session_permission:request is not None %}
