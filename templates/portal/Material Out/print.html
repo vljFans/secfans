@@ -122,7 +122,16 @@
         <tr>
             <td style="border-color: white;"></td>
             <td style="border-color: white;"></td>
-            <td style="border-color: white;"><img src="{{materialOut.creator.user_sign}}" class="img-responsive" width="125" height="80"><br>({{materialOut.creator.name}})<br></td>
+            <td style="border-color: white;">
+                
+                {% if materialOut.creator.user_sign is not None %}
+
+                <img src="{{materialOut.creator.user_sign}}" class="img-responsive" width="125" height="80">
+                
+                {% endif %}
+                <br>({{materialOut.creator.name}})
+                <br>
+            </td>
         </tr>
         <tr>
          <td style="border-color: white;">Checked by</td>

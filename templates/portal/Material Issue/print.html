@@ -226,7 +226,9 @@
                 <tr>
                     <td  colspan="2" style="text-align: center;"><p style="float: right; margin-top: 0px">for Shiva Engineering Co.</p>
                     <br>
-                    <img src="{{materialIssue.creator.user_sign}}" class="img-responsive" width="100" height="100" ><br><span >({{materialIssue.creator.name}})</span><br>
+                    {% if materialIssue.creator.user_sign is Not None  %}
+                    <img src="{{materialIssue.creator.user_sign}}" class="img-responsive" width="125" height="80" ><br><span >({{materialIssue.creator.name}})</span><br>
+                    {% endif %}
                     <br>
                     <p style="text-align: center;"> Authorised Signatory</p>
                     </td>
