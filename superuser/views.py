@@ -132,7 +132,7 @@ def roleEdit(request, id):
 @login_required
 def roleView(request, id):
     content_types = ContentType.objects.prefetch_related('permission_set').filter(
-        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail','test_corn_job','user_log_details'])
+        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail','test_corn_job','user_log_details','outgoing_incoming_ratio_header','outgoing_incoming_ratio_details'])
     role = models.Role.objects.prefetch_related(
         'role_permission_set').get(pk=id)
     selected_permissions = []
