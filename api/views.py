@@ -2514,6 +2514,8 @@ def itemImport(request):
                                         hsn_code=hsn_code
                                     )
                                     obj.save()
+                                    userId = request.COOKIES.get('userId', None)
+                                    user_log_details_add(userId,'Item Bulk Import')
                                 transaction.commit()
                                 context.update({
                                     'status': 200,
