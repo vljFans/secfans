@@ -2237,8 +2237,6 @@ def itemList(request):
 @permission_classes([IsAuthenticated])
 def itemAdd(request):
     context = {}
-    
-    exit()
     if not request.POST['name'] or not request.POST['uom_id'] or not request.POST['item_type_id']:
         context.update({
             'status': 566,
