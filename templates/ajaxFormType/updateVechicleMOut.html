@@ -4,10 +4,11 @@
     <div class="form-row">
         <div class="col-md-6 mb-3">
             <label>Vechicle <span class="required-indicator">*</span></label>
-            <input type="text" name="name" class="form-control" placeholder="Name" required>
+            <input type="hidden" name="id" class="form-control"  value="{{purchaseBill.id}}" required>
+            <input type="text" name="name" class="form-control" placeholder="Name" value="{{purchaseBill.vechical_no}}" required>
         </div>
     </div>
-    {% if request.user.is_superuser == 1 or 'add_uom'|get_session_permission:request is not None %}
+    {% if request.user.is_superuser == 1 or 'change_purchase_order'|get_session_permission:request is not None %}
     <button class="btn btn-success submit-modal-btn" type="submit">Submit</button>
     {% endif %}
 </form>
@@ -21,11 +22,11 @@
         $('#cp-component').colorpicker();
     });
 
-    $('#addUomForm').on('submit', function (e) {
+    $('#updateVechicleMOutForm').on('submit', function (e) {
         e.preventDefault();
         $('.submit-modal-btn').text('Submitting...');
         $('.submit-modal-btn').prop('disabled', true);
-        var formData = new FormData(addUomForm);
+        var formData = new FormData(updateVechicleMOutForm);
         $.ajax({
             type: "POST",
             evalScripts: true,

@@ -135,6 +135,7 @@
                     edit_url = "{% url 'superuser:purchaseOrderEdit' 1 %}";
                     view_url = "{% url 'superuser:purchaseOrderView' 1 %}";
                     print_url = "{% url 'superuser:purchaseOrderPrint' 1 %}";
+                    copy_url = "{% url 'superuser:purchaseOrderAdd'  %}?id=";
                     page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
@@ -155,6 +156,9 @@
                                 {% endif %}
                                 {% if request.user.is_superuser == 1 or 'delete_purchase_order'|get_session_permission:request is not None %}
                                 <a id="delete-btn" data-id="${element.pk}" data-name="${element.order_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'add_purchase_order'|get_session_permission:request is not None %}
+                                <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
                                 {% endif %}
                                 </td>
                             </tr>`;
@@ -203,8 +207,11 @@
                 },
                 success: function (response) {
                     if (response.status == 200) {
+                       
                         locationAfterMessageStore(response.message, 'success', "{% url 'superuser:purchaseOrderList' %}");
                     } else {
+                        
+                        
                         alert(response.message);
                     }
                 },

@@ -69,6 +69,12 @@
                                     <select class="custom-select selectpicker" id="vendor_id" name="vendor_id" required>
                                         <option value="">Choose...</option>
                                     </select>
+                                    {% if request.user.is_superuser == 1 or 'add_vendor'|get_session_permission:request is not None %}
+                                    <div class="btn float-end addForm" data-text="Add New Vendor"
+                                        data-form="addVendor" id="addVendorModal" data-toggle="modal" data-target="#addFormModal">
+                                        <i class="fa fa-plus"></i>
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">
@@ -78,7 +84,7 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>Order Date <span class="required-indicator">*</span></label>
-                                <input type="date" name="order_date" class="form-control" placeholder="Order Date"
+                                <input type="date" id="order_date" name="order_date" class="form-control" placeholder="Order Date"
                                     required>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -89,7 +95,7 @@
                             <div class="col-md-6 mb-3">
                                 <label>Quotation Date <span class="required-indicator">*</span></label>
                                 <input type="date" name="quotation_date" class="form-control"
-                                    placeholder="Quotation Date" required>
+                                    placeholder="Quotation Date" id="quotation_date" required>
                             </div>
 
                             <div class="col-md-12">
@@ -100,6 +106,12 @@
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
                                                 <option value="">Choose...</option>
                                             </select>
+                                            {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                <div class="btn float-end addForm" data-text="Add New item"
+                                                        data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                        <i class="fa fa-plus"></i>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="col-md-2 mb-3">
@@ -225,7 +237,7 @@
                                     onkeypress="return (event.charCode >=45 &&  event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)">
                             </div>
                         </div>
-                        {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                        {% if request.user.is_superuser == 1 or 'add_purchase_order'|get_session_permission:request is not None %}
                         <button class="btn btn-success submit-btn" type="submit">Submit</button>
                         {% endif %}
                     </form>
@@ -264,6 +276,8 @@
     });
 
     $(document).ready(function () {
+        $("#order_date").val(new Date().toISOString().slice(0, 10))
+        $("#quotation_date").val(new Date().toISOString().slice(0, 10))
         var userId = getCookieValue('userId');
         $('#user_id').val(userId)
         $.ajax({
@@ -460,6 +474,12 @@
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
                                                 ${item_options_text}
                                             </select>
+                                            {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                <div class="btn float-end addForm" data-text="Add New item"
+                                                        data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                        <i class="fa fa-plus"></i>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="col-md-2 mb-3">
