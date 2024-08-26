@@ -198,8 +198,12 @@
                 success: function (response) {
                     if (response.status == 200) {
                         // alert(response.message)
+                        // console.log('201');
+                        
                         locationAfterMessageStore(response.message, 'success', "{% url 'superuser:purchaseBillList' %}");
                     } else {
+                        // console.log('205');
+                        
                         alert(response.message);
                     }
                 },
@@ -212,34 +216,35 @@
             });
         }
     });
-    $(document).on('click', '.addForm', function(e) {
-    e.preventDefault();
-    let formType = $(this).data('form');
-    let selector = $(this).attr('id');
-    let dataId = $(this).data('id');  // Capture the data-id
+    
+//     $(document).on('click', '.addForm', function(e) {
+//     e.preventDefault();
+//     let formType = $(this).data('form');
+//     let selector = $(this).attr('id');
+//     let dataId = $(this).data('id');  // Capture the data-id
 
-    console.log('Sending data-id:', dataId);  // Debugging
+//     // console.log('Sending data-id:', dataId);  // Debugging
 
-    $.ajax({
-        url: "{% url 'superuser:getAjaxFormType' %}",  // Replace with your actual view URL
-        type: "POST",
-        data: {
-            'form_type': formType,
-            'selector': selector,
-            'data-id': dataId,  // Include the data-id in the AJAX request
-            'csrfmiddlewaretoken': getCookieValue("csrftoken")  // Ensure CSRF token is included
-        },
-        headers: {
-            'Authorization': getCookieValue("accessToken"),  // Include this if needed
-        },
-        success: function(response) {
-            console.log('Response received:', response);  // Debugging
-        },
-        error: function(error) {
-            console.error('Error occurred:', error);  // Debugging
-        }
-    });
-});
+//     $.ajax({
+//         url: "{% url 'superuser:getAjaxFormType' %}",  // Replace with your actual view URL
+//         type: "POST",
+//         data: {
+//             'form_type': formType,
+//             'selector': selector,
+//             'data-id': dataId,  // Include the data-id in the AJAX request
+//             'csrfmiddlewaretoken': getCookieValue("csrftoken")  // Ensure CSRF token is included
+//         },
+//         headers: {
+//             'Authorization': getCookieValue("accessToken"),  // Include this if needed
+//         },
+//         success: function(response) {
+//             console.log('Response received:', response);  // Debugging
+//         },
+//         error: function(error) {
+//             console.error('Error occurred:', error);  // Debugging
+//         }
+//     });
+// });
 
     function getCookieValue(name) {
         let cookieValue = null;

@@ -207,8 +207,11 @@
                 },
                 success: function (response) {
                     if (response.status == 200) {
+                       
                         locationAfterMessageStore(response.message, 'success', "{% url 'superuser:purchaseOrderList' %}");
                     } else {
+                        
+                        
                         alert(response.message);
                     }
                 },

@@ -24,14 +24,13 @@ context['client_gst_number'] = env("CLIENT_GST_NUMBER")
 
 # Create your views here.
 
+# -----old getajaxFrom Type------
 
 # def getAjaxFormType(request):
 #     if request.method == "POST":
 #         print(request.POST,'123')
 #         form_type = request.POST['form_type']
 #         selector = request.POST['selector']
-#         data_id = request.POST.get('data-id', None)  # Using .get to avoid KeyError if data-id is missing
-#         print(f"Data ID: {data_id}")
 #         if form_type == "addItemCategory":
 #             context.update({'request': request, 'selector': selector})
 #             return JsonResponse({
@@ -73,49 +72,22 @@ context['client_gst_number'] = env("CLIENT_GST_NUMBER")
 #             return JsonResponse({
 #                 'status': 200,
 #                 'formType': render_to_string('ajaxFormType/addItem.html', context)
-#             })
+# #             })
 #         elif form_type == "addVendor":
-#             countries = models.Country.objects.all()
-#             context.update({
-#                 'request': request,
-#                 'selector': selector,
-#                 'countries': countries,
-#             })
-#             return JsonResponse({
-#                 'status': 200,
-#                 'formType': render_to_string('ajaxFormType/addVendor.html', context)
-#             })
-#         elif form_type == "addVechile":
-#             print('89')
-#             data_id = request.POST.get('data-id', None)
-#             print(f"Data ID: {data_id}")  # Print to verify the correct value
-            
-#             # if data_id:
-#             #     print(f"Data ID: {data_id}")
-#             #     try:
-#             #         purchaseBill = models.Purchase_Bill.objects.get(pk=data_id)
-#             #         print(purchaseBill)
-#             #         # Further processing...
-#             #     except models.Purchase_Bill.DoesNotExist:
-#             #         print("Purchase_Bill with the given ID does not exist.")
-#             #         return JsonResponse({'status': 404, 'message': "Purchase Bill not found."})
-#             # else:
-#             #     return JsonResponse({'status': 400, 'message': "Invalid data ID."})
-#             context.update({
-#                 'request': request,
-#                 'selector': selector,
-#                 'purchaseBill': purchaseBill,
-#             })
-#             return JsonResponse({
-#                 'status': 200,
-#                 'formType': render_to_string('ajaxFormType/updateVechicleMOut.html', context)
-#             })
-
+#                 countries = models.Country.objects.all()
+#                 context.update({'request': request, 'selector': selector, 'countries': countries})
+#                 return JsonResponse({
+#                     'status': 200,
+#                     'formType': render_to_string('ajaxFormType/addVendor.html', context)
+#                 })
 #     else:
 #         return JsonResponse({
 #             'status': 500,
 #             'message': "There should be ajax method"
 #         })
+
+
+# -----new getajaxFrom Type------
 
 def getAjaxFormType(request):
     if request.method == "POST":
@@ -1436,9 +1408,12 @@ def purchaseBillList(request):
 def purchaseBillAdd(request):
     vendor_list = list(models.Vendor.objects.filter(status = 1, deleted =0).values('pk','name'))
     if request.GET.get('id', None):
+        id = request.GET.get('id', None)
+        items = models.Item.objects.all()
         purchaseBill = models.Purchase_Bill.objects.get(pk=id)
         context.update({
             'purchase_bill': purchaseBill,
+            'items': items,
             'Vendor_list': vendor_list,
             'page_title': "Purchase Bill Add",
             'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
@@ -1446,7 +1421,7 @@ def purchaseBillAdd(request):
                             {'name': "Add"}]
         })
 
-        return render(request, 'portal/Purchase Bill/edit.html', context)
+        return render(request, 'portal/Purchase Bill/copy.html', context)
 
     else:
         context.update({
