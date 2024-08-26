@@ -754,7 +754,7 @@ def vendorAdd(request):
             vendor.save()
             
             if int(request.POST['createStore']) == 1:
-                print(vendor.id)
+                # print(vendor.id)
                 store = models.Store()
                 store.name = request.POST['name']
                 store.address = request.POST['address']
@@ -4931,6 +4931,7 @@ def jobOrderList(request):
 @permission_classes([IsAuthenticated])
 def jobOrderAdd(request):
     context = {}
+    print(request.POST)
     if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['manufacturing_type'] or not request.POST['notes']:
         context.update({
             'status': 589,
@@ -4950,6 +4951,7 @@ def jobOrderAdd(request):
             jobOrderHeader.notes = request.POST['notes']
             jobOrderHeader.save()
             job_order_details = []
+            # print('4954')
 
             if (request.POST.getlist('incoming_item_id')) and (request.POST.getlist('outgoing_item_id')) and ('with_item' in request.POST):
                 outgoingIncommingratioHeadCount = models.Outgoing_Incoming_Ratio.objects.all().count() 
@@ -4960,18 +4962,22 @@ def jobOrderAdd(request):
                     "${AI_DIGIT_5}",str(outgoingIncommingratioHeadCount + 1).zfill(5)
                 )
                 outgoingIncommingratioHead.transaction_date = request.POST['order_date']
-
+                # print('4965')
                 outgoingIncommingratioHead.vendor_id = request.POST['vendor_id']
 
                 outgoingIncommingratioHead.job_order = jobOrderHeader
 
                 outgoingIncommingratioHead.save()
-
+                
+                
                 outInDetailRatio = []
 
                 # print(request.POST.getlist('outgoing_item_id'))
+                # print(request.POST.getlist('incoming_quantity')[0])
                 for item_id,quantity in zip( request.POST.getlist('outgoing_item_id'),request.POST.getlist('outgoing_quantity') ):
-                    ratio = Fraction(int(quantity) , int(request.POST.getlist('incoming_quantity')[0])) #ratio = outgoing : income
+                    
+                    # print(int(float(request.POST.getlist('incoming_quantity')[0])))
+                    ratio = Fraction(int(float((quantity))) , int(float(request.POST.getlist('incoming_quantity')[0]))) #ratio = outgoing : income
                     # print(ratio)
                     # print('id',outgoingIncommingratioHead.id)
                     # print('item',int(request.POST.getlist('incoming_item_id')[0]))
@@ -4989,6 +4995,7 @@ def jobOrderAdd(request):
 
                         )
                     )
+                # print('4995')
                 models.Outgoing_Incoming_Ratio_Details.objects.bulk_create(outInDetailRatio)
 
             # print( zip( request.POST.getlist('incoming_item_id'),request.POST.getlist('incoming_quantity')))
@@ -5013,7 +5020,7 @@ def jobOrderAdd(request):
                     )
                 )
             models.Job_Order_Detail.objects.bulk_create(job_order_details)
-            # print(4271)
+            # print('4271')
             userId = request.COOKIES.get('userId', None)
             user_log_details_add(userId,'Job Order Add')
         transaction.commit()
@@ -6837,11 +6844,13 @@ def purchaseBillDetailsAdd(request):
             # print("5283")
             purcahse_bill_header.transaction_number = env("PURCHASE_BILL_TRANSACTION_SEQ").replace(
             "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(purchase_bill_head_count + 1).zfill(5))
-            # print( purcahse_bill_header.vechical_no)
+            # print( purcahse_bill_header)
             purcahse_bill_header.transaction_date = request.POST['issue_date']
+ 
             purcahse_bill_header.vendor_id = request.POST['vendor']
+
             purcahse_bill_header.invoice_no =  request.POST['invoice']
-            # print("5288")
+     
             purcahse_bill_header.e_way_no = request.POST['e_way']
             
             purcahse_bill_header.e_way_date = request.POST['e_way_date']
@@ -6927,7 +6936,7 @@ def purchaseBillDetailsEdit(request):
     # print(request.POST)
     try:
         with transaction.atomic():
-            # print("hi")
+
             purcahse_bill_header_update = models.Purchase_Bill.objects.get(pk = request.POST['headerPk'])
             # print(purcahse_bill_header_update)
             purcahse_bill_header_update.invoice_no =  request.POST['invoice']
@@ -7001,7 +7010,7 @@ def purchaseBillDetailsDelete(request):
             user_log_details_add(userId,'Purchase Bill Delete')
         transaction.commit()
         context.update({
-            'status': 546,
+            'status': 200,
             'message': "transaction number deleted succesfully"
         })
     

@@ -805,6 +805,8 @@
     });
 
     $(document).on('submit', '#create_form', function (e) {
+            let pageTitle = $('.card-header-title').val()
+            let setUrl =  pageTitle == 'Job Order Edit' ? "{% url 'api:jobOrderEdit' %}" : "{% url 'api:jobOrderAdd' %}"
             e.preventDefault();
             $('.submit-btn').text('Submitting...');
             $('.submit-btn').prop('disabled', true);
@@ -814,7 +816,7 @@
                 evalScripts: true,
                 contentType: false,
                 processData: false,
-                url: "{% url 'api:jobOrderEdit' %}",
+                url: setUrl,
                 data: formData,
                 headers: {
                     'Authorization': getCookieValue("accessToken")
@@ -840,5 +842,6 @@
             });
         });
 
+       
 </script>
 {% endblock %}
