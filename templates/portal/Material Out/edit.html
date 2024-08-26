@@ -116,9 +116,13 @@
                             <ul id="pagination" class="pagination justify-content-center">
                             </ul>
                         </nav>
-                        <div class="col-md-12" id="submit" >
-                            <button onclick="return confirm('Please check the form again before submitting. It can not be changed')" class="btn btn-success submit-btn" type="submit">Submit</button>
-                        </div>
+
+                        {% if request.user.is_superuser == 1 or 'change_on_transit_transaction'|get_session_permission:request is not None %}
+                            <div class="col-md-12" id="submit" >
+                                <button onclick="return confirm('Please check the form again before submitting. It can not be changed')" class="btn btn-success submit-btn" type="submit">Submit</button>
+                            </div>
+                        {% endif %}
+                        
                 </form>
                 </div>
                 

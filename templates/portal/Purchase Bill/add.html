@@ -150,11 +150,11 @@
                                 <br>
                             </div>
 
-
+                            {% if request.user.is_superuser == 1 or 'add_purchase_bill_details'|get_session_permission:request is not None %}
                             <div class="col-md-12" id="submit" hidden>
                                 <button onclick="return confirm('Please check the form again before submitting. It can not be changed')" class="btn btn-success submit-btn" type="submit">Submit</button>
                             </div>
-
+                            {% endif %}
 
                         </div>
                     </form>

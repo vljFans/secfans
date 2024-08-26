@@ -130,7 +130,7 @@
                             </div>
                             
                         </div>
-                        {% if request.user.is_superuser == 1 or 'add_configuration_user'|get_session_permission:request is not None %}
+                        {% if request.user.is_superuser == 1  %}
                         <button class="btn btn-success submit-btn" type="submit">Submit</button>        
                         {% endif %}
                     </form>

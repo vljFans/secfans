@@ -193,11 +193,11 @@
                                                                                     {% endfor %}
                                                                                 </select>
                                                                                 {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
-                                                                                    <div class="btn float-end addForm" data-text="Add New item"
-                                                                                            data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
-                                                                                            <i class="fa fa-plus"></i>
-                                                                                    </div>
-                                                                                {% endif %}
+                                                                                <div class="btn float-end addForm" data-text="Add New item"
+                                                                                        data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                                                        <i class="fa fa-plus"></i>
+                                                                                </div>
+                                                                            {% endif %}
                                                                             </div>
                                                                         </div>
                                                                         <div class="col-md-4 py-2">
@@ -235,7 +235,7 @@
                                 <textarea name="notes" rows="5" class="form-control" placeholder="Job Description" required>{{jobOrder.notes}}</textarea>
                             </div>
                         </div>
-                        {% if request.user.is_superuser == 1 or 'edit_item'|get_session_permission:request is not None %}
+                        {% if request.user.is_superuser == 1 or 'add_job_order_detail,change_job_order_detail'|get_session_permission:request is not None %}
                         <button class="btn btn-success submit-btn" type="submit">Submit</button>
                         {% endif %}
                     </form>
