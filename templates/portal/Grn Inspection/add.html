@@ -106,10 +106,11 @@
                                     onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                      placeholder="0.00"><br>
                             </div>
+                            {% if request.user.is_superuser == 1 or 'add_grn_inspection_transaction'|get_session_permission:request is not None %}
                             <div class="col-md-12" id="submit" hidden>
                                 <button onclick="return confirm('Please check the form again before submitting. It can not be changed')" class="btn btn-success submit-btn" type="submit">Submit</button>
                             </div>
-
+                            {% endif %}
 
                         </div>
                     </form>
