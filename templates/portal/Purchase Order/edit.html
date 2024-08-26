@@ -77,13 +77,27 @@
                                         <option {% if purchaseOrder.vendor_id == vendor.pk %}selected{% endif %} value="{{vendor.pk}}">{{vendor.name}}</option>
                                         {% endfor %}
                                     </select>
+                                    {% if request.user.is_superuser == 1 or 'add_vendor'|get_session_permission:request is not None %}
+                                        <div class="btn float-end addForm" data-text="Add New Vendor"
+                                            data-form="addVendor" id="addVendorModal" data-toggle="modal" data-target="#addFormModal">
+                                            <i class="fa fa-plus"></i>
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
+                            {% if page_title == 'Purchase Order Add' %}
+                            <div class="col-md-4 mb-3">
+                                <label>Order Number <span class="required-indicator">*</span></label>
+                                <input type="text"  id="order_number" name="order_number" class="form-control" readonly
+                                    placeholder="Order Number" required>
+                            </div>
+                            {% else %}
                             <div class="col-md-4 mb-3">
                                 <label>Order Number <span class="required-indicator">*</span></label>
                                 <input type="text" value="{{purchaseOrder.order_number}}" id="order_number" name="order_number" class="form-control" readonly
                                     placeholder="Order Number" required>
                             </div>
+                            {% endif %}
                             <div class="col-md-4 mb-3">
                                 <label>Order Date <span class="required-indicator">*</span></label>
                                 <input type="date" value="{{purchaseOrder.order_date|date:'Y-m-d'}}" name="order_date" class="form-control" placeholder="Order Date"
@@ -112,6 +126,12 @@
                                                 <option {% if orderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
                                                 {% endfor %}
                                             </select>
+                                            {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                <div class="btn float-end addForm" data-text="Add New item"
+                                                        data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                        <i class="fa fa-plus"></i>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="col-md-2 mb-3">
@@ -282,6 +302,13 @@
     $(document).ready(function () {
         var userId = getCookieValue('userId');
         $('#user_id').val(userId)
+        // Get the text value of the page title
+        let pageTitle = $('.card-header-title').text().trim();
+        
+        if(pageTitle == 'Purchase Order Add'){
+
+            changeOrderNumber()
+        }
         $.ajax({
             url: "{% url 'api:itemList' %}?find_all=1",
             type: 'GET',
@@ -430,6 +457,12 @@
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
                                                 ${item_options_text}
                                             </select>
+                                            {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                <div class="btn float-end addForm" data-text="Add New item"
+                                                        data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                        <i class="fa fa-plus"></i>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="col-md-2 mb-3">
@@ -534,6 +567,8 @@
 
     $(document).on('submit', '#edit_form', function (e) {
         e.preventDefault();
+        let pageTitle = $('.card-header-title').text().trim();
+        let setUrl =  pageTitle == 'Purchase Order Add' ? "{% url 'api:purchaseOrderAdd' %}" : "{% url 'api:purchaseOrderEdit' %}"
         $('.submit-btn').text('Submitting...');
         $('.submit-btn').prop('disabled', true);
         var formData = new FormData(edit_form);
@@ -542,7 +577,7 @@
             evalScripts: true,
             contentType: false,
             processData: false,
-            url: "{% url 'api:purchaseOrderEdit' %}",
+            url: setUrl,
             data: formData,
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -567,5 +602,47 @@
             }
         });
     });
+
+    $(document).on('change', '#vendor_id', function () {
+
+        // Get the text value of the page title
+        let pageTitle = $('.card-header-title').text().trim();
+
+        // Check if the page title matches 'Purchase Order Add'
+        if (pageTitle === 'Purchase Order Add') {
+
+            // Call the function to change the order number
+            changeOrderNumber();
+        }
+    });
+
+    function changeOrderNumber() {
+        console.log('Changing order number...');
+
+        // Get the selected vendor ID
+        let vendor_id = $('#vendor_id').val();
+
+        // Make an AJAX request to get the next purchase order number for the selected vendor
+        $.ajax({
+            url: "{% url 'api:vendorList' %}?id=" + vendor_id,
+            type: 'GET',
+            data: {},
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    // Set the value of the order number input field
+                    $('#order_number').val(response.page_items[0].next_purchase_order_number);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    }
+
 </script>
 {% endblock %}

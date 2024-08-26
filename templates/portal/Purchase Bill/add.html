@@ -64,7 +64,7 @@
                         <div class="form-row">
                             
                             <div class="col-md-3 mb-3">
-                                <label>Vendor/Supplier<span class="required-indicator">*</span></label>
+                                <label>Vendor/Suppliers<span class="required-indicator">*</span></label>
                                 <div class="input-group">
                                     <select class="custom-select selectpicker" id="vendor" name="vendor" required>
                                         <option value="">Choose...</option>
@@ -72,6 +72,12 @@
                                         <option value="{{vendor.pk}}">{{vendor.name}}</option>
                                         {% endfor %}
                                     </select>
+                                    {% if request.user.is_superuser == 1 or 'add_vendor'|get_session_permission:request is not None %}
+                                        <div class="btn float-end addForm" data-text="Add New Vendor"
+                                            data-form="addVendor" id="addVendorModal" data-toggle="modal" data-target="#addFormModal">
+                                            <i class="fa fa-plus"></i>
+                                        </div>
+                                    {% endif %}
                                 </div>
                                 <input type="hidden" class="form-control sameState" name="sameState" id="sameState" readonly required>
                             </div>
@@ -360,6 +366,12 @@
                                                     <select class="custom-select selectpicker item_id" name="item_id" required>
                                                         ${item_options_text}
                                                     </select>
+                                                    {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                        <div class="btn float-end addForm" data-text="Add New item"
+                                                                data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                                <i class="fa fa-plus"></i>
+                                                        </div>
+                                                    {% endif %}
                                                 </div>
                                             </div>
                                             <div class="col-md-2 mb-3">

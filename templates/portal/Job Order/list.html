@@ -133,6 +133,7 @@
                 $('.error-msg-txt').text("");
                 if (response.status == 200) {
                     edit_url = "{% url 'superuser:jobOrderEdit' 1 %}";
+                    copy_url = "{% url 'superuser:jobOrderAdd'  %}?id=";
                     page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
@@ -148,6 +149,9 @@
                                 {% if request.user.is_superuser == 1 or 'delete_job_order'|get_session_permission:request is not None %}
                                 <a href="#" onclick="return alert('cannot  delete as material already  get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-trash"></i> </a>
                                 {% endif %}
+                                {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
+                                <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
+                                {% endif %}
                                 </td>`
                         }
                         else{
@@ -158,6 +162,9 @@
                                     {% endif %}
                                     {% if request.user.is_superuser == 1 or 'delete_job_order'|get_session_permission:request is not None %}
                                     <a id="delete-btn" data-id="${element.pk}" data-name="${element.order_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
+                                    {% endif %}
+                                    {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
+                                    <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
                                     {% endif %}
                                     </td>`
                         }

@@ -72,6 +72,12 @@
                                         <option {% if storeTransaction.vendor_id == vendor.pk %}selected{% endif %} value="{{vendor.pk}}">{{vendor.name}}</option>
                                         {% endfor %}
                                     </select>
+                                    {% if request.user.is_superuser == 1 or 'add_vendor'|get_session_permission:request is not None %}
+                                    <div class="btn float-end addForm" data-text="Add New Vendor"
+                                        data-form="addVendor" id="addVendorModal" data-toggle="modal" data-target="#addFormModal">
+                                        <i class="fa fa-plus"></i>
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">
@@ -126,6 +132,12 @@
                                                         <option {% if storeTransactionDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
                                                     {% endfor %}
                                                 </select>
+                                                {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                    <div class="btn float-end addForm" data-text="Add New item"
+                                                            data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                            <i class="fa fa-plus"></i>
+                                                    </div>
+                                                {% endif %}
                                             </div>
                                         </div>
                                         <div class="col-md-1 mb-3">
@@ -463,6 +475,12 @@
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
                                                 <option value="">Choose...</option>
                                             </select>
+                                            {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                <div class="btn float-end addForm" data-text="Add New item"
+                                                        data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                        <i class="fa fa-plus"></i>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="col-md-1 mb-3">
@@ -526,6 +544,12 @@
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
                                                 ${item_options_text}
                                             </select>
+                                            {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                <div class="btn float-end addForm" data-text="Add New item"
+                                                        data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                        <i class="fa fa-plus"></i>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="col-md-1 mb-3">
@@ -612,6 +636,12 @@
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
                                                 ${item_options_text}
                                             </select>
+                                            {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                <div class="btn float-end addForm" data-text="Add New item"
+                                                        data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                        <i class="fa fa-plus"></i>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="col-md-1 mb-3">
@@ -675,6 +705,12 @@
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
                                                 ${item_options_text}
                                             </select>
+                                            {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                <div class="btn float-end addForm" data-text="Add New item"
+                                                        data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                        <i class="fa fa-plus"></i>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="col-md-1 mb-3">
@@ -754,6 +790,12 @@
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
                                                 ${item_options_text}
                                             </select>
+                                            {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                <div class="btn float-end addForm" data-text="Add New item"
+                                                        data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                        <i class="fa fa-plus"></i>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="col-md-1 mb-3">
@@ -951,6 +993,12 @@
                                                 <select class="custom-select selectpicker item_id" name="item_id" required disabled>
                                                     ${item_options.map((item) => `<option ${item.id == response.page_items[index].item_id ? "selected" : ""} value="${response.page_items[index].item_id}">${response.page_items[index].item__name}</option>`)}
                                                 </select>
+                                                {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                    <div class="btn float-end addForm" data-text="Add New item"
+                                                            data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                            <i class="fa fa-plus"></i>
+                                                    </div>
+                                                {% endif %}
                                             </div>
                                         </div>
                                         <input type="hidden" name="detail_id" value="${response.page_items[index].pk}">

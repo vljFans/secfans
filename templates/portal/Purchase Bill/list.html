@@ -103,6 +103,11 @@
 
 {% block js %}
 <script>
+    //  <a href="#" class="btn float-end addForm"
+    //                                 data-text="Edit Vehicle No " data-form="addVechile" id="addVechileModal"
+    //                                 data-toggle="modal" data-target="#addFormModal" data-id="${element.pk}">
+    //                                 <i class="fa fa-pencil"></i>
+    //                             </a>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
     function getPurchaseBillList(keyword) {
         $.ajax({
@@ -116,7 +121,10 @@
                 $('.error-msg-txt').text("");
                 if (response.status == 200) {
                     edit_url = "{% url 'superuser:purchaseBillEdit' 1 %}";
+                    //edit_url = "{% url 'superuser:getAjaxFormType'  %}?id="
+
                     view_url = "{% url 'superuser:purchaseBillView' 1 %}";
+                    copy_url = "{% url 'superuser:purchaseBillAdd'  %}?id=";
                     page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
@@ -129,13 +137,18 @@
                                 <td>${element.transaction_date}</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'change_purchase_bill_details'|get_session_permission:request is not None   %}
-                                <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
+                                   
+                                <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>
+
                                 {% endif %}
                                 {% if request.user.is_superuser == 1 or 'view_purchase_bill'|get_session_permission:request is not None %}
                                 <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
                                 {% endif %}
                                 {% if request.user.is_superuser == 1 or 'delete_purchase_bill'|get_session_permission:request is not None %}
                                 <a id="delete-btn" data-id="${element.pk}" data-name="${element.transaction_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'add_purchase_bill'|get_session_permission:request is not None %}
+                                <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
                                 {% endif %}
                                 </td>
                             </tr>`;
@@ -199,5 +212,50 @@
             });
         }
     });
+    $(document).on('click', '.addForm', function(e) {
+    e.preventDefault();
+    let formType = $(this).data('form');
+    let selector = $(this).attr('id');
+    let dataId = $(this).data('id');  // Capture the data-id
+
+    console.log('Sending data-id:', dataId);  // Debugging
+
+    $.ajax({
+        url: "{% url 'superuser:getAjaxFormType' %}",  // Replace with your actual view URL
+        type: "POST",
+        data: {
+            'form_type': formType,
+            'selector': selector,
+            'data-id': dataId,  // Include the data-id in the AJAX request
+            'csrfmiddlewaretoken': getCookieValue("csrftoken")  // Ensure CSRF token is included
+        },
+        headers: {
+            'Authorization': getCookieValue("accessToken"),  // Include this if needed
+        },
+        success: function(response) {
+            console.log('Response received:', response);  // Debugging
+        },
+        error: function(error) {
+            console.error('Error occurred:', error);  // Debugging
+        }
+    });
+});
+
+    function getCookieValue(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            let cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                let cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+
 </script>
 {% endblock %}
