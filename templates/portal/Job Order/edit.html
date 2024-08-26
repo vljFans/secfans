@@ -93,6 +93,12 @@
                                                 <option {% if jobOrder.vendor_id == vendor.pk %}selected{% endif %} value="{{vendor.pk}}">{{vendor.name}}</option>
                                                 {% endfor %}
                                             </select>
+                                            {% if request.user.is_superuser == 1 or 'add_vendor'|get_session_permission:request is not None %}
+                                                <div class="btn float-end addForm" data-text="Add New Vendor"
+                                                    data-form="addVendor" id="addVendorModal" data-toggle="modal" data-target="#addFormModal">
+                                                    <i class="fa fa-plus"></i>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="col-md-4 mb-3">
@@ -186,6 +192,12 @@
                                                                                     <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
                                                                                     {% endfor %}
                                                                                 </select>
+                                                                                {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                                                    <div class="btn float-end addForm" data-text="Add New item"
+                                                                                            data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                                                            <i class="fa fa-plus"></i>
+                                                                                    </div>
+                                                                                {% endif %}
                                                                             </div>
                                                                         </div>
                                                                         <div class="col-md-4 py-2">
@@ -471,6 +483,12 @@
                         <select class="custom-select selectpicker vendor_id" data-placeholder="Select Vendor" name="vendor_id" required>
                             ${vendor_options_text}
                         </select>
+                        {% if request.user.is_superuser == 1 or 'add_vendor'|get_session_permission:request is not None %}
+                            <div class="btn float-end addForm" data-text="Add New Vendor"
+                                data-form="addVendor" id="addVendorModal" data-toggle="modal" data-target="#addFormModal">
+                                <i class="fa fa-plus"></i>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="col-md-4 mb-3">
@@ -526,6 +544,12 @@
                                                     <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required>
                                                         ${outgoing_item_options_text}
                                                     </select>
+                                                    {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                        <div class="btn float-end addForm" data-text="Add New item"
+                                                                data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                                <i class="fa fa-plus"></i>
+                                                        </div>
+                                                    {% endif %}
                                                 </div>
                                             </div>
                                             <div class="col-md-4 py-2">
@@ -721,6 +745,12 @@
                             <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required>
                                 ${outgoing_item_options_text}
                             </select>
+                            {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                            <div class="btn float-end addForm" data-text="Add New item"
+                                    data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                    <i class="fa fa-plus"></i>
+                            </div>
+                        {% endif %}
                         </div>
                     </div>
                     <div class="col-md-4 py-2">
@@ -760,6 +790,12 @@
                         <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required>
                             ${incoming_item_options_text}
                         </select>
+                        {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                            <div class="btn float-end addForm" data-text="Add New item"
+                                    data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                    <i class="fa fa-plus"></i>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="col-md-4 py-2">

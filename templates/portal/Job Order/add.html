@@ -387,6 +387,12 @@
                         <select class="custom-select selectpicker vendor_id" data-placeholder="Select Vendor" name="vendor_id" required>
                             ${vendor_options_text}
                         </select>
+                        {% if request.user.is_superuser == 1 or 'add_vendor'|get_session_permission:request is not None %}
+                            <div class="btn float-end addForm" data-text="Add New Vendor"
+                                data-form="addVendor" id="addVendorModal" data-toggle="modal" data-target="#addFormModal">
+                                <i class="fa fa-plus"></i>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="col-md-4 mb-3">
