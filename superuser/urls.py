@@ -152,6 +152,8 @@ urlpatterns = [
     path('purchase-bill-add',views.purchaseBillAdd, name='purchaseBillAdd'),
     path('purchase-bill-edit/<int:id>',views.purchaseBillEdit, name='purchaseBillEdit'),
     path('purchase-bill-view/<int:id>',views.purchaseBillView, name='purchaseBillView'),
+    path('purchase-bill-to-tally',views.purchaseBillTallyReport, name='purchaseBillTallyReport'),
+
    
     path('report-item-tracking-report',views.reportItemTrackingReport, name='reportItemTrackingReport'),
     path('report-inventory-summary', views.reportInventorySummary, name='reportInventorySummary'),

@@ -1,0 +1,120 @@
+{% extends 'portal/base.html' %}
+{% load static %}
+{% load template_func %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<!-- main wrapper div content -->
+<div class="wrapper">
+
+    <!--================================-->
+    <!-- Breadcrumb Start -->
+    <!--================================-->
+    <div class="pageheader pd-t-25 pd-b-35">
+        <div class="d-flex justify-content-between">
+            <div class="clearfix">
+                <div class="pd-t-5 pd-b-5">
+                    <h1 class="pd-0 mg-0 tx-20 tx-dark">{{parent_page_title}} {{page_title}}</h1>
+                </div>
+                <div class="breadcrumb pd-0 mg-0">
+                    {% for breadcrumb in breadcrumbs %}
+                    {% if forloop.counter != breadcrumbs|length %}
+                    <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                    {% else %}
+                    <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row row-xs clearfix">
+        <div class="col-md-12 col-lg-12">
+            {% if messages %}
+            {% for message in messages %}
+            {% if forloop.counter == messages|length %}
+            <div class="{{ message.tags }} success-msg-txt" style="height: 30px; text-align: center;">{{ message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            <div class="card mg-b-30">
+                <!-- upper header of form -->
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-header-title tx-13 mb-0">{{parent_page_title}} {{page_title}}</h6>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- end upper header -->
+                <!-- main form  -->
+                <div class="card-body ">
+                    <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
+                        <div class="form-row">
+                            {% if request.user.is_superuser == 1 or 'view_purchase_bill'|get_session_permission:request is not None %}
+                            <div class="col-md-12" id="submit" >
+                                <button onclick="return confirm('are you want to start process')" class="btn btn-success submit-btn" type="submit">Process</button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+                <!-- end main form -->
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- end main wrapper div -->
+
+{% endblock %}
+
+{% block js %}
+<!-- script -->
+<script>
+
+$(document).on('submit', '#create_form', function (e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    $('.submit-btn').text('Processing...');
+    $('.submit-btn').prop('disabled', true);
+
+    $.ajax({
+        type: "GET",  // Changed from POST to GET
+        evalScripts: true,
+        contentType: false,
+        processData: false,
+        url: "{% url 'api:purchaseBillDetailsExport' %}",
+        headers: {
+            'Authorization': getCookieValue("accessToken")
+        },
+        success: function (response) {
+            $('.submit-btn').text('Processing...');
+            $('.submit-btn').prop('disabled', false);
+            if (response.status == 200) {
+                locationAfterMessageStore(response.message, 'success', "{% url 'superuser:purchaseBillTallyReport' %}");
+            } else {
+                locationAfterMessageStore(response.message, 'success', "{% url 'superuser:purchaseBillTallyReport' %}");
+            }
+        },
+        error: function (error) {
+            $('.submit-btn').text('Processing...');
+            $('.submit-btn').prop('disabled', false);
+            $('.success-msg-txt').text("");
+            $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
+            $('.error-msg-txt').addClass('text-danger');
+            $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+        }
+    });
+});
+
+
+
+</script>
+
+
+{% endblock js %}
