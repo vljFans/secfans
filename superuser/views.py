@@ -1473,6 +1473,17 @@ def purchaseBillView(request,id):
 
     return render(request, 'portal/Purchase Bill/view.html', context)
 
+@login_required
+def purchaseBillTallyReport(request):
+    context.update({
+        'page_title': "Purchase Bill To Tally",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Purchase Bill To Tally", 'url': reverse('superuser:purchaseBillTallyReport')},
+                        {'name': "Process"}]
+    })
+
+    return render(request, 'portal/Purchase Bill/tally.html', context)
+
 
 @login_required
 def reportItemTrackingReport(request):
