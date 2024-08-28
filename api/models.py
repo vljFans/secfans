@@ -830,6 +830,7 @@ class Purchase_Bill(models.Model):
     total_gst_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     notes = models.TextField(blank=True, null=True)
     flag = models.SmallIntegerField(default=0)
+    purchase_tally_report = models.SmallIntegerField(default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)

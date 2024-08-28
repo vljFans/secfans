@@ -121,9 +121,29 @@
               <a href="{% url 'superuser:purchaseBillList' %}">Purchase Bill</a>
             </li>
             {% endif %}
+            
           </ul>
         </li>
         {% endif %}
+
+        {% if request.user.is_superuser == 1 or 'view_purchase_bill'|get_session_permission:request is not None %}
+        <li
+          class="{% if request.path == '/purchase-order-list' or request.path == '/purchase-bill-list' %}open active{% endif %}">
+          <a href="javascript:void(0)"><i data-feather="download"></i>
+            <span>Process</span><i class="accordion-icon fa fa-angle-left"></i>
+          </a>
+          <ul class="sub-menu"
+            style="display: {% if request.path == '/purchase-order-list' or request.path == '/purchase-bill-list' %}block{% else %}none{% endif %};">
+            
+            {% if request.user.is_superuser == 1 or 'view_purchase_bill'|get_session_permission:request is not None %}
+            <li class="{% if request.path == '/purchase-bill-list' %}open active{% endif %}">
+              <a href="{% url 'superuser:purchaseBillList' %}">purchase Bill To Tally</a>
+            </li>
+            {% endif %}
+          </ul>
+        </li>
+        {% endif %}
+
         {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
         <li
           class="{% if request.path == '/job-order-list' %}open active{% endif %}">

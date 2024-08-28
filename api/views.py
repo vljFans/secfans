@@ -935,6 +935,7 @@ def vendorExport(request):
         'name':  tmpname
     })
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def configUserAdd(request):
@@ -7023,6 +7024,66 @@ def purchaseBillDetailsDelete(request):
 
     return JsonResponse(context)
     
+@api_view(['GET'])
+def purchaseBillDetailsExport(request):
+    keyword = request.GET.get('keyword')
+    
+    page_items = models.Purchase_Bill.objects.filter(status=1, deleted=0, purchase_tally_report=0)
+    page_items_exist = page_items.exists()
+
+    #if all transaction tally report sucessfully completed
+    if page_items_exist == False : 
+        return JsonResponse({
+            'code': 200,
+            'filename': 'Tally report of all transaction already generated No transaction left'
+        })
+
+    directory_path = settings.MEDIA_ROOT + '/purchase_transition_tally/'
+    path = Path(directory_path)
+    path.mkdir(parents=True, exist_ok=True)
+
+    # for removing of old file and adding new file
+    # for f in os.listdir(settings.MEDIA_ROOT + '/purchase_transition_tally/'):
+    #     if not f.endswith(".xlsx"):
+    #         continue
+    #     os.remove(os.path.join(settings.MEDIA_ROOT + '/purchase_transition_tally/', f))
+
+    # tmpname = str(datetime.now().microsecond) + ".xlsx"
+    tmpname = "purchasebill_" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".xlsx"
+    wb = Workbook()
+
+    # grab the active worksheet
+    ws = wb.active
+
+    # Data can be assigned directly to cells
+    ws['A1'] = "Vendor Name"
+    ws['B1'] = "Vendor Address"
+    ws['C1'] = "Vendor GSTNo"
+    ws['D1'] = "Invoice" 
+    ws['E1'] = "Vch Type"
+    ws['F1'] = "Total Amount"
+    ws['G1'] = "Total IGST"
+    ws['H1'] = "Total CGST"
+    ws['I1'] = "Total SGST"
+    ws['J1'] = "Total Amount With GST"
+    
+
+    # Rows can also be appended
+    for each in page_items:
+        ws.append([each.vendor.name, each.vendor.address, each.vendor.gst_no, each.invoice_no,'---', each.total_amount,
+                  each.total_igst, each.total_cgst, each.total_sgst, each.total_gst_amount])
+
+    # Save the file
+    wb.save(settings.MEDIA_ROOT + '/purchase_transition_tally/' + tmpname)
+    os.chmod(settings.MEDIA_ROOT + '/purchase_transition_tally/' + tmpname, 0o777)
+
+    page_items.update(purchase_tally_report=1)
+
+    return JsonResponse({
+        'code': 200,
+        'filename': 'File present in :' + settings.MEDIA_URL + 'purchase_transition_tally/' + tmpname,
+    })
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

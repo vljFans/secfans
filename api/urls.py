@@ -161,6 +161,7 @@ urlpatterns = [
     path('purchase-bill-details-add', views.purchaseBillDetailsAdd, name='purchaseBillDetailsAdd'),
     path('purchase-bill-details-edit', views.purchaseBillDetailsEdit, name='purchaseBillDetailsEdit'),
     path('purchase-bill-details-delete', views.purchaseBillDetailsDelete, name='purchaseBillDetailsDelete'),
+    path('purchase-bill-details-export', views.purchaseBillDetailsExport, name='purchaseBillDetailsExport'),
 
     path('item-tracking-report', views.reportItemTrackingReport, name='reportItemTrackingReport'),
     path('report-inventory-summary', views.reportInventorySummary, name='reportInventorySummary'),
