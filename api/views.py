@@ -27,7 +27,7 @@ import math
 import environ
 import csv
 from fpdf import FPDF
-from django.db.models import Avg, Count, Min, Sum
+from django.db.models import Avg, Count, Min, Sum , Case, When, DecimalField
 from fractions import Fraction
 import pandas as pd
 from django.contrib.auth.models import Permission
@@ -7024,70 +7024,277 @@ def purchaseBillDetailsDelete(request):
 
     return JsonResponse(context)
     
+# @api_view(['GET'])
+# def purchaseBillDetailsExport(request):
+#     context = {}
+#     try:
+#         # Fetch page items
+#         page_items = models.Purchase_Bill.objects.filter(status=1, deleted=0, purchase_tally_report=0)
+#         page_items_exist = page_items.exists()
+        
+#         # if not page_items_exist:
+#         #     return JsonResponse({
+#         #         'status': 404,
+#         #         'message': 'Tally report of all transactions already generated. No transactions left.'
+#         #     })
+
+#         # Filtered data with aggregations
+#         filtered_data = models.Purchase_Bill_Details.objects.filter(
+#             purchase_bill_header__purchase_tally_report=0
+#         ).values(
+#             'purchase_bill_header_id',
+#             'purchase_bill_header__vendor__name',
+#             'purchase_bill_header__vendor__address',
+#             'purchase_bill_header__vendor__gst_no',
+#             'purchase_bill_header__invoice_no',
+#             'purchase_bill_header__total_amount',
+#             'purchase_bill_header__total_igst',
+#             'purchase_bill_header__total_cgst',
+#             'purchase_bill_header__total_sgst',
+#             'purchase_bill_header__total_gst_amount'
+
+#         ).annotate(
+#             igst_18=Sum(Case(
+#                 When(igst_percentage=18, then='igst_amount'),
+#                 default=0,
+#                 output_field=DecimalField()
+#             )),
+#             igst_28=Sum(Case(
+#                 When(igst_percentage=28, then='igst_amount'),
+#                 default=0,
+#                 output_field=DecimalField()
+#             )),
+#             cgst_9=Sum(Case(
+#                 When(cgst_percentage=9, then='cgst_amount'),
+#                 default=0,
+#                 output_field=DecimalField()
+#             )),
+#             cgst_14=Sum(Case(
+#                 When(cgst_percentage=14, then='cgst_amount'),
+#                 default=0,
+#                 output_field=DecimalField()
+#             )),
+#             sgst_9=Sum(Case(
+#                 When(sgst_percentage=9, then='sgst_amount'),
+#                 default=0,
+#                 output_field=DecimalField()
+#             )),
+#             sgst_14=Sum(Case(
+#                 When(sgst_percentage=14, then='sgst_amount'),
+#                 default=0,
+#                 output_field=DecimalField()
+#             ))
+#         ).order_by('purchase_bill_header_id')[:25]
+
+#         for each in filtered_data :
+#             print(each['purchase_bill_header__vendor__name'])
+#         exit()
+#         # Create directory if not exists
+#         directory_path = settings.MEDIA_ROOT + '/purchase_transition_tally/'
+#         path = Path(directory_path)
+#         path.mkdir(parents=True, exist_ok=True)
+
+#         # Remove old files if necessary (Uncomment if you need to clean up old files)
+#         # for f in os.listdir(directory_path):
+#         #     if f.endswith(".xlsx"):
+#         #         os.remove(os.path.join(directory_path, f))
+
+#         # Create a new Excel file
+#         tmpname = "purchasebill_" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".xlsx"
+#         wb = Workbook()
+#         ws = wb.active
+
+#         # Add headers
+#         ws['A1'] = "Purchase Bill Header ID"
+#         ws['B1'] = "IGST 18%"
+#         ws['C1'] = "IGST 28%"
+#         ws['D1'] = "CGST 9%"
+#         ws['E1'] = "CGST 14%"
+#         ws['F1'] = "SGST 9%"
+#         ws['G1'] = "SGST 14%"
+
+#         # Append data rows
+#         for each in filtered_data:
+#             ws.append([
+#                 each['purchase_bill_header_id'],
+#                 each['igst_18'],
+#                 each['igst_28'],
+#                 each['cgst_9'],
+#                 each['cgst_14'],
+#                 each['sgst_9'],
+#                 each['sgst_14']
+#             ])
+
+#         # Save the file
+#         file_path = os.path.join(directory_path, tmpname)
+#         wb.save(file_path)
+#         os.chmod(file_path, 0o777)
+
+#         # Update page items
+#         page_items.update(purchase_tally_report=1)
+
+#         filename = 'File present in :' + settings.MEDIA_URL + 'purchase_transition_tally/' + tmpname
+#         context.update({
+#             'status': 200,
+#             'message': filename
+#         })
+#     except Exception as e:
+#         context.update({
+#             'status': 500,
+#             'message': f"Something went wrong. Please try again. Error: {str(e)}"
+#         })
+#     return JsonResponse(context)
+
 @api_view(['GET'])
 def purchaseBillDetailsExport(request):
-    context ={}
-    try: 
+    context = {}
+    try:
+        # Fetch page items
         page_items = models.Purchase_Bill.objects.filter(status=1, deleted=0, purchase_tally_report=0)
         page_items_exist = page_items.exists()
-
-        #if all transaction tally report sucessfully completed
-        if page_items_exist == False : 
+        
+        # If no page items exist, return a response indicating no transactions left
+        if not page_items_exist:
             return JsonResponse({
                 'status': 404,
-                'message': 'Tally report of all transaction already generated No transaction left'
+                'message': 'Tally report of all transactions already generated. No transactions left.'
             })
 
+        # this is the main sql query -----
+        #    sql_query= (SELECT
+        #     `purchase_bill_header_id,
+        #     -- For IGST percentages
+        #     SUM(CASE WHEN igst_percentage = 18 THEN igst_amount ELSE 0 END) AS igst_18,
+        #     SUM(CASE WHEN igst_percentage = 28 THEN igst_amount ELSE 0 END) AS igst_28,
+            
+        #     -- For CGST percentages
+        #     SUM(CASE WHEN cgst_percentage = 9 THEN cgst_amount ELSE 0 END) AS cgst_9,
+        #     SUM(CASE WHEN cgst_percentage = 14 THEN cgst_amount ELSE 0 END) AS cgst_14,
+            
+        #     -- For SGST percentages
+        #     SUM(CASE WHEN sgst_percentage = 9 THEN sgst_amount ELSE 0 END) AS sgst_9,
+        #     SUM(CASE WHEN sgst_percentage = 14 THEN sgst_amount ELSE 0 END) AS sgst_14
+        # FROM
+        #     purchase_bill_details
+        # GROUP BY
+        #     purchase_bill_header_id
+        # LIMIT 0, 25;
+        #         Filtered data with aggregations`)
+        #------sql-----
+
+        filtered_data = models.Purchase_Bill_Details.objects.filter(
+            purchase_bill_header__purchase_tally_report=0
+        ).values(
+            'purchase_bill_header_id',
+            'purchase_bill_header__vendor__name',
+            'purchase_bill_header__vendor__address',
+            'purchase_bill_header__vendor__gst_no',
+            'purchase_bill_header__invoice_no',
+            'purchase_bill_header__total_amount',
+            'purchase_bill_header__total_igst',
+            'purchase_bill_header__total_cgst',
+            'purchase_bill_header__total_sgst',
+            'purchase_bill_header__total_gst_amount'
+        ).annotate(
+            igst_18=Sum(Case(
+                When(igst_percentage=18, then='igst_amount'),
+                default=0,
+                output_field=DecimalField()
+            )),
+            igst_28=Sum(Case(
+                When(igst_percentage=28, then='igst_amount'),
+                default=0,
+                output_field=DecimalField()
+            )),
+            cgst_9=Sum(Case(
+                When(cgst_percentage=9, then='cgst_amount'),
+                default=0,
+                output_field=DecimalField()
+            )),
+            cgst_14=Sum(Case(
+                When(cgst_percentage=14, then='cgst_amount'),
+                default=0,
+                output_field=DecimalField()
+            )),
+            sgst_9=Sum(Case(
+                When(sgst_percentage=9, then='sgst_amount'),
+                default=0,
+                output_field=DecimalField()
+            )),
+            sgst_14=Sum(Case(
+                When(sgst_percentage=14, then='sgst_amount'),
+                default=0,
+                output_field=DecimalField()
+            ))
+        ).order_by('purchase_bill_header_id')[:25]
+
+        # Create directory if not exists
         directory_path = settings.MEDIA_ROOT + '/purchase_transition_tally/'
         path = Path(directory_path)
         path.mkdir(parents=True, exist_ok=True)
 
-        # for removing of old file and adding new file
-        # for f in os.listdir(settings.MEDIA_ROOT + '/purchase_transition_tally/'):
-        #     if not f.endswith(".xlsx"):
-        #         continue
-        #     os.remove(os.path.join(settings.MEDIA_ROOT + '/purchase_transition_tally/', f))
-
-        # tmpname = str(datetime.now().microsecond) + ".xlsx"
+        # Create a new Excel file
         tmpname = "purchasebill_" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".xlsx"
         wb = Workbook()
-
-        # grab the active worksheet
         ws = wb.active
 
-        # Data can be assigned directly to cells
+        # Add headers 
         ws['A1'] = "Vendor Name"
         ws['B1'] = "Vendor Address"
-        ws['C1'] = "Vendor GSTNo"
-        ws['D1'] = "Invoice" 
-        ws['E1'] = "Vch Type"
-        ws['F1'] = "Total Amount"
-        ws['G1'] = "Total IGST"
-        ws['H1'] = "Total CGST"
-        ws['I1'] = "Total SGST"
-        ws['J1'] = "Total Amount With GST"
-        
+        ws['C1'] = "Vendor GST No"
+        ws['D1'] = "Invoice No"
+        ws['E1'] = "Total Amount"
+        ws['F1'] = "Total IGST"
+        ws['G1'] = "Total CGST"
+        ws['H1'] = "Total SGST"
+        ws['I1'] = "Total Amount Including GST"
+        ws['J1'] = "IGST 18%"
+        ws['K1'] = "IGST 28%"
+        ws['L1'] = "CGST 9%"
+        ws['M1'] = "CGST 14%"
+        ws['N1'] = "SGST 9%"
+        ws['O1'] = "SGST 14%"
+        ws['P1'] = "vch type"
 
-        # Rows can also be appended
-        for each in page_items:
-            ws.append([each.vendor.name, each.vendor.address, each.vendor.gst_no, each.invoice_no,'---', each.total_amount,
-                    each.total_igst, each.total_cgst, each.total_sgst, each.total_gst_amount])
+        # Append data rows
+        for each in filtered_data:
+            ws.append([
+                each['purchase_bill_header__vendor__name'],
+                each['purchase_bill_header__vendor__address'],
+                each['purchase_bill_header__vendor__gst_no'],
+                each['purchase_bill_header__invoice_no'],
+                each['purchase_bill_header__total_amount'],
+                each['purchase_bill_header__total_igst'],
+                each['purchase_bill_header__total_cgst'],
+                each['purchase_bill_header__total_sgst'],
+                each['purchase_bill_header__total_gst_amount'],
+                each['igst_18'],
+                each['igst_28'],
+                each['cgst_9'],
+                each['cgst_14'],
+                each['sgst_9'],
+                each['sgst_14'],
+                "---"
+            ])
 
         # Save the file
-        wb.save(settings.MEDIA_ROOT + '/purchase_transition_tally/' + tmpname)
-        os.chmod(settings.MEDIA_ROOT + '/purchase_transition_tally/' + tmpname, 0o777)
+        file_path = os.path.join(directory_path, tmpname)
+        wb.save(file_path)
+        os.chmod(file_path, 0o777)
 
+        # Update page items
         page_items.update(purchase_tally_report=1)
 
-        filename = 'File present in :' + settings.MEDIA_URL + 'purchase_transition_tally/' + tmpname
+        filename = settings.MEDIA_URL + 'purchase_transition_tally/' + tmpname
         context.update({
             'status': 200,
-            'message': filename
-        }) 
-    except Exception:
+            'message': 'File generated successfully in server Media :' + filename,
+            'file_url': filename
+        })
+    except Exception as e:
         context.update({
             'status': 546.1,
-            'message': "Something Went Wrong. Please Try Again."
+            'message': "Something went wrong. Please try again."
         })
     return JsonResponse(context)
 
