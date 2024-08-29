@@ -98,10 +98,10 @@ $(document).on('submit', '#create_form', function (e) {
         success: function (response) {
             $('.submit-btn').text('Processing...');
             $('.submit-btn').prop('disabled', false);
-            if (response.status == 200) {
+            if (response.status == 200 || response.status == 404  ) {
                 locationAfterMessageStore(response.message, 'success', "{% url 'superuser:purchaseBillTallyReport' %}");
             } else {
-                locationAfterMessageStore(response.message, 'success', "{% url 'superuser:purchaseBillTallyReport' %}");
+                alert(response.message)
             }
         },
         error: function (error) {
