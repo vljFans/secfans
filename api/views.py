@@ -4809,7 +4809,7 @@ def jobOrderEdit(request):
             if 'vendor_id' in request.POST:
                 jobOrderHeader.vendor_id = request.POST['vendor_id']
             if 'with_item' in request.POST:
-                jobOrderHeader.with_item = eval(request.POST['with_item'])
+                jobOrderHeader. with_item = eval(request.POST['with_item'])
             else:
                 jobOrderHeader.with_item = False
             jobOrderHeader.notes = request.POST['notes']

@@ -443,7 +443,7 @@
     $(document).on("change", "#fileInput", function() {
         var formData = new FormData();
         formData.append('file', $('#fileInput')[0].files[0]);
-        $.ajax({
+        $.ajax( {
             url: "{% url 'api:itemImport' %}",
             type: 'POST',
             data: formData,
