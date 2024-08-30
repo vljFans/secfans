@@ -224,9 +224,11 @@
         
             <table style="border-width:0px; border-spacing:0px; width:50%; padding-top: 200px; padding-left: 80px; margin-left: 346px;">
                 <tr>
-                    <td rowspan="10"><p style="float: right; margin-top: 0px">for Shiva Engineering Co.</p>
+                    <td  colspan="2" style="text-align: center;"><p style="float: right; margin-top: 0px">for Shiva Engineering Co.</p>
                     <br>
-                    <p></p><br>
+                    {% if materialIssue.creator.user_sign is not None  %}
+                    <img src="{{materialIssue.creator.user_sign}}" class="img-responsive" width="125" height="80" ><br><span >({{materialIssue.creator.name}})</span><br>
+                    {% endif %}
                     <br>
                     <p style="text-align: center;"> Authorised Signatory</p>
                     </td>

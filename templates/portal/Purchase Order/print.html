@@ -214,8 +214,16 @@
                 48 hours of the receipt of the order , it will be understood that the order has been accepted.<br>
                 ## Please Submit your bill in duplicate along with receipted Challan & inspection report.<br>
                 ### Transporter’s name to be intimated at the time of delivery.</td>
-            <td colspan="2" style="text-align: center;">For Shiva Engineering Co..<br><br><br><br>
-                Authorised Signatory</td>
+            <td colspan="2" style="text-align: center;">For Shiva Engineering Co..<br><br>
+                {% if purchaseOrder.creator.user_sign is not None  %}
+                
+                <img src="{{purchaseOrder.creator.user_sign}}" class="img-responsive" width="125" height="80">
+                
+                {% endif %}
+                <br>({{purchaseOrder.creator.name}})<br>
+                Authorised Signatory
+            </td>
+            
         </tr>
     </table>
 </body>

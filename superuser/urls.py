@@ -33,9 +33,11 @@ urlpatterns = [
     path('user-add', views.userAdd, name='userAdd'),
     path('user-edit/<int:id>', views.userEdit, name='userEdit'),
 
+    path('user-transaction-log', views.userTransactionLog, name='userTransactionLog'),
+
     path('client-config-list', views.clientConfigList, name='clientConfigList'),
     path('client-config-add', views.clientConfigAdd, name='clientConfigAdd'),
-     path('client-config-edit/<int:id>', views.clientConfigEdit, name='clientConfigEdit'),
+    path('client-config-edit/<int:id>', views.clientConfigEdit, name='clientConfigEdit'),
 
     path('vendor-list', views.vendorList, name='vendorList'),
     path('vendor-add', views.vendorAdd, name='vendorAdd'),
@@ -150,6 +152,8 @@ urlpatterns = [
     path('purchase-bill-add',views.purchaseBillAdd, name='purchaseBillAdd'),
     path('purchase-bill-edit/<int:id>',views.purchaseBillEdit, name='purchaseBillEdit'),
     path('purchase-bill-view/<int:id>',views.purchaseBillView, name='purchaseBillView'),
+    path('purchase-bill-to-tally',views.purchaseBillTallyReport, name='purchaseBillTallyReport'),
+
    
     path('report-item-tracking-report',views.reportItemTrackingReport, name='reportItemTrackingReport'),
     path('report-inventory-summary', views.reportInventorySummary, name='reportInventorySummary'),

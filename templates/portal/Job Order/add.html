@@ -105,7 +105,7 @@
                                 <textarea name="notes" rows="5" class="form-control" placeholder="Job Description" required></textarea>
                             </div>
                         </div>
-                        {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                        {% if request.user.is_superuser == 1 or 'add_job_order_detail'|get_session_permission:request is not None %}
                         <button class="btn btn-success submit-btn" type="submit">Submit</button>
                         {% endif %}
                     </form>
@@ -382,11 +382,17 @@
 
             $(".third_party").html(`
                 <div class="col-md-4 mb-3">
-                    <label>Vendor<span class="required-indicator">*</span></label>
+                    <label>Vendor/Supplier<span class="required-indicator">*</span></label>
                     <div class="input-group">
                         <select class="custom-select selectpicker vendor_id" data-placeholder="Select Vendor" name="vendor_id" required>
                             ${vendor_options_text}
                         </select>
+                        {% if request.user.is_superuser == 1 or 'add_vendor'|get_session_permission:request is not None %}
+                            <div class="btn float-end addForm" data-text="Add New Vendor"
+                                data-form="addVendor" id="addVendorModal" data-toggle="modal" data-target="#addFormModal">
+                                <i class="fa fa-plus"></i>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="col-md-4 mb-3">
