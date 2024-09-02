@@ -104,6 +104,7 @@
 </script>
 <script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
+    
     function getUserLogList(keyword) {
         $.ajax({
             type: "GET",
@@ -119,11 +120,17 @@
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index];
+
+                        const date = new Date(element.time_stamp);
+
+                        // Format date as desired
+
+                        const formattedDate = date.toLocaleString(); // Adjust the formatting as needed
                         tbody_text += `<tr>
                                 <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
                                 <td>${element.user__name}</td>
                                 <td>${element.task_name}</td>
-                                <td>${element.time_stamp}</td>
+                                <td>${formattedDate}</td>
                                 
                             </tr>`;
                     }
@@ -141,6 +148,7 @@
         });
 
     }
+
     $(document).ready(function () {
         getUserLogList(keyword)
     });
