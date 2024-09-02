@@ -7968,3 +7968,34 @@ def reportVendorIssueRecp(request):
             'message': "Somethings went wrong please try again!",
         })
     return JsonResponse(context)
+
+@api_view(['POST'])
+def extractDataFromXlsx(request):
+    context = {}
+    if request.FILES.get('file'):
+        excel = request.FILES['file']
+        # trying to process files without error
+        try:
+            workbook = load_workbook(excel)
+            sheet = workbook.active
+            row_number = next(cell.row for cell in sheet['A'] if isinstance(cell.value, str) and cell.value.lower() == 'date')
+            sheet.delete_rows(1, row_number - 1)
+            vch_type = next(cell for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'vch type')
+            sales_rows = [row for row in sheet.iter_rows(min_row=1) if isinstance(row[vch_type.column - 1].value, str) and row[vch_type.column - 1].value.lower() == 'sales']
+            for row in sales_rows:
+                print([cell.value for cell in row])
+            context.update({
+                'status': 200,
+                'message': "Items Created Successfully."
+            })
+        except Exception as e:
+            context.update({
+                'status': 568,
+                'message': "Error processing file"
+            })
+    else:
+        context.update({
+            'status': 568,
+            'message': "File has not been uploaded"
+        })
+    return JsonResponse(context)

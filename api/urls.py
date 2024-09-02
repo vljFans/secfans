@@ -174,4 +174,5 @@ urlpatterns = [
     path('report-active-vendor-IssueRecep', views.reportVendorIssueRecp, name='reportVendorIssueRecp'),
 
     path('corn-job-store-item-quantity-update', views.cornJobStoreItemQuantityUpdate, name='cornJobStoreItemQuantityUpdate'),
+    path('extract-data-from-xlsx', views.extractDataFromXlsx, name='extractDataFromXlsx')
 ]
