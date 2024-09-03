@@ -7968,3 +7968,71 @@ def reportVendorIssueRecp(request):
             'message': "Somethings went wrong please try again!",
         })
     return JsonResponse(context)
+
+@api_view(['POST'])
+def extractDataFromXlsx(request):
+    context = {}    
+    if request.FILES.get('file'):
+        excel = request.FILES['file']
+        # trying to process files without error
+        try:
+            invoice = []
+            workbook = load_workbook(excel)
+            sheet = workbook.active
+            row_number = next(cell.row for cell in sheet['A'] if isinstance(cell.value, str) and cell.value.lower() == 'date')
+            if row_number-1 :
+                sheet.delete_rows(1, row_number - 1)
+            if sheet.max_row > 0:
+                sheet.delete_rows(sheet.max_row)
+            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
+            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
+            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
+            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
+            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
+            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
+            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
+            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
+            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
+            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
+            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
+            
+            # Convert sheet rows to a list for easier processing
+            rows = list(sheet.iter_rows(min_row=2, max_row=sheet.max_row))
+
+            # Iterate through the rows to build the invoice list
+            i = 0
+            num_rows = len(rows)  # Store length in a variable to avoid repeated calls
+
+            while i < num_rows:
+                row = rows[i]
+                voucher_type_value = row[voucher_type_column - 1].value
+                if isinstance(voucher_type_value, str) and voucher_type_value.lower() == 'sales':
+                    # Start a new group with the current row
+                    group = [row]
+                    
+                    i += 1
+                    # Add subsequent rows with empty first cells
+                    while i < num_rows and rows[i][0].value in [None, '']:
+                        group.append(rows[i])
+                        i += 1
+                    # Append the completed group to the invoice list
+                    invoice.append(group)
+                else:
+                    i += 1  # Move to the next row if not 'Sales'
+
+            
+            context.update({
+                'status': 200,
+                'message': "Excel read Successfully."
+            })
+        except Exception as e:
+            context.update({
+                'status': 568,
+                'message': "Error processing file"
+            })
+    else:
+        context.update({
+            'status': 568,
+            'message': "File has not been uploaded"
+        })
+    return JsonResponse(context)
