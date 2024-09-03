@@ -990,8 +990,8 @@ class Test_Corn_Job(models.Model):
 
 class Invoice(models.Model):
     date = models.DateField(blank=True, null=True)
-    invoice_number = models.CharField(max_length=50, blank=True, null=True)
-    invoice_ref_number = models.CharField(max_length=50, blank=True, null=True)
+    invoice_no = models.CharField(max_length=50, blank=True, null=True)
+    invoice_ref_no = models.CharField(max_length=50, blank=True, null=True)
     total_quantity = models.DecimalField(max_digits=30, decimal_places=5, default=0)
     total_value = models.DecimalField(max_digits=30, decimal_places=5, default=0)
     status = models.SmallIntegerField(default=1)

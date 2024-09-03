@@ -7980,47 +7980,68 @@ def extractDataFromXlsx(request):
             workbook = load_workbook(excel)
             sheet = workbook.active
             row_number = next(cell.row for cell in sheet['A'] if isinstance(cell.value, str) and cell.value.lower() == 'date')
+            header_field = {
+                "date": None,
+                "particulars":None,
+                "voucher no.": None,
+                "voucher ref. no.": None,
+                "quantity": None,
+                "value": None
+            }
+            for cell in sheet[row_number]:
+                cell_value = cell.value.lower()
+                if cell_value in header_field:
+                    header_field[cell_value] = cell.column
+                if all(value is not None for value in header_field.values()):
+                    break
+
             if row_number-1 :
                 sheet.delete_rows(1, row_number - 1)
             if sheet.max_row > 0:
                 sheet.delete_rows(sheet.max_row)
-            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
-            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
-            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
-            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
-            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
-            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
-            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
-            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
-            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
-            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
-            voucher_type_column = next(cell.column for cell in sheet[1] if isinstance(cell.value, str) and cell.value.lower() == 'voucher type')
-            
-            # Convert sheet rows to a list for easier processing
-            rows = list(sheet.iter_rows(min_row=2, max_row=sheet.max_row))
-
-            # Iterate through the rows to build the invoice list
-            i = 0
-            num_rows = len(rows)  # Store length in a variable to avoid repeated calls
-
-            while i < num_rows:
-                row = rows[i]
-                voucher_type_value = row[voucher_type_column - 1].value
-                if isinstance(voucher_type_value, str) and voucher_type_value.lower() == 'sales':
-                    # Start a new group with the current row
-                    group = [row]
-                    
-                    i += 1
-                    # Add subsequent rows with empty first cells
-                    while i < num_rows and rows[i][0].value in [None, '']:
-                        group.append(rows[i])
-                        i += 1
-                    # Append the completed group to the invoice list
-                    invoice.append(group)
+            i=1
+            total_rows = sheet.max_row
+            while i<total_rows:
+                header_row=sheet[i]
+                if header_row[mapping["voucher no."]].lower() == 'sales':
+                    try:
+                        with transaction.atomic():
+                            invoice_header = models.Invoice()
+                            invoice_header.date = (header_row[mapping["date"]].value).date()
+                            invoice_header.invoice_no = header_row[mapping["voucher no."]].value
+                            invoice_header.invoice_ref_no = header_row[mapping["voucher ref. no."]].value
+                            invoice_header.total_quantity =  header_row[mapping["quantity"]].value
+                            invoice_header.total_value = Decimal(header_row[mapping["value"]].value)
+                            invoice_header.save()
+                            
+                            invoice_details = []    
+                            while i < num_rows and sheet[i][0].value in [None, '']:
+                                detail_row=sheet[i]
+                                invoice_details.append(
+                                    models.Invoice_Details(
+                                        purchase_bill_header_id = purcahse_bill_header.id,
+                                        item = models.Item.objects.get(name=detail_row[mapping["particulars"]].value),
+                                        quantity = detail_row[mapping["quantity"]].value,
+                                        value = Decimal(detail_row[mapping["value"]].value)
+                                    )
+                                )
+                                i += 1
+                            if len(invoice_details):
+                                models.Invoice_Details.objects.bulk_create(invoice_details)
+                        transaction.commit()
+                        context.update({
+                            'status': 200,
+                            'message': "Invoice added succesfully"
+                        })
+                    except Exception:
+                        context.update({
+                            'status': 544,
+                            'message': "Data could not be added to invoice_header table"
+                        })
+                        transaction.rollback()
                 else:
-                    i += 1  # Move to the next row if not 'Sales'
+                    i+=1     
 
-            print(invoice)
             context.update({
                 'status': 200,
                 'message': "Excel read Successfully."
