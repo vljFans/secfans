@@ -8020,7 +8020,7 @@ def extractDataFromXlsx(request):
                 else:
                     i += 1  # Move to the next row if not 'Sales'
 
-            
+            print(invoice)
             context.update({
                 'status': 200,
                 'message': "Excel read Successfully."
