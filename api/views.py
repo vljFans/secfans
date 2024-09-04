@@ -8010,7 +8010,7 @@ def extractDataFromXlsx(request):
                             invoice_header.date = (header_row[mapping["date"]].value).date()
                             invoice_header.invoice_no = header_row[mapping["voucher no."]].value
                             invoice_header.invoice_ref_no = header_row[mapping["voucher ref. no."]].value
-                            invoice_header.total_quantity =  header_row[mapping["quantity"]].value
+                            invoice_header.total_quantity =  (header_row[mapping["quantity"]].value).split(' ',1)[0]
                             invoice_header.total_value = Decimal(header_row[mapping["value"]].value)
                             invoice_header.save()
                             
@@ -8021,7 +8021,7 @@ def extractDataFromXlsx(request):
                                     models.Invoice_Details(
                                         purchase_bill_header_id = purcahse_bill_header.id,
                                         item = models.Item.objects.get(name=detail_row[mapping["particulars"]].value),
-                                        quantity = detail_row[mapping["quantity"]].value,
+                                        quantity = (detail_row[mapping["quantity"]].value).split(' ',1)[0],
                                         value = Decimal(detail_row[mapping["value"]].value)
                                     )
                                 )
