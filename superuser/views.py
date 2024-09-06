@@ -342,10 +342,16 @@ def vendorAdd(request):
 
 @login_required
 def vendorEdit(request, id):
+    context ={}
     vendor = models.Vendor.objects.get(pk=id)
     countries = models.Country.objects.all()
     states = models.State.objects.filter(country_id=vendor.country_id)
     cities = models.City.objects.filter(state_id=vendor.state_id)
+    if vendor.store_present == 1 :
+        store = models.Store.objects.get(vendor_id = id)
+        context.update({
+            'store_manager': store.manager_name	,
+        })
     context.update({
         'vendor': vendor,
         'countries': countries,

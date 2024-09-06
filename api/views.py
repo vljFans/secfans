@@ -754,7 +754,7 @@ def vendorAdd(request):
             vendor.save()
             
             if int(request.POST['createStore']) == 1:
-                # print(vendor.id)
+                print(request.POST.get('manager_name', None))
                 store = models.Store()
                 store.name = request.POST['name']
                 store.address = request.POST['address']
@@ -765,7 +765,8 @@ def vendorAdd(request):
                 store.contact_name = request.POST['contact_name']
                 store.contact_no = request.POST['contact_no']
                 store.contact_email = request.POST['contact_email']
-
+                if request.POST.get('manager_name', None):
+                    store.manager_name = request.POST['manager_name']
                 store.vendor_id = vendor.id
                 store.save()
             userId = request.COOKIES.get('userId', None)
@@ -825,7 +826,7 @@ def vendorEdit(request):
             vendor.save()
            
             if int(request.POST['createStore']) == 1:
-                
+                print(request.POST['manager_name'])
                 store = models.Store()
                 store.name = request.POST['name']
                 store.address = request.POST['address']
@@ -836,7 +837,8 @@ def vendorEdit(request):
                 store.contact_name = request.POST['contact_name']
                 store.contact_no = request.POST['contact_no']
                 store.contact_email = request.POST['contact_email']
-
+                if request.POST.get('manager_name', None):
+                    store.manager_name = request.POST['manager_name']
                 store.vendor_id = vendor.id
                 store.save()
 
@@ -2478,6 +2480,7 @@ def itemExport(request):
 def itemImport(request):
     context = {}
     if request.FILES.get('file'):
+        
         excel = request.FILES['file']
         # trying to process files without error
         try:
@@ -2492,12 +2495,12 @@ def itemImport(request):
                     uom_name = row['uom']
                     price = row['price']
                     hsn_code = row['hsn code']
-
                     # Skip the row if any required field is empty
                     if not all([name, item_type_name, item_category_name, uom_name, price, hsn_code]):
                         continue  # Skip this row and move to the next one
-
+                   
                     if not models.Item.objects.filter(name__iexact=name).exists():
+                   
                         if (
                             models.Item_Type.objects.filter(name__iexact=item_type_name).exists()
                             and models.Item_Category.objects.filter(name__iexact=item_category_name).exists()
@@ -2512,7 +2515,8 @@ def itemImport(request):
                                         price=Decimal(price),
                                         hsn_code=hsn_code
                                     )
-                                    obj.save()
+                                    obj.save(obj)
+
                                     userId = request.COOKIES.get('userId', None)
                                     user_log_details_add(userId,'Item Bulk Import')
                                 transaction.commit()
@@ -8007,6 +8011,7 @@ def extractDataFromXlsx(request):
                     try:
                         with transaction.atomic():
                             invoice_header = models.Invoice()
+                            invoice_header.customer = models.Customer.objects.get(name=header_row[mapping["particulars"]].value),
                             invoice_header.date = (header_row[mapping["date"]].value).date()
                             invoice_header.invoice_no = header_row[mapping["voucher no."]].value
                             invoice_header.invoice_ref_no = header_row[mapping["voucher ref. no."]].value

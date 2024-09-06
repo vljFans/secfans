@@ -994,6 +994,7 @@ class Invoice(models.Model):
     invoice_ref_no = models.CharField(max_length=50, blank=True, null=True)
     total_quantity = models.DecimalField(max_digits=30, decimal_places=5, default=0)
     total_value = models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, blank=True, null=True )
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -1009,7 +1010,7 @@ class Invoice(models.Model):
 
 class Invoice_Details(models.Model):
     invoice_header = models.ForeignKey(Invoice, on_delete=models.CASCADE, blank=True, null=True)
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True, )
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True )
     quantity = models.DecimalField(max_digits=30, decimal_places=5, default=0)
     value = models.DecimalField(max_digits=30, decimal_places=5, default=0)
     status = models.SmallIntegerField(default=1)
