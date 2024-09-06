@@ -7990,7 +7990,16 @@ def extractDataFromXlsx(request):
                 "voucher no.": None,
                 "voucher ref. no.": None,
                 "quantity": None,
-                "value": None
+                "value": None,
+                "gross total": None,
+                "gst sales 18%": None,
+                "cgst @ 9%": None,
+                "sgst @ 9%": None,
+                "round off (+/-)": None,
+                "igst sales@ 18%": None,
+                "igst 18%": None,
+                "rent": None,
+                "export sales": None,
             }
             for cell in sheet[row_number]:
                 cell_value = cell.value.lower()
@@ -8017,6 +8026,15 @@ def extractDataFromXlsx(request):
                             invoice_header.invoice_ref_no = header_row[mapping["voucher ref. no."]].value
                             invoice_header.total_quantity =  (header_row[mapping["quantity"]].value).split(' ',1)[0]
                             invoice_header.total_value = Decimal(header_row[mapping["value"]].value)
+                            invoice_header.gross_total =  (header_row[mapping["gross total"]].value).split(' ',1)[0]                           
+                            invoice_header.gst_sales =  (header_row[mapping["gst sales 18%"]].value).split(' ',1)[0]                           
+                            invoice_header.cgst =  (header_row[mapping["cgst @ 9%"]].value).split(' ',1)[0]                           
+                            invoice_header.sgst =  (header_row[mapping["sgst @ 9%"]].value).split(' ',1)[0]                           
+                            invoice_header.round_off =  (header_row[mapping["round off (+/-)"]].value).split(' ',1)[0]                           
+                            invoice_header.rent =  (header_row[mapping["rent"]].value).split(' ',1)[0]                           
+                            invoice_header.export_sales =  (header_row[mapping["export sales"]].value).split(' ',1)[0]                           
+                            invoice_header.igst_sales =  (header_row[mapping["igst sales@ 18%"]].value).split(' ',1)[0]                           
+                            invoice_header.igst =  (header_row[mapping["igst 18%"]].value).split(' ',1)[0]                           
                             invoice_header.save()
                             
                             invoice_details = []    
