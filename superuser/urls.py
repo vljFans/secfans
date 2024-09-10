@@ -164,4 +164,6 @@ urlpatterns = [
     path('report-active-purchase-order', views.reportActivePurchaseOrder, name='reportActivePurchaseOrder'),
     path('report-active-purchase-materialIssue', views.reportActivePurchaseMaterialIssue, name='reportActivePurchaseMaterialIssue'),
     path('report-active-vendor-Reciept-materialIssue', views.reportActiveVendorIssueReciept, name='reportActiveVendorIssueReciept'),
+
+    path('invoice-store-transaction-maigration',views.invoiceStoreTransactionMaigration, name='invoiceStoreTransactionMaigration'),
 ]

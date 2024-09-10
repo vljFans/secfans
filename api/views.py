@@ -8080,11 +8080,86 @@ def reportVendorIssueRecp(request):
         })
     return JsonResponse(context)
 
+def invoice_store_migration(store_id):
+    try:
+        with transaction.atomic():
+            invoice_details = models.Invoice_Details.objects.filter(
+                invoice_header__store_transaction_add=0, 
+                invoice_header__status=1, 
+                invoice_header__deleted=0, 
+                status=1, 
+                deleted=0
+            ).select_related('invoice_header', 'item')  # Efficiently load related Invoice and Item in a single query
+            if not invoice_details.exists():
+                print(8094)
+                return "no modification done in store transaction as no new transaction found"
+            old_id = -1
+            # Process each invoice detail in a single loop
+            for invoice_detail in invoice_details:
+                if invoice_detail.invoice_header.id != old_id:
+                    storeTransactionHeader = models.Store_Transaction()
+                    storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name='MIV')
+                    storeTransactionHeader.transaction_number = invoice_detail.invoice_header.invoice_no
+                    storeTransactionHeader.transaction_date = invoice_detail.invoice_header.date
+                    storeTransactionHeader.total_amount = invoice_detail.invoice_header.total_value 
+                    storeTransactionHeader.reference_id = invoice_detail.invoice_header.id
+                    storeTransactionHeader.save()
+                    old_id = invoice_detail.invoice_header.id
+                  
+                obj = models.Store_Transaction_Detail(
+                        store_transaction_header_id=storeTransactionHeader.id,
+                        item_id=invoice_detail.item_id,
+                        store_id=store_id,
+                        quantity=invoice_detail.quantity,
+                        rate=invoice_detail.rate,
+                        amount=invoice_detail.value,
+                    )
+                # print(obj.__dict__) 
+                obj.save()
+                print(8117)
+                storeItem = models.Store_Item.objects.filter(
+                    item_id=invoice_detail.item_id, store_id=store_id).first()
+                print(8120)
+                print(storeItem)
+                if storeItem is None: 
+                    return "some items is mising in this store please check"
+                else:
+                    print(8124)
+                    storeItem.on_hand_qty -= invoice_detail.quantity
+                    print(8126)
+                    storeItem.closing_qty -= invoice_detail.quantity
+                    print(8128)
+                    storeItem.updated_at = datetime.now()
+                    storeItem.save()
+                print(8127)
+        # Update page items
+        invoice_header = models.Invoice.objects.all()
+        invoice_header.update(store_transaction_add=1)
+        return "store transaction added successfuly "
+
+    except Exception as e :
+        return "something went wrong!" 
+
+
+
+        # print(invoice_detail.invoice_header.id == old_id)
+        # print(f"Item: {invoice_detail.item.name}")
+        # print(f"quantity:{invoice_detail.quantity}")
+        # print(f"ref_no:{invoice_detail.invoice_header.invoice_ref_no}")
+
 @api_view(['POST'])
 def extractDataFromXlsx(request):
     context = {}    
+    storeItem = models.Store_Item.objects.filter(store_id=request.POST['store_id']).first()
+    if storeItem is None:
+        context.update({
+            'status': 544,
+            'message': "No item present in this particular store please add item on this store"
+        })
+        return JsonResponse(context)
     if request.FILES.get('file'):
         excel = request.FILES['file']
+        flag = 0
         # trying to process files without error
         try:
             invoice = []
@@ -8099,6 +8174,7 @@ def extractDataFromXlsx(request):
                 "voucher ref. no.": None,
                 "quantity": None,
                 "value": None,
+                "rate": None,
                 "gross total": None,
                 "gst sales 18%": None,
                 "cgst @ 9%": None,
@@ -8123,7 +8199,7 @@ def extractDataFromXlsx(request):
             total_rows = sheet.max_row
             while i<=total_rows:
                 header_row=sheet[i]
-                print("header: ", i)
+                # print("header: ", i)
                 if header_row[mapping["voucher type"]].value.lower() == 'sales':
                     try:
                         with transaction.atomic():
@@ -8155,7 +8231,7 @@ def extractDataFromXlsx(request):
                             invoice_details = []  
                             while i <= total_rows and not sheet[i][0].value:
                                 detail_row=sheet[i]
-                                print("details:",i)
+                                # print("details:",i)
                                 i += 1
                                 item = models.Item.objects.get(name=detail_row[mapping["particulars"]].value)
                                 # print(item)
@@ -8167,6 +8243,7 @@ def extractDataFromXlsx(request):
                                             invoice_header_id = invoice_header.id,
                                             item = item,
                                             quantity = handle_empty_cell(detail_row[mapping["quantity"]].value),
+                                            rate = handle_empty_cell(detail_row[mapping["rate"]].value),
                                             value = handle_empty_cell(detail_row[mapping["value"]].value)
                                         )
                                     )
@@ -8193,13 +8270,21 @@ def extractDataFromXlsx(request):
                 'message': "Excel read Successfully"+ ((" and " + context['message']) if context  else "")
             })
         except Exception as e:
+            flag =1
             context.update({
                 'status': 568,
                 'message': "Error processing file"
             })
     else:
+        flag =1
         context.update({
             'status': 568,
             'message': "File has not been uploaded"
+        })
+    if flag == 0 :
+        message = invoice_store_migration(request.POST['store_id'])
+        context.update({
+            'status': 200,
+            'message': "process completed" +  ((", " + context['message']) if context  else "") + " and " + message 
         })
     return JsonResponse(context)

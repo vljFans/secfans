@@ -1011,7 +1011,7 @@ class Invoice(models.Model):
     updated_at = models.DateTimeField(default=now)
 
     def __str__(self):
-        return self.invoice_number
+        return self.invoice_no
 
     class Meta:
         managed = True
@@ -1023,13 +1023,14 @@ class Invoice_Details(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True )
     quantity = models.DecimalField(max_digits=30, decimal_places=5, default=0)
     value = models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    rate = models.DecimalField(max_digits=30, decimal_places=5, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
     updated_at = models.DateTimeField(default=now)
 
     def __str__(self):
-        return self.invoice_header.invoice_number
+        return self.invoice_header.invoice_no
 
     class Meta:
         managed = True

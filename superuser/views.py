@@ -194,10 +194,7 @@ def roleList(request):
 @login_required
 def roleAdd(request):
     content_types = ContentType.objects.prefetch_related('permission_set').filter(
-        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail','test_corn_job','user_log_details','outgoing_incoming_ratio','outgoing_incoming_ratio_details','purchase_bill_details','grn_inspection_transaction_detail','physical_inspection_details','on_transit_transaction_details','item_stock_report_details'])
-    for content_type in content_types:
-        if content_type.model == 'store_transaction':
-             content_type.model = 'store_transaction(Grn)'
+        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail','test_corn_job','user_log_details','outgoing_incoming_ratio','outgoing_incoming_ratio_details','purchase_bill_details','grn_inspection_transaction_detail','physical_inspection_details','on_transit_transaction_details','item_stock_report_details','invoice_details'])
     context.update({
         'content_types': content_types,
         'page_title': "Role Add",
@@ -209,10 +206,7 @@ def roleAdd(request):
 @login_required
 def roleEdit(request, id):
     content_types = ContentType.objects.prefetch_related('permission_set').filter(
-        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail','test_corn_job','user_log_details','outgoing_incoming_ratio','outgoing_incoming_ratio_details','purchase_bill_details','grn_inspection_transaction_detail','physical_inspection_details','on_transit_transaction_details','item_stock_report_details'])
-    for content_type in content_types:
-        if content_type.model == 'store_transaction':
-             content_type.model = 'store_transaction(Grn)'
+        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail','test_corn_job','user_log_details','outgoing_incoming_ratio','outgoing_incoming_ratio_details','purchase_bill_details','grn_inspection_transaction_detail','physical_inspection_details','on_transit_transaction_details','item_stock_report_details','invoice_details'])
     role = models.Role.objects.prefetch_related(
         'role_permission_set').get(pk=id)
     selected_permissions = []
@@ -232,10 +226,7 @@ def roleEdit(request, id):
 @login_required
 def roleView(request, id):
     content_types = ContentType.objects.prefetch_related('permission_set').filter(
-        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail','test_corn_job','user_log_details','outgoing_incoming_ratio','outgoing_incoming_ratio_details','purchase_bill_details','grn_inspection_transaction_detail','physical_inspection_details','on_transit_transaction_details','item_stock_report_details'])
-    for content_type in content_types:
-        if content_type.model == 'store_transaction':
-             content_type.model = 'store_transaction(Grn)'
+        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail','test_corn_job','user_log_details','outgoing_incoming_ratio','outgoing_incoming_ratio_details','purchase_bill_details','grn_inspection_transaction_detail','physical_inspection_details','on_transit_transaction_details','item_stock_report_details','invoice_details'])
     role = models.Role.objects.prefetch_related(
         'role_permission_set').get(pk=id)
     selected_permissions = []
@@ -1488,7 +1479,7 @@ def purchaseBillTallyReport(request):
                         {'name': "Process"}]
     })
 
-    return render(request, 'portal/Purchase Bill/tally.html', context)
+    return render(request, 'portal/process/tally.html', context)
 
 
 @login_required
@@ -1580,3 +1571,16 @@ def reportActiveVendorIssueReciept(request):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports"}, {'name': "VendorJobOrderIssueReciept"}, {'name': "Active VendorJobOrderIssueReciept", 'url': reverse('superuser:reportActiveVendorIssueReciept')}]
     })
     return render(request, 'portal/Report/vendorJobOrderIssueRecep.html', context)
+
+@login_required
+def invoiceStoreTransactionMaigration(request):
+    stores = models.Store.objects.filter(Q(store_item__isnull=False),Q(vendor_id__isnull=True)).distinct()
+    context.update({
+        'stores': stores,
+        'page_title': "Invoice to Store Transaction Migration",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Invoice to Store Transaction Migration", 'url': reverse('superuser:invoiceStoreTransactionMaigration')},
+                        {'name': "Migration Proceass"}]
+    })
+
+    return render(request, 'portal/process/inoviceStoreTransact.html', context)
