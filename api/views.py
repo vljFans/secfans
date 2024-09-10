@@ -53,6 +53,17 @@ class CustomPaginator:
         return math.ceil(len(self.items) / self.per_page)
 
 
+def handle_empty_cell(x):
+    if isinstance(x, str):
+        if x.strip().isdigit():
+            return Decimal(x)
+        else :
+            return 0
+    if isinstance(x, float) and math.isnan(x):
+        return 0
+    return Decimal(x)
+
+
 def set_user_permissions_in_session(user, request):
     # Fetch the role associated with the user
     role = user.role
@@ -2480,11 +2491,13 @@ def itemExport(request):
 @api_view(['POST'])
 def itemImport(request):
     context = {}
+
     if request.FILES.get('file'):
         
         excel = request.FILES['file']
         # trying to process files without error
         try:
+           
             df = pd.read_excel(excel)
             df.columns = [col.strip().lower() for col in df.columns]
             for index, row in df.iterrows():
@@ -2493,17 +2506,15 @@ def itemImport(request):
                     name = row['name']
                     item_type_name = row['item type']
                     item_category_name = row['item category']
-                    uom_name = row['uom']
-                    try:
-                        price=Decimal(row['price'])
-                    except:
-                        price=0
+                    uom_name = row['uom'] 
+                    price=  handle_empty_cell(row['price'])
                     hsn_code = row['hsn code']
+                   
                     # Skip the row if any required field is empty
                     if not all([name, item_type_name, item_category_name, uom_name, hsn_code]):
                         continue  # Skip this row and move to the next one
                     if not models.Item.objects.filter(name__iexact=name).exists():
-                   
+                       
                         if (
                             models.Item_Type.objects.filter(name__iexact=item_type_name).exists()
                             and models.Item_Category.objects.filter(name__iexact=item_category_name).exists()
@@ -2518,8 +2529,10 @@ def itemImport(request):
                                         price=price,
                                         hsn_code=hsn_code
                                     )
-                                    obj.save(obj)
-                                    print('2520')
+                                   
+                                    # print(obj.__dict__) 
+                                    obj.save()
+                                    
                                     userId = request.COOKIES.get('userId', None)
                                     user_log_details_add(userId,'Item Bulk Import')
                                 transaction.commit()
@@ -2528,6 +2541,7 @@ def itemImport(request):
                                     'message': "Items Created Successfully."
                                 })
                             except Exception:
+
                                 context.update({
                                     'status': 568,
                                     'message': "Items cannot be created something wrong"
@@ -8107,47 +8121,58 @@ def extractDataFromXlsx(request):
                 sheet.delete_rows(sheet.max_row)
             i=2
             total_rows = sheet.max_row
-            while i<total_rows:
-                # print("header: ", i)
+            while i<=total_rows:
                 header_row=sheet[i]
+                print("header: ", i)
                 if header_row[mapping["voucher type"]].value.lower() == 'sales':
                     try:
                         with transaction.atomic():
-                            
-                            invoice_header = models.Invoice()
-                            if customers := models.Customer.objects.filter(name=header_row[mapping["particulars"]].value):
-                                invoice_header.customer = customers[0]
-                            invoice_header.date = (header_row[mapping["date"]].value).date()
-                            invoice_header.invoice_no = header_row[mapping["voucher no."]].value
-                            invoice_header.invoice_ref_no = header_row[mapping["voucher ref. no."]].value
-                            invoice_header.total_quantity= Decimal(header_row[mapping["quantity"]].value)
-                            invoice_header.total_quantity =  Decimal((header_row[mapping["quantity"]].value))
-                            invoice_header.total_value = Decimal(header_row[mapping["value"]].value)
-                            invoice_header.gross_total =  Decimal(header_row[mapping["gross total"]].value)     
-                            invoice_header.gst_sales = Decimal(x) if (x := header_row[mapping["gst sales 18%"]].value) else 0          
-                            invoice_header.cgst = Decimal(x) if (x := header_row[mapping["cgst @ 9%"]].value) else 0                  
-                            invoice_header.sgst = Decimal(x) if (x := header_row[mapping["sgst @ 9%"]].value) else 0          
-                            invoice_header.round_off = Decimal(x) if (x := header_row[mapping["round off (+/-)"]].value) else 0          
-                            invoice_header.igst_sales = Decimal(x) if (x := header_row[mapping["igst sales@ 18%"]].value) else 0          
-                            invoice_header.igst = Decimal(x) if (x := header_row[mapping["igst 18%"]].value) else 0          
-                            invoice_header.rent = Decimal(x) if (x := header_row[mapping["rent"]].value) else 0          
-                            invoice_header.export_sales = Decimal(x) if (x := header_row[mapping["export sales"]].value) else 0          
-                            invoice_header.save()
-                            invoice_details = []  
                             i+=1  
-                            while i < total_rows and not sheet[i][0].value:
+                            invoice_header=None
+                            invoice_no = header_row[mapping["voucher no."]].value
+                            if x := models.Invoice.objects.filter(invoice_no=invoice_no).first():
+                                invoice_header = x
+                            else:
+                                invoice_header = models.Invoice()
+                                if customers := models.Customer.objects.filter(name=header_row[mapping["particulars"]].value):
+                                    invoice_header.customer = customers[0]
+                                invoice_header.date = (header_row[mapping["date"]].value).date()
+                                invoice_header.invoice_no = invoice_no
+                                invoice_header.invoice_ref_no = header_row[mapping["voucher ref. no."]].value
+                                invoice_header.total_quantity= Decimal(header_row[mapping["quantity"]].value)
+                                invoice_header.total_quantity =  Decimal((header_row[mapping["quantity"]].value))
+                                invoice_header.total_value = Decimal(header_row[mapping["value"]].value)
+                                invoice_header.gross_total =  Decimal(header_row[mapping["gross total"]].value)     
+                                invoice_header.gst_sales = Decimal(x) if (x := header_row[mapping["gst sales 18%"]].value) else 0          
+                                invoice_header.cgst = Decimal(x) if (x := header_row[mapping["cgst @ 9%"]].value) else 0                  
+                                invoice_header.sgst = Decimal(x) if (x := header_row[mapping["sgst @ 9%"]].value) else 0          
+                                invoice_header.round_off = Decimal(x) if (x := header_row[mapping["round off (+/-)"]].value) else 0          
+                                invoice_header.igst_sales = Decimal(x) if (x := header_row[mapping["igst sales@ 18%"]].value) else 0          
+                                invoice_header.igst = Decimal(x) if (x := header_row[mapping["igst 18%"]].value) else 0          
+                                invoice_header.rent = Decimal(x) if (x := header_row[mapping["rent"]].value) else 0          
+                                invoice_header.export_sales = Decimal(x) if (x := header_row[mapping["export sales"]].value) else 0          
+                                invoice_header.save()
+                            invoice_details = []  
+                            while i <= total_rows and not sheet[i][0].value:
                                 detail_row=sheet[i]
-                                invoice_details.append(
-                                    models.Invoice_Details(
-                                        invoice_header_id = invoice_header.id,
-                                        item = models.Item.objects.get(name=detail_row[mapping["particulars"]].value),
-                                        quantity = Decimal(detail_row[mapping["quantity"]].value),
-                                        value = Decimal(detail_row[mapping["value"]].value)
-                                    )
-                                )
+                                print("details:",i)
                                 i += 1
+                                item = models.Item.objects.get(name=detail_row[mapping["particulars"]].value)
+                                # print(item)
+                                # print(models.Invoice_Details.objects.filter(item=item, invoice_header_id=invoice_header.id).exists())
+                                if not models.Invoice_Details.objects.filter(item=item, invoice_header_id=invoice_header.id).exists():
+                                    print(True)
+                                    invoice_details.append(
+                                        models.Invoice_Details(
+                                            invoice_header_id = invoice_header.id,
+                                            item = item,
+                                            quantity = handle_empty_cell(detail_row[mapping["quantity"]].value),
+                                            value = handle_empty_cell(detail_row[mapping["value"]].value)
+                                        )
+                                    )
+                                
                             if len(invoice_details):
-                                pass
+                                # pass
                                 models.Invoice_Details.objects.bulk_create(invoice_details)
                         transaction.commit()
                         context.update({
