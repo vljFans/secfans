@@ -990,7 +990,7 @@ class Test_Corn_Job(models.Model):
 
 class Invoice(models.Model):
     date = models.DateField(blank=True, null=True)
-    invoice_no = models.CharField(max_length=50, blank=True, null=True)
+    invoice_no = models.CharField(max_length=50, blank=True, null=True, unique=True)
     invoice_ref_no = models.CharField(max_length=50, blank=True, null=True)
     total_quantity = models.DecimalField(max_digits=30, decimal_places=5, default=0)
     total_value = models.DecimalField(max_digits=30, decimal_places=5, default=0)
@@ -1004,6 +1004,7 @@ class Invoice(models.Model):
     igst= models.DecimalField(max_digits=30, decimal_places=5, default=0)
     rent= models.DecimalField(max_digits=30, decimal_places=5, default=0)
     export_sales= models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    store_transaction_add = models.SmallIntegerField(default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)

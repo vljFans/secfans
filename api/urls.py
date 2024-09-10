@@ -107,6 +107,8 @@ urlpatterns = [
     path('store-item-edit', views.storeItemEdit, name='storeItemEdit'),
     path('store-item-delete', views.storeItemDelete, name='storeItemDelete'),
     path('store-item-export', views.storeItemExport, name='storeItemExport'),
+    path('store-item-import', views.storeItemImport, name='storeItemImport'),
+
     # path('store-item-report-export', views.storeItemReportExport, name='storeItemReportExport'),
 
 

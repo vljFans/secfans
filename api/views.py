@@ -2309,6 +2309,7 @@ def itemEdit(request):
             item.updated_at = datetime.now()
             item.save()
             userId = request.COOKIES.get('userId', None)
+            print(userId)
             user_log_details_add(userId,'Item Edit')
         transaction.commit()
         context.update({
@@ -2493,12 +2494,14 @@ def itemImport(request):
                     item_type_name = row['item type']
                     item_category_name = row['item category']
                     uom_name = row['uom']
-                    price = row['price']
+                    try:
+                        price=Decimal(row['price'])
+                    except:
+                        price=0
                     hsn_code = row['hsn code']
                     # Skip the row if any required field is empty
-                    if not all([name, item_type_name, item_category_name, uom_name, price, hsn_code]):
+                    if not all([name, item_type_name, item_category_name, uom_name, hsn_code]):
                         continue  # Skip this row and move to the next one
-                   
                     if not models.Item.objects.filter(name__iexact=name).exists():
                    
                         if (
@@ -2512,11 +2515,11 @@ def itemImport(request):
                                         name=name, 
                                         item_type=models.Item_Type.objects.get(name__iexact=item_type_name),
                                         uom=models.Uom.objects.get(name__iexact=uom_name),
-                                        price=Decimal(price),
+                                        price=price,
                                         hsn_code=hsn_code
                                     )
                                     obj.save(obj)
-
+                                    print('2520')
                                     userId = request.COOKIES.get('userId', None)
                                     user_log_details_add(userId,'Item Bulk Import')
                                 transaction.commit()
@@ -2538,6 +2541,11 @@ def itemImport(request):
                         'message': "Required column missing"
                     })
                     return JsonResponse(context)
+            if not context:
+                context.update({
+                'status': 568,
+                'message': "No new items in the excel"
+            })
         except Exception as e:
             context.update({
                 'status': 568,
@@ -2680,6 +2688,7 @@ def storeAdd(request):
 @permission_classes([IsAuthenticated])
 def storeEdit(request):
     context = {}
+    print(request.POST)
     if not request.POST['name'] or not request.POST['address'] or not request.POST['contact_name'] or not request.POST['contact_no'] or not request.POST['contact_email'] or not request.POST['pin'] or not request.POST['city_id'] or not request.POST['state_id'] or not request.POST['country_id']:
         context.update({
             'status': 566,
@@ -2697,6 +2706,7 @@ def storeEdit(request):
     try:
         with transaction.atomic():
             store = models.Store.objects.get(pk=request.POST['id'])
+            print("vendor_Id:",request.POST.get('vendor_id',None))
             store.name = request.POST['name']
             store.address = request.POST['address']
             store.country_id = request.POST['country_id']
@@ -2707,11 +2717,16 @@ def storeEdit(request):
             store.contact_no = request.POST['contact_no']
             store.contact_email = request.POST['contact_email']
             store.manager_name = request.POST['manager_name']
-            store.vendor_id = request.POST['vendor_id'] if 'vendor_id' in request.POST.keys() else None
+            if request.POST['store_type'] == 1:
+                store.vendor_id = request.POST['vendor_id']
             store.updated_at = datetime.now()
+            print(store.pk)
             store.save()
+            print(store.pk)
             userId = request.COOKIES.get('userId', None)
+           
             user_log_details_add(userId,'Store Edit')
+     
         transaction.commit()
         context.update({
             'status': 200,
@@ -3730,6 +3745,84 @@ def storeItemExport(request):
         'filename': settings.MEDIA_URL + 'reports/' + tmpname,
         'name':  tmpname
     })
+
+
+@api_view(['POST'])
+def storeItemImport(request):
+    context = {}
+    if request.FILES.get('file'):
+        
+        excel = request.FILES['file']
+        # trying to process files without error
+        try:
+            df = pd.read_excel(excel)
+            df.columns = [col.strip().lower() for col in df.columns]
+            for index, row in df.iterrows():
+                # trying to fetch required cells from 
+                try:
+                    store_name = row['store']
+                    item_name = row['item']
+                    opening_quantity = row['opening quantity']
+                    on_hand_quantity = row['on hand quantity']
+                    closing_quantity= row['closing quantity']
+                    # Skip the row if any required field is empty
+                    if not all([store_name, item_name, opening_quantity, on_hand_quantity, closing_quantity]):
+                        continue  # Skip this row and move to the next one
+                    if not models.Store_Item.objects.filter(store__name__iexact=store_name,item__name__iexact=item_name).exists():
+                        
+                        if (
+                            models.Store.objects.filter(name__iexact=store_name).exists() and
+                            models.Item.objects.filter(name__iexact=item_name).exists()
+                        ):
+                            try:
+                                with transaction.atomic():
+                                    obj = models.Store_Item(
+                                        store=models.Store.objects.get(name__iexact=store_name), 
+                                        item=models.Item.objects.get(name__iexact=item_name),
+                                        opening_qty=Decimal(opening_quantity),
+                                        on_hand_qty=Decimal(on_hand_quantity),
+                                        closing_qty=Decimal(closing_quantity)
+                                    )
+                                    obj.save(obj)
+                                    userId = request.COOKIES.get('userId', None)
+                                    user_log_details_add(userId,'store Item Bulk Import')
+                                transaction.commit()
+                                context.update({
+                                    'status': 200,
+                                    'message': "srore Items Created Successfully."
+                                })
+                            except Exception:
+                                
+                                context.update({
+                                    'status': 568,
+                                    'message': "store Items cannot be created something wrong"
+                                })
+                                transaction.rollback()
+                            
+                except KeyError as e:
+                    # Handle missing columns
+                    context.update({
+                        'status': 568,
+                        'message': "Required column missing"
+                    })
+                    return JsonResponse(context)
+            if not context:
+                context.update({
+                'status': 568,
+                'message': "No new store items in the excel"
+            })
+        except Exception as e:
+            context.update({
+                'status': 568,
+                'message': "Error processing file"
+            })
+    else:
+        context.update({
+            'status': 568,
+            'message': "File has not been uploaded"
+        })
+    return JsonResponse(context)
+
 
 
 # @api_view(['GET'])
@@ -7984,9 +8077,10 @@ def extractDataFromXlsx(request):
             workbook = load_workbook(excel)
             sheet = workbook.active
             row_number = next(cell.row for cell in sheet['A'] if isinstance(cell.value, str) and cell.value.lower() == 'date')
-            header_field = {
+            mapping = {
                 "date": None,
                 "particulars":None,
+                "voucher type":None,
                 "voucher no.": None,
                 "voucher ref. no.": None,
                 "quantity": None,
@@ -8003,53 +8097,57 @@ def extractDataFromXlsx(request):
             }
             for cell in sheet[row_number]:
                 cell_value = cell.value.lower()
-                if cell_value in header_field:
-                    header_field[cell_value] = cell.column
-                if all(value is not None for value in header_field.values()):
+                if cell_value in mapping:
+                    mapping[cell_value] = cell.column-1
+                if all(value is not None for value in mapping.values()):
                     break
-
             if row_number-1 :
                 sheet.delete_rows(1, row_number - 1)
             if sheet.max_row > 0:
                 sheet.delete_rows(sheet.max_row)
-            i=1
+            i=2
             total_rows = sheet.max_row
             while i<total_rows:
+                # print("header: ", i)
                 header_row=sheet[i]
-                if header_row[mapping["voucher no."]].lower() == 'sales':
+                if header_row[mapping["voucher type"]].value.lower() == 'sales':
                     try:
                         with transaction.atomic():
+                            
                             invoice_header = models.Invoice()
-                            invoice_header.customer = models.Customer.objects.get(name=header_row[mapping["particulars"]].value),
+                            if customers := models.Customer.objects.filter(name=header_row[mapping["particulars"]].value):
+                                invoice_header.customer = customers[0]
                             invoice_header.date = (header_row[mapping["date"]].value).date()
                             invoice_header.invoice_no = header_row[mapping["voucher no."]].value
                             invoice_header.invoice_ref_no = header_row[mapping["voucher ref. no."]].value
-                            invoice_header.total_quantity =  (header_row[mapping["quantity"]].value).split(' ',1)[0]
+                            invoice_header.total_quantity= Decimal(header_row[mapping["quantity"]].value)
+                            invoice_header.total_quantity =  Decimal((header_row[mapping["quantity"]].value))
                             invoice_header.total_value = Decimal(header_row[mapping["value"]].value)
-                            invoice_header.gross_total =  (header_row[mapping["gross total"]].value).split(' ',1)[0]                           
-                            invoice_header.gst_sales =  (header_row[mapping["gst sales 18%"]].value).split(' ',1)[0]                           
-                            invoice_header.cgst =  (header_row[mapping["cgst @ 9%"]].value).split(' ',1)[0]                           
-                            invoice_header.sgst =  (header_row[mapping["sgst @ 9%"]].value).split(' ',1)[0]                           
-                            invoice_header.round_off =  (header_row[mapping["round off (+/-)"]].value).split(' ',1)[0]                           
-                            invoice_header.rent =  (header_row[mapping["rent"]].value).split(' ',1)[0]                           
-                            invoice_header.export_sales =  (header_row[mapping["export sales"]].value).split(' ',1)[0]                           
-                            invoice_header.igst_sales =  (header_row[mapping["igst sales@ 18%"]].value).split(' ',1)[0]                           
-                            invoice_header.igst =  (header_row[mapping["igst 18%"]].value).split(' ',1)[0]                           
+                            invoice_header.gross_total =  Decimal(header_row[mapping["gross total"]].value)     
+                            invoice_header.gst_sales = Decimal(x) if (x := header_row[mapping["gst sales 18%"]].value) else 0          
+                            invoice_header.cgst = Decimal(x) if (x := header_row[mapping["cgst @ 9%"]].value) else 0                  
+                            invoice_header.sgst = Decimal(x) if (x := header_row[mapping["sgst @ 9%"]].value) else 0          
+                            invoice_header.round_off = Decimal(x) if (x := header_row[mapping["round off (+/-)"]].value) else 0          
+                            invoice_header.igst_sales = Decimal(x) if (x := header_row[mapping["igst sales@ 18%"]].value) else 0          
+                            invoice_header.igst = Decimal(x) if (x := header_row[mapping["igst 18%"]].value) else 0          
+                            invoice_header.rent = Decimal(x) if (x := header_row[mapping["rent"]].value) else 0          
+                            invoice_header.export_sales = Decimal(x) if (x := header_row[mapping["export sales"]].value) else 0          
                             invoice_header.save()
-                            
-                            invoice_details = []    
-                            while i < num_rows and sheet[i][0].value in [None, '']:
+                            invoice_details = []  
+                            i+=1  
+                            while i < total_rows and not sheet[i][0].value:
                                 detail_row=sheet[i]
                                 invoice_details.append(
                                     models.Invoice_Details(
-                                        purchase_bill_header_id = purcahse_bill_header.id,
+                                        invoice_header_id = invoice_header.id,
                                         item = models.Item.objects.get(name=detail_row[mapping["particulars"]].value),
-                                        quantity = (detail_row[mapping["quantity"]].value).split(' ',1)[0],
+                                        quantity = Decimal(detail_row[mapping["quantity"]].value),
                                         value = Decimal(detail_row[mapping["value"]].value)
                                     )
                                 )
                                 i += 1
                             if len(invoice_details):
+                                pass
                                 models.Invoice_Details.objects.bulk_create(invoice_details)
                         transaction.commit()
                         context.update({
@@ -8057,17 +8155,17 @@ def extractDataFromXlsx(request):
                             'message': "Invoice added succesfully"
                         })
                     except Exception:
+                        # i+=1
                         context.update({
                             'status': 544,
                             'message': "Data could not be added to invoice_header table"
                         })
                         transaction.rollback()
                 else:
-                    i+=1     
-
+                    i+=1    
             context.update({
                 'status': 200,
-                'message': "Excel read Successfully."
+                'message': "Excel read Successfully"+ ((" and " + context['message']) if context  else "")
             })
         except Exception as e:
             context.update({
