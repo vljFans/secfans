@@ -91,11 +91,9 @@ context['client_gst_number'] = env("CLIENT_GST_NUMBER")
 
 def getAjaxFormType(request):
     if request.method == "POST":
-        print("POST Data:", request.POST)  # Log all POST data to see what's being sent
         form_type = request.POST.get('form_type')
         selector = request.POST.get('selector')
         data_id = request.POST.get('data-id', None)  # Use .get to avoid KeyError if data-id is missing
-        print(f"Data ID received in view: {data_id}")
 
         context = {}  # Ensure context is initialized before using it
 
@@ -147,10 +145,7 @@ def getAjaxFormType(request):
                     'formType': render_to_string('ajaxFormType/addVendor.html', context)
                 })
             elif form_type == "addVechile":
-                print('Handling addVechile')
-                data_id = request.POST.get('data-id', None)  # Ensure the correct retrieval of data-id
-                print(f"Data ID in addVechile: {data_id}")
-                
+                data_id = request.POST.get('data-id', None)  # Ensure the correct retrieval of data-id                
                 if data_id:
                     try:
                         purchaseBill = models.Purchase_Bill.objects.get(pk=data_id)
@@ -194,10 +189,7 @@ def roleList(request):
 @login_required
 def roleAdd(request):
     content_types = ContentType.objects.prefetch_related('permission_set').filter(
-        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail','test_corn_job','user_log_details','outgoing_incoming_ratio','outgoing_incoming_ratio_details','purchase_bill_details','grn_inspection_transaction_detail','physical_inspection_details','on_transit_transaction_details','item_stock_report_details'])
-    for content_type in content_types:
-        if content_type.model == 'store_transaction':
-             content_type.model = 'store_transaction(Grn)'
+        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail','test_corn_job','user_log_details','outgoing_incoming_ratio','outgoing_incoming_ratio_details','purchase_bill_details','grn_inspection_transaction_detail','physical_inspection_details','on_transit_transaction_details','item_stock_report_details','invoice_details'])
     context.update({
         'content_types': content_types,
         'page_title': "Role Add",
@@ -209,10 +201,7 @@ def roleAdd(request):
 @login_required
 def roleEdit(request, id):
     content_types = ContentType.objects.prefetch_related('permission_set').filter(
-        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail','test_corn_job','user_log_details','outgoing_incoming_ratio','outgoing_incoming_ratio_details','purchase_bill_details','grn_inspection_transaction_detail','physical_inspection_details','on_transit_transaction_details','item_stock_report_details'])
-    for content_type in content_types:
-        if content_type.model == 'store_transaction':
-             content_type.model = 'store_transaction(Grn)'
+        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail','test_corn_job','user_log_details','outgoing_incoming_ratio','outgoing_incoming_ratio_details','purchase_bill_details','grn_inspection_transaction_detail','physical_inspection_details','on_transit_transaction_details','item_stock_report_details','invoice_details'])
     role = models.Role.objects.prefetch_related(
         'role_permission_set').get(pk=id)
     selected_permissions = []
@@ -232,10 +221,7 @@ def roleEdit(request, id):
 @login_required
 def roleView(request, id):
     content_types = ContentType.objects.prefetch_related('permission_set').filter(
-        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail','test_corn_job','user_log_details','outgoing_incoming_ratio','outgoing_incoming_ratio_details','purchase_bill_details','grn_inspection_transaction_detail','physical_inspection_details','on_transit_transaction_details','item_stock_report_details'])
-    for content_type in content_types:
-        if content_type.model == 'store_transaction':
-             content_type.model = 'store_transaction(Grn)'
+        app_label='api').exclude(model__in=['user', 'role', 'role_permission', 'country', 'state', 'city', 'customer_type', 'kyc_type', 'child_uom', 'bill_of_material_detail', 'purchase_order_detail', 'transaction_type', 'store_transaction_detail','test_corn_job','user_log_details','outgoing_incoming_ratio','outgoing_incoming_ratio_details','purchase_bill_details','grn_inspection_transaction_detail','physical_inspection_details','on_transit_transaction_details','item_stock_report_details','invoice_details'])
     role = models.Role.objects.prefetch_related(
         'role_permission_set').get(pk=id)
     selected_permissions = []
@@ -342,10 +328,16 @@ def vendorAdd(request):
 
 @login_required
 def vendorEdit(request, id):
+    context ={}
     vendor = models.Vendor.objects.get(pk=id)
     countries = models.Country.objects.all()
     states = models.State.objects.filter(country_id=vendor.country_id)
     cities = models.City.objects.filter(state_id=vendor.state_id)
+    if vendor.store_present == 1 :
+        store = models.Store.objects.get(vendor_id = id)
+        context.update({
+            'store_manager': store.manager_name	,
+        })
     context.update({
         'vendor': vendor,
         'countries': countries,
@@ -1088,9 +1080,6 @@ def materialIssuePrint(request, id):
     'store__pin'))
     
     materialIssueNumToword = num2words(float(materialIssue.total_amount))
-    print(materialIssueNumToword)
-    # print(materialIssuestores[0])
-
     context.update({
         'page_title': "Delivery Challan",
         'materialIssue': materialIssue,
@@ -1161,7 +1150,7 @@ def grnInspectionView(request,id):
     # 'transaction_number',
     # 'purchase_order_header__order_number',
     # ))
-    # print(grn_inspection_head)
+
     # grn_inspection_det = list(models.Grn_Inspection_Transaction_Detail.objects.filter(grn_inspection_transaction_header_id=id , ins_done =1).values('pk',
     # 'item__name',
     # 'store__name',
@@ -1244,7 +1233,6 @@ def materialOutList(request):
 @login_required
 def materialOutAdd(request):
     stores = list(models.Store.objects.filter(status= 1,deleted=0).values('pk' ,'name','vendor_id','vendor__name'))
-    # print(stores)
     context.update({
         'store_list' : stores,
         'page_title': "Material Out Add",
@@ -1274,9 +1262,7 @@ def materialOutEdit(request,id):
    
 @login_required
 def materialOutView(request,id):
-
     materialOut =  models.On_Transit_Transaction.objects.filter(pk=id).get()
-    # print(materialOut.source_store__name)
     context.update({
         'material_out': materialOut,
         'page_title': "Material Out View",
@@ -1286,7 +1272,6 @@ def materialOutView(request,id):
     })
 
     return render(request, 'portal/Material Out/view.html', context)
-
 
 @login_required
 def materialOutPrint(request, id):
@@ -1482,7 +1467,7 @@ def purchaseBillTallyReport(request):
                         {'name': "Process"}]
     })
 
-    return render(request, 'portal/Purchase Bill/tally.html', context)
+    return render(request, 'portal/process/tally.html', context)
 
 
 @login_required
@@ -1574,3 +1559,16 @@ def reportActiveVendorIssueReciept(request):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports"}, {'name': "VendorJobOrderIssueReciept"}, {'name': "Active VendorJobOrderIssueReciept", 'url': reverse('superuser:reportActiveVendorIssueReciept')}]
     })
     return render(request, 'portal/Report/vendorJobOrderIssueRecep.html', context)
+
+@login_required
+def invoiceStoreTransactionMaigration(request):
+    stores = models.Store.objects.filter(Q(store_item__isnull=False),Q(vendor_id__isnull=True)).distinct()
+    context.update({
+        'stores': stores,
+        'page_title': "Invoice to Store Transaction Migration",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Invoice to Store Transaction Migration", 'url': reverse('superuser:invoiceStoreTransactionMaigration')},
+                        {'name': "Migration Proceass"}]
+    })
+
+    return render(request, 'portal/process/inoviceStoreTransact.html', context)

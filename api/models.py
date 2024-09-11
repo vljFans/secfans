@@ -961,7 +961,7 @@ class Outgoing_Incoming_Ratio_Details(models.Model):
 
 class User_Log_Details(models.Model):
     user =  models.ForeignKey(User, on_delete=models.CASCADE,blank=True, null=True)
-    task_name = models.CharField(max_length=50, blank=True, null=True)
+    task_name = models.CharField(max_length=100, blank=True, null=True)
     time_stamp = models.DateTimeField(default=now)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
@@ -987,4 +987,53 @@ class Test_Corn_Job(models.Model):
         managed = True
         db_table = 'test_corn_job'
         verbose_name_plural = 'test_corn_job'
+
+class Invoice(models.Model):
+    date = models.DateField(blank=True, null=True)
+    invoice_no = models.CharField(max_length=50, blank=True, null=True, unique=True)
+    invoice_ref_no = models.CharField(max_length=50, blank=True, null=True)
+    total_quantity = models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    total_value = models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, blank=True, null=True )
+    gross_total= models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    gst_sales= models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    cgst= models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    sgst= models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    round_off= models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    igst_sales= models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    igst= models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    rent= models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    export_sales= models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    store_transaction_add = models.SmallIntegerField(default=0)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.invoice_no
+
+    class Meta:
+        managed = True
+        db_table = 'invoice_header'
+        verbose_name_plural = 'invoice_header'
+
+class Invoice_Details(models.Model):
+    invoice_header = models.ForeignKey(Invoice, on_delete=models.CASCADE, blank=True, null=True)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True )
+    quantity = models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    value = models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    rate = models.DecimalField(max_digits=30, decimal_places=5, default=0)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.invoice_header.invoice_no
+
+    class Meta:
+        managed = True
+        db_table = 'invoice_details'
+        verbose_name_plural = 'invoice_details'
 
