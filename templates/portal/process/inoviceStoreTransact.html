@@ -75,7 +75,7 @@
                                     </select>
                                 </div>
                             </div>
-                            {% if request.user.is_superuser == 1 or 'view_purchase_bill'|get_session_permission:request is not None %}
+                            {% if request.user.is_superuser == 1 or 'add_invoice,add_store_transaction'|get_session_permission:request is not None %}
                             <div class="col-md-12" id="submit" >
                                 <button onclick="return confirm('Are you want to start process!')" class="btn btn-success submit-btn" type="submit">Start Process</button>
                             </div>

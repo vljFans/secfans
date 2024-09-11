@@ -91,11 +91,9 @@ context['client_gst_number'] = env("CLIENT_GST_NUMBER")
 
 def getAjaxFormType(request):
     if request.method == "POST":
-        print("POST Data:", request.POST)  # Log all POST data to see what's being sent
         form_type = request.POST.get('form_type')
         selector = request.POST.get('selector')
         data_id = request.POST.get('data-id', None)  # Use .get to avoid KeyError if data-id is missing
-        print(f"Data ID received in view: {data_id}")
 
         context = {}  # Ensure context is initialized before using it
 
@@ -147,10 +145,7 @@ def getAjaxFormType(request):
                     'formType': render_to_string('ajaxFormType/addVendor.html', context)
                 })
             elif form_type == "addVechile":
-                print('Handling addVechile')
-                data_id = request.POST.get('data-id', None)  # Ensure the correct retrieval of data-id
-                print(f"Data ID in addVechile: {data_id}")
-                
+                data_id = request.POST.get('data-id', None)  # Ensure the correct retrieval of data-id                
                 if data_id:
                     try:
                         purchaseBill = models.Purchase_Bill.objects.get(pk=data_id)
@@ -1085,9 +1080,6 @@ def materialIssuePrint(request, id):
     'store__pin'))
     
     materialIssueNumToword = num2words(float(materialIssue.total_amount))
-    print(materialIssueNumToword)
-    # print(materialIssuestores[0])
-
     context.update({
         'page_title': "Delivery Challan",
         'materialIssue': materialIssue,
@@ -1158,7 +1150,7 @@ def grnInspectionView(request,id):
     # 'transaction_number',
     # 'purchase_order_header__order_number',
     # ))
-    # print(grn_inspection_head)
+
     # grn_inspection_det = list(models.Grn_Inspection_Transaction_Detail.objects.filter(grn_inspection_transaction_header_id=id , ins_done =1).values('pk',
     # 'item__name',
     # 'store__name',
@@ -1241,7 +1233,6 @@ def materialOutList(request):
 @login_required
 def materialOutAdd(request):
     stores = list(models.Store.objects.filter(status= 1,deleted=0).values('pk' ,'name','vendor_id','vendor__name'))
-    # print(stores)
     context.update({
         'store_list' : stores,
         'page_title': "Material Out Add",
@@ -1271,9 +1262,7 @@ def materialOutEdit(request,id):
    
 @login_required
 def materialOutView(request,id):
-
     materialOut =  models.On_Transit_Transaction.objects.filter(pk=id).get()
-    # print(materialOut.source_store__name)
     context.update({
         'material_out': materialOut,
         'page_title': "Material Out View",
@@ -1283,7 +1272,6 @@ def materialOutView(request,id):
     })
 
     return render(request, 'portal/Material Out/view.html', context)
-
 
 @login_required
 def materialOutPrint(request, id):

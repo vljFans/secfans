@@ -961,7 +961,7 @@ class Outgoing_Incoming_Ratio_Details(models.Model):
 
 class User_Log_Details(models.Model):
     user =  models.ForeignKey(User, on_delete=models.CASCADE,blank=True, null=True)
-    task_name = models.CharField(max_length=50, blank=True, null=True)
+    task_name = models.CharField(max_length=100, blank=True, null=True)
     time_stamp = models.DateTimeField(default=now)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
