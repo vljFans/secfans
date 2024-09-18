@@ -7873,7 +7873,7 @@ def extractDataFromXlsx(request):
         return JsonResponse(context)
     if request.FILES.get('file'):
         excel = request.FILES['file']
-        flag = 0
+        flag = 1
         # trying to process files without error
         try:
             invoice = []
@@ -7960,13 +7960,16 @@ def extractDataFromXlsx(request):
                             if len(invoice_details):
                                 # pass
                                 models.Invoice_Details.objects.bulk_create(invoice_details)
+                                flag = 0
                         transaction.commit()
                         context.update({
                             'status': 200,
                             'message': "Invoice added succesfully"
                         })
+                        
                     except Exception:
                         # i+=1
+                        flag = 1
                         context.update({
                             'status': 544,
                             'message': "Data could not be added to invoice_header table"
@@ -7974,6 +7977,7 @@ def extractDataFromXlsx(request):
                         transaction.rollback()
                 else:
                     i+=1    
+                    flag = 0
             context.update({
                 'status': 200,
                 'message': "Excel read Successfully"+ ((" and " + context['message']) if context  else "")
@@ -7995,5 +7999,10 @@ def extractDataFromXlsx(request):
         context.update({
             'status': 200,
             'message': "Process Completed" +  ((", " + context['message']) if context  else "") + " and " + message 
+        })
+    else :
+        context.update({
+            'status': 200,
+            'message': "Process Not Completed" +  ((", " + context['message']) if context  else "")  
         })
     return JsonResponse(context)
