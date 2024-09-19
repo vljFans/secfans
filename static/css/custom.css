@@ -1,3 +1,49 @@
+/* change in footer---new */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Ensure container fills the viewport height */
+}
+
+.page-sidebar {
+  width: 250px; /* Adjust to your sidebar width */
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+
+  overflow-y: auto; /* Allows sidebar content to scroll if it exceeds viewport height */
+}
+
+.page-content {
+  margin-left: 250px; /* Offset by sidebar width */
+  padding-bottom: 60px; /* Space for the footer */
+  flex: 1;
+}
+
+.page-inner {
+  padding: 20px; /* Optional padding */
+}
+
+.page-footer {
+  position: fixed; /* Fixed position at the bottom */
+  bottom: 0;
+  left: 250px; /* Offset by sidebar width */
+  width: calc(100% - 250px); /* Full width minus sidebar width */
+  background: #f1f1f1; /* Optional background color */
+  padding: 0px; /* Adjust padding as needed */
+  text-align: left; /* left text if needed */
+  z-index: 1000; /* Ensure it’s above other content */
+}
+
+/* change in footer---new */
+
 .logo a.logo-img img {
   max-height: 50px;
 }
@@ -53,3 +99,7 @@
   font-size: inherit;
   /* Inherit font size from the button */
 }
+
+
+
+
