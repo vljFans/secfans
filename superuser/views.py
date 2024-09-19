@@ -1568,7 +1568,7 @@ def invoiceStoreTransactionMaigration(request):
         'page_title': "Invoice to Store Transaction Migration",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
                         {'name': "Invoice to Store Transaction Migration", 'url': reverse('superuser:invoiceStoreTransactionMaigration')},
-                        {'name': "Migration Proceass"}]
+                        {'name': "Migration Process"}]
     })
 
     return render(request, 'portal/process/inoviceStoreTransact.html', context)
