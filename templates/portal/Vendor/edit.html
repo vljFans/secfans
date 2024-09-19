@@ -140,8 +140,21 @@
                             </div>
                             <div class="col-md-5 mb-3">
                                 <label for="createStore">Create Store</label><br>
-                                <input type="hidden" name="createStore" value="{{vendor.store_present}}"><input type="checkbox"  onclick="this.previousSibling.value=1-this.previousSibling.value" style="transform: scale(2);margin-top: 12px;" {% if vendor.store_present == 1 %}checked{% endif %}>
+                                <input type="hidden" name="createStore" value="{{vendor.store_present}}"><input type="checkbox" id="checkbox" onclick="this.previousSibling.value=1-this.previousSibling.value" style="transform: scale(2);margin-top: 12px;" {% if vendor.store_present == 1 %}checked{% endif %}>
                             </div>
+                            {% if store_manager %}
+                                <div class="col-md-5 mb-3" id="new-input-box">
+                                    <label>Manager Name <span class="required-indicator">*</span></label>
+                                    <input type="text" class="form-control manager_name" name="manager_name" 
+                                        placeholder="Enter manager name" value="{{ store_manager }}" required readonly>
+                                </div>
+                            {% else %}
+                                <div class="col-md-5 mb-3" id="new-input-box" style="display: none;">
+                                    <label>Manager Name <span class="required-indicator">*</span></label>
+                                    <input type="text" class="form-control manager_name" name="manager_name" 
+                                        placeholder="Enter manager name" disabled required>
+                                </div>
+                            {% endif %}
                             <div class="col-md-12 mb-3">
                                 <label>Address <span class="required-indicator">*</span></label>
                                 <textarea name="address" required class="form-control" rows="3"
@@ -264,6 +277,17 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
+    });
+    $('#checkbox').on('change', function() {
+        if ($(this).is(':checked')) {
+            // Show the input box and enable the manager_name field
+            $('#new-input-box').show();
+            $('.manager_name').prop('disabled', false);
+        } else {
+            // Hide the input box and disable the manager_name field
+            $('#new-input-box').hide();
+            $('.manager_name').prop('disabled', true);
+        }
     });
 </script>
 {% endblock %}

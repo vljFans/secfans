@@ -129,7 +129,11 @@
                             </div>
                             <div class="col-md-5 mb-3">
                                 <label for="createStore">Create Store</label><br>
-                                <input type="hidden" name="createStore" value="0"><input type="checkbox"  onclick="this.previousSibling.value=1-this.previousSibling.value" style="transform: scale(2);margin-top: 12px;">
+                                <input type="hidden" name="createStore" value="0"><input type="checkbox" id="checkbox" onclick="this.previousSibling.value=1-this.previousSibling.value" style="transform: scale(2);margin-top: 12px;">
+                            </div>
+                            <div class="col-md-5 mb-3" id="new-input-box"style="display: none;">
+                                <label>Manager Name <span class="required-indicator">*</span></label>
+                                <input type="text" required class="form-control manager_name " name="manager_name" placeholder="Enter manager name" disabled>
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label>Address <span class="required-indicator">*</span></label>
@@ -254,6 +258,18 @@
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
+    });
+    // Toggle visibility and disabling of manager_name input box when checkbox is clicked
+    $('#checkbox').on('change', function() {
+        if ($(this).is(':checked')) {
+            // Show the input box and enable the manager_name field
+            $('#new-input-box').show();
+            $('.manager_name').prop('disabled', false);
+        } else {
+            // Hide the input box and disable the manager_name field
+            $('#new-input-box').hide();
+            $('.manager_name').prop('disabled', true);
+        }
     });
 </script>
 {% endblock %}

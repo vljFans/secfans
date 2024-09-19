@@ -127,19 +127,19 @@
                                 <input type="text" class="form-control total_amount" name="total" id="total_amount" readonly required>
                             </div>
                             <div class="col-md-2 mb-3 table_form" hidden>
-                                <label>Total igst<span class="required-indicator">*</span></label>
+                                <label>Total IGST<span class="required-indicator">*</span></label>
                                 <input type="text" class="form-control total_igst" name="total_igst" id="total_igst" readonly required>
                             </div>
                             <div class="col-md-2 mb-3 table_form" hidden>
-                                <label>Total sgst<span class="required-indicator">*</span></label>
+                                <label>Total CGST<span class="required-indicator">*</span></label>
                                 <input type="text" class="form-control total_sgst" name="total_sgst" id="total_sgst" readonly required>
                             </div>
                             <div class="col-md-2 mb-3 table_form" hidden>
-                                <label>Total cgst<span class="required-indicator">*</span></label>
+                                <label>Total SGST<span class="required-indicator">*</span></label>
                                 <input type="text" class="form-control total_cgst" name="total_cgst" id="total_cgst" readonly required>
                             </div>
                             <div class="col-md-2 mb-3 table_form" hidden>
-                                <label>Total amount with gst<span class="required-indicator">*</span></label>
+                                <label>Total amount with GST<span class="required-indicator">*</span></label>
                                 <input type="text" class="form-control total_amount_with_gst" name="total_amount_with_gst" id="total_amount_with_gst" readonly required>
                             </div>
                             <div class="col-md-12  table_form"  hidden>
@@ -406,24 +406,24 @@
 
                                             <div class="col-md-2 mb-3">
                                                 <label>IGST% <span class="required-indicator">*</span></label>
-                                                <input type="text" onkeyup="checkMaxMin(this)"
+                                                <input type="number" onkeyup="checkMaxMin(this)"
                                                     onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                                    name="igst" min="0.01" class="form-control igst gst"
+                                                    name="igst" min="18" class="form-control igst gst"  pattern="18|28" step="10" max="28"
                                                     placeholder="0.00" disabled>
                                             </div>
                                             <div class="col-md-2 mb-3">
-                                                <label>Amount Igst<span class="required-indicator">*</span></label>
+                                                <label>Amount IGST<span class="required-indicator">*</span></label>
                                                 <input type="text" class="form-control amount_igst" name="amount_igst"  readonly disabled>
                                             </div>
                                             <div class="col-md-2 mb-3">
                                                 <label>SGST% <span class="required-indicator">*</span></label>
-                                                <input type="text" onkeyup="checkMaxMin(this)"
+                                                <input type="number" onkeyup="checkMaxMin(this)"
                                                     onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                                    name="sgst" min="0.01" class="form-control sgst gst"
+                                                    name="sgst"  class="form-control sgst gst" min="9" pattern="9|14" step="5" max="14"
                                                     placeholder="0.00" required>
                                             </div>
                                             <div class="col-md-2 mb-3">
-                                                <label>Amount Sgst<span class="required-indicator">*</span></label>
+                                                <label>Amount SGST<span class="required-indicator">*</span></label>
                                                 <input type="text" class="form-control amount_sgst" name="amount_sgst"  readonly required>
                                             </div>
                                             <div class="col-md-2 mb-3">
@@ -434,7 +434,7 @@
                                                     placeholder="0.00" required>
                                             </div>
                                             <div class="col-md-2 mb-3">
-                                                <label>Amount Cgst<span class="required-indicator">*</span></label>
+                                                <label>Amount CGST<span class="required-indicator">*</span></label>
                                                 <input type="text" class="form-control amount_cgst" name="amount_cgst"  readonly required>
                                             </div>
                                             <div class="col-md-2 mb-3">
@@ -490,20 +490,20 @@
 
                                     <div class="col-md-2 mb-3">
                                         <label>IGST% <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                        <input type="number" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="igst" min="0.01" class="form-control igst gst"
+                                            name="igst" min="18" class="form-control igst gst"  pattern="18|28" step="10" max="28"
                                             placeholder="0.00" required>
                                     </div>
                                     <div class="col-md-2 mb-3">
-                                        <label>Amount Igst<span class="required-indicator">*</span></label>
+                                        <label>Amount IGST<span class="required-indicator">*</span></label>
                                         <input type="text" class="form-control amount_igst" name="amount_igst"  readonly required>
                                     </div>
                                     <div class="col-md-2 mb-3">
                                         <label>SGST% <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="sgst" min="0.01" class="form-control sgst gst"
+                                            name="sgst"  class="form-control sgst gst" min="9" pattern="9|14" step="5" max="14"
                                             placeholder="0.00"  disabled>
                                     </div>
                                     <div class="col-md-2 mb-3">
@@ -514,7 +514,7 @@
                                         <label>CGST% <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="cgst" min="0.01" class="form-control cgst gst"
+                                            name="cgst" class="form-control cgst gst" min="9" pattern="9|14" step="5" max="14"
                                             placeholder="0.00" disabled>
                                     </div>
                                     <div class="col-md-2 mb-3">
@@ -604,9 +604,9 @@
 
                                     <div class="col-md-2 mb-3">
                                         <label>IGST% <span class="required-indicator">*</span></label>
-                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                        <input type="number" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="igst" min="0.01" class="form-control igst gst"
+                                            name="igst" min="18" class="form-control igst gst"  pattern="18|28" step="8" max="28"
                                             placeholder="0.00"  disabled>
                                     </div>
                                     <div class="col-md-2 mb-3">
@@ -617,7 +617,7 @@
                                         <label>SGST% <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="sgst" min="0.01" class="form-control sgst gst"
+                                            name="sgst"  class="form-control sgst gst" min="9" pattern="9|14" step="5" max="14"
                                             placeholder="0.00" required>
                                     </div>
                                     <div class="col-md-2 mb-3">
@@ -628,7 +628,7 @@
                                         <label>CGST% <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="cgst" min="0.01" class="form-control cgst gst"
+                                            name="cgst"  class="form-control cgst gst" min="9" pattern="9|14" step="5" max="14"
                                             placeholder="0.00" required>
                                     </div>
                                     <div class="col-md-2 mb-3">
@@ -688,9 +688,9 @@
 
                                     <div class="col-md-2 mb-3">
                                     <label>IGST% <span class="required-indicator">*</span></label>
-                                    <input type="text" onkeyup="checkMaxMin(this)"
+                                    <input type="number" onkeyup="checkMaxMin(this)"
                                         onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                        name="igst" min="0.01" class="form-control igst gst"
+                                        name="igst" min="18" class="form-control igst gst"  pattern="18|28" step="10" max="28"
                                         placeholder="0.00"  required>
                                     </div>
                                     <div class="col-md-2 mb-3">
@@ -701,7 +701,7 @@
                                         <label>SGST% <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="sgst" min="0.01" class="form-control sgst gst"
+                                            name="sgst"  class="form-control sgst gst" min="9" pattern="9|14" step="5" max="14"
                                             placeholder="0.00" disabled>
                                     </div>
                                     <div class="col-md-2 mb-3">
@@ -712,7 +712,7 @@
                                         <label>CGST% <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="cgst" min="0.01" class="form-control cgst gst"
+                                            name="cgst"  class="form-control cgst gst" min="9" pattern="9|14" step="5" max="14"
                                             placeholder="0.00" disabled>
                                     </div>
                                     <div class="col-md-2 mb-3">
