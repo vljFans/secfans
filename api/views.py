@@ -2642,12 +2642,12 @@ def storeList(request):
 @permission_classes([IsAuthenticated])
 def storeAdd(request):
     context = {}
-    if not request.POST['name'] or not request.POST['address'] or not request.POST['contact_name'] or not request.POST['contact_no'] or not request.POST['contact_email'] or not request.POST['pin'] or not request.POST['city_id'] or not request.POST['state_id'] or not request.POST['country_id']:
-        context.update({
-            'status': 566,
-            'message': "Name/Address/Contact Name/Contact Number/Contact Email/Pin/City/State/Country has not been provided."
-        })
-        return JsonResponse(context)
+    # if not request.POST['name'] or not request.POST['address'] or not request.POST['contact_name'] or not request.POST['contact_no'] or not request.POST['contact_email'] or not request.POST['pin'] or not request.POST['city_id'] or not request.POST['state_id'] or not request.POST['country_id']:
+    #     context.update({
+    #         'status': 566,
+    #         'message': "Name/Address/Contact Name/Contact Number/Contact Email/Pin/City/State/Country has not been provided."
+    #     })
+    #     return JsonResponse(context)
     exist_data = models.Store.objects.filter(
         name__iexact=request.POST['name']).filter(deleted=0)
     if len(exist_data) > 0:
@@ -2691,12 +2691,12 @@ def storeAdd(request):
 @permission_classes([IsAuthenticated])
 def storeEdit(request):
     context = {}
-    if not request.POST['name'] or not request.POST['address'] or not request.POST['contact_name'] or not request.POST['contact_no'] or not request.POST['contact_email'] or not request.POST['pin'] or not request.POST['city_id'] or not request.POST['state_id'] or not request.POST['country_id']:
-        context.update({
-            'status': 566,
-            'message': "Name/Address/Contact Name/Contact Number/Contact Email/Pin/City/State/Country has not been provided."
-        })
-        return JsonResponse(context)
+    # if not request.POST['name'] or not request.POST['address'] or not request.POST['contact_name'] or not request.POST['contact_no'] or not request.POST['contact_email'] or not request.POST['pin'] or not request.POST['city_id'] or not request.POST['state_id'] or not request.POST['country_id']:
+    #     context.update({
+    #         'status': 566,
+    #         'message': "Name/Address/Contact Name/Contact Number/Contact Email/Pin/City/State/Country has not been provided."
+    #     })
+    #     return JsonResponse(context)
     exist_data = models.Store.objects.filter(name__iexact=request.POST['name']).exclude(
         pk=request.POST['id']).filter(deleted=0)
     if len(exist_data) > 0:

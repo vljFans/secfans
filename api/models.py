@@ -167,7 +167,7 @@ class City(models.Model):
 
 class Vendor(models.Model):
     name = models.CharField(max_length=50, blank=True, null=True)
-    address = models.CharField(max_length=100, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
     country = models.ForeignKey(
         Country, on_delete=models.CASCADE, blank=True, null=True)
     state = models.ForeignKey(
@@ -372,7 +372,7 @@ class Item(models.Model):
 
 class Store(models.Model):
     name = models.CharField(max_length=60, blank=False, null=False)
-    address = models.CharField(max_length=60, blank=False, null=False)
+    address = models.TextField(blank=True, null=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True)
     state = models.ForeignKey(State, on_delete=models.CASCADE, blank=True, null=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE, blank=True, null=True)
