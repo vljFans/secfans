@@ -470,12 +470,7 @@
                                                 <select class="custom-select selectpicker item_id" name="item_id" required>
                                                     ${item_options_text}
                                                 </select>
-                                                {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
-                                                    <div class="btn float-end addForm" data-text="Add New item"
-                                                            data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
-                                                            <i class="fa fa-plus"></i>
-                                                    </div>
-                                                {% endif %}
+                                                
                                             </div>
                                         </div>
                                         <div class="col-md-1 mb-3">
@@ -569,12 +564,7 @@
                                                 <select class="custom-select selectpicker item_id" name="item_id" required>
                                                     ${item_options_text}
                                                 </select>
-                                                {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
-                                                    <div class="btn float-end addForm" data-text="Add New item"
-                                                            data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
-                                                            <i class="fa fa-plus"></i>
-                                                    </div>
-                                                {% endif %}
+                                                
                                             </div>
                                         </div>
                                         <div class="col-md-1 mb-3">
@@ -951,12 +941,7 @@
                                                 <select class="custom-select selectpicker item_id" name="item_id" required disabled>
                                                     ${item_options.map((item) => `<option ${item.id == page_items[index].item_id ? "selected" : ""} value="${page_items[index].item_id}">${page_items[index].item__name}</option>`)}
                                                 </select>
-                                                {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
-                                                    <div class="btn float-end addForm" data-text="Add New item"
-                                                            data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
-                                                            <i class="fa fa-plus"></i>
-                                                    </div>
-                                                {% endif %}
+                                                
                                             </div>
                                         </div>
                                         <input type="hidden" name="detail_id" value="${page_items[index].pk}">
@@ -1067,12 +1052,7 @@
                                                 <select class="custom-select selectpicker item_id" name="item_id" required disabled>
                                                     ${item_options.map((item) => `<option ${item.id == response.page_items[index].item_id ? "selected" : ""} value="${response.page_items[index].item_id}">${response.page_items[index].item__name}</option>`)}
                                                 </select>
-                                                {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
-                                                    <div class="btn float-end addForm" data-text="Add New item"
-                                                            data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
-                                                            <i class="fa fa-plus"></i>
-                                                    </div>
-                                                {% endif %}
+                                                
                                             </div>
                                         </div>
                                         <input type="hidden" name="detail_id" value="${response.page_items[index].pk}">
