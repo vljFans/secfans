@@ -3342,7 +3342,7 @@ def transactionTypeList(request):
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
     if id is not None and id != "":
-        transactionType = list(models.Transaction_Type.objects.filter(pk=id)[:1].values('pk', 'name'))
+        transactionType = list(models.Transaction_Type.objects.filter(pk=id)[:1].values('pk', 'name','desc'))
         context.update({
             'status': 200,
             'message': "Transaction Type Fetched Successfully.",
@@ -3351,10 +3351,10 @@ def transactionTypeList(request):
     else:
         if keyword is not None and keyword != "":
             transactionTypes = list(models.Transaction_Type.objects.filter(
-                name__icontains=keyword, status=1, deleted=0).values('pk', 'name'))
+                name__icontains=keyword, status=1, deleted=0).values('pk', 'name','desc'))
         else:
             transactionTypes = list(models.Transaction_Type.objects.filter(
-                status=1, deleted=0).values('pk', 'name'))
+                status=1, deleted=0).values('pk', 'name','desc'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -3404,6 +3404,7 @@ def transactionTypeAdd(request):
         with transaction.atomic():
             transactionType = models.Transaction_Type()
             transactionType.name = request.POST['name']
+            transactionType.desc = request.POST['desc']
             transactionType.save()
         transaction.commit()
         context.update({

@@ -531,7 +531,8 @@ class Purchase_Order_Detail(models.Model):
 
 
 class Transaction_Type(models.Model):
-    name = models.CharField(max_length=100, blank=True, null=True)
+    name = models.CharField(max_length=20, blank=True, null=True)
+    desc = models.CharField(max_length=100, blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)

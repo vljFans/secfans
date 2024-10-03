@@ -65,6 +65,10 @@
                                 <label>Name <span class="required-indicator">*</span></label>
                                 <input type="text" name="name" class="form-control" placeholder="Name" required>
                             </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Description </label>
+                                <input type="text" name="desc" class="form-control" placeholder="Description" >
+                            </div>
                         </div>
                         {% if request.user.is_superuser == 1 or 'add_transaction_type'|get_session_permission:request is not None %}
                         <button class="btn btn-success submit-btn" type="submit">Submit</button>
