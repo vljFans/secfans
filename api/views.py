@@ -5864,18 +5864,21 @@ def addGrnDetailisInsTransaction(request):
                             job_order_details.save()
                             # print('5257')
                             material_reciept_all = 0 if float(job_order_details.quantity_result)>0.00 else 1 
+                            if (material_reciept_all == 1):
+                                # print('5871')
+                                job_order = models.Job_Order.objects.filter(pk=request.POST['job_order_header_id']).get() 
+                                # print(job_order)
+                                job_order.material_reciept = 1
+                                job_order.updated_at = datetime.now()  
+                            else :
+                                # print('5877')
+                                job_order = models.Job_Order.objects.filter(pk=request.POST['job_order_header_id']).get() 
+                                job_order.material_reciept = 0
+                                job_order.updated_at = datetime.now()
+                            job_order.save()
                         # print('5257')
                 models.Store_Transaction_Detail.objects.bulk_create(order_details)
-                if (material_reciept_all == 1):
-                    job_order = models.Job_Order.objects.filter(pk=request.POST['job_order_header_id']).get() 
-                    # print(job_order)
-                    job_order.material_reciept = 1
-                    job_order.updated_at = datetime.now()  
-                else :
-                    job_order = models.Job_Order.objects.filter(pk=request.POST['job_order_header_id']).get() 
-                    job_order.material_reciept = 0
-                    job_order.updated_at = datetime.now()
-                job_order.save()
+                # print('5879')
                 if request.POST['purchase_order_header_id'] != "" and (request.POST['purchase_order_header_id']) != 0:
                     for index, elem in enumerate(request.POST.getlist('item_id')):
                         if request.POST.getlist('accp_quantity')[index] != '':
