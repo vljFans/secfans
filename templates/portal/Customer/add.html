@@ -116,15 +116,15 @@
                             <div class="col-md-3 mb-3">
                                 <label>Country <span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker" id="country_id" name="country_id"
-                                        required>
+                                    <select class="custom-select selectpicker" id="country_id" name="country_id" required>
                                         <option value="">Choose...</option>
                                         {% for country in countries %}
-                                        <option value="{{country.id}}">{{country.name}}</option>
+                                            <option value="{{ country.id }}" {% if country.name == "India" %}selected{% endif %}>{{ country.name }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
                             </div>
+                            
                             <div class="col-md-3 mb-3">
                                 <label>State <span class="required-indicator">*</span></label>
                                 <div class="input-group">
@@ -250,6 +250,10 @@
         placeholder: ''
     });
 
+    $(document).ready(function () {
+        $('#country_id').trigger('change'); // Manually trigger the change event
+    })
+
     $(document).on('change', '.dateMonth', function () {
         formatMonthDate($(this).val())
     });
@@ -269,6 +273,9 @@
                         options_text += `<option value="${page_items[index].pk}">${element.name}</option>`;
                     }
                     $("#state_id").html(options_text);
+                    if (country_id && page_items.length && $("#country_id option:selected").text() === "India") {
+                        $("#state_id").val(page_items.find(item => item.fields.name === "West Bengal")?.pk || "").change();
+                    }
                 } else {
                     alert(response.message);
                 }

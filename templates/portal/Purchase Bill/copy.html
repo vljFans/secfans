@@ -62,25 +62,25 @@
                 <div class="card-body ">
                     <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
                         <div class="form-row">
-                            
+                           
                             <div class="col-md-3 mb-3">
                                 <label>Vendor/Supplier<span class="required-indicator">*</span></label>
-                                <input type="hidden" name="state__name" class="form-control state__name"  value="{{purchase_bill.vendor.state.name}}"
-                                >
-                                <select class="custom-select selectpicker" id="vendor" name="vendor" required>
-                                    <option value="">Choose...</option>
-                                    {% for vendor in Vendor_list %}
-                                    <option {% if purchase_bill.vendor_id == vendor.pk %}selected{% endif %} value="{{vendor.pk}}">{{vendor.name}}</option>
-                                    {% endfor %}
-                                </select>
-                                {% if request.user.is_superuser == 1 or 'add_vendor'|get_session_permission:request is not None %}
-                                    <div class="btn float-end addForm" data-text="Add New Vendor"
-                                        data-form="addVendor" id="addVendorModal" data-toggle="modal" data-target="#addFormModal">
-                                        <i class="fa fa-plus"></i>
-                                    </div>
-                                {% endif %}
-                            </div>
-
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="vendor" name="vendor" required>
+                                        <option value="">Choose...</option>
+                                            {% for vendor in Vendor_list %}
+                                            <option {% if purchase_bill.vendor_id == vendor.pk %}selected{% endif %} value="{{vendor.pk}}">{{vendor.name}}</option>
+                                            {% endfor %}
+                                    </select>
+                                    {% if request.user.is_superuser == 1 or 'add_vendor'|get_session_permission:request is not None %}
+                                        <div class="btn float-end addForm" data-text="Add New Vendor"
+                                            data-form="addVendor" id="addVendorModal" data-toggle="modal" data-target="#addFormModal">
+                                            <i class="fa fa-plus"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <input type="hidden" name="state__name" class="form-control state__name"  value="{{purchase_bill.vendor.state.name}}">
+                            </div> 
                             <div class="col-md-2 mb-3">
                                 <label> Invoice  <span class="required-indicator">*</span></label>
                                 <input type="text" name="invoice" class="form-control invoice" placeholder="Invoice No" value="{{purchase_bill.invoice_no}}"
@@ -130,6 +130,12 @@
                                             <option {% if purchaseBillDet.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
                                             {% endfor %}
                                         </select>
+                                        {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                            <div class="btn float-end addForm" data-text="Add New item"
+                                                    data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                    <i class="fa fa-plus"></i>
+                                            </div>
+                                        {% endif %}
                                     </div>
 
                                     <div class="col-md-2 mb-3">
@@ -158,7 +164,6 @@
                                         <label>Amount<span class="required-indicator">*</span></label>
                                         <input type="text" class="form-control amount" name="amount" value="{{purchaseBillDet.amount}}" readonly required>
                                     </div>
-                                    {% if purchaseBillDet.igst_percentage != 0.00 %}
                                     <div class="col-md-2 mb-3">
                                         <label>IGST% <span class="required-indicator">*</span></label>
                                         <input type="number" onkeyup="checkMaxMin(this)"
@@ -169,9 +174,8 @@
                                     </div>
                                     <div class="col-md-2 mb-3">
                                         <label>Amount IGST<span class="required-indicator">*</span></label>
-                                        <input type="text" class="form-control amount_igst" name="amount_igst" value="{{purchaseBillDet.igst_amount}}"  readonly required>
+                                        <input type="text" class="form-control amount_igst" name="amount_igst" value="{{purchaseBillDet.igst_amount}}"  readonly >
                                     </div>
-                                    {% else %}
                                     <div class="col-md-2 mb-3">
                                         <label>SGST% <span class="required-indicator">*</span></label>
                                         <input type="number" onkeyup="checkMaxMin(this)"
@@ -181,7 +185,7 @@
                                     </div>
                                     <div class="col-md-2 mb-3">
                                         <label>Amount SGST<span class="required-indicator">*</span></label>
-                                        <input type="text" class="form-control amount_sgst" name="amount_sgst" value="{{purchaseBillDet.sgst_amount}}"  readonly  required>
+                                        <input type="text" class="form-control amount_sgst" name="amount_sgst" value="{{purchaseBillDet.sgst_amount}}"  readonly  >
                                     </div>
                                     <div class="col-md-2 mb-3">
                                         <label>CGST% <span class="required-indicator">*</span></label>
@@ -192,12 +196,11 @@
                                     </div>
                                     <div class="col-md-2 mb-3">
                                         <label>Amount CGST<span class="required-indicator">*</span></label>
-                                        <input type="text" class="form-control amount_cgst" name="amount_cgst" value="{{purchaseBillDet.cgst_amount}}" readonly required >
+                                        <input type="text" class="form-control amount_cgst" name="amount_cgst" value="{{purchaseBillDet.cgst_amount}}" readonly  >
                                     </div>
-                                    {% endif %}
                                     <div class="col-md-2 mb-3">
                                         <label>Total Amount<span class="required-indicator">*</span></label>
-                                        <input type="text" class="form-control amount_gst" name="amount_gst" value="{{purchaseBillDet.amount_with_gst}}"  readonly required>
+                                        <input type="text" class="form-control amount_gst" name="amount_gst" value="{{purchaseBillDet.amount_with_gst}}"  readonly >
                                     </div>
 
                                     
@@ -363,7 +366,7 @@
             }
         })
 
-        $('.total_amount_with_gst').val(total_amount_with_gst)
+        $('.total_amount_with_gst').val(total_amount_with_gst.toFixed(2))
     }
     
     function renderTotalIgst(){
@@ -374,7 +377,7 @@
             }
         })
 
-        $('.total_igst').val(total_igst)
+        $('.total_igst').val(total_igst.toFixed(2))
     }
     
     function renderTotalCgst(){
@@ -385,7 +388,7 @@
             }
         })
 
-        $('.total_cgst').val(total_cgst)
+        $('.total_cgst').val(total_cgst.toFixed(2))
     }
     
     function renderTotalSGst(){
@@ -396,7 +399,7 @@
             }
         })
 
-        $('.total_sgst').val(total_sgst)
+        $('.total_sgst').val(total_sgst.toFixed(2))
     }
 
     function renderTotalAmount(){
@@ -407,12 +410,38 @@
             }
         })
 
-        $('.total_amount').val(total_amount)
+        $('.total_amount').val(total_amount.toFixed(2))
     }
 
+    function clearAllItemDetGstTotAmount(){
+        $('.amount_igst, .amount_cgst, .sgst , .amount_gst').val(0.00)
+    }
+    function clearAllGst(element){
+        $(element).parent().closest('.content_parent').find('.igst').val('')
+        $(element).parent().closest('.content_parent').find('.cgst').val('')
+        $(element).parent().closest('.content_parent').find('.sgst').val('')
+    }
     $(document).ready(function(){
         $("#issue_date").val(new Date().toISOString().slice(0, 10))
         $("#e_way_date").val(new Date().toISOString().slice(0, 10))
+        let state_name = $('.state__name').val()
+        // Check if vendor is from Kolkata (West Bengal)
+        console.log('458');
+        
+        if(state_name == 'West Bengal'){
+            // Enable CGST and SGST, disable IGST
+            $('.igst').prop('required', false)
+            $('.igst').prop('disabled', true)
+            $('.cgst, .sgst').prop('disabled', false)
+            $('.cgst, .sgst').prop('required', true)
+        }
+        else{
+            // Enable IGST, disable CGST and SGST
+            $('.igst').prop('required', true)
+            $('.igst').prop('disabled', false)
+            $('.cgst, .sgst').prop('disabled', true)
+            $('.cgst, .sgst').prop('required', false)
+        }
         $.ajax({
             url: "{% url 'api:itemList' %}?find_all=1",
             type: 'GET',
@@ -447,7 +476,56 @@
     
     })
     
-    // $(document).on('change','#vendor',function(){
+    $(document).on('change','#vendor',function(){      
+        $('.state__name').val('')
+        clearAll()
+    })
+    $(document).on('change', '#vendor', function() {
+    // Clear specific fields when vendor changes
+        clearAllItemDetGstTotAmount
+        renderTotalAmount()
+        console.log('481');
+        
+        let vendorId = $('select#vendor option:selected').val();
+
+        // Make an AJAX call to get the vendor's details (state, etc.)
+        $.ajax({
+            url: "{% url 'api:vendorList' %}?id=" + vendorId,
+            type: 'GET',
+            data: ({ }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function(response) {
+                if (response.status == 200) {
+                    let state_name = response.page_items[0].state__name;
+                    $('.state__name').val(state_name);
+
+                    // Check if vendor is from Kolkata (West Bengal)
+                    if (state_name === 'West Bengal') {
+                        // Enable CGST and SGST, disable IGST    
+                        $('.cgst, .sgst').prop('required', true)
+                        $('.cgst, .sgst').prop('disabled', false).val('');
+                        $('.igst').prop('disabled', true).val('');
+                        $('.igst').prop('required', false)
+
+                    } else {
+                        // Enable IGST, disable CGST and SGST
+                        $('.igst').prop('required', true)
+                        $('.igst').prop('disabled', false).val('');
+                        $('.cgst, .sgst').prop('disabled', true).val('');
+                        $('.cgst, .sgst').prop('required', false)
+                    }
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function(error) {
+                alert("Error fetching vendor details");
+            }
+        });
+    });
+    //  $(document).on('change','#vendor',function(){
              
     //        $('.top_add').attr('hidden',true)
     //         $('#table_form').html(``)
@@ -468,51 +546,52 @@
     //                 $('#totalAmount').removeAttr('hidden')
     //                 let text_inp = ``
     //                 state_name = response.page_items[0].state__name
-    //                 // console.log(response.page_items[0].state__name == );
+    //                 console.log(response.page_items[0].state__name == );
     //                 if(state_name == 'West Bengal'){
-    //                     // cgst igst
+    //                     cgst igst
     //                     $('#sameState').val("0")
     //                     text_inp =`<div class="form-row content_parent">
     //                                         <div class="col-md-3 mb-3">
     //                                             <label>Item<span class="required-indicator">*</span></label>
-    //                                             <div class="input-group">
-    //                                                 <select class="custom-select selectpicker item_id" name="item_id" required>
-    //                                                     ${item_options_text}
-    //                                                 </select>
-    //                                                 {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
-    //                                                     <div class="btn float-end addForm" data-text="Add New item"
-    //                                                             data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
-    //                                                             <i class="fa fa-plus"></i>
-    //                                                     </div>
-    //                                                 {% endif %}
-    //                                             </div>
+    //                                             <select class="custom-select selectpicker item_id" name="item_id" required>
+    //                                                 <option value="">Choose...</option>
+    //                                                 {% for item in items %}
+    //                                                 <option {% if purchaseBillDet.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
+    //                                                 {% endfor %}
+    //                                             </select>
+    //                                             {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+    //                                                 <div class="btn float-end addForm" data-text="Add New item"
+    //                                                         data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+    //                                                         <i class="fa fa-plus"></i>
+    //                                                 </div>
+    //                                             {% endif %}
     //                                         </div>
     //                                         <div class="col-md-2 mb-3">
-    //                                             <label>HSN/SAC<span class="required-indicator">*</span></label>
-    //                                             <input type="text" class="form-control hsn" name="hsn"  onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" placeholder="Hsn/SAC No" required>
+    //                                             <label>HSN/SAC <span class="required-indicator">*</span></label>
+    //                                             <input type="text" class="form-control hsn" name="hsn" 
+    //                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" value="{{purchaseBillDet.hsn_code}}" required>
     //                                         </div>
 
     //                                         <div class="col-md-2 mb-3">
     //                                             <label>Rate<span class="required-indicator">*</span></label>
     //                                             <input type="text" class="form-control rate" name="rate"  onkeyup="checkMaxMin(this)"
-    //                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" min="0.01" required>
+    //                                                     onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" min="0.01" value="{{purchaseBillDet.rate}}" required>
     //                                         </div>
 
     //                                         <div class="col-md-2 mb-3">
     //                                             <label>Quantity<span class="required-indicator">*</span></label>
     //                                             <input type="text" class="form-control quantity" name="quantity"  onkeyup="checkMaxMin(this)"
-    //                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" min="0.01" required>
+    //                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" min="0.01" value="{{purchaseBillDet.quantity}}"  required>
     //                                         </div>
 
     //                                         <div class="col-md-2 mb-3">
     //                                             <label>UOM<span class="required-indicator">*</span></label>
-    //                                             <input type="text" class="form-control uom" name="uom"  readonly required>
+    //                                             <input type="text" class="form-control uom" name="uom" value="{{purchaseBillDet.uom.name}}" readonly required>
     //                                         </div>
     //                                         <div class="col-md-2 mb-3">
     //                                             <label>Amount<span class="required-indicator">*</span></label>
-    //                                             <input type="text" class="form-control amount" name="amount"  readonly required>
+    //                                             <input type="text" class="form-control amount" name="amount" value="{{purchaseBillDet.amount}}" readonly required>
     //                                         </div>
-
     //                                         <div class="col-md-2 mb-3">
     //                                             <label>IGST% <span class="required-indicator">*</span></label>
     //                                             <input type="text" onkeyup="checkMaxMin(this)"
@@ -559,7 +638,7 @@
     //                                     </div>`
     //                 }
     //                 else{
-    //                     // console.log("256");
+    //                     console.log("256");
     //                     $('#sameState').val("1")
     //                     text_inp =`<div class="form-row content_parent">
     //                                         <div class="col-md-3 mb-3">
@@ -571,78 +650,81 @@
     //                                             </div>
     //                                         </div>
         
-    //                                 <div class="col-md-2 mb-3">
-    //                                     <label>HSN/SAC<span class="required-indicator">*</span></label>
-    //                                     <input type="text" class="form-control hsn" name="hsn" onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" placeholder="Hsn/SAC No"  required>
-    //                                 </div>
+    //                                         <div class="col-md-2 mb-3">
+    //                                             <label>HSN/SAC <span class="required-indicator">*</span></label>
+    //                                             <input type="text" class="form-control hsn" name="hsn" 
+    //                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" value="{{purchaseBillDet.hsn_code}}" required>
+    //                                         </div>
 
-    //                                 <div class="col-md-2 mb-3">
-    //                                     <label>Rate<span class="required-indicator">*</span></label>
-    //                                     <input type="text" class="form-control rate" name="rate"  onkeyup="checkMaxMin(this)"
-    //                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" min="0.01" required>
-    //                                 </div>
+    //                                         <div class="col-md-2 mb-3">
+    //                                             <label>Rate<span class="required-indicator">*</span></label>
+    //                                             <input type="text" class="form-control rate" name="rate"  onkeyup="checkMaxMin(this)"
+    //                                                     onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" min="0.01" value="{{purchaseBillDet.rate}}" required>
+    //                                         </div>
 
-    //                                 <div class="col-md-2 mb-3">
-    //                                     <label>Quantity<span class="required-indicator">*</span></label>
-    //                                     <input type="text" class="form-control quantity" name="quantity"  onkeyup="checkMaxMin(this)"
-    //                                         onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" min="0.01" required>
-    //                                 </div>
+    //                                         <div class="col-md-2 mb-3">
+    //                                             <label>Quantity<span class="required-indicator">*</span></label>
+    //                                             <input type="text" class="form-control quantity" name="quantity"  onkeyup="checkMaxMin(this)"
+    //                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" min="0.01" value="{{purchaseBillDet.quantity}}"  required>
+    //                                         </div>
 
-    //                                 <div class="col-md-2 mb-3">
-    //                                     <label>UOM<span class="required-indicator">*</span></label>
-    //                                     <input type="text" class="form-control uom" name="uom"  readonly required>
-    //                                 </div>
-    //                                 <div class="col-md-2 mb-3">
-    //                                     <label>Amount<span class="required-indicator">*</span></label>
-    //                                     <input type="text" class="form-control amount" name="amount"  readonly required>
-    //                                 </div>
+    //                                         <div class="col-md-2 mb-3">
+    //                                             <label>UOM<span class="required-indicator">*</span></label>
+    //                                             <input type="text" class="form-control uom" name="uom" value="{{purchaseBillDet.uom.name}}" readonly required>
+    //                                         </div>
+    //                                         <div class="col-md-2 mb-3">
+    //                                             <label>Amount<span class="required-indicator">*</span></label>
+    //                                             <input type="text" class="form-control amount" name="amount" value="{{purchaseBillDet.amount}}" readonly required>
+    //                                         </div>
+                                           
 
-    //                                 <div class="col-md-2 mb-3">
-    //                                     <label>IGST% <span class="required-indicator">*</span></label>
-    //                                     <input type="text" onkeyup="checkMaxMin(this)"
-    //                                         onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-    //                                         name="igst" min="0.01" class="form-control igst gst"
-    //                                         placeholder="0.00" required>
-    //                                 </div>
-    //                                 <div class="col-md-2 mb-3">
-    //                                     <label>Amount Igst<span class="required-indicator">*</span></label>
-    //                                     <input type="text" class="form-control amount_igst" name="amount_igst"  readonly required>
-    //                                 </div>
-    //                                 <div class="col-md-2 mb-3">
-    //                                     <label>SGST% <span class="required-indicator">*</span></label>
-    //                                     <input type="text" onkeyup="checkMaxMin(this)"
-    //                                         onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-    //                                         name="sgst" min="0.01" class="form-control sgst gst"
-    //                                         placeholder="0.00"  disabled>
-    //                                 </div>
-    //                                 <div class="col-md-2 mb-3">
-    //                                     <label>Amount Sgst<span class="required-indicator">*</span></label>
-    //                                     <input type="text" class="form-control amount_sgst" name="amount_sgst"  readonly disabled>
-    //                                 </div>
-    //                                 <div class="col-md-2 mb-3">
-    //                                     <label>CGST% <span class="required-indicator">*</span></label>
-    //                                     <input type="text" onkeyup="checkMaxMin(this)"
-    //                                         onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-    //                                         name="cgst" min="0.01" class="form-control cgst gst"
-    //                                         placeholder="0.00" disabled>
-    //                                 </div>
-    //                                 <div class="col-md-2 mb-3">
-    //                                     <label>Amount Cgst<span class="required-indicator">*</span></label>
-    //                                     <input type="text" class="form-control amount_cgst" name="amount_cgst"  readonly disabled>
-    //                                 </div>
-    //                                 <div class="col-md-2 mb-3">
-    //                                     <label>Total Amount<span class="required-indicator">*</span></label>
-    //                                     <input type="text" class="form-control amount_gst" name="amount_gst"  readonly required>
-    //                                 </div>
-                                            
-    //                                 <div class="col-md-1 btn-group mb-4 text-center">
-    //                                     <button type="button" class="btn add_btn m-1">
-    //                                         <i class="fa fa-plus"></i>
-    //                                     </button>
-    //                                 </div>
-    //                             </div>`
+    //                                         <div class="col-md-2 mb-3">
+    //                                             <label>IGST% <span class="required-indicator">*</span></label>
+    //                                             <input type="text" onkeyup="checkMaxMin(this)"
+    //                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+    //                                                 name="igst" min="0.01" class="form-control igst gst"
+    //                                                 placeholder="0.00" required>
+    //                                         </div>
+    //                                         <div class="col-md-2 mb-3">
+    //                                             <label>Amount Igst<span class="required-indicator">*</span></label>
+    //                                             <input type="text" class="form-control amount_igst" name="amount_igst"  readonly required>
+    //                                         </div>
+    //                                         <div class="col-md-2 mb-3">
+    //                                             <label>SGST% <span class="required-indicator">*</span></label>
+    //                                             <input type="text" onkeyup="checkMaxMin(this)"
+    //                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+    //                                                 name="sgst" min="0.01" class="form-control sgst gst"
+    //                                                 placeholder="0.00"  disabled>
+    //                                         </div>
+    //                                         <div class="col-md-2 mb-3">
+    //                                             <label>Amount Sgst<span class="required-indicator">*</span></label>
+    //                                             <input type="text" class="form-control amount_sgst" name="amount_sgst"  readonly disabled>
+    //                                         </div>
+    //                                         <div class="col-md-2 mb-3">
+    //                                             <label>CGST% <span class="required-indicator">*</span></label>
+    //                                             <input type="text" onkeyup="checkMaxMin(this)"
+    //                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+    //                                                 name="cgst" min="0.01" class="form-control cgst gst"
+    //                                                 placeholder="0.00" disabled>
+    //                                         </div>
+    //                                         <div class="col-md-2 mb-3">
+    //                                             <label>Amount Cgst<span class="required-indicator">*</span></label>
+    //                                             <input type="text" class="form-control amount_cgst" name="amount_cgst"  readonly disabled>
+    //                                         </div>
+    //                                         <div class="col-md-2 mb-3">
+    //                                             <label>Total Amount<span class="required-indicator">*</span></label>
+    //                                             <input type="text" class="form-control amount_gst" name="amount_gst"  readonly required>
+    //                                         </div>
+                                                    
+    //                                         <div class="col-md-1 btn-group mb-4 text-center">
+    //                                             <button type="button" class="btn add_btn m-1">
+    //                                                 <i class="fa fa-plus"></i>
+    //                                             </button>
+    //                                         </div>
+    //                                 </div>`
     //                 }
-    //             $('#table_form').html(text_inp)
+                
+    //                 $('#table_form').html(text_inp)
     //             clearAll()
     //             $('.selectpicker').select2({
     //             placeholder: '',
@@ -653,7 +735,7 @@
     //                 return option.text;
     //             }
     //         });
-    //                 // console.log(item_options_text,"saswata");
+    //                 console.log(item_options_text,"saswata");
     //             } 
     //             else {
     //                 alert(response.message);
@@ -664,7 +746,7 @@
     //             }
     //         });
             
-    //         // console.log(item_options_text,"saswata");
+    //         console.log(item_options_text,"saswata");
           
     //     })
         
@@ -682,6 +764,12 @@
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
                                                 ${item_options_text}
                                             </select>
+                                            {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                <div class="btn float-end addForm" data-text="Add New item"
+                                                        data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                        <i class="fa fa-plus"></i>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
 
@@ -765,6 +853,12 @@
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
                                                 ${item_options_text}
                                             </select>
+                                            {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                <div class="btn float-end addForm" data-text="Add New item"
+                                                        data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                        <i class="fa fa-plus"></i>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
 
@@ -857,7 +951,7 @@
         renderTotalCgst()
         renderTotalSGst()
         renderTotalAmount()
-        callback()
+        // callback()
     });
 
     $(document).on('click', '.remove_btn', function () {
@@ -868,7 +962,7 @@
         renderTotalCgst()
         renderTotalSGst()
         renderTotalAmount()
-        callback()
+        // callback()
     });
 
     $(document).on('change','.item_id',function(){
@@ -895,7 +989,7 @@
                 // console.log(response.page_items[0].price);
                 parentDiv.find('.rate').val(response.page_items[0].price);
                 parentDiv.find('.uom').val(response.page_items[0].uom__name)
-                
+                parentDiv.find('.hsn').val(response.page_items[0].hsn_code)
                 
             } 
             else {
@@ -915,7 +1009,7 @@
         renderTotalSGst()
         renderTotalAmount()
             
-        callback()
+        // callback()
     })
 
     function checkMaxMin(element) {
@@ -982,7 +1076,17 @@
     
     });
     
-  
+    $(document).on('keyup','.quantity , .rate',function(){
+        console.log("722");
+        clearAllGst(this)
+        let quantity = parseFloat($(this).parent().closest('.content_parent').find('.quantity').val())
+            let rate = parseFloat($(this).parent().closest('.content_parent').find('.rate').val())
+            let amount = quantity?(quantity * rate) : 0.00
+
+            $(this).parent().closest('.content_parent').find('.amount').val(amount).trigger('change')
+            renderTotalAmount()
+
+    })
     $(document).on('change keyup','.gst, .amount',function(){
         sum = 0 
         let amount, gst, amount_gst=0 , amount_gst_per = 0,total_gst =0;
@@ -994,14 +1098,16 @@
                     gst = parseFloat($(this).val())/100
                     amount_gst_per = amount*gst
                     total_gst+= amount_gst_per
-                    $(this).parent().next().find('input').val(amount_gst_per)
+                    $(this).parent().next().find('input').val(amount_gst_per.toFixed(2))
                 }
             });
             amount_gst= amount + total_gst
         }
 
         if(amount_gst){
-            $(this).closest('.content_parent').find('.amount_gst').val(amount_gst)
+            console.log(amount_gst);
+            
+            $(this).closest('.content_parent').find('.amount_gst').val(amount_gst.toFixed(2))
         }
 
         renderTotalAmountWithGst()

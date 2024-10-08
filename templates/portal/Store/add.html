@@ -100,11 +100,10 @@
                             <div class="col-md-4 mb-3">
                                 <label>Country <span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker" id="country_id" name="country_id"
-                                        required>
+                                    <select class="custom-select selectpicker" id="country_id" name="country_id" required>
                                         <option value="">Choose...</option>
                                         {% for country in countries %}
-                                        <option value="{{country.id}}">{{country.name}}</option>
+                                            <option value="{{ country.id }}" {% if country.name == "India" %}selected{% endif %}>{{ country.name }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -204,48 +203,7 @@
     });
 
     $(document).ready(function () {
-        $.ajax({
-            url: "{% url 'api:getCountries' %}",
-            type: 'get',
-            data: ({}),
-            success: function (response) {
-                if (response.status == 200) {
-                    page_items = JSON.parse(response.page_items);
-                    var options_text = `<option value="">Select State</option>`;
-                    for (let index = 0; index < page_items.length; index++) {
-                        const element = page_items[index].fields;
-                        options_text += `<option value="${page_items[index].pk}">${element.name}</option>`;
-                    }
-                    $("#country_id").html(options_text);
-                } else {
-                    alert(response.message);
-                }
-            },
-        });
-        
-        // $.ajax({
-        //     url: "{% url 'api:vendorList' %}?find_all=1",
-        //     type: 'GET',
-        //     data: ({}),
-        //     headers: {
-        //         'Authorization': getCookieValue("accessToken")
-        //     },
-        //     success: function (response) {
-        //         if (response.status == 200) {
-        //             var vendor_options_text = `<option value=""></option>`;
-        //             for (let index = 0; index < response.page_items.length; index++) {
-        //                 vendor_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
-        //             }
-        //             $('#vendor_id').html(vendor_options_text);
-        //         } else {
-        //             alert(response.message);
-        //         }
-        //     },
-        //     error: function (error) {
-        //         $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-        //     }
-        // });
-
+        $('#country_id').trigger('change');
         $(".vendor_content").hide()
 
     })
@@ -265,6 +223,9 @@
                         options_text += `<option value="${page_items[index].pk}">${element.name}</option>`;
                     }
                     $("#state_id").html(options_text);
+                    if (country_id && page_items.length && $("#country_id option:selected").text() === "India") {
+                        $("#state_id").val(page_items.find(item => item.fields.name === "West Bengal")?.pk || "").change();
+                    }
                 } else {
                     alert(response.message);
                 }
