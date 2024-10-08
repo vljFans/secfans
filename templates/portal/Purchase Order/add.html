@@ -547,6 +547,7 @@
             $('#discount_value').removeAttr('max');
             $('#discount_value').val('');
         }
+        calculateTotalAmount();
     });
 
     $(document).on('keyup change', '#discount_value', function () {

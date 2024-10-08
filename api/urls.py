@@ -107,6 +107,8 @@ urlpatterns = [
     path('store-item-edit', views.storeItemEdit, name='storeItemEdit'),
     path('store-item-delete', views.storeItemDelete, name='storeItemDelete'),
     path('store-item-export', views.storeItemExport, name='storeItemExport'),
+    path('store-item-import', views.storeItemImport, name='storeItemImport'),
+
     # path('store-item-report-export', views.storeItemReportExport, name='storeItemReportExport'),
 
 
@@ -174,5 +176,6 @@ urlpatterns = [
     path('report-active-vendor-IssueRecep', views.reportVendorIssueRecp, name='reportVendorIssueRecp'),
 
     path('corn-job-store-item-quantity-update', views.cornJobStoreItemQuantityUpdate, name='cornJobStoreItemQuantityUpdate'),
-    path('extract-data-from-xlsx', views.extractDataFromXlsx, name='extractDataFromXlsx')
+
+    path('extract-data-from-xlsx', views.extractDataFromXlsx, name='extractDataFromXlsx'),
 ]
