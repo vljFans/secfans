@@ -37,6 +37,7 @@ env = environ.Env()
 environ.Env.read_env()
 format = lambda x: f'{x.normalize():f}'
 
+
 class CustomPaginator:
     def __init__(self, items, per_page):
         self.items = items
@@ -93,7 +94,8 @@ def user_log_details_add(user,task_name):
     except Exception as e:
         print(f'Something went wrong: {e}')
         transaction.rollback()
-    
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def loginUser(request):
@@ -618,6 +620,7 @@ def userDelete(request):
         transaction.rollback()
     return JsonResponse(context)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def userLogDetailsList(request):
@@ -670,6 +673,7 @@ def userLogDetailsList(request):
             'button_to_show': button_to_show,
         })
     return JsonResponse(context)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -974,6 +978,7 @@ def configUserAdd(request):
         transaction.rollback()
     return JsonResponse(context)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def configUserEdit(request):
@@ -1019,7 +1024,6 @@ def configUserEdit(request):
         })
         transaction.rollback()
     return JsonResponse(context)
-
 
 
 @api_view(['GET'])
@@ -1910,7 +1914,7 @@ def itemTypeList(request):
             'current_page': int(current_page),
             'button_to_show': int(button_to_show),
         })
-    print(context,'\n')
+    # print(context,'\n')
     return JsonResponse(context)
 
 
@@ -2199,16 +2203,14 @@ def itemList(request):
 
         if item_category_id is not None and item_category_id!="":
             items=items.filter(item_type__item_category_id=item_category_id)
-
         if item_type_id is not None and item_type_id!="":
             items=items.filter(item_type_id=item_type_id)
-
         if keyword is not None and keyword != "":
-            items = list(models.Item.objects.filter(Q(name__icontains=keyword) | Q(item_type__name__icontains=keyword) | Q(uom__name__icontains=keyword)).filter(
-                status=1, deleted=0).values('pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price','hsn_code'))
-        else:
-            items = list(models.Item.objects.filter(status=1, deleted=0).values(
-                'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price','hsn_code'))
+            items = items.filter(name__icontains=keyword)
+
+        items = list(items.values(
+                'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage',
+                'uom__name', 'price', 'hsn_code'))
 
         if find_all is not None and int(find_all) == 1:
             context.update({

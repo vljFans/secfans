@@ -616,8 +616,10 @@ def storeList(request):
 @login_required
 def storeAdd(request):
     vendors = models.Vendor.objects.all().exclude(id__in=list(models.Store.objects.filter(vendor_id__isnull=False).values_list("vendor_id", flat="True")))
+    countries = models.Country.objects.all()
     context.update({
         'vendors':vendors,
+        'countries': countries,
         'page_title': "Store Add",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store", 'url': reverse('superuser:storeList')}, {'name': "Add"}]
     })

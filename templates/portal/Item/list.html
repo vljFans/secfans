@@ -181,11 +181,19 @@
 
 {% block js %}
 <script>
-    keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
-    function getItemList(keyword) {
+    // keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
+    let filters={
+        "keyword":"",
+        "item_category_id":"",
+        "item_type_id":""
+    }
+    let itemListurl = "{% url 'api:itemList' %}"
+    function getItemList() {
+        let queryParams = Object.entries(filters).filter(([, value]) => value).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&');
+        let url = "{% url 'api:itemList' %}" + (queryParams ? `?${queryParams}` : '');
         $.ajax({
             type: "GET",
-            url: "{% url 'api:itemList' %}?keyword=" + keyword,
+            url: url,
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -215,15 +223,7 @@
                                 </td>
                             </tr>`;
                     }
-                    // pagination_text = ``;
-                    // if (response.total_pages > 1) {
-                    //     pagination_text += `<li class="page-item disabled"><a class="page-link" href="?page=1"><span class="fa fa-arrow-left"></span></a></li>`;
-                    //     for (let page = 1; page < response.total_pages; page++) {
-                    //         pagination_text += `<li class="page-item ${page == response.current_page ? 'active' : ''}"><a class="page-link" href="?page=${page}">${page}</a></li>`;
-                    //     }
-                    //     pagination_text += `<li class="page-item"><a class="page-link" href="?page=${response.total_pages}"><span class="fa fa-arrow-right"></span></a></li>`;
-                    // }
-                    pagination_text = generatePaginationLinks(response.current_page, response.total_pages, response.button_to_show, keyword);
+                    pagination_text = generatePaginationLinks(response.current_page, response.total_pages, response.button_to_show, filters.keyword);
                     $('#table-body').html(tbody_text);
                     $('#pagination').html(pagination_text);
                 } else {
@@ -242,7 +242,7 @@
     });
 
     $(document).ready(function () {
-        getItemList(keyword)
+        getItemList()
 
         $.ajax({
             url: "{% url 'api:itemTypeList' %}?find_all=1",
@@ -293,8 +293,8 @@
     });
 
     $(document).on('keyup', '#search', function () {
-        keyword = $(this).val();
-        getItemList(keyword)
+        filters["keyword"]=$(this).val();
+        getItemList()
     })
 
     $(document).on('click', '#delete-btn', function () {
@@ -326,94 +326,14 @@
     });
 
     $(document).on('change', '#item_type_id', function(){
-        $.ajax({
-            type: "GET",
-            url: "{% url 'api:itemList' %}?item_type_id=" + $(this).val() + "& keyword = " +$("#search").val(),
-            data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                $('.error-msg-txt').text("");
-                if (response.status == 200) {
-                    edit_url = "{% url 'superuser:itemEdit' 1 %}";
-                    page_items = response.page_items;
-                    tbody_text = ``;
-                    for (let index = 0; index < page_items.length; index++) {
-                        const element = page_items[index];
-                        tbody_text += `<tr>
-                                <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
-                                <td>${element.name}</td>
-                                <td>${element.item_type__name} (${element.item_type__item_category__name})</td>
-                                <td>${element.uom__name}</td>
-                                <td>₹${element.price}</td>
-                                <td>
-                                {% if request.user.is_superuser == 1 or 'change_item'|get_session_permission:request is not None %}
-                                <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'delete_item'|get_session_permission:request is not None %}
-                                <a id="delete-btn" data-id="${element.pk}" data-name="${element.name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
-                                {% endif %}
-                                </td>
-                            </tr>`;
-                    }
-                    pagination_text = generatePaginationLinks(response.current_page, response.total_pages, response.button_to_show, keyword);
-                    $('#table-body').html(tbody_text);
-                    $('#pagination').html(pagination_text);
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });
+        filters["item_type_id"]=$(this).val();
+        getItemList()
     })
 
     $(document).on('change', '#item_category_id', function(){
-        $.ajax({
-            type: "GET",
-            url: "{% url 'api:itemList' %}?item_category_id=" + $(this).val() + "& keyword = " +$("#search").val(),
-            data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                $('.error-msg-txt').text("");
-                if (response.status == 200) {
-                    edit_url = "{% url 'superuser:itemEdit' 1 %}";
-                    page_items = response.page_items;
-                    tbody_text = ``;
-                    for (let index = 0; index < page_items.length; index++) {
-                        const element = page_items[index];
-                        tbody_text += `<tr>
-                                <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
-                                <td>${element.name}</td>
-                                <td>${element.item_type__name} (${element.item_type__item_category__name})</td>
-                                <td>${element.uom__name}</td>
-                                <td>₹${element.price}</td>
-                                <td>
-                                {% if request.user.is_superuser == 1 or 'change_item'|get_session_permission:request is not None %}
-                                <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'delete_item'|get_session_permission:request is not None %}
-                                <a id="delete-btn" data-id="${element.pk}" data-name="${element.name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
-                                {% endif %}
-                                </td>
-                            </tr>`;
-                    }
-                    pagination_text = generatePaginationLinks(response.current_page, response.total_pages, response.button_to_show, keyword);
-                    $('#table-body').html(tbody_text);
-                    $('#pagination').html(pagination_text);
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });
-
+        filters["item_category_id"]=$(this).val();
+        filters["item_type_id"]=""
+        getItemList()
         $.ajax({
             url: "{% url 'api:itemTypeList' %}?itemCatId=" + $(this).val(),
             type: 'GET',
@@ -440,7 +360,7 @@
 
     })
 
-    $(document).on("change", "#fileInput", function() {        
+    $(document).on("change", "#fileInput", function() {
         var formData = new FormData();
         formData.append('file', $('#fileInput')[0].files[0]);
         $.ajax( {
