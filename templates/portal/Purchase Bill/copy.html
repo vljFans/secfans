@@ -420,6 +420,7 @@
         $(element).parent().closest('.content_parent').find('.igst').val('')
         $(element).parent().closest('.content_parent').find('.cgst').val('')
         $(element).parent().closest('.content_parent').find('.sgst').val('')
+       
     }
     $(document).ready(function(){
         $("#issue_date").val(new Date().toISOString().slice(0, 10))
@@ -482,7 +483,7 @@
     })
     $(document).on('change', '#vendor', function() {
     // Clear specific fields when vendor changes
-        clearAllItemDetGstTotAmount
+        clearAllItemDetGstTotAmount()
         renderTotalAmount()
         console.log('481');
         
