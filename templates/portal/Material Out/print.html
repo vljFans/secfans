@@ -47,15 +47,12 @@
 
 <body>
     <div style="text-align: center; width: 55%; padding-left: 150px;">
-        <strong class="fs-16">Shiva Engineering Co</strong>
-        <p>47, Biplabi Anukul Chandra Street, Kolkata-72
-            Factory214A, Raja Ram Mohon Roy Road, Kolkata, W.B- 700008
-            16F, Khanpur Road, Kolkata, West Bengal, 700047
-            Sarmastarchak, D H Road, Kolkata, South 24 Parganas, W B- 700104
-            2D, Temple Street, Kolkata - 700072
-            CONTACT - 9433525676_IEC CODE- 0216927218
-            UDYAM-WB-10-0017669_ MEDIUM
-            E-Mail : shivaenggco@yahoo.in/shivaenggco1987@gmail.com</p>
+        <strong class="fs-16">{{config.client_name}}</strong><br>
+        <p>{{config.client_address}}<br>
+            {{config.client_work_address}}<br>
+            CONTACT - {{config.client_contact}} &nbsp; &nbsp; IEC CODE- {{config.ice_code}} <br>
+            UDYAM-{{config.udyam_no}} <br>
+            E-Mail : {{config.mail_id}}</p>
     </div>
     <div style="text-align: center; width: 100%; ">
         <strong class="fs-16">INTER WAREHOUSE TRNSFER Voucher&nbsp;&nbsp;({{page_title}})</strong>

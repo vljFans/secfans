@@ -800,13 +800,16 @@ def purchaseOrderView(request, id):
 
 @login_required
 def purchaseOrderPrint(request, id):
+    configList = models.Configuration_User.objects.first()
+    
     purchaseOrder = models.Purchase_Order.objects.prefetch_related(
         'purchase_order_detail_set').get(pk=id)
     purchaseOrder.amount_with_gst = purchaseOrder.total_amount + \
         purchaseOrder.discounted_value
     context.update({
         'page_title': "Purchase Order Print",
-        'purchaseOrder': purchaseOrder
+        'purchaseOrder': purchaseOrder,
+        'config': configList
     })
     return render(request, 'portal/Purchase Order/print.html', context)
 
@@ -1282,13 +1285,15 @@ def materialOutPrint(request, id):
     total_amount = 0
     total_quantity = 0
     materialOutDets = list(models.On_Transit_Transaction_Details.objects.filter(on_transit_transaction_header_id = id).values('quantity','amount'))
-    
+    configList = models.Configuration_User.objects.first()
+
     for index in range (0,len(materialOutDets)):
         total_quantity += float(materialOutDets[index]['quantity'])
         total_amount += float(materialOutDets[index]['amount'])
 
 
     context.update({
+        'config': configList,
         'page_title': "DELIVERY CHALLAN",
         'materialOut': materialOut,
         'total_amount' : total_amount,
