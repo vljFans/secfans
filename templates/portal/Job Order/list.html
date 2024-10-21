@@ -63,7 +63,8 @@
                         <div class="text-right">
                             <div class="d-flex">
                                 {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
-                                <a href="{% url 'superuser:jobOrderAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
+                                <a href="{% url 'superuser:thirdPartyjobOrderAdd' %}" class="mr-3"><i class="fa fa-plus">Third party</i></a>
+                                <a href="{% url 'superuser:thirdPartyjobOrderAdd' %}" class="mr-3"><i class="fa fa-plus">Self</i></a>
                                 {% endif %}
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                                 <!-- <div class="dropdown" data-toggle="dropdown">
@@ -133,7 +134,7 @@
                 $('.error-msg-txt').text("");
                 if (response.status == 200) {
                     edit_url = "{% url 'superuser:jobOrderEdit' 1 %}";
-                    copy_url = "{% url 'superuser:jobOrderAdd'  %}?id=";
+                    copy_url = "{% url 'superuser:selfJobOrderAdd'  %}?id=";
                     page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {

@@ -952,7 +952,7 @@ def jobOrderList(request):
 
 
 @login_required
-def jobOrderAdd(request):
+def selfJobOrderAdd(request):
     # item_id_n_bom_id={}
     # for bom in models.Bill_Of_Material.objects.all():
     #     item_id_n_bom_id[str(bom.bom_item_id)]=bom.id
@@ -980,12 +980,23 @@ def jobOrderAdd(request):
         return render(request, 'portal/Job Order/edit.html', context)
 
     else:
+
         context.update({
             # 'item_id_n_bom_id':json.dumps(item_id_n_bom_id),
             'page_title': "Job Order Add",
             'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "Add"}]
         })
         return render(request, 'portal/Job Order/add.html', context)
+
+@login_required
+def thirdPartyjobOrderAdd(request):
+    context.update({
+            # 'item_id_n_bom_id':json.dumps(item_id_n_bom_id),
+            'page_title': "Job Order Add",
+            'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "Add"}]
+        })
+    return render(request, 'portal/Job Order/add.html', context)
+        
 
 @login_required
 def jobOrderEdit(request, id):
