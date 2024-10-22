@@ -5025,7 +5025,7 @@ def jobOrderList(request):
 def jobOrderAdd(request):
     context = {}
     print(request.POST)
-    exit()
+    # exit()
     if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['manufacturing_type'] or not request.POST['notes']:
         context.update({
             'status': 589,
