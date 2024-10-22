@@ -49,11 +49,14 @@
             <td rowspan="3" colspan="4" style="width:40%;"><strong class="fs-16">{{config.client_name}}.</strong><br>
                 {{config.client_address}}<br>
                 Ph. – {{config.client_contact}}<br>
-                Works – {{config.client_work_address}}
+                Works – {{config.client_work_address}}<br>
+                GST - {{config.client_gst}}
             </td>
             <td rowspan="4" colspan="4" style="width:30%;"><strong>{{purchaseOrder.vendor.name}}</strong><br>
                 {{purchaseOrder.vendor.address}}<br>{{purchaseOrder.vendor.city.name}} – {{purchaseOrder.vendor.pin}},
-                {{purchaseOrder.vendor.state.name}}</td>
+                {{purchaseOrder.vendor.state.name}}<br>
+                GST - {{purchaseOrder.vendor.gst_no}}
+            </td>
             <td colspan="2"> </td>
         <!-- </tr>
         <tr>

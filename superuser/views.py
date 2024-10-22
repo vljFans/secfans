@@ -11,6 +11,7 @@ import json
 import os
 from sec import settings
 from num2words import num2words
+from datetime import datetime, timedelta
 env = environ.Env()
 environ.Env.read_env()
 
@@ -952,12 +953,15 @@ def jobOrderList(request):
 
 
 @login_required
-def jobOrderAdd(request):
+def selfJobOrderAdd(request):
     # item_id_n_bom_id={}
     # for bom in models.Bill_Of_Material.objects.all():
     #     item_id_n_bom_id[str(bom.bom_item_id)]=bom.id
     # bom_items_id_list = list(models.Bill_Of_Material.objects.all().values_list('bom_item_id', flat=True))
-    
+    jobOrderCount = models.Job_Order.objects.filter(manufacturing_type='self').count()
+    # print(jobOrderCount)
+    jobOrderNumber =  env("JOB_ORDER_NUMBER_SEQ").replace("${VENDOR_SHORT}", 'SLF').replace(
+                "${AI_DIGIT_3}", str(jobOrderCount + 1).zfill(3)).replace("${FINANCE_YEAR}", datetime.today().strftime('%y') + "-" + (datetime(datetime.today().year + 1, 1, 1).strftime('%y')))
     if request.GET.get('id', None):
         id = request.GET.get('id', None)
         jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
@@ -980,12 +984,32 @@ def jobOrderAdd(request):
         return render(request, 'portal/Job Order/edit.html', context)
 
     else:
+
         context.update({
             # 'item_id_n_bom_id':json.dumps(item_id_n_bom_id),
+            'job_order_number' : jobOrderNumber,
+            'manufacturing_type' : 'self',
+            'with_withoud_job' : 'with',
             'page_title': "Job Order Add",
             'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "Add"}]
         })
         return render(request, 'portal/Job Order/add.html', context)
+
+@login_required
+def thirdPartyjobOrderAdd(request):
+    jobOrderCount = models.Job_Order.objects.filter(manufacturing_type='Third party').count()
+    print(jobOrderCount)
+    jobOrderNumber =  env("JOB_ORDER_NUMBER_SEQ").replace("${VENDOR_SHORT}", 'TPM').replace(
+                "${AI_DIGIT_3}", str(jobOrderCount + 1).zfill(3)).replace("${FINANCE_YEAR}", datetime.today().strftime('%y') + "-" + (datetime(datetime.today().year + 1, 1, 1).strftime('%y')))
+    context.update({
+            # 'item_id_n_bom_id':json.dumps(item_id_n_bom_id),
+            'job_order_number' : jobOrderNumber,
+            'manufacturing_type' : 'Third party',
+            'page_title': "Job Order Add",
+            'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "Add"}]
+        })
+    return render(request, 'portal/Job Order/add.html', context)
+        
 
 @login_required
 def jobOrderEdit(request, id):

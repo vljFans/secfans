@@ -4320,6 +4320,7 @@ def storeTransactionAdd(request):
                     for index, elem in enumerate(request.POST.getlist('detail_id')):
                         purchaseOrderItem = models.Purchase_Order_Detail.objects.get(
                             pk=elem)
+                       
                         purchaseOrderItem.delivered_quantity += Decimal(
                             request.POST.getlist('item_quantity')[index])
                         purchaseOrderItem.delivered_rate = Decimal(
@@ -4332,9 +4333,12 @@ def storeTransactionAdd(request):
                             request.POST.getlist('amount_with_gst')[index])
                         purchaseOrderItem.updated_at = datetime.now()
                         purchaseOrderItem.save()
+                    # print(request.POST['purchase_job_order_header_id'])
                     purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related(
-                        'purchase_order_detail_set').get(pk=request.POST['purchase_order_header_id'])
+                        'purchase_order_detail_set').get(pk=request.POST['purchase_job_order_header_id'])
+                    
                     flag = True
+                   
                     for purchaseOrderDetail in purchaseOrderHeader.purchase_order_detail_set.all():
                         if Decimal(purchaseOrderDetail.quantity) > Decimal(purchaseOrderDetail.delivered_quantity):
                             flag = False
@@ -4345,6 +4349,7 @@ def storeTransactionAdd(request):
                         purchaseOrderHeader.delivery_status = 2
                     purchaseOrderHeader.updated_at = datetime.now()
                     purchaseOrderHeader.save()
+                # print('4348') 
             userId = request.COOKIES.get('userId', None)
             user_log_details_add(userId,'Store Transaction Add')
         transaction.commit()
@@ -5019,6 +5024,8 @@ def jobOrderList(request):
 @permission_classes([IsAuthenticated])
 def jobOrderAdd(request):
     context = {}
+    print(request.POST)
+    exit()
     if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['manufacturing_type'] or not request.POST['notes']:
         context.update({
             'status': 589,
