@@ -1005,7 +1005,7 @@
                                         <input type="hidden" name="item_id" value="${response.page_items[index].item_id}">
                                         <div class="col-md-1 mb-3">
                                             <label>Rate <span class="required-indicator">*</span></label>
-                                            <input type="text" onkeyup="checkMaxMin(this)" readonly
+                                            <input type="text" onkeyup="checkMaxMin(this)" 
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                 name="rate" min="0.01" class="form-control rate"
                                                 value="${response.page_items[index].rate}" placeholder="0.00" required>
