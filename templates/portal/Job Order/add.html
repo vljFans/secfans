@@ -3,6 +3,12 @@
 {% load template_func %}
 
 {% block css %}
+<style>
+    .readonly-select {
+        pointer-events: none;
+        background-color: #e9ecef; /* Optional: A disabled-like background */
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -64,7 +70,7 @@
                             <div class="col-md-4 mb-3">
                                 <label>Job Order Number <span class="required-indicator">*</span></label>
                                 <input type="text" id="order_number" name="order_number" class="form-control"
-                                    placeholder="Order Number" required>
+                                    placeholder="Order Number" value="{{job_order_number}}" required readonly>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>Job Order Date <span class="required-indicator">*</span></label>
@@ -73,12 +79,13 @@
                             <div class="col-md-4 mb-3">
                                 <label>Manufacturing type<span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker manufacturing_type" data-placeholder="Select manufacturing type" name="manufacturing_type" required>
+                                    <select class="custom-select selectpicker manufacturing_type readonly-select" data-placeholder="Select manufacturing type" name="manufacturing_type" required >
                                         <option value=""></option>
-                                        <option value="Self">Self Manufacturing</option>
-                                        <option value="Third party">Third party manufacturing</option>
+                                        <option value="Self"{% if manufacturing_type == 'self' %}selected{% endif %}>Self Manufacturing</option>
+                                        <option value="Third party"{% if manufacturing_type == 'Third party' %}selected{% endif %}>Third party manufacturing</option>
                                     </select>
                                 </div>
+                               
                             </div>
 
                             <div class="col-md-12 mb-3 form-row third_party">
@@ -154,6 +161,10 @@
             return option.text;
         }
     });
+
+    $('.manufacturing_type').on('mousedown', function(e) {
+            e.preventDefault(); // Prevent the dropdown from opening
+        });
 
     function checkMaxMin(element) {
         if ($(element).val() == "") {
