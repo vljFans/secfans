@@ -3,15 +3,7 @@
 {% load template_func %}
 
 {% block css %}
-<style>
-    .readonly-select {
-        pointer-events: none; /* Prevents clicks on the select box */
-        background-color: #f9f9f9; /* Change background to indicate readonly */
-    }
-</style>
 {% endblock %}
-<!-- Include Select2 CSS -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
 
 {% block content %}
 <div class="wrapper">   
@@ -72,7 +64,7 @@
                             <div class="col-md-4 mb-3">
                                 <label>Job Order Number <span class="required-indicator">*</span></label>
                                 <input type="text" id="order_number" name="order_number" class="form-control"
-                                    placeholder="Order Number" value="{{job_order_number}}" required readonly>
+                                    placeholder="Order Number"  required readonly>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>Job Order Date <span class="required-indicator">*</span></label>
@@ -81,16 +73,17 @@
                             <div class="col-md-4 mb-3">
                                 <label>Manufacturing type<span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker manufacturing_type readonly-select" data-placeholder="Select manufacturing type" name="manufacturing_type" required >
+                                    <select class="custom-select selectpicker manufacturing_type" data-placeholder="Select manufacturing type" name="manufacturing_type" required>
                                         <option value=""></option>
-                                        <option value="Self"{% if manufacturing_type == 'self' %}selected{% endif %}>Self Manufacturing</option>
-                                        <option value="Third party"{% if manufacturing_type == 'Third party' %}selected{% endif %}>Third party manufacturing</option>
+                                        <option value="Self">Self Manufacturing</option>
+                                        <option value="Third party">Third party manufacturing</option>
                                     </select>
                                 </div>
-                               
                             </div>
 
                             <div class="col-md-12 mb-3 form-row third_party">
+                            </div>
+                            <div class="col-md-12 mb-3 form-row self">
                             </div>
                            <p class="warnText" hidden><span style="font-weight: bold;">Note:</span> You can only request one item for incoming & each out going quantity must be greater than incomming quantity </p>
                             <!-- <div class="col-md-4 mb-3">
@@ -127,10 +120,6 @@
 {% endblock %}
 
 {% block js %}
-<!-- Include jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- Include Select2 JavaScript -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 <script>
     // Example starter JavaScript for disabling form submissions if there are invalid fields
     (function () {
@@ -157,8 +146,7 @@
     var incoming_item_options_text = ``;
     var outgoing_item_options_used_pk = [];
     var incoming_item_options_used_pk = [];
-    var manufacturingType = "{{ manufacturing_type|escapejs }}"; // Use escapejs to safely handle any quotes
-   
+
     $('.selectpicker').select2({
         placeholder: '',
         templateResult: function(option) {
@@ -168,74 +156,7 @@
             return option.text;
         }
     });
-   
-    function with_WithOut_Item(elem){
-        console.log(elem);
-        
-        if(elem==="self"){
-            console.log('174');
-            
-            $(".third_party").empty()
-            $(".third_party").html(`
-                <div class="col-md-4 mb-3">
-                    <label>With/Without item<span class="required-indicator">*</span></label>
-                    <div class="input-group">
-                        <select class="custom-select selectpicker with_item" data-placeholder="Choose" name="with_item" required>
-                            <option value=""></option>
-                            <option value="True" {% if manufacturing_type == 'self' %}selected{% endif %}>With item</option>
-                            <option value="False">Without item</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                </div>
-                <div class="col-md-12 mb-3 item_table pl-0 pr-0"></div>
-            `)
-           
-        }
-        if(elem==="Third party"){
-            console.log('174');
-            $(".third_party").empty()
 
-            $(".third_party").html(`
-                <div class="col-md-4 mb-3">
-                    <label>Vendor/Supplier<span class="required-indicator">*</span></label>
-                    <div class="input-group">
-                        <select class="custom-select selectpicker vendor_id" data-placeholder="Select Vendor" name="vendor_id" required>
-                            ${vendor_options_text}
-                        </select>
-                        {% if request.user.is_superuser == 1 or 'add_vendor'|get_session_permission:request is not None %}
-                            <div class="btn float-end addForm" data-text="Add New Vendor"
-                                data-form="addVendor" id="addVendorModal" data-toggle="modal" data-target="#addFormModal">
-                                <i class="fa fa-plus"></i>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label>With/Without item<span class="required-indicator">*</span></label>
-                    <div class="input-group">
-                        <select class="custom-select selectpicker with_item" data-placeholder="Choose" name="with_item" required>
-                            <option value=""></option>
-                            <option value="True" {% if manufacturing_type == 'self' %}selected{% endif %}>With item</option>
-                            <option value="False">Without item</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                </div>
-                <div class="col-md-12 mb-3 item_table pl-0 pr-0"></div>
-            `)
-        }
-        $('.selectpicker').select2({
-            placeholder: '',
-        });
-      
-    }
-
-    
-
-    
     function checkMaxMin(element) {
         if ($(element).val() == "") {
             $(element).val($(element).attr('min'));
@@ -395,26 +316,30 @@
     
     }
 
-    $(document).ready(function(){
-       
-       // Now you can use manufacturingType in your jQuery code
-       console.log("Manufacturing Type: ", manufacturingType);
-       if (manufacturingType === 'self') {
-           $('.with_item').addClass('readonly-select');
-           // Prevent selection changes in readonly mode
-           
-       } 
-       $('.readonly-select').on('select2:open', function(e) {
-               // Close the dropdown immediately if it's readonly
-               $('.readonly-select').select2('close');
-           });
-       
-   })
-
+    function jobOrderNo(keyword){
+        $.ajax({
+            type: "GET",
+            url: "{% url 'api:jobOrderNo' %}?keyword=" + keyword,
+            data: {},
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    $('#order_number').val(response.joborderNo)
+                    
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    }
 
     $(document).ready(function () {
         $(".order_date").val(new Date().toISOString().slice(0, 10))
-        
         $.ajax({
             url: "{% url 'api:vendorList' %}?find_all=1",
             type: 'GET',
@@ -431,9 +356,6 @@
                 } else {
                     alert(response.message);
                 }
-            },
-            complete:function(){
-                with_WithOut_Item(manufacturingType)
             },
             error: function (error) {
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
@@ -469,10 +391,41 @@
                     alert(response.message);
                 }
             },
-            complete:function(){
-                if(manufacturingType == 'self'){
-            $(".item_table").html(`
-                <div class="container-fluid" style="border: 2px solid darkgray;">
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    
+    });
+
+    $(document).on('change', '.manufacturing_type', function(){
+        let keyword = $('.manufacturing_type').val()
+        jobOrderNo(keyword)
+        if($(this).val()==="Self"){
+            $(".third_party").empty()
+            $('.self').html(`
+                <div class="col-md-4 mb-3">
+                    <label>With/Without item<span class="required-indicator">*</span></label>
+                    <div class="input-group">
+                        <select class="custom-select selectpicker with_item" data-placeholder="Choose" name="with_item" required>
+                            <option selected value ="True">With item</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Time Span<span class="required-indicator">*</span></label>
+                    <div class="input-group">
+                        <select class="custom-select selectpicker timeSpan" data-placeholder="Choose" name="timeSpan" required>
+                            <option value=""></option>
+                            <option value="hr">Hr</option>
+                            <option value="day">Day</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                </div>
+                <div class="col-md-12 mb-3 item_table pl-0 pr-0">
+                    <div class="container-fluid" style="border: 2px solid darkgray;">
                     <div class="row">
 
                         <div class="col-md-6 px-0" style="border-right: 2px solid darkgray;">
@@ -570,37 +523,11 @@
 
                     </div>
                 </div>
-            `)  
-
-           
+                </div>
+            `)
         }
-        $('.selectpicker').select2({
-            placeholder: '',
-            templateResult: function(option) {
-                if(option.element && (option.element).hasAttribute('hidden')){
-                    return null;
-                }
-                return option.text;
-            }
-        });
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });    
-
-        console.log(outgoing_item_options_text);
-        
-        
-        
-    });
-
-    
-
-    $(document).on('change', '.manufacturing_type', function(){
-        
         if($(this).val()==="Third party"){
-
+            $('.self').empty()
             $(".third_party").html(`
                 <div class="col-md-4 mb-3">
                     <label>Vendor/Supplier<span class="required-indicator">*</span></label>
@@ -628,13 +555,14 @@
                 </div>
                 <div class="col-md-4 mb-3">
                 </div>
-                <div class="col-md-12 mb-3 item_table pl-0 pr-0"></div>
+                <div class="col-md-12 mb-3 item_table pl-0 pr-0">
+                    
+                </div>
             `)
         }
         $('.selectpicker').select2({
             placeholder: '',
         });
-        
     })
     
     $(document).on('change', '.with_item', function(){

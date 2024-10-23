@@ -123,6 +123,7 @@ urlpatterns = [
     path('job-order-edit', views.jobOrderEdit, name='jobOrderEdit'),
     path('job-order-delete', views.jobOrderDelete, name='jobOrderDelete'),
     path('job-order-details', views.jobOrderDetails, name='jobOrderDetails'),
+    path('job-order-no', views.jobOrderNo, name='jobOrderNo'),
 
     # path('material-issue-details', views.materialIssueDetails, name='materialIssueDetails'),
     path('get-actual-quantity', views.getActualQuantity, name='getActualQuantity'),

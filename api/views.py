@@ -5019,6 +5019,22 @@ def jobOrderList(request):
         })
     return JsonResponse(context)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def jobOrderNo(request):
+    context ={}
+    manufacturing_type= request.GET.get('keyword',None)
+    jobOrderCount = models.Job_Order.objects.filter(manufacturing_type=manufacturing_type).count()
+    # print(jobOrderCount)
+    vendorShort = 'SLF' if manufacturing_type == 'Self' else 'TPM'
+    jobOrderNumber =  env("JOB_ORDER_NUMBER_SEQ").replace("${VENDOR_SHORT}", vendorShort).replace(
+                "${AI_DIGIT_3}", str(jobOrderCount + 1).zfill(3)).replace("${FINANCE_YEAR}", datetime.today().strftime('%y') + "-" + (datetime(datetime.today().year + 1, 1, 1).strftime('%y')))
+    print(jobOrderNumber)
+    context.update({
+        'status':200,
+        'joborderNo': jobOrderNumber
+    })
+    return JsonResponse(context)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -5034,6 +5050,7 @@ def jobOrderAdd(request):
         return JsonResponse(context)
     try:
         with transaction.atomic():
+           
             jobOrderHeader = models.Job_Order()
             jobOrderHeader.order_number = request.POST['order_number']
             jobOrderHeader.order_date = request.POST['order_date']
@@ -5045,7 +5062,7 @@ def jobOrderAdd(request):
             jobOrderHeader.notes = request.POST['notes']
             jobOrderHeader.save()
             job_order_details = []
-
+            print('5065')
             if (request.POST.getlist('incoming_item_id')) and (request.POST.getlist('outgoing_item_id')) and ('with_item' in request.POST):
                 print('5050')
                 outgoingIncommingratioHeadCount = models.Outgoing_Incoming_Ratio.objects.all().count() 
