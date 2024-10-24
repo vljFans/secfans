@@ -7314,7 +7314,6 @@ def reportInventorySummary(request):
                 for store_transaction in store_transactions_GRN:
                     total_stockIn += float(store_transaction.quantity)
                     if store_transaction.store_transaction_header.purchase_order_header_id == None:
-                     
                         index = next((index for index, d in enumerate(data) if d.get('item') == each.item.name and d.get('stock_in') == '---' and d.get('quantity_order') == '---' ), None)
                         if index is  None:
                             data.append({
