@@ -11,6 +11,7 @@ import json
 import os
 from sec import settings
 from num2words import num2words
+from datetime import datetime, timedelta
 env = environ.Env()
 environ.Env.read_env()
 
@@ -800,13 +801,16 @@ def purchaseOrderView(request, id):
 
 @login_required
 def purchaseOrderPrint(request, id):
+    configList = models.Configuration_User.objects.first()
+    
     purchaseOrder = models.Purchase_Order.objects.prefetch_related(
         'purchase_order_detail_set').get(pk=id)
     purchaseOrder.amount_with_gst = purchaseOrder.total_amount + \
         purchaseOrder.discounted_value
     context.update({
         'page_title': "Purchase Order Print",
-        'purchaseOrder': purchaseOrder
+        'purchaseOrder': purchaseOrder,
+        'config': configList
     })
     return render(request, 'portal/Purchase Order/print.html', context)
 
@@ -949,12 +953,12 @@ def jobOrderList(request):
 
 
 @login_required
-def jobOrderAdd(request):
+def selfJobOrderAdd(request):
     # item_id_n_bom_id={}
     # for bom in models.Bill_Of_Material.objects.all():
     #     item_id_n_bom_id[str(bom.bom_item_id)]=bom.id
     # bom_items_id_list = list(models.Bill_Of_Material.objects.all().values_list('bom_item_id', flat=True))
-    
+   
     if request.GET.get('id', None):
         id = request.GET.get('id', None)
         jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
@@ -966,7 +970,6 @@ def jobOrderAdd(request):
         incoming_details = jobOrder.job_order_detail_set.filter(direction='incoming')
 
         context.update({
-            'jobOrder': jobOrder,
             'items': items,
             'vendors': vendors,
             'outgoing_details': outgoing_details,
@@ -977,12 +980,25 @@ def jobOrderAdd(request):
         return render(request, 'portal/Job Order/edit.html', context)
 
     else:
+
         context.update({
-            # 'item_id_n_bom_id':json.dumps(item_id_n_bom_id),
+            'manufacturing_type' : 'self',
+            'with_withoud_job' : 'with',
             'page_title': "Job Order Add",
             'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "Add"}]
         })
         return render(request, 'portal/Job Order/add.html', context)
+
+@login_required
+def thirdPartyjobOrderAdd(request):
+    context.update({
+            # 'item_id_n_bom_id':json.dumps(item_id_n_bom_id),
+            'manufacturing_type' : 'Third party',
+            'page_title': "Job Order Add",
+            'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "Add"}]
+        })
+    return render(request, 'portal/Job Order/add.html', context)
+        
 
 @login_required
 def jobOrderEdit(request, id):
@@ -1282,13 +1298,15 @@ def materialOutPrint(request, id):
     total_amount = 0
     total_quantity = 0
     materialOutDets = list(models.On_Transit_Transaction_Details.objects.filter(on_transit_transaction_header_id = id).values('quantity','amount'))
-    
+    configList = models.Configuration_User.objects.first()
+
     for index in range (0,len(materialOutDets)):
         total_quantity += float(materialOutDets[index]['quantity'])
         total_amount += float(materialOutDets[index]['amount'])
 
 
     context.update({
+        'config': configList,
         'page_title': "DELIVERY CHALLAN",
         'materialOut': materialOut,
         'total_amount' : total_amount,
