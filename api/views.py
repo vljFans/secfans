@@ -5019,13 +5019,29 @@ def jobOrderList(request):
         })
     return JsonResponse(context)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def jobOrderNo(request):
+    context ={}
+    manufacturing_type= request.GET.get('keyword',None)
+    jobOrderCount = models.Job_Order.objects.filter(manufacturing_type=manufacturing_type).count()
+    # print(jobOrderCount)
+    vendorShort = 'SLF' if manufacturing_type == 'Self' else 'TPM'
+    jobOrderNumber =  env("JOB_ORDER_NUMBER_SEQ").replace("${VENDOR_SHORT}", vendorShort).replace(
+                "${AI_DIGIT_3}", str(jobOrderCount + 1).zfill(3)).replace("${FINANCE_YEAR}", datetime.today().strftime('%y') + "-" + (datetime(datetime.today().year + 1, 1, 1).strftime('%y')))
+    print(jobOrderNumber)
+    context.update({
+        'status':200,
+        'joborderNo': jobOrderNumber
+    })
+    return JsonResponse(context)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def jobOrderAdd(request):
     context = {}
     print(request.POST)
-    exit()
+    # exit()
     if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['manufacturing_type'] or not request.POST['notes']:
         context.update({
             'status': 589,
@@ -5034,6 +5050,7 @@ def jobOrderAdd(request):
         return JsonResponse(context)
     try:
         with transaction.atomic():
+           
             jobOrderHeader = models.Job_Order()
             jobOrderHeader.order_number = request.POST['order_number']
             jobOrderHeader.order_date = request.POST['order_date']
@@ -5045,8 +5062,9 @@ def jobOrderAdd(request):
             jobOrderHeader.notes = request.POST['notes']
             jobOrderHeader.save()
             job_order_details = []
-
+            print('5065')
             if (request.POST.getlist('incoming_item_id')) and (request.POST.getlist('outgoing_item_id')) and ('with_item' in request.POST):
+                print('5050')
                 outgoingIncommingratioHeadCount = models.Outgoing_Incoming_Ratio.objects.all().count() 
                 outgoingIncommingratioHead = models.Outgoing_Incoming_Ratio()
                 outgoingIncommingratioHead.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
@@ -5055,10 +5073,11 @@ def jobOrderAdd(request):
                     "${AI_DIGIT_5}",str(outgoingIncommingratioHeadCount + 1).zfill(5)
                 )
                 outgoingIncommingratioHead.transaction_date = request.POST['order_date']
-                outgoingIncommingratioHead.vendor_id = request.POST['vendor_id']
+                if 'vendor_id' in request.POST:
+                    outgoingIncommingratioHead.vendor_id = request.POST['vendor_id']
                 outgoingIncommingratioHead.job_order = jobOrderHeader
                 outgoingIncommingratioHead.save()
-                
+                print('5061')
                 outInDetailRatio = []
                 for item_id,quantity in zip( request.POST.getlist('outgoing_item_id'),request.POST.getlist('outgoing_quantity') ):
                     
@@ -5135,6 +5154,7 @@ def jobOrderEdit(request):
         with transaction.atomic():
             jobOrderHeader = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=request.POST['id'])
             jobOrderHeader.order_number = request.POST['order_number']
+           
             jobOrderHeader.order_date = request.POST['order_date']
             jobOrderHeader.manufacturing_type = request.POST['manufacturing_type']
             if 'vendor_id' in request.POST:
@@ -5149,7 +5169,7 @@ def jobOrderEdit(request):
             jobOrderHeader.job_order_detail_set.all().delete()
             job_order_details = []
             outInDetailRatio =[]
-
+           
             # out going incomming ratio table updation
             if (request.POST.getlist('incoming_item_id')) and (request.POST.getlist('outgoing_item_id')) and ('with_item' in request.POST):
                 outgoingIncommingratioHead = models.Outgoing_Incoming_Ratio.objects.prefetch_related('outgoing_incoming_ratio_details_set').get(job_order_id = request.POST['id'])
