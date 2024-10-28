@@ -99,12 +99,17 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
+                                    <th>Date</th>
+                                    <th>Transaction No</th>
+                                    <th>Vendor</th>
                                     <th>Item </th>
                                     <th>Catagory</th>
-                                    <th>On Hand Quantity</th>
+                                    <th>Uom</th>
+                                    <th>Previous In Hand Quantity</th>
                                     <th>Order Quantity</th>
                                     <th>Stock In</th>
                                     <th>Stock Out</th>
+                                    <th>Avalible On Hand Quantity</th>
                                 </tr>
                                 
                             </thead>
@@ -276,12 +281,17 @@
                     for (let index=0 ; index < response.page_items.length ;index++ ){
                         table_data += `<tr>
                                              <td>${index+1}</td>
+                                             <td>${response.page_items[index].date}</td>
+                                             <td>${response.page_items[index].transaction_number}</td>
+                                             <td>${response.page_items[index].vendor}</td>
                                              <td>${response.page_items[index].item}</td>
-                                             <td>${response.page_items[index].item_category}</td>                                 
-                                             <td>${response.page_items[index].onHand_quantity}</td>
+                                             <td>${response.page_items[index].item_category}</td>
+                                              <td>${response.page_items[index].uom}</td>
+                                             <td>${response.page_items[index].previous_onHand_Quantity}</td>                                 
                                              <td>${response.page_items[index].quantity_order}</td>
                                              <td>${response.page_items[index].stock_in}</td>
                                              <td>${response.page_items[index].stock_out}</td>
+                                             <td>${response.page_items[index].onHand_quantity}</td>
                             
                                         </tr>`
                     }
