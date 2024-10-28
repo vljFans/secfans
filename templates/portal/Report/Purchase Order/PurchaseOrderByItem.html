@@ -199,9 +199,9 @@
                                 <td>${element.purchase_order_header__order_number}</td>
                                 <td>${element.purchase_order_header__order_date}</td>
                                 <td>${element.purchase_order_header__vendor__name}</td>
-                                <td>₹${element.quantity}</td>
+                                <td>${+element.quantity}</td>
                                 <td>${element.amount_with_gst}</td>
-                                <td>${element.delivered_quantity}</td>
+                                <td>${+element.delivered_quantity}</td>
                                 <td>${element.delivered_amount_with_gst}</td>
                             </tr>
                             `;

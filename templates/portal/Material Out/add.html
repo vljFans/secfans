@@ -424,7 +424,7 @@
             success: function (response) {
                 if (response.status == 200) {
                     // console.log(response.page_items[0].on_hand_qty);
-                    parentDiv.find('.handquantity').val(response.page_items[0].on_hand_qty);
+                    parentDiv.find('.handquantity').val(+response.page_items[0].on_hand_qty);
                     parentDiv.find('.quantity_sent').attr('max',response.page_items[0].on_hand_qty)
                     
                 } 

@@ -74,7 +74,7 @@
                                 <tr>
                                     <td>{{forloop.counter}}</td>
                                     <td>{{orderDetail.item.name}}</td>
-                                    <td>{{orderDetail.quantity}}</td>
+                                    <td>{{orderDetail.quantity|floatformat}}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

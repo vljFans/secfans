@@ -125,7 +125,7 @@
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="quantity_sent" min="0.01" class="form-control quantity_sent"
-                                            value="{{materialIssueDetail.quantity}}" required>
+                                            value="{{+materialIssueDetail.quantity}}" required>
                                         <input type="hidden" name="quantity_sent_og" class="form-control quantity_sent_og" value="{{materialIssueDetail.quantity}}">
                                     </div>
 
@@ -321,8 +321,8 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    actual_quantitys.val(response.on_hand_qty_res)
-                    quantity_sents.attr('max',response.on_hand_qty_res)
+                    actual_quantitys.val(+response.on_hand_qty_res)
+                    quantity_sents.attr('max',+response.on_hand_qty_res)
                     rate.val(response.item_price)
 
                 } 
@@ -481,8 +481,8 @@
                     success: function (response) {
                         console.log(response)
                         if (response.status == 200) {
-                            actual_quantity_element.val(response.on_hand_qty_res);
-                            quantity_sent_element.attr('max',response.on_hand_qty_res)
+                            actual_quantity_element.val(+response.on_hand_qty_res);
+                            quantity_sent_element.attr('max',+response.on_hand_qty_res)
                         } 
                         else {
                             alert(response.message);

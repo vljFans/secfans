@@ -953,7 +953,7 @@ def jobOrderList(request):
 
 
 @login_required
-def selfJobOrderAdd(request):
+def jobOrderAdd(request):
     # item_id_n_bom_id={}
     # for bom in models.Bill_Of_Material.objects.all():
     #     item_id_n_bom_id[str(bom.bom_item_id)]=bom.id
@@ -988,24 +988,24 @@ def selfJobOrderAdd(request):
         return render(request, 'portal/Job Order/edit.html', context)
 
     else:
-
         context.update({
-            'manufacturing_type' : 'self',
-            'with_withoud_job' : 'with',
             'page_title': "Job Order Add",
-            'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "Add"}]
+            'breadcrumbs': [
+                {
+                    'name': "Dashboard", 
+                    'url': reverse('superuser:dashboard')
+                }, 
+                {
+                    'name': "Job Order", 
+                    'url': reverse('superuser:jobOrderList')
+                }, 
+                {
+                    'name': "Add"
+                }
+            ]
         })
         return render(request, 'portal/Job Order/add.html', context)
 
-@login_required
-def thirdPartyjobOrderAdd(request):
-    context.update({
-            # 'item_id_n_bom_id':json.dumps(item_id_n_bom_id),
-            'manufacturing_type' : 'Third party',
-            'page_title': "Job Order Add",
-            'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "Add"}]
-        })
-    return render(request, 'portal/Job Order/add.html', context)
         
 
 @login_required
@@ -1478,7 +1478,7 @@ def purchaseBillView(request,id):
     purchaseBill = models.Purchase_Bill.objects.get(pk=id)
     context.update({
         'purchase_bill': purchaseBill,
-        'page_title': "Purchase Bill Edit",
+        'page_title': "Purchase Bill View",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
                         {'name': "Purchase Bill", 'url': reverse('superuser:purchaseBillList')},
                         {'name': "View"}]
