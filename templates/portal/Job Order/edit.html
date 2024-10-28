@@ -80,6 +80,7 @@
                                     </select>
                                 </div>
                             </div>
+                            
 
                             <div class="col-md-12 mb-3 form-row third_party">
                                 {% if jobOrder.manufacturing_type == 'Self' %}
@@ -93,6 +94,26 @@
                                         </select>
                                     </div>
                                 </div>
+                                {% if page_title == 'Job Order Add' %}
+                                    <div class="col-md-2 mb-3">
+                                        <label>Time Span<span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker timeSpan" data-placeholder="Choose" name="timeSpan" required>
+                                                <option value=""></option>
+                                                <option value="hr">Hr</option>
+                                                <option value="day">Day</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                
+                                    <div class="col-md-2 mb-3">
+                                        <label>hr/day<span class="required-indicator">*</span></label>
+                                        <input type="number" onkeyup="checkMaxMin(this)"
+                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        name="hr_day" min="0.0" class="form-control hr_day"
+                                        placeholder="hr 0r day" required>
+                                    </div>
+                                {% endif %}
                                 <div class="col-md-4 mb-3">
                                 </div>
                                 
@@ -238,6 +259,26 @@
                                             </select>
                                         </div>
                                     </div>
+                                    {% if page_title == 'Job Order Add' %}
+                                    <div class="col-md-2 mb-3">
+                                        <label>Time Span<span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker timeSpan" data-placeholder="Choose" name="timeSpan" required>
+                                                <option value=""></option>
+                                                <option value="hr">Hr</option>
+                                                <option value="day">Day</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-2 mb-3">
+                                        <label>hr/day<span class="required-indicator">*</span></label>
+                                        <input type="number" onkeyup="checkMaxMin(this)"
+                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        name="hr_day" min="0.0" class="form-control hr_day"
+                                        placeholder="hr 0r day" required>
+                                    </div>
+                                    {% endif %}
                                     <div class="col-md-4 mb-3">
                                     </div>
                                     
@@ -968,8 +1009,8 @@
     });
 
     $(document).on('submit', '#create_form', function (e) {
-            let pageTitle = $('.card-header-title').val()
-            let setUrl =  pageTitle == 'Job Order Edit' ? "{% url 'api:jobOrderEdit' %}" : "{% url 'api:jobOrderAdd' %}"
+            let pageTitle = '{{page_title}}';
+            let setUrl = pageTitle === 'Job Order Edit' ? "{% url 'api:jobOrderEdit' %}" : "{% url 'api:jobOrderAdd' %}";
             e.preventDefault();
             $('.submit-btn').text('Submitting...');
             $('.submit-btn').prop('disabled', true);
