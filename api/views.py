@@ -7344,13 +7344,20 @@ def reportInventorySummary(request):
                                     'item':each.item.name,
                                     'item_category': each.item.item_type.item_category.name,
                                     'quantity_order':'---',
+                                    'date': store_transaction.store_transaction_header.transaction_date,
+                                    'transaction_number': store_transaction.store_transaction_header.transaction_number,
+                                    'vendor':  store_transaction.store_transaction_header.vendor.name,
+                                    'previous_onHand_Quantity': float(each.on_hand_qty) + float(store_transaction.quantity) ,
+                                    'uom': each.item.uom.name,
                                     'stock_in' : '---',
-                                    'stock_out' : total_stockOut,
+                                    'stock_in_upto': '---',
+                                    'stock_out' : store_transaction.quantity,
+                                    'stock_out_upto': total_stockOut,
                                     'onHand_quantity' : each.on_hand_qty
 
                                 })
                         else:
-                            data[index]['stock_out'] = total_stockOut
+                            data[index]['stock_out_upto'] = total_stockOut
                         # print('6105')
                     else:
                         purchase_order_total = models.Purchase_Order_Detail.objects.filter(item_id=each.item_id,purchase_order_header_id = store_transaction.store_transaction_header.purchase_order_header_id).aggregate(total=Sum('quantity'))['total'] 
@@ -7361,33 +7368,46 @@ def reportInventorySummary(request):
                                     'item':each.item.name,
                                     'item_category': each.item.item_type.item_category.name,
                                     'quantity_order':purchase_order_total,
+                                    'date': store_transaction.store_transaction_header.transaction_date,
+                                    'transaction_number': store_transaction.store_transaction_header.transaction_number,
+                                    'vendor':  store_transaction.store_transaction_header.vendor.name,
+                                    'previous_onHand_Quantity': float(each.on_hand_qty) + float(store_transaction.quantity),
+                                    'uom': each.item.uom.name,
                                     'stock_in' : '---',
-                                    'stock_out' : total_stockOut,
+                                    'stock_in_upto': '---',
+                                    'stock_out' : store_transaction.quantity,
+                                    'stock_out_upto': total_stockOut,
                                     'onHand_quantity' : each.on_hand_qty
 
                                 })
                         else:
-                            data[index]['stock_out'] = total_stockOut
+                            data[index]['stock_out_upto'] = total_stockOut
 
             #stock in
             if store_transactions_GRN :
                 for store_transaction in store_transactions_GRN:
                     total_stockIn += float(store_transaction.quantity)
                     if store_transaction.store_transaction_header.purchase_order_header_id == None:
-                     
                         index = next((index for index, d in enumerate(data) if d.get('item') == each.item.name and d.get('stock_in') == '---' and d.get('quantity_order') == '---' ), None)
                         if index is  None:
                             data.append({
                                     'item':each.item.name,
                                     'item_category': each.item.item_type.item_category.name,
+                                    'date': store_transaction.store_transaction_header.transaction_date,
+                                    'transaction_number': store_transaction.store_transaction_header.transaction_number,
+                                    'vendor':  store_transaction.store_transaction_header.vendor.name,
+                                    'uom': each.item.uom.name,
                                     'quantity_order':'---',
-                                    'stock_in' : total_stockIn,
+                                    'previous_onHand_Quantity': float(each.on_hand_qty) - float(store_transaction.quantity),
+                                    'stock_in' : store_transaction.quantity,
+                                    'stock_in_upto': total_stockIn,
                                     'stock_out' : '---',
+                                    'stock_out_upto': '---',
                                     'onHand_quantity' : each.on_hand_qty
 
                                 })
                         else:
-                            data[index]['stock_in'] = total_stockIn
+                            data[index]['stock_in_upto'] = total_stockIn
  
                     else:
                         purchase_order_total = models.Purchase_Order_Detail.objects.filter(item_id=each.item_id,purchase_order_header_id = store_transaction.store_transaction_header.purchase_order_header_id).aggregate(total=Sum('quantity'))['total'] 
@@ -7398,17 +7418,24 @@ def reportInventorySummary(request):
                                     'item':each.item.name,
                                     'item_category': each.item.item_type.item_category.name,
                                     'quantity_order':purchase_order_total,
-                                    'stock_in' : total_stockIn,
+                                    'date': store_transaction.store_transaction_header.transaction_date,
+                                    'vendor':  store_transaction.store_transaction_header.vendor.name,
+                                    'uom': each.item.uom.name,
+                                    'transaction_number': store_transaction.store_transaction_header.transaction_number,
+                                    'previous_onHand_Quantity': float(each.on_hand_qty) - float(store_transaction.quantity),
+                                    'stock_in' : store_transaction.quantity,
+                                    'stock_in_upto': total_stockIn,
                                     'stock_out' : '---',
+                                    'stock_out_upto': '----',
                                     'onHand_quantity' : each.on_hand_qty
                             })
                         else:
-                            data[index]['stock_in'] = total_stockIn
-                       
+                            data[index]['stock_in_upto'] = total_stockIn
+        sorted_data = sorted(data, key=lambda x: (x['item'], x['date']))               
         context.update({
             'status': 200,
             'message': "Inventory Report Summary  fetch Successfully.",
-            'page_items': data,
+            'page_items': sorted_data,
         })
 
     except Exception:

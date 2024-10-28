@@ -116,7 +116,7 @@
                                         <label>quantity issued<span class="required-indicator">*</span></label>
                                         <input type="text"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                            name="quantity_sent" min="0.01" class="form-control quantity_sent" value="{{obj1.quantity}}"
+                                            name="quantity_sent" min="0.01" class="form-control quantity_sent" value="{{obj1.quantity|floatformat}}"
                                             placeholder="0.00" readonly>
                                     </div>
                                     <div class="col-md-3 mb-3">

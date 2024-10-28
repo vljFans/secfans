@@ -200,13 +200,13 @@
                                             <label>Quantity Sent <span class="required-indicator">*</span></label>
                                             <input type="text"
                                                 name="quantity_sent" min="0.01" class="form-control quantity_sent"
-                                                value="${page_item[index].quantity}" required readonly>
+                                                value="${+page_item[index].quantity}" required readonly>
                                         </div>
                                         <div class="col-md-2 mb-3">
                                             <label>Quantity Recieved <span class="required-indicator">*</span></label>
                                             <input type="text" onkeyup="checkMaxMin(this)"
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                                name="quantity_recieved" min="0.01" max="${page_item[index].quantity}" class="form-control quantity_recieved"
+                                                name="quantity_recieved" min="0.01" max="${+page_item[index].quantity}" class="form-control quantity_recieved"
                                                 placeholder="0.00" required >
                                         </div>
                                         <div class="col-md-2 mb-3">

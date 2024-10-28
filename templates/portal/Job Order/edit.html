@@ -155,7 +155,7 @@
                                                                         <input type="text" onkeyup="checkMaxMin(this)"
                                                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                                             name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
-                                                                            value="{{jobOrderDetail.quantity}}"
+                                                                            value="{{jobOrderDetail.quantity|floatformat}}"
                                                                             required>
                                                                     </div>
                                                                     <div class="col-md-3  py-2">
@@ -208,7 +208,7 @@
                                                                         <input type="text" onkeyup="checkMaxMin(this)"
                                                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                                             name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
-                                                                            value="{{jobOrderDetail.quantity}}"
+                                                                            value="{{jobOrderDetail.quantity|floatformat}}"
                                                                             required>
                                                                     </div>
                                                                     <div class="col-md-3 py-2">
@@ -320,7 +320,7 @@
                                                                             <input type="text" onkeyup="checkMaxMin(this)"
                                                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                                                 name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
-                                                                                value="{{jobOrderDetail.quantity}}"
+                                                                                value="{{jobOrderDetail.quantity|floatformat}}"
                                                                                 required>
                                                                         </div>
                                                                         <div class="col-md-3  py-2">
@@ -373,7 +373,7 @@
                                                                             <input type="text" onkeyup="checkMaxMin(this)"
                                                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                                                 name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
-                                                                                value="{{jobOrderDetail.quantity}}"
+                                                                                value="{{jobOrderDetail.quantity|floatformat}}"
                                                                                 required>
                                                                         </div>
                                                                         <div class="col-md-3 py-2">
