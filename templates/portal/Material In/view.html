@@ -99,9 +99,9 @@
                                 <tr>
                                     <td>{{forloop.counter}}</td>
                                     <td>{{materialIn.item.name}}</td>
-                                    <td>{{materialIn.quantity}}</td>
-                                    <td>{{materialIn.recieved_quntity}}</td>
-                                    <td>{{materialIn.reject_quantity}}</td>
+                                    <td>{{materialIn.quantity|floatformat}}</td>
+                                    <td>{{materialIn.recieved_quntity|floatformat}}</td>
+                                    <td>{{materialIn.reject_quantity|floatformat}}</td>
                                     <td>{{materialIn.rate}}</td>
                                     <td>{{materialIn.amount}}</td>
                                     {% if materialIn.notes != null  %}

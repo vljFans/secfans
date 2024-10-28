@@ -355,8 +355,8 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    actual_quantitys.val(response.on_hand_qty_res)
-                    quantity_sents.attr('max',response.on_hand_qty_res)
+                    actual_quantitys.val(+response.on_hand_qty_res)
+                    quantity_sents.attr('max',+response.on_hand_qty_res)
                     rate.val(response.item_price)
                 } 
                 else {
@@ -495,14 +495,14 @@
                                             <label>Job quantity <span class="required-indicator">*</span></label>
                                             <input type="text" 
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                                name="job_quantity" min="0.01" class="form-control job_quantity" value ="${response.job_order_details[index].quantity}"
+                                                name="job_quantity" min="0.01" class="form-control job_quantity" value ="${+response.job_order_details[index].quantity}"
                                                 placeholder="0.00" readonly>
                                         </div>
                                         <div class="col-md-2 mb-3">
                                             <label>Rate <span class="required-indicator">*</span></label>
                                             <input type="text" 
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                                name="rate" min="0.01" class="form-control rate" value="${response.job_order_details[index].item__price}"
+                                                name="rate" min="0.01" class="form-control rate" value="${+response.job_order_details[index].item__price}"
                                                  readonly>
                                         </div>
 
@@ -735,8 +735,8 @@
                     },
                     success: function (response) {
                         if (response.status == 200) {
-                            actual_quantity_element.val(response.on_hand_qty_res);
-                            quantity_sent_element.attr('max',response.on_hand_qty_res)
+                            actual_quantity_element.val(+response.on_hand_qty_res);
+                            quantity_sent_element.attr('max',+response.on_hand_qty_res)
                         } 
                         else {
                             alert(response.message);

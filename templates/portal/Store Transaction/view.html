@@ -78,7 +78,7 @@
                                 <tr>
                                     <td>{{forloop.counter}}</td>
                                     <td>{{orderDetail.item.name}}</td>
-                                    <td>{{orderDetail.quantity}}</td>
+                                    <td>{{orderDetail.quantity|floatformat}}</td>
                                     <td>{{orderDetail.rate}}</td>
                                     <td style="text-align: right;">{{orderDetail.amount}}</td>
                                     <td>{{orderDetail.gst_percentage}}</td>

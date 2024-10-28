@@ -129,7 +129,7 @@
                                     <div class="col-md-2 mb-3">
                                         <label>Quantity<span class="required-indicator">*</span></label>
                                         <input type="text" class="form-control quantity" name="quantity"  onkeyup="checkMaxMin(this)"
-                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" min="0.01" value="{{purchaseBillDet.quantity}}"  required>
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" min="0.01" value="{{purchaseBillDet.quantity|floatformat}}"  required>
                                     </div>
 
                                     <div class="col-md-2 mb-3">

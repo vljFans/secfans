@@ -63,8 +63,7 @@
                         <div class="text-right">
                             <div class="d-flex">
                                 {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
-                                <a href="{% url 'superuser:thirdPartyjobOrderAdd' %}" class="mr-3"><i class="fa fa-plus">Third party</i></a>
-                                <a href="{% url 'superuser:selfJobOrderAdd' %}" class="mr-3"><i class="fa fa-plus">Self</i></a>
+                                <a href="{% url 'superuser:jobOrderAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
                                 {% endif %}
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                                 <!-- <div class="dropdown" data-toggle="dropdown">
@@ -99,7 +98,9 @@
                                     <th>Job Order Number</th>
                                     <th>Job Order Date</th>
                                     <th>Manufacturing type</th>
+                                    <th>Estimated Time</th>
                                     <th>Job Description</th>
+                                    <th>Job Status</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -111,6 +112,46 @@
                         <ul id="pagination" class="pagination justify-content-center">
                         </ul>
                     </nav>
+                    <!-- Modal Structure for Material In View -->
+                    <!-- <div class="modal fade" id="materialInModal" tabindex="-1" aria-labelledby="materialInModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="materialInModalLabel">Actual Time Taken To complete</h5>
+                                </div>
+                                <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">                    
+                                    <div class="modal-body">
+                                        <div class="card-body pd-5">
+                                            
+                                            <div class="form-row">
+                                                <div class="col-md-6 mb-6">
+                                                    <label>Time(Hr/Day)</label>
+                                                    <div class="input-group timeSpanbox">
+                                                        Additional time span inputs if needed
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 mb-6">
+                                                    <label>hr/Day</label>
+                                                    <input type="number" 
+                                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                        name="hr_day" class="form-control hr_day"
+                                                        placeholder="" required>
+                                                        <input type="hidden" 
+                                                        name="id" class="form-control id"
+                                                         readonly >
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button class="btn btn-success submit-btn" type="submit">Submit</button>
+                                        <button type="button" class="btn btn-secondary" id="close" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div> -->
+                    <!-- modal end here -->
                 </div>
             </div>
         </div>
@@ -120,6 +161,26 @@
 {% endblock %}
 
 {% block js %}
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
 <script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
     function getJobOrderList(keyword) {
@@ -134,7 +195,7 @@
                 $('.error-msg-txt').text("");
                 if (response.status == 200) {
                     edit_url = "{% url 'superuser:jobOrderEdit' 1 %}";
-                    copy_url = "{% url 'superuser:selfJobOrderAdd'  %}?id=";
+                    copy_url = "{% url 'superuser:jobOrderAdd'  %}?id=";
                     page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
@@ -153,6 +214,12 @@
                                 {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
                                 <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
                                 {% endif %}
+                                {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
+                                <a href="javascript:void(0);" class="table-action mg-r-10" 
+                                    onclick="if(confirm('Are you sure you want to complete this job order?')) { loadMaterialInData(${ element.pk }) }"> 
+                                    <i class="fa fa-stop"></i>
+                                    </a>
+                                {% endif %}
                                 </td>`
                         }
                         else{
@@ -167,6 +234,12 @@
                                     {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
                                     <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
                                     {% endif %}
+                                    {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
+                                    <a href="javascript:void(0);" class="table-action mg-r-10" 
+                                    onclick="if(confirm('Are you sure you want to complete this job order?')) { loadMaterialInData(${ element.pk }) }"> 
+                                    <i class="fa fa-stop"></i>
+                                    </a>
+                                    {% endif %}
                                     </td>`
                         }
                         tbody_text += `<tr>
@@ -174,7 +247,11 @@
                                 <td>${element.order_number}</td>
                                 <td>${element.order_date}</td>
                                 <td>${element.manufacturing_type} manufacturing</td>
-                                <td>${element.notes}</td> `+ tbody_buttom_text+`</tr>`;
+                                <td>${element.estimated_time_day}</td>
+                                <td>${element.notes}</td> 
+                                 <td style="color: ${element.job_status == 0 ? 'blue' : (element.job_status == 1 ? 'yellow' : 'red')}; background-color: ${element.job_status == 1 ? 'black' : 'white' };">
+                                    ${element.job_status == 0 ? 'Open' : (element.job_status == 1 ? 'WIP' : 'Closed')}
+                                </td>`+ tbody_buttom_text+`</tr>`;
                     }
                     // pagination_text = ``;
                     // if (response.total_pages > 1) {
@@ -197,15 +274,69 @@
         });
 
     }
+
+    function hrCalculate(time_day){
+        var timeString = time_day;
+            
+            // Regular expression to extract the suffix (non-digit part)
+            var suffix = timeString.match(/[a-zA-Z]+/);
+
+            // Log the extracted suffix
+            return suffix ? suffix[0] : null;
+    }
+
+    function loadMaterialInData(id) {
+        console.log(id);
+        
+        $.ajax({
+                type: "GET",
+                url: "{% url 'api:jobOrderTimeComplete' %}?id=" + id,
+                data: {},
+                headers: {
+                    'Authorization': getCookieValue("accessToken")
+                },
+                success: function (response) {
+                    if (response.status == 200) {
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:jobOrderList' %}");
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function (error) {
+                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                }
+            });
+        
+    }
+
     $(document).ready(function () {
         getJobOrderList(keyword)
         
     });
+     
+    // $(document).on('click','#close',function(){
+    //     $('#materialInModal').modal('hide');
+    // })
 
     $(document).on('keyup', '#search', function () {
         keyword = $(this).val();
         getJobOrderList(keyword)
     })
+
+    $(document).on('submit','#create_form', function(e) {
+                // Collect the data from the modal input fields
+                console.log('305');
+                
+                e.preventDefault();
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', true);
+                var formData = new FormData(this);
+
+                // Perform the AJAX request to submit the data
+               
+            });
+        
+
 
     $(document).on('click', '#delete-btn', function () {
         id = $(this).attr('data-id');

@@ -186,11 +186,11 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Previous Issued Quantity to update<span class="required-indicator">*</span></label>
-                                <input type="hidden" class="previous_quantity" name="previous_quantity" value="${x.quantity}">
+                                <input type="hidden" class="previous_quantity" name="previous_quantity" value="${+x.quantity}">
                                 <input type="text" onkeyup="checkMaxMin(this)"
                                     onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    name="updated_quantity" min="0.01" max="${x.quantity}" class="form-control updated_quantity"
-                                    value="${x.quantity}" required>
+                                    name="updated_quantity" min="0.01" max="${+x.quantity}" class="form-control updated_quantity"
+                                    value="${+x.quantity}" required>
                             </div>
                         </div>
                         `
@@ -230,11 +230,11 @@
                             </div>
                             <div class="col-md-5 mb-3">
                                 <label>Rejected Quantity<span class="required-indicator">*</span></label>
-                                <input type="hidden" class="quantity" name="quantity" value="${x.quantity}">
+                                <input type="hidden" class="quantity" name="quantity" value="${+x.quantity}">
                                 <input type="text" onkeyup="checkMaxMin(this)"
                                     onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                    name="reject_quantity" min="0.01" max="${x.reject_quantity}" class="form-control reject_quantity"
-                                    value="${x.reject_quantity}" readonly required>
+                                    name="reject_quantity" min="0.01" max="${+x.reject_quantity}" class="form-control reject_quantity"
+                                    value="${+x.reject_quantity}" readonly required>
                             </div>
                             <div class="col-md-1 mb-3" style="text-align:center;">                                        
                                 <label for="return_item">Return</label><br>
