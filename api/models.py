@@ -553,6 +553,9 @@ class Job_Order(models.Model):
     manufacturing_type = models.CharField(max_length=20, choices=[("Self","Self"), ("Third party","Third party")], blank=True, null=True)
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True)
     with_item = models.CharField(max_length=20, choices=[("True", True), ("False", False)], blank=True,null=True)
+    job_status = models.SmallIntegerField(default=0)
+    estimated_time_day = models.CharField(max_length=20, blank=True, null=True)
+    actual_time_take = models.CharField(max_length=20, blank=True, null=True)
     # total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     notes = models.TextField(blank=True, null=True)
     status = models.SmallIntegerField(default=1) #0 for not recieved 1 for recieved without inspection 2 for recived with inspection 

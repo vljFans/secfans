@@ -412,7 +412,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-md-2 mb-3">
                     <label>Time Span<span class="required-indicator">*</span></label>
                     <div class="input-group">
                         <select class="custom-select selectpicker timeSpan" data-placeholder="Choose" name="timeSpan" required>
@@ -421,6 +421,13 @@
                             <option value="day">Day</option>
                         </select>
                     </div>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label>hr/day<span class="required-indicator">*</span></label>
+                    <input type="number" onkeyup="checkMaxMin(this)"
+                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                    name="hr_day" min="0.0" class="form-control hr_day"
+                    placeholder="hr 0r day" required>
                 </div>
                 <div class="col-md-4 mb-3">
                 </div>
@@ -553,7 +560,22 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-md-2 mb-3">
+                    <label>Time Span<span class="required-indicator">*</span></label>
+                    <div class="input-group">
+                        <select class="custom-select selectpicker timeSpan" data-placeholder="Choose" name="timeSpan" required>
+                            <option value=""></option>
+                            <option value="hr">Hr</option>
+                            <option value="day">Day</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label>hr/day<span class="required-indicator">*</span></label>
+                    <input type="number" onkeyup="checkMaxMin(this)"
+                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                    name="hr_day" min="0.0" class="form-control hr_day"
+                    placeholder="hr or day" required>
                 </div>
                 <div class="col-md-12 mb-3 item_table pl-0 pr-0">
                     
@@ -913,6 +935,7 @@
                     $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
                 }
             });
+        
         });
 
 </script>
