@@ -104,8 +104,8 @@
                                             <td>{{grn_inspection_det.store.name}}</td>
                                             <td>{{grn_inspection_det.rate}}</td>
                                             <td>{{grn_inspection_det.gst_percentage}}</td>
-                                            <td>{{grn_inspection_det.accepted_quantity}}</td>
-                                            <td>{{grn_inspection_det.reject_quantity}}</td>
+                                            <td>{{grn_inspection_det.accepted_quantity|floatformat}}</td>
+                                            <td>{{grn_inspection_det.reject_quantity|floatformat}}</td>
                                             <td>{{grn_inspection_det.amount}}</td>
                                             <td>{{grn_inspection_det.inspection_date|date:'Y-m-d'}}</td>
                                         </tr>

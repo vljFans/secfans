@@ -110,9 +110,9 @@
                                 <tr>
                                     <td>{{forloop.counter}}</td>
                                     <td>{{physIns.item.name}}</td>
-                                    <td>{{physIns.booked_quantity}}</td>
-                                    <td>{{physIns.physical_quantity}}</td>
-                                    <td>{{physIns.adjusted_quantity}}</td>
+                                    <td>{{physIns.booked_quantity|floatformat}}</td>
+                                    <td>{{physIns.physical_quantity|floatformat}}</td>
+                                    <td>{{physIns.adjusted_quantity|floatformat}}</td>
                                     {% if physIns.notes != '' %}
                                     <td><i  onclick="return swal({title:'Note',text:'{{physIns.notes}}'})" class="fa fa-sticky-note-o" style="cursor: pointer; " ></i></td>
                                     {% endif %}

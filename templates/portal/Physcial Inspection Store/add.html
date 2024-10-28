@@ -262,7 +262,7 @@
                                                 <td><input type="text" size="5" name="item_name" class="form-control item_name" value="${element.item__name}"
                                                 readonly> <input type="hidden" name="item_id" class="form-control item_id" value="${element.item_id}"
                                                 required></td>
-                                                <td> <input type="text" size="5" name="book_quantity" class="form-control book_quantity" value="${element.on_hand_qty}"
+                                                <td> <input type="text" size="5" name="book_quantity" class="form-control book_quantity" value="${+element.on_hand_qty}"
                                                 readonly></td>
                                                 <td><input type="text" size="5" name="physical_quantity" class="form-control physical_quantity" onkeyup="checkMaxMin(this)"
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" onfocusout="onNotsCheck(this)" 

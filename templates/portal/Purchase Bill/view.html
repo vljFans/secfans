@@ -121,7 +121,7 @@
                                 <tr>
                                     <td>{{forloop.counter}}</td>
                                     <td>{{purchaseBillDet.item.name}}</td>
-                                    <td>{{purchaseBillDet.quantity}}</td>
+                                    <td>{{purchaseBillDet.quantity|floatformat}}</td>
                                     <td>{{purchaseBillDet.rate}}</td>
                                     <td>{{purchaseBillDet.amount}}</td>
                                     {% if purchaseBillDet.igst_percentage != 0.00  %}

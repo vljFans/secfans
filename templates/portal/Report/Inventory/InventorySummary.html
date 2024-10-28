@@ -278,10 +278,10 @@
                                              <td>${index+1}</td>
                                              <td>${response.page_items[index].item}</td>
                                              <td>${response.page_items[index].item_category}</td>                                 
-                                             <td>${response.page_items[index].onHand_quantity}</td>
-                                             <td>${response.page_items[index].quantity_order}</td>
-                                             <td>${response.page_items[index].stock_in}</td>
-                                             <td>${response.page_items[index].stock_out}</td>
+                                             <td>${+response.page_items[index].onHand_quantity || "---"}</td>
+                                             <td>${+response.page_items[index].quantity_order || "---"}</td>
+                                             <td>${+response.page_items[index].stock_in || "---"}</td>
+                                             <td>${+response.page_items[index].stock_out || "---"}</td>
                             
                                         </tr>`
                     }
