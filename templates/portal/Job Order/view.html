@@ -48,11 +48,11 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <!-- <h6 class="card-header-title tx-13 mb-0">{{parent_page_title}} {{page_title}}</h6> -->
-                            <h6 class="card-header-title tx-13 mb-0">Item Details of {{purchaseOrder.order_number}}</h6>
+                            <h6 class="card-header-title tx-13 mb-0">Job Order Details of {{jobOrder.order_number}}</h6>
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                <a href="{% url 'superuser:purchaseOrderList' %}" class="mr-3"><i
+                                <a href="{% url 'superuser:jobOrderList' %}" class="mr-3"><i
                                     class="fa fa-step-backward"></i></a>
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                             </div>
@@ -67,30 +67,28 @@
                                     <th>#</th>
                                     <th>Item</th>
                                     <th>Quantity</th>
-                                    <th>Rate</th>
-                                    <th>Amount</th>
-                                    <th>GST %</th>
-                                    <th>Amount With GST</th>
+                                    <th>Required Job Quantity</th>
+                                    <th>Quantity Result</th>
+                                    <th>Direction</th>
                                 </tr>
                             </thead>
                             <tbody id="table-body">
-                                {% for orderDetail in purchaseOrder.purchase_order_detail_set.all %}
+                                {% for orderDetail in jobOrder.job_order_detail_set.all %}
                                 <tr>
                                     <td>{{forloop.counter}}</td>
                                     <td>{{orderDetail.item.name}}</td>
                                     <td>{{orderDetail.quantity}}</td>
-                                    <td>{{orderDetail.rate}}</td>
-                                    <td style="text-align: right;">{{orderDetail.amount}}</td>
-                                    <td>{{orderDetail.gst_percentage}}</td>
-                                    <td style="text-align: right;">{{orderDetail.amount_with_gst}}</td>
+                                    <td>{{orderDetail.required_quantity}}</td>
+                                    <td>{{orderDetail.quantity_result}}</td>
+                                    <td>{{orderDetail.direction}}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
-                            <tfoot>
+                            <!-- <tfoot>
                                 <th>
                                     <td colspan="7" style="text-align: right;">{{purchaseOrder.amount_with_gst}}</td>
                                 </th>
-                            </tfoot>
+                            </tfoot> -->
                         </table>
                     </div>
                     <nav>

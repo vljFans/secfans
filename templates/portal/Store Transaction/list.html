@@ -26,6 +26,7 @@
                 </div>
             </div>
         </div>
+        
     </div>
     <!--/ Breadcrumb End -->
     <!--================================-->
@@ -38,6 +39,12 @@
         </label>
         <input type="text" id="search" name="search" style="width: 180px; height: 30px;" value="{{request.GET.keyword}}"
             placeholder="" />
+    </div>
+    <div class="col-md-6">
+        <div class="float-end d-flex justify-content-end" style="padding-top: 10px;">
+            <button type="button" file_type="pdf" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">PDF</button>
+            <button type="button" file_type="xlsx" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">Excel</button>
+        </div>
     </div>
     <!--/ Search box End -->
     <!--================================-->
@@ -119,6 +126,10 @@
 {% endblock %}
 
 {% block js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
 <script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
     function getStoreTransactionList(keyword) {
@@ -215,5 +226,73 @@
             });
         }
     });
+    $(document).on('click', '.generate_and_download', function (e) {
+        e.preventDefault();
+
+        var fileType = $(this).attr('file_type');
+        var filename = "Material Receipt all transaction";
+        var table = $('.table');
+
+
+        // Generate and download Excel or PDF file only
+        if (fileType === 'xlsx') {
+            var wb = XLSX.utils.book_new();
+            var ws_data = [[]];
+
+            // Add table headers
+            var headerRow = [];
+            table.find('thead th').each(function() {
+                headerRow.push($(this).text());
+            });
+            ws_data.push(headerRow);
+
+            // Add table body rows
+            table.find('tbody tr').each(function() {
+                var row_data = [];
+                $(this).find('td').each(function() {
+                    row_data.push($(this).text());
+                });
+                ws_data.push(row_data);
+            });
+
+            // Generate worksheet and download Excel file
+            var ws = XLSX.utils.aoa_to_sheet(ws_data);
+            XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+            XLSX.writeFile(wb, filename + '.xlsx');
+        }
+        else if (fileType === 'pdf') {
+            const { jsPDF } = window.jspdf;
+            var doc = new jsPDF();
+
+            // Add header text at the top of the PDF
+            doc.setFontSize(10); // Optional: Set a smaller font size for the table content
+
+             // Extract headers
+            var headers = [];
+            table.find('thead th').each(function() {
+                headers.push($(this).text());
+            });
+            // Extract table rows
+            var data = [];
+            table.find('tbody tr').each(function() {
+                var row = [];
+                $(this).find('td').each(function() {
+                    row.push($(this).text().replace('₹', ''));
+                });
+                data.push(row);
+            });
+
+            // Extract footer row with total amount
+            // Generate PDF table with header, body, and footer
+            doc.autoTable({
+                head: [headers],
+                body: data,
+                startY: 20, // Start table below the header text
+                margin: { top: 10 }
+            });
+            doc.save(filename + '.pdf');
+        }
+    });s
+
 </script>
 {% endblock %}
