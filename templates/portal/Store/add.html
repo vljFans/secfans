@@ -130,10 +130,10 @@
                                     placeholder="Address"></textarea>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label>Store Type<span class="required-indicator">*</span></label>
+                                <label>Store Type 1<span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker" id="store_type"
-                                        name="store_type" required>
+                                    <select class="custom-select selectpicker" id="store_type1"
+                                        name="store_type1" required>
                                         <option></option>
                                         <option value="1">Vendor Store</option>
                                         <option value="0">Inhouse Store</option>
@@ -141,20 +141,23 @@
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">
+                            </div>
+                            <!-- <div class="col-md-4 mb-3">
                                 <div class="vendor_content">
                                     <label>Vendor/Supplier Name<span class="required-indicator">*</span></label>
                                     <div class="input-group">
                                         <select class="custom-select selectpicker" id="vendor_id" name="vendor_id" required>
                                             <option value="">Choose...</option>
-                                            {% for vendor in vendors %}
-                                                <option {% if vendor.id == store.vendor_id %}selected{% endif %} value="{{vendor.id}}">
+                                            {% for vendor in vendors %} -->
+                                                <!-- <option {% if vendor.id == store.vendor_id %}selected{% endif %} value="{{vendor.id}}"> -->
+                                                <!-- <option {% if vendor.id == store.vendor_id %}selected{% endif %} value="{{vendor.id}}"> 
                                                     {{vendor.name}}
                                                 </option>
                                             {% endfor %}
                                         </select>
                                     </div>
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
                         {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
                         <button class="btn btn-success submit-btn" type="submit">Submit</button>
@@ -194,7 +197,7 @@
         placeholder: ''
     });
 
-    $('#store_type').select2({
+    $('#store_type1').select2({
         placeholder: "Select store type"
     });
 
@@ -255,15 +258,48 @@
         });
     });
 
-    $(document).on('change', '#store_type', function () {
+    $(document).on('change', '#store_type1', function () {
         if($(this).val()==="1"){
-            $(".vendor_content").show()
-            $('#vendor_id').attr('required', 'required');
+            // $(".vendor_content").show()
+            $(".form-row > :last-child").html(`
+                <div class="vendor_content">
+                    <label>Vendor/Supplier Name<span class="required-indicator">*</span></label>
+                    <div class="input-group">
+                        <select class="custom-select selectpicker" id="vendor_id" name="vendor_id" required>
+                            <option value="">Choose...</option>
+                            {% for vendor in vendors %}
+                                <option required value="{{vendor.id}}"> 
+                                    {{vendor.name}}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            `)
+            // $('#vendor_id').attr('required', 'required');
+            $('.selectpicker').select2({
+                placeholder: ''
+            });
         }
         else{
-            $("#vendor_id").val('').trigger('change')
-            $(".vendor_content").hide()
-            $("#vendor_id").removeAttr("required")
+            // $("#vendor_id").val('').trigger('change')
+            // $(".vendor_content").hide()
+            // $("#vendor_id").removeAttr("required")
+            $(".form-row > :last-child").html(`
+                <label>Store Type 2<span class="required-indicator">*</span></label> 
+                <div class="input-group">
+                    <select class="custom-select selectpicker" id="store_type2" name="store_type2" required> 
+                        <option></option>
+                        <option value="r">Raw Material Store</option> 
+                        <option value="sm">Semi Finished Good Store</option> 
+                        <option value="f">Finished Good Store</option> 
+                    </select>
+                </div>
+            `);
+            $('.selectpicker').select2({
+                placeholder: ''
+            });
+
         }
     })
 

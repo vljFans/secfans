@@ -297,6 +297,7 @@ class Child_Uom(models.Model):
 
 class Item_Category(models.Model):
     name = models.CharField(max_length=50, blank=True, null=True)
+    semi_finished = models.BooleanField(default=False, blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -383,6 +384,7 @@ class Store(models.Model):
     contact_email = models.CharField(max_length=100, blank=True, null=True)
     manager_name = models.CharField(max_length=50, blank=True, null=True)
     vendor = models.OneToOneField(Vendor, on_delete=models.CASCADE, blank=True, null=True)
+    store_type = models.CharField(max_length=60, blank=False, null=False)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
@@ -582,6 +584,7 @@ class Job_Order_Detail(models.Model):
     job_order_header = models.ForeignKey(Job_Order, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    required_quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     quantity_result = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=False)
