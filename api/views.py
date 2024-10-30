@@ -2189,6 +2189,7 @@ def itemList(request):
     keyword = request.GET.get('keyword', None)
     item_type_id = request.GET.get('item_type_id', None)
     item_category_id = request.GET.get('item_category_id', None)
+    item_category = request.GET.get('item_category', None)
     if id is not None and id != "":
         item = list(models.Item.objects.filter(pk=id)[:1].values(
             'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage', 'uom__name', 'price','hsn_code'))
@@ -2207,6 +2208,11 @@ def itemList(request):
             items=items.filter(item_type_id=item_type_id)
         if keyword is not None and keyword != "":
             items = items.filter(name__icontains=keyword)
+        if item_category is not None and item_category!="":
+            if item_category=="not-finish":
+                items = items.filter(Q(item_type__item_category__name__icontains="raw") | Q(item_type__item_category__name__icontains="semi"))
+            if item_category=="finish":
+                items = items.filter(item_type__item_category__name__icontains="finish")
 
         items = list(items.values(
                 'pk', 'name', 'item_type__name', 'item_type__item_category__name', 'item_type__gst_percentage',
@@ -2671,7 +2677,8 @@ def storeAdd(request):
             store.contact_no = request.POST['contact_no']
             store.contact_email = request.POST['contact_email']
             store.manager_name = request.POST['manager_name']
-            store.vendor_id = request.POST['vendor_id'] if 'vendor_id' in request.POST.keys() else None
+            store.vendor_id = request.POST.get('vendor_id', None)
+            store.store_type = request.POST.get('store_type2', 'r')
             store.save()
             userId = request.COOKIES.get('userId', None)
             user_log_details_add(userId,'New Store Add')
@@ -2722,6 +2729,7 @@ def storeEdit(request):
             store.manager_name = request.POST['manager_name']
             if request.POST['store_type'] == 1:
                 store.vendor_id = request.POST['vendor_id']
+            store.store_type = request.POST.get('store_type2', 'r')
             store.updated_at = datetime.now()
             store.save()
 
@@ -5112,6 +5120,7 @@ def jobOrderAdd(request):
                         job_order_header_id=jobOrderHeader.id,
                         item_id=int(item_id),
                         quantity=float(quantity),
+                        required_quantity=float(quantity),
                         quantity_result = float(quantity),
                         direction="incoming"
                     )
@@ -5122,6 +5131,7 @@ def jobOrderAdd(request):
                         job_order_header_id=jobOrderHeader.id,
                         item_id=int(item_id),
                         quantity=float(quantity),
+                        required_quantity=float(quantity),
                         direction="outgoing"
                     )
                 )
@@ -5183,7 +5193,7 @@ def jobOrderEdit(request):
             jobOrderHeader.order_number = request.POST['order_number']
            
             jobOrderHeader.order_date = request.POST['order_date']
-            jobOrderHeader.manufacturing_type = request.POST['manufacturing_type']
+            # jobOrderHeader.manufacturing_type = request.POST['manufacturing_type']
             if 'vendor_id' in request.POST:
                 jobOrderHeader.vendor_id = request.POST['vendor_id']
             if 'with_item' in request.POST:
@@ -5292,9 +5302,9 @@ def jobOrderDetails(request):
     if header_id is not None and header_id != "":
         header_detail = list(models.Job_Order.objects.filter(pk=header_id)[:1].values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor_id', 'vendor__name', 'with_item', 'notes'))
         if direction is not None and direction != "":
-            orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id, direction=direction).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'quantity', 'item__name','item__price', 'direction','item__item_type__gst_percentage','quantity_result'))
+            orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id, direction=direction).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'quantity', 'required_quantity', 'item__name','item__price', 'direction','item__item_type__gst_percentage','quantity_result'))
         else:
-            orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'quantity', 'item__name','item__price', 'direction','item__item_type__gst_percentage','quantity_result'))
+            orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'quantity', 'required_quantity','item__name','item__price', 'direction','item__item_type__gst_percentage','quantity_result'))
         context.update({
             'status': 200,
             'message': "Job Order Details Fetched Successfully.",
@@ -5549,9 +5559,12 @@ def materialIssueAdd(request):
             outgoing_incomming_details = []
 
             # material issue for godown
-            
+            all_material_issued=True
             for index, elem in enumerate(request.POST.getlist('item_id')):
                 sendQuantity = float(request.POST.getlist('quantity_sent')[index])
+                requiredQuantity = float(request.POST.getlist('required_quantity')[index])
+                
+                
                 store_transaction_details.append(
                     models.Store_Transaction_Detail(
                         store_transaction_header=storeTransactionHeader,

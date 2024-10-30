@@ -125,7 +125,7 @@
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="quantity_sent" min="0.01" class="form-control quantity_sent"
-                                            value="{{+materialIssueDetail.quantity}}" required>
+                                            value="{{materialIssueDetail.quantity|floatformat}}" required>
                                         <input type="hidden" name="quantity_sent_og" class="form-control quantity_sent_og" value="{{materialIssueDetail.quantity}}">
                                     </div>
 

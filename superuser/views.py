@@ -1034,16 +1034,17 @@ def jobOrderEdit(request, id):
     return render(request, 'portal/Job Order/edit.html', context)
 
 
-# @login_required
-# def jobOrderView(request, id):
-#     jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
-#     context.update({
-#         'purchaseOrder': jobOrder,
-#         'page_title': "Job Order View",
-#         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "View"}]
-#     })
-#     return render(request, 'portal/Job Order/view.html', context)
-#
+@login_required
+def jobOrderView(request, id):
+    jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
+    print(jobOrder.job_order_detail_set.all())
+    context.update({
+        'jobOrder': jobOrder,
+        'page_title': "Job Order View",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "View"}]
+    })
+    return render(request, 'portal/Job Order/view.html', context)
+
 #--- developed by saswata
 
 
