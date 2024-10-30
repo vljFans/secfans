@@ -195,6 +195,7 @@
                 $('.error-msg-txt').text("");
                 if (response.status == 200) {
                     edit_url = "{% url 'superuser:jobOrderEdit' 1 %}";
+                    view_url = "{% url 'superuser:jobOrderView' 1 %}";
                     copy_url = "{% url 'superuser:jobOrderAdd'  %}?id=";
                     page_items = response.page_items;
                     tbody_text = ``;
@@ -210,6 +211,9 @@
                                 {% endif %}
                                 {% if request.user.is_superuser == 1 or 'delete_job_order'|get_session_permission:request is not None %}
                                 <a href="#" onclick="return alert('cannot  delete as material already  get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-trash"></i> </a>
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
+                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
                                 {% endif %}
                                 {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
                                 <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
@@ -231,6 +235,9 @@
                                     {% if request.user.is_superuser == 1 or 'delete_job_order'|get_session_permission:request is not None %}
                                     <a id="delete-btn" data-id="${element.pk}" data-name="${element.order_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
                                     {% endif %}
+                                    {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
+                                    <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
+                                    {% endif %}
                                     {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
                                     <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
                                     {% endif %}
@@ -249,7 +256,7 @@
                                 <td>${element.manufacturing_type} manufacturing</td>
                                 <td>${element.estimated_time_day}</td>
                                 <td>${element.notes}</td> 
-                                 <td style="color: ${element.job_status == 0 ? 'blue' : (element.job_status == 1 ? 'yellow' : 'red')}; background-color: ${element.job_status == 1 ? 'black' : 'white' };">
+                                 <td style="color: ${element.job_status == 0 ? 'blue' : (element.job_status == 1 ? 'lime' : 'red')}; ">
                                     ${element.job_status == 0 ? 'Open' : (element.job_status == 1 ? 'WIP' : 'Closed')}
                                 </td>`+ tbody_buttom_text+`</tr>`;
                     }

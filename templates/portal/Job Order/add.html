@@ -140,6 +140,7 @@
         }, false);
     })();
 </script>
+
 <script>
     var vendor_options_text;
     var outgoing_item_options_text = ``;
@@ -280,9 +281,9 @@
         }
     }
 
-    function itemIncommingDrpDown(){
+    function itemIncomingDropDown(manufacturing_type){
         $.ajax({
-            url: "{% url 'api:itemList' %}?find_all=1",
+            url: "{% url 'api:itemList' %}?find_all=1&item_category=" + encodeURIComponent(manufacturing_type),
             type: 'GET',
             data: ({}),
             headers: {
@@ -290,11 +291,15 @@
             },
             success: function (response) {
                 if (response.status == 200) {
+                    console.log(response.page_items.length);
                     
                     incoming_item_options_text = `<option value="">Choose order item</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
                         incoming_item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
+                    $('.incoming_item_id').append(incoming_item_options_text);
+                    // console.log($('.incoming_item_id').html());
+                    
                     $('.selectpicker').select2({
                         placeholder: '',
                         templateResult: function(option) {
@@ -304,6 +309,7 @@
                             return option.text;
                         }
                     });
+                    callback("incoming")
                 } 
                 else {
                     alert(response.message);
@@ -312,6 +318,7 @@
             error: function (error) {
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
+        
         });
     
     }
@@ -363,7 +370,7 @@
         });
 
         $.ajax({
-            url: "{% url 'api:itemList' %}?find_all=1",
+            url: "{% url 'api:itemList' %}?find_all=1&item_category=not-finish",
             type: 'GET',
             data: ({}),
             headers: {
@@ -372,10 +379,8 @@
             success: function (response) {
                 if (response.status == 200) {
                     outgoing_item_options_text += `<option value="">Choose item</option>`;
-                    incoming_item_options_text += `<option value="">Choose order item</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
                         outgoing_item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
-                        incoming_item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
                     $('.selectpicker').select2({
                         placeholder: '',
@@ -403,6 +408,7 @@
         jobOrderNo(keyword)
         if($(this).val()==="Self"){
             $(".third_party").empty()
+            itemIncomingDropDown("finish")
             $('.self').html(`
                 <div class="col-md-4 mb-3">
                     <label>With/Without item<span class="required-indicator">*</span></label>
@@ -413,7 +419,7 @@
                     </div>
                 </div>
                 <div class="col-md-2 mb-3">
-                    <label>Time Span<span class="required-indicator">*</span></label>
+                    <label>Time unit<span class="required-indicator">*</span></label>
                     <div class="input-group">
                         <select class="custom-select selectpicker timeSpan" data-placeholder="Choose" name="timeSpan" required>
                             <option value=""></option>
@@ -423,11 +429,11 @@
                     </div>
                 </div>
                 <div class="col-md-2 mb-3">
-                    <label>hr/day<span class="required-indicator">*</span></label>
+                    <label>Time Span<span class="required-indicator">*</span></label>
                     <input type="number" onkeyup="checkMaxMin(this)"
                     onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                     name="hr_day" min="0.0" class="form-control hr_day"
-                    placeholder="hr 0r day" required>
+                    placeholder="0" required>
                 </div>
                 <div class="col-md-4 mb-3">
                 </div>
@@ -499,7 +505,6 @@
                                                 <label>Item<span class="required-indicator">*</span></label>
                                                     <div class="input-group">
                                                         <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required>
-                                                            ${incoming_item_options_text}
                                                         </select>
                                                         {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
                                                             <div class="btn float-end addForm" data-text="Add New item"
@@ -561,7 +566,7 @@
                     </div>
                 </div>
                 <div class="col-md-2 mb-3">
-                    <label>Time Span<span class="required-indicator">*</span></label>
+                    <label>Time unit<span class="required-indicator">*</span></label>
                     <div class="input-group">
                         <select class="custom-select selectpicker timeSpan" data-placeholder="Choose" name="timeSpan" required>
                             <option value=""></option>
@@ -571,11 +576,11 @@
                     </div>
                 </div>
                 <div class="col-md-2 mb-3">
-                    <label>hr/day<span class="required-indicator">*</span></label>
+                    <label>Time Span<span class="required-indicator">*</span></label>
                     <input type="number" onkeyup="checkMaxMin(this)"
                     onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                     name="hr_day" min="0.0" class="form-control hr_day"
-                    placeholder="hr or day" required>
+                    placeholder="0" required>
                 </div>
                 <div class="col-md-12 mb-3 item_table pl-0 pr-0">
                     
@@ -596,6 +601,7 @@
         
         if($(this).val()==="True"){
             $('.warnText').removeAttr('hidden')
+            itemIncomingDropDown("not-finish")
             $(".item_table").html(`
                 <div class="container-fluid" style="border: 2px solid darkgray;">
                     <div class="row">
@@ -664,7 +670,6 @@
                                                 <label>Item<span class="required-indicator">*</span></label>
                                                     <div class="input-group">
                                                         <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required>
-                                                            ${incoming_item_options_text}
                                                         </select>
                                                         {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
                                                             <div class="btn float-end addForm" data-text="Add New item"

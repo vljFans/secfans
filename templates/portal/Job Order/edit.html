@@ -74,9 +74,10 @@
                             <div class="col-md-4 mb-3">
                                 <label>Manufacturing type<span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker manufacturing_type" data-placeholder="Select manufacturing type" name="manufacturing_type" required>
+                                    <select class="custom-select selectpicker manufacturing_type" disabled data-placeholder="Select manufacturing type" name="manufacturing_type" required>
                                         <option value=""></option>
                                         <option value="Self" {% if jobOrder.manufacturing_type == 'Self' %}selected{% endif %} >Self Manufacturing</option>
+                                        <option value="Third party" {% if jobOrder.manufacturing_type == 'Third party' %}selected{% endif %} >Third party Manufacturing</option>
                                     </select>
                                 </div>
                             </div>
@@ -89,14 +90,15 @@
                                     <div class="input-group">
                                         <select class="custom-select selectpicker with_item" data-placeholder="Choose" name="with_item" required>
                                             <option value=""></option>
-                                            <option value="True" {% if jobOrder.with_item == 'True' %}selected{% endif %} >With item</option>
-                                            <option value="False" {% if jobOrder.with_item == 'False' %}selected{% endif %} >Without item</option>
+                                            <option value="True" selected>With item</option>
+                                            <!-- <option value="True" {% if jobOrder.with_item == 'True' %}selected{% endif %} >With item</option>
+                                            <option value="False" {% if jobOrder.with_item == 'False' %}selected{% endif %} >Without item</option> -->
                                         </select>
                                     </div>
                                 </div>
                                 {% if page_title == 'Job Order Add' %}
                                     <div class="col-md-2 mb-3">
-                                        <label>Time Span<span class="required-indicator">*</span></label>
+                                        <label>Time Format<span class="required-indicator">*</span></label>
                                         <div class="input-group">
                                             <select class="custom-select selectpicker timeSpan" data-placeholder="Choose" name="timeSpan" required>
                                                 <option value=""></option>
@@ -107,11 +109,11 @@
                                     </div>
                                 
                                     <div class="col-md-2 mb-3">
-                                        <label>hr/day<span class="required-indicator">*</span></label>
+                                        <label>Time Format<span class="required-indicator">*</span></label>
                                         <input type="number" onkeyup="checkMaxMin(this)"
                                         onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                         name="hr_day" min="0.0" class="form-control hr_day"
-                                        placeholder="hr 0r day" required>
+                                        placeholder="0" required>
                                     </div>
                                 {% endif %}
                                 <div class="col-md-4 mb-3">
@@ -155,7 +157,7 @@
                                                                         <input type="text" onkeyup="checkMaxMin(this)"
                                                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                                             name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
-                                                                            value="{{jobOrderDetail.quantity}}"
+                                                                            value="{{jobOrderDetail.quantity|floatformat}}"
                                                                             required>
                                                                     </div>
                                                                     <div class="col-md-3  py-2">
@@ -208,7 +210,7 @@
                                                                         <input type="text" onkeyup="checkMaxMin(this)"
                                                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                                             name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
-                                                                            value="{{jobOrderDetail.quantity}}"
+                                                                            value="{{jobOrderDetail.quantity|floatformat}}"
                                                                             required>
                                                                     </div>
                                                                     <div class="col-md-3 py-2">
@@ -261,7 +263,7 @@
                                     </div>
                                     {% if page_title == 'Job Order Add' %}
                                     <div class="col-md-2 mb-3">
-                                        <label>Time Span<span class="required-indicator">*</span></label>
+                                        <label>Time Format<span class="required-indicator">*</span></label>
                                         <div class="input-group">
                                             <select class="custom-select selectpicker timeSpan" data-placeholder="Choose" name="timeSpan" required>
                                                 <option value=""></option>
@@ -272,11 +274,11 @@
                                     </div>
                                     
                                     <div class="col-md-2 mb-3">
-                                        <label>hr/day<span class="required-indicator">*</span></label>
+                                        <label>Time Format<span class="required-indicator">*</span></label>
                                         <input type="number" onkeyup="checkMaxMin(this)"
                                         onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                         name="hr_day" min="0.0" class="form-control hr_day"
-                                        placeholder="hr 0r day" required>
+                                        placeholder="0" required>
                                     </div>
                                     {% endif %}
                                     <div class="col-md-4 mb-3">
@@ -320,7 +322,7 @@
                                                                             <input type="text" onkeyup="checkMaxMin(this)"
                                                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                                                 name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
-                                                                                value="{{jobOrderDetail.quantity}}"
+                                                                                value="{{jobOrderDetail.quantity|floatformat}}"
                                                                                 required>
                                                                         </div>
                                                                         <div class="col-md-3  py-2">
@@ -373,7 +375,7 @@
                                                                             <input type="text" onkeyup="checkMaxMin(this)"
                                                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                                                 name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
-                                                                                value="{{jobOrderDetail.quantity}}"
+                                                                                value="{{jobOrderDetail.quantity|floatformat}}"
                                                                                 required>
                                                                         </div>
                                                                         <div class="col-md-3 py-2">

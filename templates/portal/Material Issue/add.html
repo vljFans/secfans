@@ -62,26 +62,34 @@
                 <div class="card-body">
                     <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
                         <div class="form-row">
+                            <div class="col-md-3 mb-3 test ">
+                                <label>Job Order No<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="job_order_id" name="job_order_id" required>
+                                        <option value="">Choose...</option>
+                                    </select>
+                                </div>
+                            </div>
 
                             <div class="col-md-3 mb-3">
-                                <label>Store<span class="required-indicator">*</span></label>
+                                <label>In House Store<span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker" id="store_id" name="store_id" required>
+                                    <select class="custom-select selectpicker" id="inhouse_store_id" name="inhouse_store_id" required>
                                         <option value="">Choose...</option>
                                     </select>
                                 </div>
                             </div>
                             
-                            <div class="col-md-3 mb-3 test ">
-                                <label>Job Order No<span class="required-indicator">*</span></label>
+                            <div class="col-md-3 mb-3">
+                                <label>Vendor Store<span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker" id="job_order_id" name="job_order_id" required disabled>
+                                    <select class="custom-select selectpicker" id="vendor_store_id" name="vendor_store_id" required>
                                         <option value="">Choose...</option>
                                     </select>
                                 </div>
-                            </div>
+                            </div>                            
 
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-3 mb-3">
                                 <label>Vendor/Supplier </label>
                                 <input type="text" id="vendor_name" name="vendor_name" class="form-control" placeholder="" readonly >
                                 <input type="hidden" class="vendor_id" name="vendor_id">
@@ -180,7 +188,6 @@
     }
 
     function renderTotalAmount(){
-        console.log("hi");
         let total_amount=0;
         $('.amount').each(function(){
             if($(this).val()){
@@ -218,39 +225,39 @@
 
     $(document).ready(function () {
         $("#issue_date").val(new Date().toISOString().slice(0, 10))
-        $.ajax({
-            url: "{% url 'api:storeList' %}?store_type=InHouse",
-            type: 'GET',
-            data: ({
-            }),
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                if (response.status == 200) {
-                    let store_options_text = `<option value="">Choose item</option>`;
-                    for (let index = 0; index < response.page_items.length; index++) {
-                        store_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
-                    }
-                    $('#store_id').html(store_options_text);
-                    $('.selectpicker').select2({
-                        placeholder: '',
-                        templateResult: function(option) {
-                            if(option.element && (option.element).hasAttribute('hidden')){
-                                return null;
-                            }
-                            return option.text;
-                        }
-                    });
-                } 
-                else {
-                    alert(response.message);
-                }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });
+        // $.ajax({
+        //     url: "{% url 'api:storeList' %}?store_type=InHouse",
+        //     type: 'GET',
+        //     data: ({
+        //     }),
+        //     headers: {
+        //         'Authorization': getCookieValue("accessToken")
+        //     },
+        //     success: function (response) {
+        //         if (response.status == 200) {
+        //             let store_options_text = `<option value="">Choose item</option>`;
+        //             for (let index = 0; index < response.page_items.length; index++) {
+        //                 store_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+        //             }
+        //             $('#store_id').html(store_options_text);
+        //             $('.selectpicker').select2({
+        //                 placeholder: '',
+        //                 templateResult: function(option) {
+        //                     if(option.element && (option.element).hasAttribute('hidden')){
+        //                         return null;
+        //                     }
+        //                     return option.text;
+        //                 }
+        //             });
+        //         } 
+        //         else {
+        //             alert(response.message);
+        //         }
+        //     },
+        //     error: function (error) {
+        //         $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+        //     }
+        // });
 
         $.ajax({
             url: "{% url 'api:jobOrderList' %}?find_all=1&material_issue=0",
@@ -322,8 +329,7 @@
     
     });
     
-    $(document).on('change','#store_id' , function(){
-        $("#job_order_id").removeAttr("disabled")
+    $(document).on('change','#inhouse_store_id' , function(){
         if( $('#job_order_id').val() != "" ){ 
             fill_up_actual_quantity()
         }
@@ -332,6 +338,79 @@
     $(document).on('change','#job_order_id',function(){
         $(this).parents().closest('.form-row').find('.content_parent').remove();
         callMaterialIssue()
+        let vendor_id=$(".vendor_id").val()
+        $.ajax({
+            url: "{% url 'api:storeList' %}?store_type=InHouse",
+            type: 'GET',
+            data: ({
+            }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    let inhouse_store_options_text = `<option value="">Choose store</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        inhouse_store_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $('#inhouse_store_id').html(inhouse_store_options_text);
+                    $('.selectpicker').select2({
+                        placeholder: '',
+                        templateResult: function(option) {
+                            if(option.element && (option.element).hasAttribute('hidden')){
+                                return null;
+                            }
+                            return option.text;
+                        }
+                    });
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+        $.ajax({
+            url: "{% url 'api:storeList' %}?store_type=Vendor",
+            type: 'GET',
+            data: ({
+            }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    let vendor_store_options_text = `<option value="">Choose store</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        console.log("response.page_items[index].vendor_id", response.page_items[index].vendor_id);
+                        console.log("vendor_id",vendor_id);
+                        
+                        
+                        if (response.page_items[index].vendor_id!==vendor_id){
+                            vendor_store_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                        }
+                    }
+                    $('#vendor_store_id').html(vendor_store_options_text);
+                    $('.selectpicker').select2({
+                        placeholder: '',
+                        templateResult: function(option) {
+                            if(option.element && (option.element).hasAttribute('hidden')){
+                                return null;
+                            }
+                            return option.text;
+                        }
+                    });
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
         callback()
     });
 
@@ -382,7 +461,7 @@
 
     $(document).on('click','.add_btn',function(){
             var text_inp = `<div class="form-row content_parent">
-                                    <div class="col-md-5 mb-3">
+                                    <div class="col-md-3 mb-3">
                                         <label>Item<span class="required-indicator">*</span></label>
                                         <div class="input-group">
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
@@ -391,7 +470,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-2 mb-3">
                                         <label>Actual quantity <span class="required-indicator">*</span></label>
                                         <input type="text" 
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
@@ -399,7 +478,7 @@
                                             placeholder="0.00" readonly>
                                     </div>
 
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-1 mb-3">
                                         <label>Rate <span class="required-indicator">*</span></label>
                                         <input type="text" 
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
@@ -407,14 +486,14 @@
                                             placeholder="0.00" readonly>
                                     </div>
 
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-2 mb-3">
                                         <label>Quantity Sent <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="quantity_sent" min="0.01" class="form-control quantity_sent"
                                             placeholder="0.00" required>
                                     </div>
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-2 mb-3">
                                             <label>Amount <span class="required-indicator">*</span></label>
                                             <input type="text" 
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
@@ -478,6 +557,7 @@
                             for(let index=0 ; index<response.job_order_details.length; index++){
                                 var text_inp = `
                                     <div class="form-row content_parent">
+                                        <input type="hidden" class="job_order_detail_id" name="job_order_detail_id" value="${response.job_order_details[index].id}">
                                         <div class="col-md-3 mb-3">
                                             <label>Item<span class="required-indicator">*</span></label>
                                             <input type="hidden" class="item_id" name="item_id" value="${response.job_order_details[index].item_id}">
@@ -499,13 +579,12 @@
                                                 placeholder="0.00" readonly>
                                         </div>
                                         <div class="col-md-2 mb-3">
-                                            <label>Rate <span class="required-indicator">*</span></label>
+                                            <label>Job required quantity <span class="required-indicator">*</span></label>
                                             <input type="text" 
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                                name="rate" min="0.01" class="form-control rate" value="${+response.job_order_details[index].item__price}"
-                                                 readonly>
+                                                name="required_quantity" min="0.01" class="form-control required_quantity" value ="${+response.job_order_details[index].required_quantity}"
+                                                placeholder="0.00" readonly>
                                         </div>
-
                                         <div class="col-md-2 mb-3">
                                             <label>Quantity Sent <span class="required-indicator">*</span></label>
                                             <input type="text" onkeyup="checkMaxMin(this)"
@@ -513,6 +592,15 @@
                                                 name="quantity_sent" min="0.01" class="form-control quantity_sent"
                                                 placeholder="0.00" required>
                                         </div>
+
+                                        <div class="col-md-1 mb-3">
+                                            <label>Rate <span class="required-indicator">*</span></label>
+                                            <input type="text" 
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="rate" min="0.01" class="form-control rate" value="${+response.job_order_details[index].item__price}"
+                                                 readonly>
+                                        </div>
+
                                         <div class="col-md-2 mb-3">
                                             <label>Amount <span class="required-indicator">*</span></label>
                                             <input type="text" 
@@ -539,7 +627,7 @@
                         // If Job Order is without item
                         else{
                             var text_inp = `<div class="form-row content_parent">
-                                    <div class="col-md-5 mb-3">
+                                    <div class="col-md-3 mb-3">
                                         <label>Item<span class="required-indicator">*</span></label>
                                         <div class="input-group">
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
@@ -547,7 +635,7 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-1 mb-3">
                                             <label>Rate <span class="required-indicator">*</span></label>
                                             <input type="text" 
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
@@ -555,7 +643,7 @@
                                                 placeholder="0.00" readonly>
                                     </div>
 
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-2 mb-3">
                                         <label>Actual quantity <span class="required-indicator">*</span></label>
                                         <input type="text" 
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
@@ -563,14 +651,14 @@
                                             placeholder="0.00" readonly>
                                     </div>
 
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-2 mb-3">
                                         <label>Quantity Sent <span class="required-indicator">*</span></label>
                                         <input type="text" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="quantity_sent" min="0.01" class="form-control quantity_sent"
                                             placeholder="0.00" required>
                                     </div>
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-2 mb-3">
                                             <label>Amount <span class="required-indicator">*</span></label>
                                             <input type="text" 
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
@@ -602,7 +690,7 @@
                     // If Job Order is self manufacturing
                     else{
                         var text_inp = `<div class="form-row content_parent">
-                                    <div class="col-md-5 mb-3">
+                                    <div class="col-md-3 mb-3">
                                         <label>Item<span class="required-indicator">*</span></label>
                                         <div class="input-group">
                                             <select class="custom-select selectpicker item_id" name="item_id" required>
@@ -618,7 +706,7 @@
                                             name="actual_quantity" min="0.01" class="form-control actual_quantity"
                                             placeholder="0.00" readonly>
                                     </div>
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-1 mb-3">
                                             <label>Rate <span class="required-indicator">*</span></label>
                                             <input type="text" 
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
@@ -717,7 +805,7 @@
 }
 
     function fill_up_actual_quantity(){
-        let store_id=$("#store_id").val()
+        let store_id=$("#inhouse_store_id").val()
         $("#table_form").children(".content_parent").each(function(){
             let actual_quantity_element=$(this).find(".actual_quantity")
             let quantity_sent_element = $(this).find('.quantity_sent')
@@ -762,7 +850,7 @@
             }
         }
         
-        if(parseFloat($(element).val())>parseFloat($(element).closest('.content_parent').find('.job_quantity').val())){
+        if(parseFloat($(element).val())>parseFloat($(element).closest('.content_parent').find('.required_quantity').val())){
             alert('sent quantity is more than job quantity')
             $(element).val("")
         }
