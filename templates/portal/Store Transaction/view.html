@@ -72,6 +72,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Item</th>
+                                    <th>Store</th>
                                     <th>Quantity</th>
                                     <th>Rate</th>
                                     <th>Amount</th>
@@ -84,6 +85,7 @@
                                 <tr>
                                     <td>{{forloop.counter}}</td>
                                     <td>{{orderDetail.item.name}}</td>
+                                    <td>{{orderDetail.store.name}}</td>
                                     <td>{{orderDetail.quantity|floatformat}}</td>
                                     <td>{{orderDetail.rate}}</td>
                                     <td style="text-align: right;">{{orderDetail.amount}}</td>
@@ -126,7 +128,8 @@
 
         // The header text we want to include at the top of both files
         var headerText = "Item Details of {{storeTransaction.transaction_number}}";
-
+        filename = filename +" for " + headerText
+ 
         // Generate and download Excel or PDF file only
         if (fileType === 'xlsx') {
             var wb = XLSX.utils.book_new();
@@ -186,8 +189,7 @@
             });
 
             // Extract footer row with total amount
-            var footer_row = ["Total Amounts", "", "", "", "", "", "", "saswata",table.find('tfoot td').text()];
-
+            var footer_row = ["Total Amounts", "", "", "", "", "", "",table.find('tfoot td').text()];
             // Generate PDF table with header, body, and footer
             doc.autoTable({
                 head: [headers],
@@ -199,6 +201,7 @@
             doc.save(filename + '.pdf');
         }
     });s
+
 </script>
 
 
