@@ -5000,7 +5000,8 @@ def jobOrderList(request):
                 if material_reciept is not None and material_reciept != "":
                     jobOrders = jobOrders.filter(material_reciept=material_reciept ).filter(status=1, deleted=0)
         elif material_issue is not None and material_issue != "":
-                    jobOrders = jobOrders.filter(material_issue=material_issue ).filter(status=1, deleted=0)
+            material_issue_list = [int(x) for x in material_issue.split(',')]
+            jobOrders = jobOrders.filter(material_issue__in=material_issue_list ).filter(status=1, deleted=0)
         jobOrders = list(jobOrders.values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor_id', 'vendor__name', 'with_item', 'notes','material_issue','job_status','estimated_time_day'))
         if find_all is not None and int(find_all) == 1:
             context.update({
@@ -5350,11 +5351,11 @@ def getActualQuantity(request):
     store_id = request.GET.get('store_id',None)
     
     try:
-        store_item = models.Store_Item.objects.get(store_id=int(store_id), item_id=int(item_id))
+        actual_quantity = models.Store_Item.objects.filter(store_id=int(store_id), item_id=int(item_id))
         item =  models.Item.objects.get( pk=int(item_id))
         context.update({
             'status': 200,
-            'on_hand_qty_res': store_item.on_hand_qty,
+            'actual_quantity': actual_quantity.first().on_hand_qty if actual_quantity else 0,
             'item_price' : item.price
         })
     except:
@@ -5429,11 +5430,7 @@ def materialIssueAdd(request):
 
     try:
         with transaction.atomic():
-
-            # transation_type = models.Transaction_Type.objects.get(name = 'MIS')
-            
             job_order_income_detalis = list(models.Job_Order_Detail.objects.filter(job_order_header_id = request.POST['job_order_id'] , direction = 'incoming' ))
-
             #vendor store exist  for third party stock add 
             venStoreExist = models.Store.objects.filter(vendor_id =request.POST['vendor_id']).exists()
             if request.POST['vendor_id'] and (len(job_order_income_detalis) > 0) and (venStoreExist is False):
@@ -5451,7 +5448,6 @@ def materialIssueAdd(request):
             storeTransactionHeader=models.Store_Transaction()
             if request.POST['vendor_id']:
                 vendor_store=models.Store.objects.get(vendor_id=request.POST['vendor_id'])
-                # print('4649')
                 storeTransactionHeader.vendor_id = request.POST['vendor_id']
             
             storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'MIS')
@@ -5470,20 +5466,13 @@ def materialIssueAdd(request):
                 storeTransactionHeader.vehicle = request.POST['vehicle']
             storeTransactionHeader.save()
             
-
             #material issue issued for job order
             jobOrderEdits = models.Job_Order.objects.get(pk = request.POST['job_order_id'])
-
-            jobOrderEdits.material_issue = 1
-            
+            # jobOrderEdits.material_issue = 1
             jobOrderEdits.job_status = 1 # 0 for 'active' 1 for in 'pogress' 2 for in 'complete'
-
             jobOrderEdits.updated_at = datetime.now()
 
-            jobOrderEdits.save()
-
             # for incoming material virtual transaction
-
             thirdPartyInQuantity = 0.00
             itemInThrdParty = ''
             
@@ -5513,84 +5502,90 @@ def materialIssueAdd(request):
                 store_transaction_details = []
                 store_items_add=[]
                
-
                 for index in range(0, len(job_order_income_detalis)):
-                    thirdPartyInQuantity = float(job_order_income_detalis[index].quantity)
-                    itemInThrdParty = job_order_income_detalis[index].item_id
-                    # print(job_order_income_detalis[index].item.price)
-                    store_transaction_details.append(
-                        models.Store_Transaction_Detail(
-                        store_transaction_header=storeTransactionHeaderIn,
-                        item_id=itemInThrdParty,
-                        store=vendor_store,
-                        quantity=Decimal(thirdPartyInQuantity),
-                        rate = float(job_order_income_detalis[index].item.price),
-                        amount =thirdPartyInQuantity * float(job_order_income_detalis[index].item.price)
-                    )
-                    )
-
-                   
-                    # virual added incomming material in thrid party stock
-                    if models.Store_Item.objects.filter(store=vendor_store, item_id=job_order_income_detalis[index].item_id).exists():
-                        store_item=models.Store_Item.objects.get(store=vendor_store, item_id=job_order_income_detalis[index].item_id)
-                        store_item.on_hand_qty+=Decimal(thirdPartyInQuantity)
-                        store_item.closing_qty+= Decimal(thirdPartyInQuantity)
-                        store_item.updated_at = datetime.now()
-                        store_item.save()
-
-                    # If the item does not exist in vendor store so new store item is being created
-                    else:
-                        store_items_add.append(
-                            models.Store_Item(
+                    if job_order_income_detalis[index].required_quantity!=0:
+                        thirdPartyInQuantity = float(job_order_income_detalis[index].quantity)
+                        itemInThrdParty = job_order_income_detalis[index].item_id
+                        # print(job_order_income_detalis[index].item.price)
+                        job_order_income_detalis[index].required_quantity=float(job_order_income_detalis[index].required_quantity)-thirdPartyInQuantity
+                        store_transaction_details.append(
+                            models.Store_Transaction_Detail(
+                                store_transaction_header=storeTransactionHeaderIn,
+                                item_id=itemInThrdParty,
                                 store=vendor_store,
-                                item_id=int(job_order_income_detalis[index].item_id),
-                                opening_qty=float(thirdPartyInQuantity),
-                                on_hand_qty=float(thirdPartyInQuantity),
-                                closing_qty=float(thirdPartyInQuantity),
+                                quantity=Decimal(thirdPartyInQuantity),
+                                rate = float(job_order_income_detalis[index].item.price),
+                                amount =thirdPartyInQuantity * float(job_order_income_detalis[index].item.price)
                             )
                         )
 
+                   
+                        # virual added incomming material in thrid party stock
+                        if models.Store_Item.objects.filter(store=vendor_store, item_id=job_order_income_detalis[index].item_id).exists():
+                            store_item=models.Store_Item.objects.get(store=vendor_store, item_id=job_order_income_detalis[index].item_id)
+                            store_item.on_hand_qty+=Decimal(thirdPartyInQuantity)
+                            store_item.closing_qty+= Decimal(thirdPartyInQuantity)
+                            store_item.updated_at = datetime.now()
+                            store_item.save()
+
+                        # If the item does not exist in vendor store so new store item is being created
+                        else:
+                            store_items_add.append(
+                                models.Store_Item(
+                                    store=vendor_store,
+                                    item_id=int(job_order_income_detalis[index].item_id),
+                                    opening_qty=float(thirdPartyInQuantity),
+                                    on_hand_qty=float(thirdPartyInQuantity),
+                                    closing_qty=float(thirdPartyInQuantity),
+                                )
+                            )
+                    else:
+                        storeTransactionHeaderIn.delete()
                 
-                models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
-                models.Store_Item.objects.bulk_create(store_items_add)
+                if store_transaction_details and store_items_add:
+                    models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
+                    models.Store_Item.objects.bulk_create(store_items_add)
 
             store_transaction_details = []
             store_items_add=[]
             outgoing_incomming_details = []
-
             # material issue for godown
             all_material_issued=True
             for index, elem in enumerate(request.POST.getlist('item_id')):
-                sendQuantity = float(request.POST.getlist('quantity_sent')[index])
+                sentQuantity = float(request.POST.getlist('quantity_sent')[index])
                 requiredQuantity = float(request.POST.getlist('required_quantity')[index])
-                
-                
+                if sentQuantity!=requiredQuantity:
+                    all_material_issued=False
+                try:
+                    joDetail = models.Job_Order_Detail.objects.get(job_order_header_id=request.POST['job_order_id'], item_id=elem, direction="outgoing")
+                    joDetail.required_quantity=requiredQuantity-sentQuantity
+                    joDetail.save()
+                except:
+                    pass
+
                 store_transaction_details.append(
                     models.Store_Transaction_Detail(
                         store_transaction_header=storeTransactionHeader,
                         item_id=elem,
                         store_id=request.POST['store_id'],
-                        quantity=sendQuantity,
+                        quantity=sentQuantity,
                         rate = float(request.POST.getlist('rate')[index]),
                         amount = float(request.POST.getlist('amount')[index])
                     )
                 )
-        
                 if request.POST['vendor_id']:
 
                     # third party grn transaction 
-
                     outgoing_incomming_details.append(
                         models.Store_Transaction_Detail(
                             store_transaction_header=storeTransactionHeaderIn,
                             item_id=elem,
                             store=vendor_store,
-                            quantity=sendQuantity,
+                            quantity=sentQuantity,
                             rate = float(request.POST.getlist('rate')[index]),
                             amount = float(request.POST.getlist('amount')[index])
                         )
                     )
-                    
                     # If the item exists in vendor store
                     
                     if models.Store_Item.objects.filter(store=vendor_store, item_id=elem).exists():
@@ -5599,7 +5594,6 @@ def materialIssueAdd(request):
                         store_item.closing_qty+= Decimal(request.POST.getlist('quantity_sent')[index])
                         store_item.updated_at = datetime.now()
                         store_item.save()
-
                     # If the item does not exist in vendor store so new store item is being created
                     else:
                         store_items_add.append(
@@ -5612,7 +5606,6 @@ def materialIssueAdd(request):
                             )
                         )
                     
-                    
                 # In house store items being reduced
                 in_house_store=models.Store.objects.get(id=request.POST['store_id'])
                 store_item = models.Store_Item.objects.get(store=in_house_store, item_id=elem)
@@ -5621,7 +5614,11 @@ def materialIssueAdd(request):
                 store_item.updated_at = datetime.now()
                 store_item.save()
 
-                
+            if all_material_issued:
+                jobOrderEdits.material_issue = 2
+            else:
+                jobOrderEdits.material_issue = 1
+            jobOrderEdits.save()
               
             models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
             models.Store_Transaction_Detail.objects.bulk_create(outgoing_incomming_details)
