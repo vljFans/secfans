@@ -8,10 +8,10 @@
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            font-size: 14px;
+            font-size: 10px;
         }
         .container {
-            width: 100%;
+            width: 90%;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
@@ -97,36 +97,61 @@
     <h1>Purchase Order</h1>
 
     <div class="header">
-        <div class="section">
-            <p><strong>VLJ FANS AND APPLIANCES PRIVATE LIMITED.</strong></p>
-            <p>TEMPLE STREET, 2nd FLOOR</p>
-            <p>KOLKATA - 700013</p>
-            <p>Works: DAG NO - 2185,130,136,5,6</p>
-            <p>SANKRAIL INDUSTRIAL PARK</p>
-            <p>Phone: 9433439574</p>
-            <p>GSTIN: 19AAJCV4488P1Z6</p>
-            <p>State: 19-West Bengal</p>
-        </div>
-        <div class="section">
-            <p><strong>Order To:</strong></p>
-            <p>HARVEST REALITY PVT LTD</p>
-            <p>2 Temple Street, Chandni Chowk</p>
-            <p>Kolkata - 700072</p>
-            <p>Contact No: 000000000</p>
-            <p>GSTIN: 19AADCH1694K1Z6</p>
-            <p>State: 19-West Bengal</p>
-        </div>
+        <table style="border-width:0px; border-spacing:0px; width: 100%;">
+            <!-- First row with a single column spanning the full width -->
+            <tr>
+                <td colspan="8" style="width:100%;">
+                    <div class="section">
+                        <p style="font-size: 1.2vw;"><strong>{{config.client_name}}.</strong></p>
+                        <p style="font-size: 1.2vw;">{{config.client_address}}</p>
+                        <p style="font-size: 1.2vw;">{{config.client_work_address}}</p>
+                        <p style="font-size: 1.2vw;"> Ph. – {{config.client_contact}}</p>
+                        <p style="font-size: 1.2vw;">GST - {{config.client_gst}}</p>
+                    </div>
+                </td>
+            </tr>
+    
+            <!-- Second row with two columns -->
+            <tr>
+                <td colspan="4" style="width:50%;">
+                    <div class="section">
+                        <h3 style="font-size: 1.2vw;">Order To:</h3>
+                        <p style="font-size: 1.2vw;">
+                            <strong>{{purchaseOrder.vendor.name}}</strong><br>
+                            {{purchaseOrder.vendor.address}}<br>
+                            {{purchaseOrder.vendor.city.name}} – {{purchaseOrder.vendor.pin}},
+                            {{purchaseOrder.vendor.state.name}}<br>
+                            GST - {{purchaseOrder.vendor.gst_no}}
+                        </p>
+                    </div>
+                </td>
+                <td colspan="4" style="width:50%;">
+                    <div class="section">
+                        <h3 style="font-size: 1.2vw;">Order Details:</h3>
+                        <p style="font-size: 1.2vw;"><strong>No:</strong> 1</p>
+                        <p style="font-size: 1.2vw;"><strong>Date:</strong> 24/10/2024</p>
+                        <p style="font-size: 1.2vw;"><strong>Due Date:</strong> 24/10/2024</p>
+                        <p style="font-size: 1.2vw;"><strong>Place Of Supply:</strong> 19-West Bengal</p>
+                        <p style="font-size: 1.2vw;"><strong>Ship From:</strong> 2 Temple Street, Chandni Chowk, Kolkata-700072</p>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="8" style="width:100%;">
+                    <div class="section">
+                        <h3 style="font-size: 1.2vw;">Ship From:</h3>
+                    </div>
+                </td>
+            </tr>
+        </table>  
     </div>
-
-    <div class="section">
-        <h3>Order Details:</h3>
-        <p><strong>No:</strong> 1</p>
-        <p><strong>Date:</strong> 24/10/2024</p>
-        <p><strong>Due Date:</strong> 24/10/2024</p>
-        <p><strong>Place Of Supply:</strong> 19-West Bengal</p>
-        <p><strong>Ship From:</strong> 2 Temple Street, Chandni Chowk, Kolkata-700072</p>
-    </div>
-
+    
+    
+ <!-- {{config.client_name}}.</strong><br>
+                    {{config.client_address}}<br>
+                    Ph. – {{config.client_contact}}<br>
+                    Works – {{config.client_work_address}}<br>
+                    GST - {{config.client_gst}} -->
     <div class="section">
         <h3>Items</h3>
         <table class="summary-table">
@@ -136,50 +161,71 @@
                     <th class="left">Item Name</th>
                     <th>HSN/SAC</th>
                     <th>Quantity</th>
+                    <th>Unit</th>
                     <th>Unit Price (₹)</th>
-                    <th>GST (₹)</th>
-                    <th>Amount (₹)</th>
+                    <th>GST%</th>
+                    <th>Amount with Gst (₹)</th>
                 </tr>
             </thead>
             <tbody>
+                {% for orderDetail in purchaseOrder.purchase_order_detail_set.all %}
                 <tr>
-                    <td>1</td>
-                    <td class="left">CAPACITOR 4.0</td>
-                    <td>84149030</td>
-                    <td>3000</td>
-                    <td>14.00</td>
-                    <td>7,560.00</td>
-                    <td>49,560.00</td>
+                    <td style="border-bottom:0px!important; border-top:0px!important; text-align: center;">{{forloop.counter}}</td>
+                    <td style="border-bottom:0px!important; border-top:0px!important; text-align: center;">{{orderDetail.item.name}}
+                    </td>
+                    <td style="border-bottom:0px!important; border-top:0px!important; text-align: center;">{{orderDetail.item.hsn_code}}
+                    </td>
+                    <td style="border-bottom:0px!important; border-top:0px!important; text-align: center;">{{orderDetail.quantity}}</td>
+                    <td style="border-bottom:0px!important; border-top:0px!important; text-align: center;">{{orderDetail.item.uom.name}}
+                    </td>
+                    <td style="border-bottom:0px!important; border-top:0px!important; text-align: center;">{{orderDetail.rate}}</td>
+                    <td style="border-bottom:0px!important; border-top:0px!important; text-align: center;">{{orderDetail.gst_percentage}}</td>
+                    <td style="border-bottom:0px!important; border-top:0px!important; text-align: right;">{{orderDetail.amount_with_gst}}</td> 
                 </tr>
-                <tr>
-                    <td>2</td>
-                    <td class="left">AP GUARD FRONT</td>
-                    <td>84149030</td>
-                    <td>1100</td>
-                    <td>40.00</td>
-                    <td>7,920.00</td>
-                    <td>51,920.00</td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td class="left">AP GUARD BACK</td>
-                    <td>84149030</td>
-                    <td>1100</td>
-                    <td>40.00</td>
-                    <td>7,920.00</td>
-                    <td>51,920.00</td>
-                </tr>
+                {% endfor %}
             </tbody>
             <tfoot>
                 <tr class="total">
-                    <td colspan="6" class="right">Total</td>
-                    <td>1,53,400.00</td>
+                    <td colspan="7" class="right">Total:</td>
+                    <td>₹{{purchaseOrder.amount_with_gst}}</td>
                 </tr>
             </tfoot>
         </table>
     </div>
 
     <div class="section tax-summary">
+        <table style="border-width:0px; border-spacing:0px; width: 100%;">
+            <tr>
+                <td colspan="4" style="width:50%;">
+                    <table>
+                        <tr>
+                            <td></td>
+                        </tr>
+                    </table>
+                </td>
+                <td colspan="4" style="width:50%;">
+                    <table>
+                        <tr>
+                            <td ><div class="total-summary">
+                                <span><strong>Sub Total:</strong></span>
+                                <span>₹ {{purchaseOrder.amount_with_gst}}</span>
+                            </div></td>
+                        </tr>
+                        <tr>
+                            <td><div class="total-summary">
+                                <span><strong>Total:</strong></span>
+                                <span>₹ {{purchaseOrder.amount_with_gst}}</span>
+                            </div></td>
+                        </tr>
+                        <tr>
+                            <td><p><strong>Order Amount in Words:</strong> One Lakh Fifty Three Thousand Four Hundred Rupees only</p>
+                                <p><strong>Advance:</strong> ₹ </p>
+                                <p><strong>Balance:</strong> ₹ </p></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
         <div class="tax-header">
             <span><strong>HSN/SAC</strong></span>
             <span><strong>Taxable amount (₹)</strong></span>
@@ -188,26 +234,12 @@
             <span><strong>Total Tax (₹)</strong></span>
         </div>
         <div class="tax-row">
-            <span>84149030</span>
+            <span></span>
             <span>1,30,000.00</span>
             <span>9% 11,700.00</span>
             <span>9% 11,700.00</span>
             <span>23,400.00</span>
         </div>
-    </div>
-
-    <div class="section">
-        <div class="total-summary">
-            <span><strong>Sub Total:</strong></span>
-            <span>₹ 1,53,400.00</span>
-        </div>
-        <div class="total-summary">
-            <span><strong>Total:</strong></span>
-            <span>₹ 1,53,400.00</span>
-        </div>
-        <p><strong>Order Amount in Words:</strong> One Lakh Fifty Three Thousand Four Hundred Rupees only</p>
-        <p><strong>Advance:</strong> ₹ 0.00</p>
-        <p><strong>Balance:</strong> ₹ 1,53,400.00</p>
     </div>
 
     <div class="section terms">
