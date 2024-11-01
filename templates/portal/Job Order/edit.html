@@ -80,6 +80,9 @@
                                         <option value="Third party" {% if jobOrder.manufacturing_type == 'Third party' %}selected{% endif %} >Third party Manufacturing</option>
                                     </select>
                                 </div>
+                                {% if page_title == 'Job Order Add' %}
+                                <input type="hidden" name="manufacturing_type" class="form-control" value="{{jobOrder.manufacturing_type}}">
+                                {% endif %}
                             </div>
                             
 
@@ -113,8 +116,32 @@
                                         <input type="number" onkeyup="checkMaxMin(this)"
                                         onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                         name="hr_day" min="0.0" class="form-control hr_day"
-                                        placeholder="0" required>
+                                        placeholder="0"  required>
                                     </div>
+                                {% else %}
+                                <div class="col-md-2 mb-3">
+                                    <label>Time Format<span class="required-indicator">*</span></label>
+                                    <div class="input-group">
+                                        <select class="custom-select selectpicker timeSpan" data-placeholder="Choose" name="timeSpan" required>
+                                            <!-- Placeholder for default empty selection -->
+                                            <option value=""></option>
+                                            
+                                            <!-- Option for "Hr" -->
+                                            <option value="hr" {% if time_unit == 'hr' %} selected {% endif %}>Hr</option>
+                                            
+                                            <!-- Option for "Day" -->
+                                            <option value="day" {% if time_unit == 'day' %} selected {% endif %}>Day</option>
+                                        </select>
+                                    </div> 
+                                </div>
+                            
+                                <div class="col-md-2 mb-3">
+                                    <label>Time Format<span class="required-indicator">*</span></label>
+                                    <input type="number" onkeyup="checkMaxMin(this)"
+                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                    name="hr_day" min="0.0" class="form-control hr_day" value="{{time_value}}" 
+                                    placeholder="0"  required>
+                                </div>
                                 {% endif %}
                                 <div class="col-md-4 mb-3">
                                 </div>
@@ -228,7 +255,17 @@
                                         
                                     </div>
                                     {% if incoming_details %}
-                                    <p class="warnText"><span style="font-weight: bold;">Note:</span> You can only request one item for incoming & each out going quantity must be greater than incomming quantity </p>
+                                    <div class="col-md-12 mb-12 warnText">
+                                        <div class="col-md-12 mb-12">
+                                            <label for="bomNeeded">Bom Needed</label><br>
+                                            <input type="hidden" name="bomNeeded" value="0"><input type="checkbox" id="checkbox" onclick="this.previousSibling.value=1-this.previousSibling.value" style="transform: scale(2);margin-top: 12px;">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12 mb-3 warnText">
+                                        <p><span style="font-weight: bold;">Note:</span> You can only request one item for incoming & each out going quantity must be greater than incomming quantity </p>
+                                        <p> <span style="color: red;"> RM:</span> <span>Raw material ,</span> <span style="color: red;"> SFG:</span> <span > Semi Finish Goods ,</span> <span style="color: red;">FG:</span> <Span>Finished Good</Span></p>
+                                    </div>
+
                                     {% endif %}
                                     {% endif %}
                                 </div>
