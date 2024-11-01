@@ -952,7 +952,7 @@ class Outgoing_Incoming_Ratio_Details(models.Model):
     item_incomming = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True ,related_name="item_incomming")
     numerator = models.IntegerField(default=0)
     denominator = models.PositiveIntegerField(default=1)
-    ratio = models.CharField(max_length=50, blank=True, null=True)
+    ratio = models.CharField(max_length=50, blank=True, null=True) #ratio = outgoing : income
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
