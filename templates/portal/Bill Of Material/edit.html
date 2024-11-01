@@ -120,7 +120,7 @@
                                 </div>
                                 <div class="col-md-2 mb-3">
                                     <label>Quantity <span class="required-indicator">*</span></label>
-                                    <input type="text" onkeyup="checkMaxMin(this)" value="{{detail.quantity}}"
+                                    <input type="text" onkeyup="checkMaxMin(this)" value="{{detail.quantity|floatformat}}"
                                         onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                         name="item_quantity" min="0.0001" class="form-control item_quantity" placeholder="Quantity" required>
                                 </div>
@@ -157,7 +157,7 @@
                                 </div>
                                 <div class="col-md-2 mb-3">
                                     <label>Quantity <span class="required-indicator">*</span></label>
-                                    <input type="text" onkeyup="checkMaxMin(this)" value="{{detail.quantity}}"
+                                    <input type="text" onkeyup="checkMaxMin(this)" value="{{detail.quantity|floatformat}}"
                                         onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                         name="bom_level_quantity" min="0.0001" class="form-control bom_level_quantity" placeholder="Quantity" required>
                                 </div>

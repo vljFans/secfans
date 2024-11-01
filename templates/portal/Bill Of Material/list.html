@@ -97,6 +97,7 @@
                                     <th>#</th>
                                     <th>Name</th>
                                     <th>Uom</th>
+                                    <th>Total Quantity</th>
                                     <th>Price</th>
                                     <th>Action</th>
                                 </tr>
@@ -142,6 +143,7 @@
                                 <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
                                 <td>${element.bom_item__name}</td>
                                 <td>${element.uom__name}</td>
+                                <td>${+element.quantity}</td>
                                 <td>${element.price}</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'view_bill_of_material'|get_session_permission:request is not None %}

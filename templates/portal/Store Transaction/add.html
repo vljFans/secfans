@@ -344,6 +344,7 @@
         // console.log("328");
         purchase_job_order_type = $(this).val();
         // console.log(purchase_job_order_type);
+        //purchase order
         if (parseInt(purchase_job_order_type) == 1  ) {
             // $('.purchase_job_order_type_content').show();
             $('#purchase_job_order_header_id').attr('required', 'required');
@@ -354,6 +355,7 @@
             callPurchaseOrder()
         
         }
+        // job order
         else if (parseInt(purchase_job_order_type) == 2){
             // $('.purchase_job_order_type_content').show();
             $('#purchase_job_order_header_id').attr('required', 'required');
@@ -1203,7 +1205,7 @@
                 vendor_id = $('#vendor_id').val()
                 console.log(vendor_id);
                 $.ajax({
-                url: "{% url 'api:jobOrderList' %}?find_all=1&vendor_id=" + vendor_id+"&material_reciept=0&with_item=True",
+                url: "{% url 'api:jobOrderList' %}?find_all=1&vendor_id=" + vendor_id+"&material_reciept=0&material_issue=2&with_item=True&manufacturing_type=Third party",
                 type: 'GET',
                 data: ({}),
                 headers: {

@@ -584,8 +584,8 @@ class Job_Order_Detail(models.Model):
     job_order_header = models.ForeignKey(Job_Order, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
-    required_quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
-    quantity_result = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    required_quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0) # for mterial Issue
+    quantity_result = models.DecimalField(max_digits=10, decimal_places=5, default=0) #for material recieved
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=now)
