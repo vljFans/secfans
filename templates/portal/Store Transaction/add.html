@@ -959,11 +959,11 @@
                                             <label>Quantity <span class="required-indicator">*</span></label>
                                             <input type="hidden" 
                                                 name="item_quantity_actual" class="form-control item_quantity"
-                                                value="${page_items[index].quantity }" >
+                                                value="${+page_items[index].quantity }" >
                                             <input type="text" onkeyup="checkMaxMin(this)"
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                 name="item_quantity" min="0.0001" max="${page_items[index].quantity_result }" class="form-control item_quantity"
-                                                value="${page_items[index].quantity_result }" placeholder="Quantity" required>
+                                                value="${+page_items[index].quantity_result }" placeholder="Quantity" required>
                                         </div>
                                         <div class="col-md-2 mb-3">
                                             <label>Amount <span class="required-indicator">*</span></label>
