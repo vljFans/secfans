@@ -321,8 +321,8 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    actual_quantitys.val(+response.on_hand_qty_res)
-                    quantity_sents.attr('max',+response.on_hand_qty_res)
+                    actual_quantitys.val(+response.actual_quantity)
+                    quantity_sents.attr('max',+response.actual_quantity)
                     rate.val(response.item_price)
 
                 } 
@@ -481,8 +481,8 @@
                     success: function (response) {
                         console.log(response)
                         if (response.status == 200) {
-                            actual_quantity_element.val(+response.on_hand_qty_res);
-                            quantity_sent_element.attr('max',+response.on_hand_qty_res)
+                            actual_quantity_element.val(+response.actual_quantity);
+                            quantity_sent_element.attr('max',+response.actual_quantity)
                         } 
                         else {
                             alert(response.message);

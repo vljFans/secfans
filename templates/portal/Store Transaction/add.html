@@ -344,6 +344,7 @@
         // console.log("328");
         purchase_job_order_type = $(this).val();
         // console.log(purchase_job_order_type);
+        //purchase order
         if (parseInt(purchase_job_order_type) == 1  ) {
             // $('.purchase_job_order_type_content').show();
             $('#purchase_job_order_header_id').attr('required', 'required');
@@ -354,6 +355,7 @@
             callPurchaseOrder()
         
         }
+        // job order
         else if (parseInt(purchase_job_order_type) == 2){
             // $('.purchase_job_order_type_content').show();
             $('#purchase_job_order_header_id').attr('required', 'required');
@@ -957,11 +959,11 @@
                                             <label>Quantity <span class="required-indicator">*</span></label>
                                             <input type="hidden" 
                                                 name="item_quantity_actual" class="form-control item_quantity"
-                                                value="${page_items[index].quantity }" >
+                                                value="${+page_items[index].quantity }" >
                                             <input type="text" onkeyup="checkMaxMin(this)"
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                 name="item_quantity" min="0.0001" max="${page_items[index].quantity_result }" class="form-control item_quantity"
-                                                value="${page_items[index].quantity_result }" placeholder="Quantity" required>
+                                                value="${+page_items[index].quantity_result }" placeholder="Quantity" required>
                                         </div>
                                         <div class="col-md-2 mb-3">
                                             <label>Amount <span class="required-indicator">*</span></label>
@@ -1203,7 +1205,7 @@
                 vendor_id = $('#vendor_id').val()
                 console.log(vendor_id);
                 $.ajax({
-                url: "{% url 'api:jobOrderList' %}?find_all=1&vendor_id=" + vendor_id+"&material_reciept=0&with_item=True",
+                url: "{% url 'api:jobOrderList' %}?find_all=1&vendor_id=" + vendor_id+"&material_reciept=0&material_issue=2&with_item=True&manufacturing_type=Third party",
                 type: 'GET',
                 data: ({}),
                 headers: {

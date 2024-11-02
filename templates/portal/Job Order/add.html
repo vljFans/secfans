@@ -85,7 +85,10 @@
                             </div>
                             <div class="col-md-12 mb-3 form-row self">
                             </div>
-                           <p class="warnText" hidden><span style="font-weight: bold;">Note:</span> You can only request one item for incoming & each out going quantity must be greater than incomming quantity </p>
+                            <div class="col-md-12 mb-3 warnText" hidden>
+                                <p><span style="font-weight: bold;">Note:</span> You can only request one item for incoming & each out going quantity must be greater than incomming quantity </p>
+                                <p> <span style="color: red;"> RM:</span> <span>Raw material ,</span> <span style="color: red;"> SFG:</span> <span > Semi Finish Goods ,</span> <span style="color: red;">FG:</span> <Span>Finished Good</Span></p>
+                            </div>
                             <!-- <div class="col-md-4 mb-3">
                                 <label>Order Item<span class="required-indicator">*</span></label>
                                 <div class="input-group">
@@ -408,6 +411,7 @@
         jobOrderNo(keyword)
         if($(this).val()==="Self"){
             $(".third_party").empty()
+            $('.warnText').attr('hidden',false)
             itemIncomingDropDown("finish")
             $('.self').html(`
                 <div class="col-md-4 mb-3">
@@ -446,7 +450,7 @@
                                 <div class="row">
                                     <div class="col-md-12 d-flex align-items-center py-2" style="border-bottom: 2px solid darkgray;">
                                         <h5 class="text-center flex-grow-1 mb-0">
-                                            Outgoing Materials
+                                            Outgoing Materials [RM,SFG]
                                         </h5> 
                                         <button type="button" class="btn add_btn  mr-2 "> 
                                             <i class="fa fa-plus"></i> 
@@ -489,7 +493,7 @@
                                 <div class="row">
                                     <div class="col-md-12 d-flex align-items-center" style="border-bottom: 2px solid darkgray;padding-top: 13px;padding-bottom: 13px;">
                                         <h5 class="text-center flex-grow-1 mb-0">
-                                            Incoming Materials
+                                            Incoming Materials [SFG,FG]
                                         </h5> 
                                         
                                         <button type="button" class="btn add_btn  mr-2" hidden> 
@@ -535,11 +539,19 @@
 
                     </div>
                 </div>
+                
+                </div>
+                <div class="col-md-12 mb-12">
+                    <div class="col-md-12 mb-12">
+                        <label for="bomNeeded">Bom Needed</label><br>
+                        <input type="hidden" name="bomNeeded" value="0"><input type="checkbox" id="checkbox" onclick="this.previousSibling.value=1-this.previousSibling.value" style="transform: scale(2);margin-top: 12px;">
+                    </div>
                 </div>
             `)
         }
         if($(this).val()==="Third party"){
             $('.self').empty()
+            $('.warnText').attr('hidden',true)
             $(".third_party").html(`
                 <div class="col-md-4 mb-3">
                     <label>Vendor/Supplier<span class="required-indicator">*</span></label>
@@ -611,7 +623,7 @@
                                 <div class="row">
                                     <div class="col-md-12 d-flex align-items-center py-2" style="border-bottom: 2px solid darkgray;">
                                         <h5 class="text-center flex-grow-1 mb-0">
-                                            Outgoing Materials
+                                            Outgoing Materials [RM,SFG]
                                         </h5> 
                                         <button type="button" class="btn add_btn  mr-2 "> 
                                             <i class="fa fa-plus"></i> 
@@ -654,7 +666,7 @@
                                 <div class="row">
                                     <div class="col-md-12 d-flex align-items-center" style="border-bottom: 2px solid darkgray;padding-top: 13px;padding-bottom: 13px;">
                                         <h5 class="text-center flex-grow-1 mb-0">
-                                            Incoming Materials
+                                            Incoming Materials [SFG,FG]
                                         </h5> 
                                         
                                         <button type="button" class="btn add_btn  mr-2" hidden> 
@@ -699,6 +711,13 @@
                         </div>
 
                     </div>
+                    
+                </div>
+                <div class="col-md-12 mb-12">
+                        <div class="col-md-12 mb-12">
+                            <label for="bomNeeded">Bom Needed</label><br>
+                            <input type="hidden" name="bomNeeded" value="0"><input type="checkbox" id="checkbox" onclick="this.previousSibling.value=1-this.previousSibling.value" style="transform: scale(2);margin-top: 12px;">
+                        </div>
                 </div>
             `)  
             // $(".items").html(`

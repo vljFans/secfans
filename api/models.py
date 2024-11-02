@@ -555,15 +555,15 @@ class Job_Order(models.Model):
     manufacturing_type = models.CharField(max_length=20, choices=[("Self","Self"), ("Third party","Third party")], blank=True, null=True)
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True)
     with_item = models.CharField(max_length=20, choices=[("True", True), ("False", False)], blank=True,null=True)
-    job_status = models.SmallIntegerField(default=0)
+    job_status = models.SmallIntegerField(default=0) # 0->job just created 1->material issued partially or fully 2->job completed
     estimated_time_day = models.CharField(max_length=20, blank=True, null=True)
     actual_time_take = models.CharField(max_length=20, blank=True, null=True)
     # total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     notes = models.TextField(blank=True, null=True)
     status = models.SmallIntegerField(default=1) #0 for not recieved 1 for recieved without inspection 2 for recived with inspection 
     deleted = models.BooleanField(default=0)
-    material_reciept = models.SmallIntegerField(default=0)
-    material_issue = models.SmallIntegerField(default=0)
+    material_reciept = models.SmallIntegerField(default=0) #0->no incoming material received 1->incoming material partially received 2->incoming material full received
+    material_issue = models.SmallIntegerField(default=0) # No material Issued 1->Material issued partially 2->Full fulfilled job order
     created_at = models.DateTimeField(default=django.utils.timezone.now)
     updated_at = models.DateTimeField(default=django.utils.timezone.now)
     def __str__(self):
@@ -584,8 +584,8 @@ class Job_Order_Detail(models.Model):
     job_order_header = models.ForeignKey(Job_Order, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
-    required_quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
-    quantity_result = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    required_quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0) # for mterial Issue
+    quantity_result = models.DecimalField(max_digits=10, decimal_places=5, default=0) #for material recieved
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=now)
@@ -952,7 +952,7 @@ class Outgoing_Incoming_Ratio_Details(models.Model):
     item_incomming = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True ,related_name="item_incomming")
     numerator = models.IntegerField(default=0)
     denominator = models.PositiveIntegerField(default=1)
-    ratio = models.CharField(max_length=50, blank=True, null=True)
+    ratio = models.CharField(max_length=50, blank=True, null=True) #ratio = outgoing : income
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)

@@ -1014,7 +1014,8 @@ def jobOrderEdit(request, id):
     stores = models.Store.objects.filter(status=1, deleted=0)
     vendors = models.Vendor.objects.filter(status=1, deleted=0)
     items = models.Item.objects.filter(status=1, deleted=0)
-
+    time_unit = ''.join(filter(str.isalpha, jobOrder.estimated_time_day))
+    time_value = ''.join(filter(str.isdigit, jobOrder.estimated_time_day))
     outgoing_details = jobOrder.job_order_detail_set.filter(direction='outgoing')
     incoming_details = jobOrder.job_order_detail_set.filter(direction='incoming')
 
@@ -1022,6 +1023,8 @@ def jobOrderEdit(request, id):
         'jobOrder': jobOrder,
         'items': items,
         'vendors': vendors,
+        'time_unit':time_unit,
+        'time_value':time_value,
         'outgoing_details': outgoing_details,
         'incoming_details': incoming_details,
         'page_title': "Job Order Edit",
