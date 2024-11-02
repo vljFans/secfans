@@ -562,7 +562,7 @@ class Job_Order(models.Model):
     notes = models.TextField(blank=True, null=True)
     status = models.SmallIntegerField(default=1) #0 for not recieved 1 for recieved without inspection 2 for recived with inspection 
     deleted = models.BooleanField(default=0)
-    material_reciept = models.SmallIntegerField(default=0) #0->no incoming material received 1->incoming material partially received 2->incoming material full received
+    material_reciept = models.SmallIntegerField(default=0) #0->no incoming material/partial received 1->incoming material full received
     material_issue = models.SmallIntegerField(default=0) # No material Issued 1->Material issued partially 2->Full fulfilled job order
     created_at = models.DateTimeField(default=django.utils.timezone.now)
     updated_at = models.DateTimeField(default=django.utils.timezone.now)

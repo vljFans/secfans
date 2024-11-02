@@ -113,7 +113,7 @@
                         </ul>
                     </nav>
                     <!-- Modal Structure for Material In View -->
-                    <!-- <div class="modal fade" id="materialInModal" tabindex="-1" aria-labelledby="materialInModalLabel" aria-hidden="true">
+                    <div class="modal fade" id="materialInModal" tabindex="-1" aria-labelledby="materialInModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -124,22 +124,18 @@
                                         <div class="card-body pd-5">
                                             
                                             <div class="form-row">
-                                                <div class="col-md-6 mb-6">
-                                                    <label>Time(Hr/Day)</label>
-                                                    <div class="input-group timeSpanbox">
-                                                        Additional time span inputs if needed
+                                                <input type="hidden" 
+                                                name="pk" min="0.0" class="form-control pk" 
+                                                required>
+                                                <div class="col-md-5 py-2">
+                                                    <label>Store<span class="required-indicator">*</span></label>
+                                                    <div class="input-group">
+                                                        <select class="custom-select selectpicker store_id" name="store_id" data-placeholder="Select store" required>
+                                                            
+                                                        </select>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-6 mb-6">
-                                                    <label>hr/Day</label>
-                                                    <input type="number" 
-                                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                                        name="hr_day" class="form-control hr_day"
-                                                        placeholder="" required>
-                                                        <input type="hidden" 
-                                                        name="id" class="form-control id"
-                                                         readonly >
-                                                </div>
+
                                             </div>
                                         </div>
                                     </div>
@@ -150,7 +146,7 @@
                                 </form>
                             </div>
                         </div>
-                    </div> -->
+                    </div>
                     <!-- modal end here -->
                 </div>
             </div>
@@ -219,13 +215,13 @@
                                 {% endif %}
                                 ${element.manufacturing_type == 'Self' ?  `{% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
                                 <a href="javascript:void(0);" class="table-action mg-r-10" 
-                                    onclick="return alert('all material is not issued')"> 
+                                    onclick="return alert('all material issue is not complete')"> 
                                     <i class="fa fa-stop"></i>
                                     </a>
                                 {% endif %}` : ''}
                                 </td>`
                         }
-                        else if(element.material_issue == 2  ){
+                        else if(element.material_issue == 2 && element.material_reciept == 0 ){
                             console.log('230');
                             
                             tbody_buttom_text = `<td>
@@ -310,19 +306,49 @@
             return suffix ? suffix[0] : null;
     }
 
+    
+
+    $(document).ready(function () {
+        getJobOrderList(keyword)
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });
+        
+    });
+
     function loadMaterialInData(id) {
         console.log(id);
-        
+        $('.pk').val(id)
+        let store_option_text =``
         $.ajax({
                 type: "GET",
-                url: "{% url 'api:jobOrderTimeComplete' %}?id=" + id,
+                url: "{% url 'api:storeList' %}?store_type=InHouse" ,
                 data: {},
                 headers: {
                     'Authorization': getCookieValue("accessToken")
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:jobOrderList' %}");
+                        store_option_text = `<option value="">Choose...</option>`;
+                        for (let index = 0; index < response.page_items.length; index++) {
+                            store_option_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                        }
+                        $('.store_id').html(store_option_text)
+                        $('.selectpicker').select2({
+                            placeholder: '',
+                            templateResult: function(option) {
+                                if(option.element && (option.element).hasAttribute('hidden')){
+                                    return null;
+                                }
+                                return option.text;
+                            }
+                        });
                     } else {
                         alert(response.message);
                     }
@@ -332,16 +358,14 @@
                 }
             });
         
-    }
+        $('#materialInModal').modal('show');
 
-    $(document).ready(function () {
         getJobOrderList(keyword)
-        
-    });
+    }
      
-    // $(document).on('click','#close',function(){
-    //     $('#materialInModal').modal('hide');
-    // })
+    $(document).on('click','#close',function(){
+        $('#materialInModal').modal('hide');
+    })
 
     $(document).on('keyup', '#search', function () {
         keyword = $(this).val();
@@ -349,17 +373,44 @@
     })
 
     $(document).on('submit','#create_form', function(e) {
-                // Collect the data from the modal input fields
-                console.log('305');
-                
-                e.preventDefault();
-                $('.submit-btn').text('Submitting...');
-                $('.submit-btn').prop('disabled', true);
-                var formData = new FormData(this);
+        // Collect the data from the modal input fields
+        console.log('305');
+        
+        e.preventDefault();
+        $('.submit-btn').text('Submitting...');
+        $('.submit-btn').prop('disabled', true);
+        var formData = new FormData(this);
 
-                // Perform the AJAX request to submit the data
-               
+        $.ajax({
+                type: "POST",
+                evalScripts: true,
+                contentType: false,
+                processData: false,
+                url: "{% url 'api:jobOrderTimeComplete' %}",
+                data: formData,
+                headers: {
+                    'Authorization': getCookieValue("accessToken")
+                },
+                success: function (response) {
+                    $('.submit-btn').text('Submitting...');
+                    $('.submit-btn').prop('disabled', false);
+                    if (response.status == 200) {
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:jobOrderList' %}");
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function (error) {
+                    $('.submit-btn').text('Submitting...');
+                    $('.submit-btn').prop('disabled', false);
+                    // locationAfterMessageStore(error.responseJSON.detail, 'error');
+                    $('.success-msg-txt').text("");
+                    $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
+                    $('.error-msg-txt').addClass('text-danger');
+                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                }
             });
+        });
         
 
 
