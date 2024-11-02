@@ -5258,7 +5258,7 @@ def jobOrderEdit(request):
             bom_material_details = []
             bom_head = None 
             bom_head_exit = None
-            print('5190')
+
             # out going incomming ratio table updation
             if (request.POST.getlist('incoming_item_id')) and (request.POST.getlist('outgoing_item_id')) and ('with_item' in request.POST):
                 
@@ -5284,7 +5284,7 @@ def jobOrderEdit(request):
 
                         )
                     )
-                print(5285)
+
                 models.Outgoing_Incoming_Ratio_Details.objects.bulk_create(outInDetailRatio)
             #incomming details     
             for item_id, quantity in zip(request.POST.getlist('incoming_item_id'), request.POST.getlist('incoming_quantity')):
@@ -5301,12 +5301,12 @@ def jobOrderEdit(request):
             print(5299)
             # bill of material add
             if (int(bomNeeded) == 1) : 
-                print(5302)
+        
                 if  (models.Bill_Of_Material.objects.filter(bom_item_id = incomming_item_id, status=1, deleted=0).exists()) :
                     bom_head_exit = models.Bill_Of_Material.objects.filter(bom_item_id = incomming_item_id, status=1, deleted=0).first()
                     
                 else: 
-                    print(5145)
+  
                     bom_head = models.Bill_Of_Material()
                     bom_head.bom_item_id = incomming_item_id
                     bom_head.quantity = incomming_item_quantity
@@ -5314,7 +5314,7 @@ def jobOrderEdit(request):
                     bom_head.uom_id =models.Item.objects.get(pk=incomming_item_id).uom_id
                     bom_head.save()
             # outgoing details
-            print(5314)
+          
             for item_id, quantity in zip(request.POST.getlist('outgoing_item_id'), request.POST.getlist('outgoing_quantity')):
                 job_order_details.append(
                     models.Job_Order_Detail(
