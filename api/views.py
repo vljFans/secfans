@@ -5204,6 +5204,7 @@ def jobOrderTimeComplete(request):
     context = {}
     # # print(request.POST)
     id= request.GET.get('id',None)
+   
     print(id)
     jobOrderHeader = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
     current_time = datetime.now(timezone.utc)
@@ -5227,7 +5228,8 @@ def jobOrderTimeComplete(request):
 @permission_classes([IsAuthenticated])
 def jobOrderEdit(request):
     context = {}
-    if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['manufacturing_type'] or not request.POST['notes']:
+    bomNeeded = request.POST['bomNeeded']
+    if not request.POST['order_number'] or not request.POST['order_date']  or not request.POST['notes']:
         context.update({
             'status': 589,
             'message': "Order Number/Order Date/Manufacturing Type/Notes has not been provided."
@@ -5282,6 +5284,7 @@ def jobOrderEdit(request):
 
                         )
                     )
+                print(5285)
                 models.Outgoing_Incoming_Ratio_Details.objects.bulk_create(outInDetailRatio)
             #incomming details     
             for item_id, quantity in zip(request.POST.getlist('incoming_item_id'), request.POST.getlist('incoming_quantity')):
@@ -5295,9 +5298,10 @@ def jobOrderEdit(request):
                 )
                 incomming_item_id = int(item_id)
                 incomming_item_quantity = float(quantity)
-            
+            print(5299)
             # bill of material add
             if (int(bomNeeded) == 1) : 
+                print(5302)
                 if  (models.Bill_Of_Material.objects.filter(bom_item_id = incomming_item_id, status=1, deleted=0).exists()) :
                     bom_head_exit = models.Bill_Of_Material.objects.filter(bom_item_id = incomming_item_id, status=1, deleted=0).first()
                     
@@ -5310,6 +5314,7 @@ def jobOrderEdit(request):
                     bom_head.uom_id =models.Item.objects.get(pk=incomming_item_id).uom_id
                     bom_head.save()
             # outgoing details
+            print(5314)
             for item_id, quantity in zip(request.POST.getlist('outgoing_item_id'), request.POST.getlist('outgoing_quantity')):
                 job_order_details.append(
                     models.Job_Order_Detail(
