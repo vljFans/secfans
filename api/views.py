@@ -7620,12 +7620,12 @@ def reportInventorySummary(request):
                         'date': store_transaction.store_transaction_header.transaction_date,
                         'transaction_number': store_transaction.store_transaction_header.transaction_number,
                         'vendor': store_transaction.store_transaction_header.vendor.name if store_transaction.store_transaction_header.vendor_id else 'self',
-                        'previous_onHand_Quantity': float(each.on_hand_qty) + float(store_transaction.quantity),
+                        'previous_onHand_Quantity': float(each.on_hand_qty) - float(store_transaction.quantity),
                         'uom': each.item.uom.name,
-                        'stock_in': store_transaction.quantity if store_transaction.store_transaction_header.job_order_id else '---',
-                        'stock_in_upto': total_stockIn if store_transaction.store_transaction_header.job_order_id else '---',
-                        'stock_out': '---' if store_transaction.store_transaction_header.job_order_id else store_transaction.quantity,
-                        'stock_out_upto': '---' if store_transaction.store_transaction_header.job_order_id else total_stockOut,
+                        'stock_in': store_transaction.quantity ,
+                        'stock_in_upto': total_stockIn ,
+                        'stock_out': '---', 
+                        'stock_out_upto': '---',
                         'onHand_quantity': each.on_hand_qty
                     })
 
