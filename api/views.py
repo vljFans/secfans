@@ -13,7 +13,7 @@ from django.core import serializers
 from django.http import JsonResponse
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.hashers import make_password, check_password
-from datetime import datetime, timedelta,timezone
+from datetime import datetime, timedelta,timezone,date
 from django.utils.timezone import now
 from openpyxl import Workbook, load_workbook
 from django.db import transaction
@@ -4196,6 +4196,10 @@ def storeTransactionAdd(request):
                                 # print(job_order)
                                 job_order.material_reciept = 1
                                 job_order.job_status = 2
+                                current_time = datetime.now(timezone.utc)
+                                time_difference = current_time - job_order.created_at
+                                total_hours = time_difference.days * 24 + time_difference.seconds / 3600
+                                job_order.actual_time_take = str(round(total_hours, 3)) + 'hr'
                                 job_order.updated_at = datetime.now()   
                                 job_order.save()
                         # print("3170")
@@ -4308,6 +4312,10 @@ def storeTransactionAdd(request):
                                     # print(job_order)
                                 job_order.material_reciept = 1
                                 job_order.job_status = 2
+                                current_time = datetime.now(timezone.utc)
+                                time_difference = current_time - job_order.created_at
+                                total_hours = time_difference.days * 24 + time_difference.seconds / 3600
+                                job_order.actual_time_take = str(round(total_hours, 3)) + 'hr'
                                 job_order.updated_at = datetime.now()   
                                 job_order.save()
                 if storeTransactionDetail:
@@ -5198,27 +5206,78 @@ def jobOrderAdd(request):
         transaction.rollback()
     return JsonResponse(context)
 
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def jobOrderTimeComplete(request):
     context = {}
-    # # print(request.POST)
-    id= request.GET.get('id',None)
+    print(request.POST)
+    id = request.POST['pk']
+    userId = request.COOKIES.get('userId', None)
     print(id)
     jobOrderHeader = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
+    jobOrderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id= id , direction='incoming'))
     current_time = datetime.now(timezone.utc)
     time_difference = current_time - jobOrderHeader.created_at
     total_hours = time_difference.days * 24 + time_difference.seconds / 3600
     jobOrderHeader.actual_time_take = str(round(total_hours, 3)) + 'hr'
     jobOrderHeader.job_status = 2 # 0 for active 1 for in pogress 2 for complete
+    jobOrderHeader.material_reciept = 1 # full recieved
+    jobOrderHeader.updated_at = datetime.now()
     jobOrderHeader.save()
-    userId = request.COOKIES.get('userId', None)
-    text = f'Job Order NO: {jobOrderHeader.order_number} closed succesfully'
+    store_transaction_count = models.Store_Transaction.objects.all().count()
+    storeTransactionHeader=models.Store_Transaction()
+    storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
+    
+    storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+            "${CURRENT_YEAR}", datetime.today().strftime('%Y')
+        ).replace(
+            "${AI_DIGIT_5}",str(store_transaction_count + 1).zfill(5)
+        )
+    
+    storeTransactionHeader.transaction_date= date.today()
+    storeTransactionHeader.job_order_id = id
+    storeTransactionHeader.creator_id = userId
+    storeTransactionHeader.save()
+    orderDetails =[]
+    for index in range(0,len(jobOrderDetails)):
+        orderDetails.append(
+            models.Store_Transaction_Detail(
+                store_transaction_header = storeTransactionHeader,
+                item_id = jobOrderDetails[index].item_id,
+                store_id = request.POST['store_id'],
+                quantity = jobOrderDetails[index].quantity,
+                rate = jobOrderDetails[index].item.price,
+                amount = float(jobOrderDetails[index].item.price) * float(jobOrderDetails[index].quantity)
+            )
+        )
+        jobOrderDetEdit = models.Job_Order_Detail.objects.filter(job_order_header_id=id,item_id = jobOrderDetails[index].item_id, direction='incoming').first()
+        jobOrderDetEdit.quantity_result = 0.00
+        jobOrderDetEdit.updated_at = datetime.now()
+        jobOrderDetEdit.save()
+        storeItem = models.Store_Item.objects.filter(item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id']).exists()
+        if storeItem:
+            storeItem = models.Store_Item.objects.filter(item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id']).first()
+            storeItem.on_hand_qty += Decimal(jobOrderDetails[index].quantity)
+            storeItem.closing_qty += Decimal(jobOrderDetails[index].quantity)
+            storeItem.updated_at = datetime.now()
+            storeItem.save()
+        else:
+            storeItem = models.Store_Item()
+            storeItem.item_id = jobOrderDetails[index].item_id
+            storeItem.store_id = request.POST['store_id']
+            storeItem.opening_qty = Decimal(jobOrderDetails[index].quantity)
+            storeItem.on_hand_qty = Decimal(jobOrderDetails[index].quantity)
+            storeItem.closing_qty =Decimal(jobOrderDetails[index].quantity)
+            storeItem.save()
+
+
+   
+    text = f'Job Order NO: {jobOrderHeader.order_number} closed succesfully and store transaction created'
     print(text)
     user_log_details_add(userId,text)
     context.update({
             'status': 200,
-            'message': "Job order closed sucessfully"
+            'message': "Job order closed sucessfully and store transaction created"
         })
     return JsonResponse(context)    
    
@@ -5227,7 +5286,8 @@ def jobOrderTimeComplete(request):
 @permission_classes([IsAuthenticated])
 def jobOrderEdit(request):
     context = {}
-    if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['manufacturing_type'] or not request.POST['notes']:
+    bomNeeded = request.POST['bomNeeded']
+    if not request.POST['order_number'] or not request.POST['order_date']  or not request.POST['notes']:
         context.update({
             'status': 589,
             'message': "Order Number/Order Date/Manufacturing Type/Notes has not been provided."
@@ -5256,7 +5316,7 @@ def jobOrderEdit(request):
             bom_material_details = []
             bom_head = None 
             bom_head_exit = None
-            print('5190')
+
             # out going incomming ratio table updation
             if (request.POST.getlist('incoming_item_id')) and (request.POST.getlist('outgoing_item_id')) and ('with_item' in request.POST):
                 
@@ -5282,6 +5342,7 @@ def jobOrderEdit(request):
 
                         )
                     )
+
                 models.Outgoing_Incoming_Ratio_Details.objects.bulk_create(outInDetailRatio)
             #incomming details     
             for item_id, quantity in zip(request.POST.getlist('incoming_item_id'), request.POST.getlist('incoming_quantity')):
@@ -5295,14 +5356,15 @@ def jobOrderEdit(request):
                 )
                 incomming_item_id = int(item_id)
                 incomming_item_quantity = float(quantity)
-            
+            print(5299)
             # bill of material add
             if (int(bomNeeded) == 1) : 
+        
                 if  (models.Bill_Of_Material.objects.filter(bom_item_id = incomming_item_id, status=1, deleted=0).exists()) :
                     bom_head_exit = models.Bill_Of_Material.objects.filter(bom_item_id = incomming_item_id, status=1, deleted=0).first()
                     
                 else: 
-                    print(5145)
+  
                     bom_head = models.Bill_Of_Material()
                     bom_head.bom_item_id = incomming_item_id
                     bom_head.quantity = incomming_item_quantity
@@ -5310,6 +5372,7 @@ def jobOrderEdit(request):
                     bom_head.uom_id =models.Item.objects.get(pk=incomming_item_id).uom_id
                     bom_head.save()
             # outgoing details
+          
             for item_id, quantity in zip(request.POST.getlist('outgoing_item_id'), request.POST.getlist('outgoing_quantity')):
                 job_order_details.append(
                     models.Job_Order_Detail(
@@ -6057,12 +6120,17 @@ def addGrnDetailisInsTransaction(request):
                                 # print(job_order)
                                 job_order.material_reciept = 1
                                 job_order.job_status = 2
+                                current_time = datetime.now(timezone.utc)
+                                time_difference = current_time - job_order.created_at
+                                total_hours = time_difference.days * 24 + time_difference.seconds / 3600
+                                job_order.actual_time_take = str(round(total_hours, 3)) + 'hr'
                                 job_order.updated_at = datetime.now()  
                             else :
                                 # print('5877')
                                 job_order = models.Job_Order.objects.filter(pk=request.POST['job_order_header_id']).get() 
                                 job_order.material_reciept = 0
                                 job_order.job_status = 1
+                                job_order.actual_time_take =""
                                 job_order.updated_at = datetime.now()
                             job_order.save()
                         # print('5257')
