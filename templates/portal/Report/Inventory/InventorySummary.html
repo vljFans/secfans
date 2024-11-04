@@ -68,8 +68,8 @@
                         <option value="7 day">7 Day</option>
                         <option value="15 day">15 Day</option>
                         <option value="1 month">1 month</option>
-                        <option value="2 month">2 month</option>
                         <option value="3 month">3 month</option>
+                        <option value="6 month">6 month</option>
                     </select>
                 </div>
             </div>
@@ -232,20 +232,21 @@
             $('.to_date').val(to_date)
             $('.from_date').val(from_date)
         }
-        else if (day_month == '2 month'){
+        
+        else if (day_month == '3 month'){
+            console.log(244);
+            
             let dateTwoMonthsAgo = new Date();
-            dateTwoMonthsAgo.setMonth(dateTwoMonthsAgo.getMonth() - 2);
+            dateTwoMonthsAgo.setMonth(dateTwoMonthsAgo.getMonth() - 3);
             let formattedDate = dateTwoMonthsAgo.toISOString().split('T')[0]; // Format as YYYY-MM-DD
             from_date =  formattedDate
             $('.to_date').val(to_date)
             $('.from_date').val(from_date)
         }
         else{
-            console.log(244);
-            
-            let dateTwoMonthsAgo = new Date();
-            dateTwoMonthsAgo.setMonth(dateTwoMonthsAgo.getMonth() - 3);
-            let formattedDate = dateTwoMonthsAgo.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+            let dateSixMonthsAgo = new Date();
+            dateSixMonthsAgo.setMonth(dateSixMonthsAgo.getMonth() - 6);
+            let formattedDate = dateSixMonthsAgo.toISOString().split('T')[0]; // Format as YYYY-MM-DD
             from_date =  formattedDate
             $('.to_date').val(to_date)
             $('.from_date').val(from_date)
