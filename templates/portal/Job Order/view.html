@@ -81,13 +81,14 @@
                                     <td>{{orderDetail.quantity | floatformat}}</td>
                                     <td>{{orderDetail.required_quantity | floatformat}}</td>
                                     <td>{{orderDetail.quantity_result | floatformat}}</td>
-                                    <td>{{orderDetail.direction}}</td>
+                                    <td>{% if orderDetail.direction == 'incoming' %} Production/Manufactured Material {% else %} BOM/Raw Material {% endif %}</td>
+                                    <!-- <td>{{orderDetail.direction}}</td> -->
                                 </tr>
                                 {% endfor %}
                             </tbody>
                             <tfoot>
                                 <th>
-                                    <td colspan="12">  <Span style="color: red;">Outgoing:</Span> <Span>[Raw Material , Semi Finished Good] ,</Span > <Span style="color: red;"> Incoming:</Span> <Span >[Semi Finished good , Finished Goods]</Span> </td>
+                                    <td colspan="12">  <Span style="color: red;">BOM/Raw Material:</Span> <Span>[Raw Material , Semi Finished Good] ,</Span > <Span style="color: red;"> Production/Manufactured Material:</Span> <Span >[Semi Finished good , Finished Goods]</Span> </td>
                                 </th>
                             </tfoot>
                         </table>
