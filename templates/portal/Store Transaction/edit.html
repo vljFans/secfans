@@ -115,6 +115,13 @@
                                         </select>
                                     </div>
                                 </div>
+                                <div class="col-md-4 mb-4">
+
+                                    <label class="invoice_challan_lbl">{% if not storeTransaction.job_order_id %}Challan {% else %} Invoice {% endIf %} <span class="required-indicator">*</span></label>
+                                    <input type="text" onkeyup="checkMaxMin(this)"
+                                        name="invoice_challan"  class="form-control invoice_challan" value="{{storeTransaction.invoice_challan}}"
+                                        placeholder="Invoice/challanNo" required>
+                                </div>
                             </div>
                             <div class="purchase_order_details col-md-12">
                                 <div class="original_purchase_order_details">
