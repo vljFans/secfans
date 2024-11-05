@@ -98,6 +98,12 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="col-md-4 mb-4">
+                                <label class="invoice_challan_lbl">Invoice <span class="required-indicator">*</span></label>
+                                <input type="text" onkeyup="checkMaxMin(this)"
+                                    name="invoice_challan"  class="form-control invoice_challan"
+                                    placeholder="Invoice/challanNo" required>
+                            </div>
                             <div class="purchase_order_details col-md-12">
                                 <div class="form-row content_parent">
                                     <div class="col-md-2 mb-3">
@@ -353,6 +359,7 @@
             // $('#purchase_job_order_header_id').removeAttr('required');
             $('#purchase_job_order_header_id').removeAttr('disabled');
             callPurchaseOrder()
+            $('.invoice_challan_lbl').html(`Invoice <span class="required-indicator">*</span>`)
         
         }
         // job order
@@ -364,14 +371,16 @@
             // $('#purchase_job_order_header_id').removeAttr('required');
             $('#purchase_job_order_header_id').removeAttr('disabled');
             callJobOrderList()
+            $('.invoice_challan_lbl').html(`Challan <span class="required-indicator">*</span>`)
         }
-
         else{
             // $('.purchase_job_order_type_content').hide();
+            console.log(378);
+            
             $('#purchase_job_order_header_id').removeAttr('required');
             $('#purchase_job_order_header_id').attr('disabled','true');
             $('#purchase_job_order_header_id').val("")
-            
+            $('.invoice_challan_lbl').html(`Invoice <span class="required-indicator">*</span>`)
         }
 
         purchase_details = `<div class="form-row content_parent">
