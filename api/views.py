@@ -4073,7 +4073,7 @@ def storeTransactionAdd(request):
                 if request.POST.get('vendor_id',None):
                     storeTransactionVhead.vendor_from_id = request.POST['vendor_id']
                 print( models.Transaction_Type.objects.get(name = 'MIS'))
-                storeTransactionVhead.transaction_type =models.Transaction_Type.objects.get(name = 'MIS')
+                storeTransactionVhead.transaction_type =models.Transaction_Type.objects.get(name = 'MIST')
                 print("3186")
                 if(int(request.POST['with_purchase_job_order']) == 2):
                     storeTransactionVhead.job_order_id =  request.POST[
