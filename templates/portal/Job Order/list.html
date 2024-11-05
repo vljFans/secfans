@@ -281,8 +281,8 @@
                                 <td>${element.manufacturing_type} manufacturing</td>
                                 <td>${element.estimated_time_day}</td>
                                 <td>${element.notes}</td> 
-                                 <td style="color: ${element.job_status == 0 ? 'blue' : (element.job_status == 1 ? 'lime' : 'red')}; ">
-                                    ${element.job_status == 0 ? 'Open' : (element.job_status == 1 ? 'WIP' : 'Closed')}
+                                 <td style="color: ${element.job_status == 0 ? 'blue' : ((element.job_status == 1 && element.material_issue ==2) ? 'green' : (element.job_status == 1 && element.material_issue ==1) ? 'black':'red')}; ">
+                                    ${element.job_status == 0 ? 'Open' : ((element.job_status == 1 && element.material_issue ==2) ? 'WIP' : (element.job_status == 1 && element.material_issue ==1) ? 'WIP':'Closed')}
                                 </td>`+ tbody_buttom_text+`</tr>`;
                     }
                     // pagination_text = ``;

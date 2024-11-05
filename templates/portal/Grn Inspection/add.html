@@ -95,7 +95,12 @@
                                 required>
 
                             </div>
-
+                            <div class="col-md-4 mb-4">
+                                <label class="invoice_challan_lbl">Invoice <span class="required-indicator">*</span></label>
+                                <input type="text" onkeyup="checkMaxMin(this)"
+                                    name="invoice_challan"  class="form-control invoice_challan"
+                                    placeholder="Invoice/challanNo" required>
+                            </div>
 
                             <div class="col-md-12" id="table_form">
                                 
@@ -249,6 +254,7 @@
 
                        $('#vendor_name').val(response.page_items[0].grn_inspection_transaction_header__vendor__name)
                        $('.vendor_id').val(response.page_items[0].grn_inspection_transaction_header__vendor_id)
+                       $('.invoice_challan').val(response.page_items[0].grn_inspection_transaction_header__invoice_challan)
                        
                        //if job order
                        if(response.page_items[0].grn_inspection_transaction_header__job_order_id != null){

@@ -2723,12 +2723,14 @@ def storeEdit(request):
             store.state_id = request.POST['state_id']
             store.city_id = request.POST['city_id']
             store.pin = request.POST['pin']
+            print(2727)
             store.contact_name = request.POST['contact_name']
             store.contact_no = request.POST['contact_no']
             store.contact_email = request.POST['contact_email']
             store.manager_name = request.POST['manager_name']
-            if request.POST['store_type'] == 1:
+            if  request.POST['store_type1'] == 1:
                 store.vendor_id = request.POST['vendor_id']
+            print(2734)
             store.store_type = request.POST.get('store_type2', 'r')
             store.updated_at = datetime.now()
             store.save()
@@ -3981,7 +3983,7 @@ def storeTransactionList(request):
     try:
         if id is not None and id != "":
             storeTransaction = list(models.Store_Transaction.objects.filter(pk=id)[:1].values(
-                'pk', 'transaction_number', 'transaction_date', 'total_amount', 'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name'))
+                'pk', 'transaction_number', 'transaction_date', 'total_amount', 'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name','invoice_challan'))
             context.update({
                 'status': 200,
                 'message': "Store Transaction Fetched Successfully.",
@@ -3996,11 +3998,11 @@ def storeTransactionList(request):
             if keyword is not None and keyword != "":
                 storeTransactions = list(storeTransactions.filter(Q(vendor__name__icontains=keyword) | Q(transaction_number__icontains=keyword) | Q(
                     transaction_date__icontains=keyword) | Q(total_amount__icontains=keyword)).filter(status=1, deleted=0).values('pk', 'transaction_number', 'transaction_date', 'total_amount',
-                                     'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name'))
+                                     'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name', 'invoice_challan'))
                 
             else:
                 storeTransactions = list(storeTransactions.values('pk', 'transaction_number', 'transaction_date', 'total_amount',
-                                     'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name'))
+                                     'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name', 'invoice_challan'))
                        
             if find_all is not None and int(find_all) == 1:
                 context.update({
@@ -4071,7 +4073,7 @@ def storeTransactionAdd(request):
                 if request.POST.get('vendor_id',None):
                     storeTransactionVhead.vendor_from_id = request.POST['vendor_id']
                 print( models.Transaction_Type.objects.get(name = 'MIS'))
-                storeTransactionVhead.transaction_type =models.Transaction_Type.objects.get(name = 'MIS')
+                storeTransactionVhead.transaction_type =models.Transaction_Type.objects.get(name = 'MIST')
                 print("3186")
                 if(int(request.POST['with_purchase_job_order']) == 2):
                     storeTransactionVhead.job_order_id =  request.POST[
@@ -4120,6 +4122,7 @@ def storeTransactionAdd(request):
                 grnTransactionheader = models.Grn_Inspection_Transaction()
                 grnTransactionheader.vendor_id = request.POST['vendor_id']
                 grnTransactionheader.transaction_type = models.Transaction_Type.objects.get(name = 'GRNI')
+                grnTransactionheader.invoice_challan = request.POST['invoice_challan']
                 grnTransactionheader.transaction_number = env("GRN_TRANSACTION_INSPECTION_SEQ").replace(
                     "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(5))
                 # print("3143")
@@ -4216,6 +4219,7 @@ def storeTransactionAdd(request):
                 storeTransactionHeader = models.Store_Transaction()
                 storeTransactionHeader.vendor_id = request.POST['vendor_id']
                 storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
+                storeTransactionHeader.invoice_challan = request.POST['invoice_challan']
                 # print("3182")
                 if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) != 2):
                     storeTransactionHeader.purchase_order_header_id = request.POST[
@@ -5965,6 +5969,7 @@ def getGrnInspectionTransactionDetail(request):
                     'grn_inspection_transaction_header__purchase_order_header__order_number',
                     'grn_inspection_transaction_header__job_order_id',
                     'grn_inspection_transaction_header__job_order__order_number',
+                    'grn_inspection_transaction_header__invoice_challan',
                     'item_id',
                     'item__name',
                     'store_id',
@@ -5987,6 +5992,7 @@ def getGrnInspectionTransactionDetail(request):
                 'grn_inspection_transaction_header__purchase_order_header__order_number',
                 'grn_inspection_transaction_header__job_order_id',
                 'grn_inspection_transaction_header__job_order__order_number',
+                'grn_inspection_transaction_header__invoice_challan',
                 'item_id',
                 'item__name',
                 'store_id',
@@ -6022,8 +6028,10 @@ def addGrnDetailisInsTransaction(request):
         if any(request.POST.getlist('accp_quantity')):
             with transaction.atomic():
                 grn_ins_head = models.Grn_Inspection_Transaction.objects.get(pk = request.POST['insTraId'])
+                grn_ins_head.invoice_challan = request.POST['invoice_challan']
                 grn_ins_head.ins_done = 1
                 grn_ins_head.ins_completed = ins_completed
+                grn_ins_head.updated_at = datetime.now()
                 grn_ins_head.save()
                 # print('5179')
                 storeTranscHeadPresent = models.Store_Transaction.objects.filter(grn_inspection_id = request.POST['insTraId']).first()
@@ -6031,12 +6039,14 @@ def addGrnDetailisInsTransaction(request):
                     storeTransactionHeader = storeTranscHeadPresent
                     storeTransactionHeader.total_amount = float(storeTransactionHeader.total_amount) + float (request.POST['totalPrice'])
                     storeTransactionHeader.notes=grn_ins_head.notes
+                    storeTransactionHeader.updated_at = datetime.now()
                     storeTransactionHeader.save()
                 else:
                     store_transaction_count = models.Store_Transaction.objects.all().count()
                     storeTransactionHeader = models.Store_Transaction()
                     storeTransactionHeader.vendor_id = request.POST['vendor_id']
                     storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
+                    storeTransactionHeader.invoice_challan = request.POST['']
                     if (request.POST.get('purchase_order_header_id',None) and request.POST['purchase_order_header_id']!=""):
                         storeTransactionHeader.purchase_order_header_id = request.POST[
                             'purchase_order_header_id']
