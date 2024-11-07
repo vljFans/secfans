@@ -69,6 +69,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Item</th>
+                                    <th>Store</th>
                                     <th>Quantity</th>
                                     <th>Rate</th>
                                     
@@ -79,6 +80,7 @@
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td>{{ storeTransactionDetails.item.name }}</td>
+                                    <td>{{storeTransactionDetails.store.name}}</td>
                                     <td>{{ storeTransactionDetails.quantity|floatformat }}</td>
                                     <td>{{ storeTransactionDetails.rate }}</td>
                                 </tr>
