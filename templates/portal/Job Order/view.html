@@ -85,8 +85,8 @@
                                     <td>{{forloop.counter}}</td>
                                     <td>{{orderDetail.item.name}}</td>
                                     <td>{{orderDetail.quantity | floatformat}}</td>
-                                    <td>{{orderDetail.required_quantity | floatformat}}</td>
-                                    <td>{{orderDetail.quantity_result | floatformat}}</td>
+                                    <td>{% if  orderDetail.direction == 'outgoing'  %} {{orderDetail.required_quantity | floatformat}} {% else %} --- {% endif %}</td>
+                                    <td>{% if  orderDetail.direction == 'incoming'  %} {{orderDetail.quantity_result | floatformat}} {% else %} --- {% endif %}</td>
                                     <td>{% if orderDetail.direction == 'incoming' %} Production/Manufactured Material {% else %} BOM/Raw Material {% endif %}</td>
                                     <!-- <td>{{orderDetail.direction}}</td> -->
                                 </tr>
