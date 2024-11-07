@@ -164,6 +164,8 @@ urlpatterns = [
     path('report-active-purchase-order', views.reportActivePurchaseOrder, name='reportActivePurchaseOrder'),
     path('report-active-purchase-materialIssue', views.reportActivePurchaseMaterialIssue, name='reportActivePurchaseMaterialIssue'),
     path('report-active-vendor-Reciept-materialIssue', views.reportActiveVendorIssueReciept, name='reportActiveVendorIssueReciept'),
+    path('report-production', views.reportProduction, name='reportProduction'),
+    path('report-production-transaction-view/<int:id>', views.reportProductionView, name='reportProductionView'),
 
     path('invoice-store-transaction-maigration',views.invoiceStoreTransactionMaigration, name='invoiceStoreTransactionMaigration'),
 ]

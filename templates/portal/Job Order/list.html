@@ -97,6 +97,7 @@
                     </div>
                 </div>
                 <div class="card-body pd-0">
+                    <p><span style="color: black;"> WIP:</span> <span> partialy material issued</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: green;"> WIP:</span> <span> fully material issued</span></p>
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
@@ -105,6 +106,7 @@
                                     <th>Job Order Number</th>
                                     <th>Job Order Date</th>
                                     <th>Manufacturing type</th>
+                                    <th>Manufacture Material Type</th>
                                     <th>Estimated Time</th>
                                     <th>Job Description</th>
                                     <th>Job Status</th>
@@ -142,13 +144,20 @@
                                                         </select>
                                                     </div>
                                                 </div>
+                                                <div class="col-md-4 py-2">
+                                                    <label>Quantity<span class="required-indicator">*</span></label>
+                                                    <input type="text" onkeyup="checkMaxMin(this)"
+                                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                        name="incoming_quantity" min="0.0000" class="form-control incoming_quantity"
+                                                        placeholder="Quantity" required>
+                                                </div>
 
                                             </div>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
-                                        <button class="btn btn-success submit-btn" type="submit">Submit</button>
-                                        <button type="button" class="btn btn-secondary" id="close" data-bs-dismiss="modal">Close</button>
+                                        <button class="btn btn-success submit-btn" onclick="return confirm('Please check the form again before submitting. It can not be changed')" type="submit">Submit</button>
+                                        <button type="button"  class="btn btn-secondary" id="close" data-bs-dismiss="modal">Close</button>
                                     </div>
                                 </form>
                             </div>
@@ -209,8 +218,8 @@
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index];
                         tbody_buttom_text =``
-                        console.log(element.material_issue);
-                        if(element.material_issue == 1){
+                        console.log((element.manufacturing_material_type == 'FG' ? 'true' : 'false'));
+                        if(element.material_issue != 0 && element.material_reciept < 1){
                             tbody_buttom_text = `<td>
                                 {% if request.user.is_superuser == 1 or 'change_job_order'|get_session_permission:request is not None %}
                                 <a href="#" onclick="return alert('cannot edit  as material already get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-pencil"></i> </a>    
@@ -224,37 +233,28 @@
                                 {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
                                 <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
                                 {% endif %}
-                                ${element.manufacturing_type == 'Self' ?  `{% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
-                                <a href="javascript:void(0);" class="table-action mg-r-10" 
-                                    onclick="return alert('all material issue is not complete')"> 
-                                    <i class="fa fa-stop"></i>
-                                    </a>
-                                {% endif %}` : ''}
-                                </td>`
-                        }
-                        else if(element.material_issue == 2 && element.material_reciept == 0 ){
-                            console.log('230');
-                            
-                            tbody_buttom_text = `<td>
-                                {% if request.user.is_superuser == 1 or 'change_job_order'|get_session_permission:request is not None %}
-                                <a href="#" onclick="return alert('cannot edit  as material already get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-pencil"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'delete_job_order'|get_session_permission:request is not None %}
-                                <a href="#" onclick="return alert('cannot  delete as material already  get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-trash"></i> </a>
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
-                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
-                                <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
-                                {% endif %}
-                                ${element.manufacturing_type == 'Self' ? `{% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
+                                 ${element.manufacturing_type == 'Self' ? `{% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
                                     <a href="javascript:void(0);" class="table-action mg-r-10" 
-                                        onclick="if(confirm('Are you sure you want to complete this job order?')) { loadMaterialInData(${ element.pk }) }"> 
+                                        onclick="{ loadMaterialInData(${ element.pk }) }"> 
                                         <i class="fa fa-stop"></i>
                                         </a>
                                     {% endif %}` : ''}
-                                
+                                </td>`
+                        }
+                        else if(element.material_reciept == 1){
+                            tbody_buttom_text = `<td>
+                                {% if request.user.is_superuser == 1 or 'change_job_order'|get_session_permission:request is not None %}
+                                <a href="#" onclick="return alert('cannot edit  as material already get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-pencil"></i> </a>    
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'delete_job_order'|get_session_permission:request is not None %}
+                                <a href="#" onclick="return alert('cannot  delete as material already  get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-trash"></i> </a>
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
+                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
+                                <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
+                                {% endif %}
                                 </td>`
                         }
                         else{
@@ -279,6 +279,7 @@
                                 <td>${element.order_number}</td>
                                 <td>${element.order_date}</td>
                                 <td>${element.manufacturing_type} manufacturing</td>
+                                <td>${ element.manufacturing_material_type == 'SFG' ? 'Semi finish Goods': ( element.manufacturing_material_type == 'FG' ?'Finished Goods'  : 'NA') }</td>
                                 <td>${element.estimated_time_day}</td>
                                 <td>${element.notes}</td> 
                                  <td style="color: ${element.job_status == 0 ? 'blue' : ((element.job_status == 1 && element.material_issue ==2) ? 'green' : (element.job_status == 1 && element.material_issue ==1) ? 'black':'red')}; ">
@@ -376,11 +377,11 @@
      
     $(document).on('click','#close',function(){
         $('#materialInModal').modal('hide');
+        locationAfterMessageStore( '', "{% url 'superuser:jobOrderList' %}");
     })
 
     $(document).on('keyup', '#search', function () {
         keyword = $(this).val();
-        getJobOrderList(keyword)
     })
 
     $(document).on('submit','#create_form', function(e) {
@@ -397,7 +398,7 @@
                 evalScripts: true,
                 contentType: false,
                 processData: false,
-                url: "{% url 'api:jobOrderTimeComplete' %}",
+                url: "{% url 'api:selfJobOrderReciept' %}",
                 data: formData,
                 headers: {
                     'Authorization': getCookieValue("accessToken")
@@ -529,6 +530,18 @@
     }
 });
 
+function checkMaxMin(element) {
+        if ($(element).val() == "") {
+            $(element).val($(element).attr('min'));
+        } else {
+            if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
+                $(element).val($(element).attr('max'));
+            }
+            if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
+                $(element).val($(element).attr('min'));
+            }
+        }
+    }
     
 </script>
 {% endblock %}

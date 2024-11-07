@@ -99,6 +99,17 @@
                                         </select>
                                     </div>
                                 </div>
+                                <div class="col-md-4 mb-3">
+                                    <label>Manufacture Material Type<span class="required-indicator">*</span></label>
+                                    <div class="input-group">
+                                        <select class="custom-select selectpicker manufacturing_material_type" data-placeholder="Select manufacturing type" name="manufacturing_material_type" required>
+                                            <option value=""></option>
+                                            <option value="None" {% if jobOrder.manufacturing_material_type == "None"  %} selected {% endif %}> NA</option>
+                                            <option value="SFG" {% if jobOrder.manufacturing_material_type == "SFG"  %} selected {% endif %}>Semi Finished Goods</option>
+                                            <option value="FG" {% if jobOrder.manufacturing_material_type == "FG"  %} selected {% endif %}>Finished Goods</option>
+                                        </select>
+                                    </div>
+                                </div>
                                 {% if page_title == 'Job Order Add' %}
                                     <div class="col-md-2 mb-3">
                                         <label>Time Format<span class="required-indicator">*</span></label>
@@ -295,6 +306,17 @@
                                                 <option value=""></option>
                                                 <option value="True" {% if jobOrder.with_item == 'True' %}selected{% endif %} >With item</option>
                                                 <option value="False" {% if jobOrder.with_item == 'False' %}selected{% endif %} >Without item</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label>Manufacture Material Type<span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker manufacturing_material_type" data-placeholder="Select manufacturing type" name="manufacturing_material_type" required>
+                                                <option value=""></option>
+                                                <option value="None" {% if jobOrder.manufacturing_material_type == "None"  %} selected {% endif %}> NA</option>
+                                                <option value="SFG" {% if jobOrder.manufacturing_material_type == "SFG"  %} selected {% endif %}>Semi Finished Goods</option>
+                                                <option value="FG" {% if jobOrder.manufacturing_material_type == "FG"  %} selected {% endif %}>Finished Goods</option>
                                             </select>
                                         </div>
                                     </div>

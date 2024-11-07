@@ -1604,3 +1604,25 @@ def invoiceStoreTransactionMaigration(request):
     })
 
     return render(request, 'portal/process/inoviceStoreTransact.html', context)
+
+@login_required
+def reportProduction(request):
+    context.update({
+        'page_title': "Production Report For SFG and FG ",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Production Report",'url': reverse('superuser:reportProduction')}]
+    })
+    return render(request, 'portal/Report/Production/list.html', context)
+
+@login_required
+def reportProductionView(request,id):
+    storeTransactionHeader = models.Store_Transaction.objects.prefetch_related(
+        'store_transaction_detail_set').get(pk=id)
+    print(storeTransactionHeader.job_order)
+    job_order = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk = storeTransactionHeader.job_order_id)
+    context.update({
+        'storeTranasction' : storeTransactionHeader,
+        'page_title': "Production Report For SFG and FG View",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Production Report",'url': reverse('superuser:reportProduction')}, {'name': "Transaction View"}]
+    })
+    return render(request, 'portal/Report/Production/view.html', context)
+

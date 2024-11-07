@@ -26,26 +26,38 @@
                 </div>
             </div>
         </div>
-        
+        <div class="col-md-6">
+            <div class="float-end d-flex justify-content-end" style="padding-top: 10px;">
+                <button type="button" file_type="pdf" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">PDF</button>
+                <button type="button" file_type="xlsx" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">Excel</button>
+            </div>
+        </div>
+
     </div>
     <!--/ Breadcrumb End -->
     <!--================================-->
     <!-- Search box Start -->
-    <div>
-        <label for="search">
-            <p style="font-size: 14px;">
-                Search :
-            </p>
-        </label>
-        <input type="text" id="search" name="search" style="width: 180px; height: 30px;" value="{{request.GET.keyword}}"
-            placeholder="" />
-    </div>
-    <div class="col-md-6">
-        <div class="float-end d-flex justify-content-end" style="padding-top: 10px;">
-            <button type="button" file_type="pdf" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">PDF</button>
-            <button type="button" file_type="xlsx" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">Excel</button>
+    <div class="row row-xs clearfix">
+        <div class="col-md-6 mb-6">
+            <label for="search">
+                <p style="font-size: 14px;">
+                    Search :
+                </p>
+            </label>
+            <input type="text" id="search" name="search" style="width: 180px; height: 30px;" value="{{request.GET.keyword}}"
+                placeholder="" />
+
+        </div>
+        <div class="col-md-4 mb-4">
+                <label>Manufacture Material Type:</label>
+                <select class="custom-select selectpicker manufacturing_material_type" data-placeholder="Select manufacturing material type" name="manufacturing_material_type" required>
+                    <option value=""></option>
+                    <option value="SFG">Semi Finished Goods</option>
+                    <option value="FG">Finished Goods</option>
+                </select>
         </div>
     </div>
+
     <!--/ Search box End -->
     <!--================================-->
     <!-- Form Element Start -->
@@ -69,8 +81,8 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
-                                <a href="{% url 'superuser:storeTransactionAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
+                                {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
+                                <a href="{% url 'superuser:jobOrderAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
                                 {% endif %}
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                                 <!-- <div class="dropdown" data-toggle="dropdown">
@@ -102,10 +114,9 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Vendor</th>
-                                    <th>Transaction Number</th>
+                                    <th>Transaction No</th>
                                     <th>Transaction Date</th>
-                                    <th>Total Price</th>
+                                    <th>Job Order No</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -126,16 +137,18 @@
 {% endblock %}
 
 {% block js %}
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
 <script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
+    
     function getStoreTransactionList(keyword) {
         $.ajax({
             type: "GET",
-            url: "{% url 'api:storeTransactionList' %}?keyword="+keyword+"&transaction_type=GRN",
+            url: "{% url 'api:storeTransactionList' %}?keyword="+keyword+"&transaction_type=SP",
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -143,8 +156,7 @@
             success: function (response) {
                 $('.error-msg-txt').text("");
                 if (response.status == 200) {
-                    view_url = "{% url 'superuser:storeTransactionView' 1 %}";
-                    edit_url = "{% url 'superuser:storeTransactionEdit' 1 %}";
+                    view_url = "{% url 'superuser:reportProductionView' 1 %}";
                     page_items = response.page_items;
                     console.log(page_items)
                     tbody_text = ``;
@@ -152,19 +164,12 @@
                         const element = page_items[index];
                         tbody_text += `<tr>
                                 <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
-                                <td>${element.vendor__name ? element.vendor__name : 'Self'}</td>
                                 <td>${element.transaction_number}</td>
                                 <td>${element.transaction_date}</td>
-                                <td>₹${element.total_amount}</td>
+                                <td>${element.job_order__order_number}</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
                                 <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'change_store_transaction'|get_session_permission:request is not None %}
-                                <a hidden href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'delete_store_transaction'|get_session_permission:request is not None %}
-                                <a id="delete-btn" data-id="${element.pk}" data-name="${element.transaction_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
                                 {% endif %}
                                 </td>
                             </tr>`;
@@ -191,6 +196,19 @@
 
     }
     $(document).ready(function () {
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });
+        
+    });
+    
+    $(document).ready(function () {
         getStoreTransactionList(keyword)
     });
 
@@ -199,100 +217,85 @@
         getStoreTransactionList(keyword)
     })
 
-    $(document).on('click', '#delete-btn', function () {
-        id = $(this).attr('data-id');
-        name = $(this).attr('data-name');
-        if (window.confirm('Are you sure to delete ' + name + '?')) {
-            $.ajax({
-                type: "POST",
-                url: "{% url 'api:storeTransactionDelete' %}",
-                data: ({ id: id }),
-                headers: {
-                    'Authorization': getCookieValue("accessToken"),
-                },
-                success: function (response) {
-                    if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:storeTransactionList' %}");
-                    } else {
-                        alert(response.message);
-                    }
-                },
-                error: function (error) {
-                    $('.success-msg-txt').text("");
-                    $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
-                    $('.error-msg-txt').addClass('text-danger');
-                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-                }
-            });
-        }
-    });
     $(document).on('click', '.generate_and_download', function (e) {
         e.preventDefault();
 
         var fileType = $(this).attr('file_type');
-        var filename = "Material Receipt all transaction";
+        var filename = `JobOrderList_${new Date().toISOString().slice(0, 10)}`;
         var table = $('.table');
 
+        try {
+            if (fileType === 'xlsx') {
+                var wb = XLSX.utils.book_new();
+                var ws_data = [];
 
-        // Generate and download Excel or PDF file only
-        if (fileType === 'xlsx') {
-            var wb = XLSX.utils.book_new();
-            var ws_data = [[]];
-
-            // Add table headers
-            var headerRow = [];
-            table.find('thead th').each(function() {
-                headerRow.push($(this).text());
-            });
-            ws_data.push(headerRow);
-
-            // Add table body rows
-            table.find('tbody tr').each(function() {
-                var row_data = [];
-                $(this).find('td').each(function() {
-                    row_data.push($(this).text());
+                // Add table headers
+                var headerRow = [];
+                table.find('thead th').each(function () {
+                    headerRow.push($(this).text().trim());
                 });
-                ws_data.push(row_data);
-            });
+                ws_data.push(headerRow);
 
-            // Generate worksheet and download Excel file
-            var ws = XLSX.utils.aoa_to_sheet(ws_data);
-            XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-            XLSX.writeFile(wb, filename + '.xlsx');
-        }
-        else if (fileType === 'pdf') {
-            const { jsPDF } = window.jspdf;
-            var doc = new jsPDF();
-
-            // Add header text at the top of the PDF
-            doc.setFontSize(10); // Optional: Set a smaller font size for the table content
-
-             // Extract headers
-            var headers = [];
-            table.find('thead th').each(function() {
-                headers.push($(this).text());
-            });
-            // Extract table rows
-            var data = [];
-            table.find('tbody tr').each(function() {
-                var row = [];
-                $(this).find('td').each(function() {
-                    row.push($(this).text().replace('₹', ''));
+                // Add table body rows
+                table.find('tbody tr').each(function () {
+                    var row_data = [];
+                    $(this).find('td').each(function () {
+                        row_data.push($(this).text().trim());
+                    });
+                    ws_data.push(row_data);
                 });
-                data.push(row);
-            });
 
-            // Extract footer row with total amount
-            // Generate PDF table with header, body, and footer
-            doc.autoTable({
-                head: [headers],
-                body: data,
-                startY: 20, // Start table below the header text
-                margin: { top: 10 }
-            });
-            doc.save(filename + '.pdf');
+                // Generate worksheet and download Excel file
+                var ws = XLSX.utils.aoa_to_sheet(ws_data);
+                XLSX.utils.book_append_sheet(wb, ws, "JobOrders");
+                XLSX.writeFile(wb, `${filename}.xlsx`);
+                alert('Excel file downloaded successfully!');
+            }
+            else if (fileType === 'pdf') {
+                const { jsPDF } = window.jspdf;
+                var doc = new jsPDF();
+
+                // Extract headers
+                var headers = [];
+                table.find('thead th').each(function () {
+                    headers.push($(this).text().trim());
+                });
+
+                // Extract table rows
+                var data = [];
+                table.find('tbody tr').each(function () {
+                    var row = [];
+                    $(this).find('td').each(function () {
+                        row.push($(this).text().trim());
+                    });
+                    data.push(row);
+                });
+
+                // Generate PDF table with header, body
+                doc.autoTable({
+                    head: [headers],
+                    body: data,
+                    startY: 20, // Start table below the header text
+                    margin: { top: 10 },
+                    styles: { fontSize: 10 },
+                    columnStyles: {
+                        0: { cellWidth: 'auto' },
+                        // Add other column widths if necessary
+                    }
+                });
+
+                doc.save(`${filename}.pdf`);
+                alert('PDF file downloaded successfully!');
+            }
+        } catch (error) {
+            console.error('Error generating the file:', error);
+            alert('An error occurred while generating the file.');
         }
-    });s
+    });
 
+   $(document).on('change','.manufacturing_material_type',function(){
+    let key = $('.manufacturing_material_type').val()
+    getStoreTransactionList(key)
+   })
 </script>
 {% endblock %}
