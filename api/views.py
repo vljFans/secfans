@@ -3983,7 +3983,7 @@ def storeTransactionList(request):
     try:
         if id is not None and id != "":
             storeTransaction = list(models.Store_Transaction.objects.filter(pk=id)[:1].values(
-                'pk', 'transaction_number', 'transaction_date', 'total_amount', 'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name','invoice_challan'))
+                'pk', 'transaction_number', 'transaction_date', 'total_amount', 'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name','invoice_challan','job_order_id','job_order__order_number'))
             context.update({
                 'status': 200,
                 'message': "Store Transaction Fetched Successfully.",
@@ -3997,12 +3997,12 @@ def storeTransactionList(request):
 
             if keyword is not None and keyword != "":
                 storeTransactions = list(storeTransactions.filter(Q(vendor__name__icontains=keyword) | Q(transaction_number__icontains=keyword) | Q(
-                    transaction_date__icontains=keyword) | Q(total_amount__icontains=keyword)).filter(status=1, deleted=0).values('pk', 'transaction_number', 'transaction_date', 'total_amount',
-                                     'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name', 'invoice_challan'))
+                    transaction_date__icontains=keyword) | Q(total_amount__icontains=keyword) | Q(job_order__manufacturing_material_type__icontains=keyword )).filter(status=1, deleted=0).values('pk', 'transaction_number', 'transaction_date', 'total_amount',
+                                     'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name', 'invoice_challan','job_order_id','job_order__order_number'))
                 
             else:
                 storeTransactions = list(storeTransactions.values('pk', 'transaction_number', 'transaction_date', 'total_amount',
-                                     'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name', 'invoice_challan'))
+                                     'purchase_order_header_id', 'purchase_order_header__order_number', 'vendor__name', 'transaction_type_id', 'transaction_type__name', 'invoice_challan','job_order_id','job_order__order_number'))
                        
             if find_all is not None and int(find_all) == 1:
                 context.update({
@@ -4095,10 +4095,8 @@ def storeTransactionAdd(request):
                                 rate=float(jobOrderDetails[index].item.price),
                             )    
                         )
-                        print(storeTransactionDetail)
                         store = models.Store.objects.get(vendor_id=request.POST['vendor_id'])
                         storeItem = models.Store_Item.objects.filter(item_id=jobOrderDetails[index].item_id, store=store).first()
-                        print(4098)
                         storeItem.on_hand_qty -= Decimal(
                                 jobOrderDetails[index].quantity_result)
                         storeItem.closing_qty -= Decimal(
@@ -4110,11 +4108,7 @@ def storeTransactionAdd(request):
                         resultant_quantity_result.save()
                 if storeTransactionDetail:
                     models.Store_Transaction_Detail.objects.bulk_create(storeTransactionDetail)
-    
-                       
-                            
-                    
-            print(4113)          
+                      
             storeTransactionDetail =[]
             if "1" in inspect:
                 print("313s4")
@@ -4193,6 +4187,8 @@ def storeTransactionAdd(request):
                             storeItem.save()
                             material_reciept_all = 0 if float(job_order_details.quantity_result)>0.00 else 1
                         #     print('3634') 
+
+                            #closed job order
                             if (material_reciept_all == 1):
                                 job_order = models.Job_Order.objects.filter(pk=request.POST[
                                     'purchase_job_order_header_id']).get() 
@@ -4310,6 +4306,7 @@ def storeTransactionAdd(request):
                             storeItem.updated_at = datetime.now()
                             storeItem.save()
 
+                            #closed job order
                             if (material_reciept_all == 1):
                                 job_order = models.Job_Order.objects.filter(pk=request.POST[
                                 'purchase_job_order_header_id']).get() 
@@ -4988,7 +4985,7 @@ def jobOrderList(request):
     material_issue= request.GET.get('material_issue', None)
     manufacturing_type = request.GET.get('manufacturing_type', None)
     if id is not None and id != "":
-        jobOrder = list(models.Job_Order.objects.filter(pk=id)[:1].values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor_id', 'vendor__name', 'with_item', 'notes','material_issue','job_status','estimated_time_day','material_reciept'))
+        jobOrder = list(models.Job_Order.objects.filter(pk=id)[:1].values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor_id', 'vendor__name', 'with_item', 'notes','material_issue','job_status','estimated_time_day','material_reciept','manufacturing_material_type'))
         context.update({
             'status': 200,
             'message': "Job Order Fetched Successfully.",
@@ -5004,12 +5001,12 @@ def jobOrderList(request):
             jobOrders = jobOrders.filter(vendor_id=vendor).filter(status=1, deleted=0)
             if with_item is not None and with_item != "":
                 jobOrders = jobOrders.filter(vendor_id=vendor ,with_item=with_item ).filter(status=1, deleted=0)
-                if material_reciept is not None and material_reciept != "" and  material_issue is not None and material_issue != "" and manufacturing_type is not None and manufacturing_type !="":
-                    jobOrders = jobOrders.filter(material_reciept=material_reciept , material_issue=material_issue , manufacturing_type=manufacturing_type).filter(status=1, deleted=0)
+                if material_reciept is not None and material_reciept != "" and manufacturing_type is not None and manufacturing_type !="":
+                    jobOrders = jobOrders.filter(material_reciept=material_reciept , manufacturing_type=manufacturing_type).filter(status=1, deleted=0)
         elif material_issue is not None and material_issue != "":
             material_issue_list = [int(x) for x in material_issue.split(',')]
             jobOrders = jobOrders.filter(material_issue__in=material_issue_list ).filter(status=1, deleted=0)
-        jobOrders = list(jobOrders.values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor_id', 'vendor__name', 'with_item', 'notes','material_issue','job_status','estimated_time_day','material_reciept'))
+        jobOrders = list(jobOrders.values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor_id', 'vendor__name', 'with_item', 'notes','material_issue','job_status','estimated_time_day','material_reciept','manufacturing_material_type'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -5074,6 +5071,7 @@ def jobOrderAdd(request):
             jobOrderHeader.order_number = request.POST['order_number']
             jobOrderHeader.order_date = request.POST['order_date']
             jobOrderHeader.manufacturing_type = request.POST['manufacturing_type']
+            jobOrderHeader.manufacturing_material_type = request.POST['manufacturing_material_type']
             if 'vendor_id' in request.POST:
                 jobOrderHeader.vendor_id = request.POST['vendor_id']
             if 'with_item' in request.POST:
@@ -5210,27 +5208,41 @@ def jobOrderAdd(request):
         transaction.rollback()
     return JsonResponse(context)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def jobOrderTimeComplete(request):
-    context = {}
-    print(request.POST)
-    id = request.POST['pk']
-    userId = request.COOKIES.get('userId', None)
-    print(id)
+def jobOrderTimeComplete(pk):
+    id = pk 
     jobOrderHeader = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
-    jobOrderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id= id , direction='incoming'))
     current_time = datetime.now(timezone.utc)
     time_difference = current_time - jobOrderHeader.created_at
     total_hours = time_difference.days * 24 + time_difference.seconds / 3600
     jobOrderHeader.actual_time_take = str(round(total_hours, 3)) + 'hr'
     jobOrderHeader.job_status = 2 # 0 for active 1 for in pogress 2 for complete
-    jobOrderHeader.material_reciept = 1 # full recieved
+    jobOrderHeader.material_reciept = 1 # full mateial recieved
     jobOrderHeader.updated_at = datetime.now()
     jobOrderHeader.save()
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def selfJobOrderReciept(request):
+    context = {}
+    print(request.POST)
+    id = request.POST['pk']
+    userId = request.COOKIES.get('userId', None)
+    jobOrderHeader = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
+    jobOrderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id= id , direction='incoming'))
+
+    # check whether current recieved quantity excceded from requireed resultant material recieved quantity
+    for index in range(0,len(jobOrderDetails)):
+        jobOrderDetEdit = models.Job_Order_Detail.objects.filter(job_order_header_id=id,item_id = jobOrderDetails[index].item_id, direction='incoming').first()
+        if(float(jobOrderDetEdit.quantity_result)<float( request.POST['incoming_quantity'])):
+            context.update({
+            'status': 500,
+            'message': f"current recieved quantity cannot be more than {int(float(jobOrderDetEdit.quantity_result))} "
+            })
+            return JsonResponse(context)
+    # creation of store transaction for job order for material recieved
     store_transaction_count = models.Store_Transaction.objects.all().count()
     storeTransactionHeader=models.Store_Transaction()
-    storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
+    storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'SP')
     
     storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
             "${CURRENT_YEAR}", datetime.today().strftime('%Y')
@@ -5243,45 +5255,56 @@ def jobOrderTimeComplete(request):
     storeTransactionHeader.creator_id = userId
     storeTransactionHeader.save()
     orderDetails =[]
+    material_reciept_all = False
     for index in range(0,len(jobOrderDetails)):
+        # changes resultant required material reciept quantity from job order details
+        jobOrderDetEdit = models.Job_Order_Detail.objects.filter(job_order_header_id=id,item_id = jobOrderDetails[index].item_id, direction='incoming').first()
+        jobOrderDetEdit.quantity_result = float(jobOrderDetEdit.quantity_result) - float( request.POST['incoming_quantity'])
+        jobOrderDetEdit.updated_at = datetime.now()
+        jobOrderDetEdit.save()
+
+        # store transaction details save 
         orderDetails.append(
             models.Store_Transaction_Detail(
                 store_transaction_header = storeTransactionHeader,
                 item_id = jobOrderDetails[index].item_id,
                 store_id = request.POST['store_id'],
-                quantity = jobOrderDetails[index].quantity,
+                quantity = request.POST['incoming_quantity'],
                 rate = jobOrderDetails[index].item.price,
                 amount = float(jobOrderDetails[index].item.price) * float(jobOrderDetails[index].quantity)
             )
         )
-        jobOrderDetEdit = models.Job_Order_Detail.objects.filter(job_order_header_id=id,item_id = jobOrderDetails[index].item_id, direction='incoming').first()
-        jobOrderDetEdit.quantity_result = 0.00
-        jobOrderDetEdit.updated_at = datetime.now()
-        jobOrderDetEdit.save()
+    
+
+        # checking whether material fully recieved or not
+        material_reciept_all = True  if (float(jobOrderDetEdit.quantity_result) == 0.00) else False
         storeItem = models.Store_Item.objects.filter(item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id']).exists()
         if storeItem:
             storeItem = models.Store_Item.objects.filter(item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id']).first()
-            storeItem.on_hand_qty += Decimal(jobOrderDetails[index].quantity)
-            storeItem.closing_qty += Decimal(jobOrderDetails[index].quantity)
+            storeItem.on_hand_qty += Decimal(request.POST['incoming_quantity'])
+            storeItem.closing_qty += Decimal(request.POST['incoming_quantity'])
             storeItem.updated_at = datetime.now()
             storeItem.save()
         else:
             storeItem = models.Store_Item()
             storeItem.item_id = jobOrderDetails[index].item_id
             storeItem.store_id = request.POST['store_id']
-            storeItem.opening_qty = Decimal(jobOrderDetails[index].quantity)
-            storeItem.on_hand_qty = Decimal(jobOrderDetails[index].quantity)
-            storeItem.closing_qty =Decimal(jobOrderDetails[index].quantity)
+            storeItem.opening_qty = Decimal(request.POST['incoming_quantity'])
+            storeItem.on_hand_qty = Decimal(request.POST['incoming_quantity'])
+            storeItem.closing_qty =Decimal(request.POST['incoming_quantity'])
             storeItem.save()
-
-
-   
-    text = f'Job Order NO: {jobOrderHeader.order_number} closed succesfully and store transaction created'
-    print(text)
+    models.Store_Transaction_Detail.objects.bulk_create(orderDetails)
+    # full material recived closing job order task 
+    if(material_reciept_all == True):
+        jobOrderTimeComplete(id)
+        text = f'Job Order NO: {jobOrderHeader.order_number} closed succesfully and store transaction created'
+        user_log_details_add(userId,text)
+    text = 'store transaction created'
     user_log_details_add(userId,text)
+    text = text + ' ' + 'Sucessfully'
     context.update({
             'status': 200,
-            'message': "Job order closed sucessfully and store transaction created"
+            'message': text
         })
     return JsonResponse(context)    
    
@@ -5311,6 +5334,7 @@ def jobOrderEdit(request):
             else:
                 jobOrderHeader.with_item = False
             jobOrderHeader.estimated_time_day =  request.POST['hr_day'] + request.POST['timeSpan']
+            jobOrderHeader.manufacturing_material_type = request.POST['manufacturing_material_type']
             jobOrderHeader.notes = request.POST['notes']
             jobOrderHeader.updated_at = now()
             jobOrderHeader.save()
@@ -5355,6 +5379,8 @@ def jobOrderEdit(request):
                         job_order_header_id=jobOrderHeader.id,
                         item_id=int(item_id),
                         quantity=float(quantity),
+                        required_quantity=float(quantity),
+                        quantity_result = float(quantity),
                         direction="incoming"
                     )
                 )
@@ -5383,6 +5409,8 @@ def jobOrderEdit(request):
                         job_order_header_id=jobOrderHeader.id,
                         item_id=int(item_id),
                         quantity=float(quantity),
+                        required_quantity=float(quantity),
+                        quantity_result = float(quantity),
                         direction="outgoing"
                     )
                 )
@@ -6033,7 +6061,7 @@ def addGrnDetailisInsTransaction(request):
                 grn_ins_head.ins_completed = ins_completed
                 grn_ins_head.updated_at = datetime.now()
                 grn_ins_head.save()
-                # print('5179')
+                print('5179')
                 storeTranscHeadPresent = models.Store_Transaction.objects.filter(grn_inspection_id = request.POST['insTraId']).first()
                 if storeTranscHeadPresent is not None:
                     storeTransactionHeader = storeTranscHeadPresent
@@ -6042,11 +6070,12 @@ def addGrnDetailisInsTransaction(request):
                     storeTransactionHeader.updated_at = datetime.now()
                     storeTransactionHeader.save()
                 else:
+                    print(6073)
                     store_transaction_count = models.Store_Transaction.objects.all().count()
                     storeTransactionHeader = models.Store_Transaction()
                     storeTransactionHeader.vendor_id = request.POST['vendor_id']
                     storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
-                    storeTransactionHeader.invoice_challan = request.POST['']
+                    storeTransactionHeader.invoice_challan = request.POST['invoice_challan']
                     if (request.POST.get('purchase_order_header_id',None) and request.POST['purchase_order_header_id']!=""):
                         storeTransactionHeader.purchase_order_header_id = request.POST[
                             'purchase_order_header_id']
@@ -6060,7 +6089,7 @@ def addGrnDetailisInsTransaction(request):
                     storeTransactionHeader.grn_inspection_id = request.POST['insTraId']
                     storeTransactionHeader.notes = grn_ins_head.notes
                     storeTransactionHeader.save()
-
+                print(6091)
                 order_details =[]
                 material_reciept_all = 0
                 for index in  range(0,len(request.POST.getlist('accp_quantity'))):
@@ -6124,6 +6153,8 @@ def addGrnDetailisInsTransaction(request):
                             storeItem.save()
                             # print('5257')
                             material_reciept_all = 0 if float(job_order_details.quantity_result)>0.00 else 1 
+
+                            #closed or re open job order
                             if (material_reciept_all == 1):
                                 # print('5871')
                                 job_order = models.Job_Order.objects.filter(pk=request.POST['job_order_header_id']).get() 
