@@ -5355,6 +5355,8 @@ def jobOrderEdit(request):
                         job_order_header_id=jobOrderHeader.id,
                         item_id=int(item_id),
                         quantity=float(quantity),
+                        required_quantity=float(quantity),
+                        quantity_result = float(quantity),
                         direction="incoming"
                     )
                 )
@@ -5383,6 +5385,8 @@ def jobOrderEdit(request):
                         job_order_header_id=jobOrderHeader.id,
                         item_id=int(item_id),
                         quantity=float(quantity),
+                        required_quantity=float(quantity),
+                        quantity_result = float(quantity),
                         direction="outgoing"
                     )
                 )

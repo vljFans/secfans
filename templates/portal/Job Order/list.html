@@ -143,6 +143,13 @@
                                                         </select>
                                                     </div>
                                                 </div>
+                                                <div class="col-md-4 py-2">
+                                                    <label>Quantity<span class="required-indicator">*</span></label>
+                                                    <input type="text" onkeyup="checkMaxMin(this)"
+                                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                        name="incoming_quantity" min="0.0000" class="form-control incoming_quantity"
+                                                        placeholder="Quantity" required>
+                                                </div>
 
                                             </div>
                                         </div>
@@ -530,6 +537,18 @@
     }
 });
 
+function checkMaxMin(element) {
+        if ($(element).val() == "") {
+            $(element).val($(element).attr('min'));
+        } else {
+            if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
+                $(element).val($(element).attr('max'));
+            }
+            if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
+                $(element).val($(element).attr('min'));
+            }
+        }
+    }
     
 </script>
 {% endblock %}
