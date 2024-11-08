@@ -4084,6 +4084,7 @@ def storeTransactionAdd(request):
                 storeTransactionVhead.save()
                 print(4083)
                 for index in range(0, len(jobOrderDetails)):
+                    print(409)
                     if jobOrderDetails[index].direction == 'outgoing' and float(jobOrderDetails[index].quantity_result) != 0:
                         
                         storeTransactionDetail.append(
@@ -4095,6 +4096,7 @@ def storeTransactionAdd(request):
                                 rate=float(jobOrderDetails[index].item.price),
                             )    
                         )
+                        print(4098)
                         store = models.Store.objects.get(vendor_id=request.POST['vendor_id'])
                         storeItem = models.Store_Item.objects.filter(item_id=jobOrderDetails[index].item_id, store=store).first()
                         storeItem.on_hand_qty -= Decimal(
@@ -4106,6 +4108,7 @@ def storeTransactionAdd(request):
                         resultant_quantity_result =  models.Job_Order_Detail.objects.filter(item_id = jobOrderDetails[index].item_id,job_order_header=request.POST['purchase_job_order_header_id']).first()
                         resultant_quantity_result.quantity_result = 0.0
                         resultant_quantity_result.save()
+                        print(4109)
                 if storeTransactionDetail:
                     models.Store_Transaction_Detail.objects.bulk_create(storeTransactionDetail)
                       
@@ -4211,6 +4214,7 @@ def storeTransactionAdd(request):
                 
 
             if "0" in inspect:
+                # print(4214)
                 store_transaction_count = models.Store_Transaction.objects.all().count()
                 storeTransactionHeader = models.Store_Transaction()
                 storeTransactionHeader.vendor_id = request.POST['vendor_id']
@@ -4220,7 +4224,7 @@ def storeTransactionAdd(request):
                 if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) != 2):
                     storeTransactionHeader.purchase_order_header_id = request.POST[
                         'purchase_job_order_header_id']
-                # print("3186")
+                print("3186")
                 if(int(request.POST['with_purchase_job_order']) == 2):
                     storeTransactionHeader.job_order_id =  request.POST[
                         'purchase_job_order_header_id']
@@ -4231,7 +4235,7 @@ def storeTransactionAdd(request):
                 storeTransactionHeader.notes = request.POST['notes']
                 storeTransactionHeader.save()
 
-                # print('3549')
+                print('3549')
                 order_details = []
                 total_amounts = 0 
                 material_reciept_all = 0
@@ -4287,25 +4291,28 @@ def storeTransactionAdd(request):
                             job_order_details.updated_at = datetime.now()
                             job_order_details.save()
                             material_reciept_all = 0 if float(job_order_details.quantity_result)>0.00 else 1 
-                    # print("3170")
+                            print("3170")
                             storeTransactionDetail.append(
                                 models.Store_Transaction_Detail(
                                     store_transaction_header_id=storeTransactionVhead.id,
-                                    item_id=jobOrderDetails[index].item_id,
+                                    item_id=request.POST.getlist('item_id')[index],
                                     store=models.Store.objects.get(vendor_id = request.POST['vendor_id']),
                                     quantity=float(request.POST.getlist('item_quantity')[index]),
                                     rate=float(request.POST.getlist('rate')[index]),
                                 )    
                             )
                             store = models.Store.objects.get(vendor_id=request.POST['vendor_id'])
-                            storeItem = models.Store_Item.objects.filter(item_id = jobOrderDetails[index].item_id , store = store).first()
-                            storeItem.on_hand_qty -= Decimal(
-                            request.POST.getlist('item_quantity')[index])
-                            storeItem.closing_qty -= Decimal(
-                            request.POST.getlist('item_quantity')[index])
-                            storeItem.updated_at = datetime.now()
-                            storeItem.save()
-
+                            print(store.id, request.POST.getlist('item_id')[index])
+                            if models.Store_Item.objects.filter(item_id = request.POST.getlist('item_id')[index] , store_id = store.id).exists():
+                                storeItem = models.Store_Item.objects.filter(item_id = request.POST.getlist('item_id')[index] , store = store).first()
+                                print( models.Store_Item.objects.filter(item_id = request.POST.getlist('item_id')[index] , store_id = store.id).exists())
+                                storeItem.on_hand_qty -= Decimal(
+                                request.POST.getlist('item_quantity')[index])
+                                storeItem.closing_qty -= Decimal(
+                                request.POST.getlist('item_quantity')[index])
+                                storeItem.updated_at = datetime.now()
+                                storeItem.save()
+                            print(4312)
                             #closed job order
                             if (material_reciept_all == 1):
                                 job_order = models.Job_Order.objects.filter(pk=request.POST[
@@ -4324,7 +4331,7 @@ def storeTransactionAdd(request):
                 models.Store_Transaction_Detail.objects.bulk_create(order_details)
                 storeTransactionHeader.total_amount = total_amounts
                 storeTransactionHeader.save()
-                # print(order_details)
+                print(order_details)
                 
                 # print('3589')
                 if request.POST['with_purchase_job_order'] != "" and int(request.POST['with_purchase_job_order']) != 0 and int(request.POST['with_purchase_job_order']) != 2 :
@@ -5488,9 +5495,11 @@ def jobOrderDetails(request):
     if header_id is not None and header_id != "":
         header_detail = list(models.Job_Order.objects.filter(pk=header_id)[:1].values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor_id', 'vendor__name', 'with_item', 'notes'))
         if direction is not None and direction != "":
-            orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id, direction=direction).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'quantity', 'required_quantity', 'item__name','item__price', 'direction','item__item_type__gst_percentage','quantity_result'))
+            orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id, direction=direction,required_quantity__gt=0).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'quantity', 'required_quantity', 'item__name','item__price', 'direction','item__item_type__gst_percentage','quantity_result'))
+            
         else:
-            orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'quantity', 'required_quantity','item__name','item__price', 'direction','item__item_type__gst_percentage','quantity_result'))
+            orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id,required_quantity__gt=0).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'quantity', 'required_quantity','item__name','item__price', 'direction','item__item_type__gst_percentage','quantity_result'))
+        print(orderDetails)
         context.update({
             'status': 200,
             'message': "Job Order Details Fetched Successfully.",
@@ -5617,7 +5626,7 @@ def materialIssueAdd(request):
         with transaction.atomic():
             job_order_income_detalis = list(models.Job_Order_Detail.objects.filter(job_order_header_id = request.POST['job_order_id'] , direction = 'incoming' ))
             #vendor store exist  for third party stock add 
-            
+            print(5620)
             if request.POST['vendor_id'] :
                 venStoreExist = models.Store.objects.filter(vendor_id =request.POST['vendor_id']).exists()
                 if((len(job_order_income_detalis) > 0) and (venStoreExist is False)):
@@ -5659,7 +5668,7 @@ def materialIssueAdd(request):
             # for incoming material virtual transaction
             thirdPartyInQuantity = 0.00
             itemInThrdParty = ''
-            
+            print(5662)
             if request.POST['vendor_id'] and len(job_order_income_detalis) > 0 :
 
                 # store transaction of virtual incomming material on thrid party stock
@@ -5741,7 +5750,7 @@ def materialIssueAdd(request):
                 if store_transaction_details and store_items_add:
                     models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
                     models.Store_Item.objects.bulk_create(store_items_add)
-
+            print(5744)
             #job satatus change
             jobOrderEdits.job_status = 1 # 0 for 'active' 1 for in 'pogress' 2 for in 'complete'
             jobOrderEdits.updated_at = datetime.now()
@@ -5752,6 +5761,7 @@ def materialIssueAdd(request):
             outgoing_incomming_details = []
             # material issue for godown
             all_material_issued=True
+            print(5755)
             for index, elem in enumerate(request.POST.getlist('item_id')):
                 sentQuantity = float(request.POST.getlist('quantity_sent')[index])
                 requiredQuantity = float(request.POST.getlist('required_quantity')[index])
@@ -5763,7 +5773,7 @@ def materialIssueAdd(request):
                     joDetail.save()
                 except:
                     pass
-
+                print(5767)
                 store_transaction_details.append(
                     models.Store_Transaction_Detail(
                         store_transaction_header=storeTransactionHeader,
@@ -5774,6 +5784,7 @@ def materialIssueAdd(request):
                         amount = float(request.POST.getlist('amount')[index])
                     )
                 )
+                print(5778)
                 if request.POST['vendor_id']:
 
                     # third party grn transaction for out going material
@@ -5788,7 +5799,7 @@ def materialIssueAdd(request):
                         )
                     )
                     # If the item exists in vendor store
-                    
+                    print(5793)
                     if models.Store_Item.objects.filter(store=vendor_store, item_id=elem).exists():
                         store_item=models.Store_Item.objects.get(store=vendor_store, item_id=elem)
                         store_item.on_hand_qty+=Decimal(request.POST.getlist('quantity_sent')[index])
@@ -5806,15 +5817,23 @@ def materialIssueAdd(request):
                                 closing_qty=float(request.POST.getlist('quantity_sent')[index]),
                             )
                         )
-                    
+                print(5811)    
                 # In house store items being reduced
-                in_house_store=models.Store.objects.get(id=request.POST['store_id'])
-                store_item = models.Store_Item.objects.get(store=in_house_store, item_id=elem)
-                store_item.on_hand_qty -= Decimal(request.POST.getlist('quantity_sent')[index])
-                store_item.closing_qty -= Decimal(request.POST.getlist('quantity_sent')[index])
-                store_item.updated_at = datetime.now()
-                store_item.save()
-
+                # print(models.Store.objects.filter(id=request.POST['store_id']).exists())
+                if models.Store.objects.filter(id=request.POST['store_id']).exists():
+                    in_house_store=models.Store.objects.get(id=request.POST['store_id'])
+                    print('AAAAA',in_house_store.id,elem)
+                    print(models.Store_Item.objects.filter(store_id=in_house_store.id, item_id=elem).exists())
+                    if  models.Store_Item.objects.filter(store_id=in_house_store.id,item_id=elem).exists():
+                        print(5818)
+                        store_item = models.Store_Item.objects.get(store_id=in_house_store.id, item_id=elem)
+                        print(5815)
+                        store_item.on_hand_qty -= Decimal(request.POST.getlist('quantity_sent')[index])
+                        store_item.closing_qty -= Decimal(request.POST.getlist('quantity_sent')[index])
+                        store_item.updated_at = datetime.now()
+                        store_item.save()
+                    print(5825)
+            print(5818)
             if all_material_issued:
                 jobOrderEdits.material_issue = 2
             else:

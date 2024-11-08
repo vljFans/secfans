@@ -501,7 +501,8 @@
                 if (response.status == 200) {
                     $('#submit').removeAttr('hidden') 
                     $('#tAmount').removeAttr('hidden')
-
+                    console.log(response.job_order_details);
+                    
                     // If Job Order is third party manufacturing
                     if(response.job_order_header_detail[0].manufacturing_type=="Third party"){
                         $('#vendor_name').val(response.job_order_header_detail[0].vendor__name)
@@ -686,8 +687,9 @@
                         //         </div>`
                         $('#table_form').html(`<p></p>`);
                         // looping through all job order details of the selected job order
+                        var text_inp =``
                         for(let index=0 ; index<response.job_order_details.length; index++){
-                            var text_inp = `
+                            text_inp += `
                                 <div class="form-row content_parent">
                                     <input type="hidden" class="job_order_detail_id" name="job_order_detail_id" value="${response.job_order_details[index].id}">
                                     <div class="col-md-3 mb-3">
@@ -751,7 +753,7 @@
                                     return option.text;
                                 }
                             });
-                            $('#table_form').append(text_inp);
+                            // $('#table_form').append(text_inp);
                         }
 
                         $('#table_form').html(text_inp);
