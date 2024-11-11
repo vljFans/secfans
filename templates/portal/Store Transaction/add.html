@@ -926,10 +926,11 @@
 
     $(document).on('change', '#purchase_job_order_header_id', function () {
         let header_id = $(this).val();
-        console.log(header_id);
+        // console.log(header_id);
         let jobOrPurchaseOrder = parseInt($('#with_purchase_job_order').val())
-        // console.log(jobOrPurchaseOrder);
+        console.log(jobOrPurchaseOrder);
         if(jobOrPurchaseOrder == 2 ){
+
             $.ajax({
                 url: "{% url 'api:jobOrderDetails' %}?header_id=" + header_id +'&direction=incoming',
                 type: 'GET',
