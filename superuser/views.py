@@ -1050,7 +1050,6 @@ def jobOrderView(request, id):
 
 #--- developed by saswata
 
-
 @login_required
 def materialIssueList(request):
     context.update({

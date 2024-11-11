@@ -108,6 +108,7 @@ urlpatterns = [
     path('job-order-add', views.jobOrderAdd, name='jobOrderAdd'),
     path('job-order-edit/<int:id>', views.jobOrderEdit, name='jobOrderEdit'),
     path('job-order-view/<int:id>', views.jobOrderView, name='jobOrderView'),
+    
 
     # material issue url --- developed by saswata
     path('material-issue-list',views.materialIssueList, name='materialIssueList'),

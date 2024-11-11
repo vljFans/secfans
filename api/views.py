@@ -5490,15 +5490,20 @@ def jobOrderDelete(request):
 @permission_classes([IsAuthenticated])
 def jobOrderDetails(request):
     context = {}
+    print(5493)
     header_id = request.GET.get('header_id', None)
     direction = request.GET.get('direction', None)
+    materialReciept = request.GET.get('materialReciept', None)
     if header_id is not None and header_id != "":
         header_detail = list(models.Job_Order.objects.filter(pk=header_id)[:1].values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor_id', 'vendor__name', 'with_item', 'notes'))
         if direction is not None and direction != "":
-            orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id, direction=direction,required_quantity__gt=0).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'quantity', 'required_quantity', 'item__name','item__price', 'direction','item__item_type__gst_percentage','quantity_result'))
+            if direction == 'incoming' :
+                orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id, direction=direction,quantity_result__gt=0).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'quantity', 'required_quantity', 'item__name','item__price', 'direction','item__item_type__gst_percentage','quantity_result'))
+            else:
+                orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id, direction=direction,required_quantity__gt=0).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'quantity', 'required_quantity', 'item__name','item__price', 'direction','item__item_type__gst_percentage','quantity_result'))
             
         else:
-            orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id,required_quantity__gt=0).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'quantity', 'required_quantity','item__name','item__price', 'direction','item__item_type__gst_percentage','quantity_result'))
+            orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'quantity', 'required_quantity','item__name','item__price', 'direction','item__item_type__gst_percentage','quantity_result'))
         # print(orderDetails)
         context.update({
             'status': 200,
@@ -5834,6 +5839,11 @@ def materialIssueAdd(request):
                         store_item.save()
                     # print(5825)
             # print(5818)
+            jobOrderEditsdetails = not models.Job_Order_Detail.objects.filter(direction='outgoing',
+            job_order_header_id=jobOrderEdits.id).exclude(required_quantity=0.00).exists()
+
+            all_material_issued = True if jobOrderEditsdetails else False
+            
             if all_material_issued:
                 jobOrderEdits.material_issue = 2
             else:
