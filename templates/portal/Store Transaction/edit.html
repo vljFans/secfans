@@ -61,7 +61,7 @@
                 <div class="card-body">
                     <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
                         <input type="hidden" name="id" value="{{storeTransaction.id}}">
-                        <input type="hidden" name="transaction_type_id" value="{{transaction_type_id}}">  
+                        <input type="hidden" name="transaction_type_id" value="{{storeTransaction.transaction_type_id}}">  
                         <div class="form-row">
                             <div class="col-md-4 mb-3">
                                 <label>Vendor/Supplier<span class="required-indicator">*</span></label>
@@ -83,67 +83,96 @@
                             <div class="col-md-4 mb-3">
                                 <label>Purchase/Job Order<span class="required-indicator">*</span></label>
                                 <div class="input-group">
-                                    <select class="custom-select selectpicker" id="with_purchase_order"
-                                        name="with_purchase_order" required disabled>
+                                    <select class="custom-select selectpicker" id="with_purchase_job_order"
+                                        required disabled>
                                         <option value="1" {% if storeTransaction.purchase_order_header_id %}selected{% endif %} >With Purchase Order</option>
-                                        <option value="0" {% if not storeTransaction.purchase_order_header_id %}selected{% endif %} >Without Purchase Order</option>
-                                        <option value="2" {% if  storeTransaction.job_order_id %}selected{% endif %} >With Job Order</option>
+                                        <option value="0" {% if not storeTransaction.purchase_order_header_id and not storeTransaction.job_order_id %}selected{% endif %} >Without Purchase Order</option>
+                                        <option value="2" {% if storeTransaction.job_order_id %}selected{% endif %} >With Job Order</option>
                                     </select>
+                                    {% if storeTransaction.purchase_order_header_id %}
+                                        <input type="hidden" name="with_purchase_job_order"  class="form-control" value="1">
+                                    {% endif %}
+                                    {% if  not storeTransaction.purchase_order_header_id and not storeTransaction.job_order_id %}
+                                        <input type="hidden" name="with_purchase_job_order"  class="form-control" value="0">
+                                    {% endif %}
+                                    {% if storeTransaction.job_order_id %}
+                                        <input type="hidden" name="with_purchase_job_order"  class="form-control" value="2">
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <div class="purchase_order_type_content" {% if not storeTransaction.purchase_order_header_id %}style="display: none;"{% endif %}>
-                                    <label>Purchase Order Reference<span class="required-indicator">*</span></label>
-                                    <div class="input-group">
-                                        <select class="custom-select selectpicker" id="purchase_order_header_id"
-                                            name="purchase_order_header_id" {% if storeTransaction.purchase_order_header_id %}required{% endif %} disabled>
-                                            <option value="">Select Purchase Order</option>
-                                            {% for purchaseOrderHeader in purchaseOrderHeaders %}
-                                                {% if storeTransaction.vendor_id == purchaseOrderHeader.vendor_id %}
-                                                    <option {% if storeTransaction.purchase_order_header_id == purchaseOrderHeader.pk %}selected{% endif %} value="{{purchaseOrderHeader.pk}}">{{purchaseOrderHeader.order_number}}</option>
-                                                {% endif %}
-                                            {% endfor %}
-                                        </select>
+                                {% if not storeTransaction.job_order_id %}
+                                    <div class="purchase_job_order_type_content" {% if not storeTransaction.purchase_order_header_id %}style="display: none;" {% endif %}>
+                                        <label>Purchase Order Reference<span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker" id="purchase_order_header_id"
+                                                name="purchase_order_header_id" {% if storeTransaction.purchase_order_header_id %}required{% endif %}>
+                                                <option value="">Select Purchase Order</option>
+                                                {% for purchaseOrderHeader in purchaseOrderHeaders %}
+                                                    {% if storeTransaction.vendor_id == purchaseOrderHeader.vendor_id %}
+                                                        <option {% if storeTransaction.purchase_order_header_id == purchaseOrderHeader.pk %}selected{% endif %} value="{{purchaseOrderHeader.pk}}">{{purchaseOrderHeader.order_number}}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="purchase_order_type_content" {% if not storeTransaction.job_order_id %}style="display: none;"{% endif %}>
-                                    <label>Job Order Reference<span class="required-indicator">*</span></label>
-                                    <div class="input-group">
-                                        <select class="custom-select selectpicker" 
-                                            name="purchase_order_header_id" {% if storeTransaction.job_order_id %}required{% endif %} disabled>
-                                            <option {% if storeTransaction.job_order_id %}selected{% endif %} value="{{storeTransaction.job_order_id}}">{{storeTransaction.job_order.order_number}}</option>
-                                        </select>
+                                {% else %}
+                                    <div class="purchase_job_order_type_content" >
+                                        <label>Job Order Reference<span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker" 
+                                                name="job_order_header_id" {% if storeTransaction.job_order_id %}required{% endif %} disabled>
+                                                <option {% if storeTransaction.job_order_id %}selected{% endif %} value="{{storeTransaction.job_order_id}}">{{storeTransaction.job_order.order_number}}</option>
+                                            </select>
+                                            <input type="hidden" 
+                                                name="job_order_header_id"  class="form-control" value="{{storeTransaction.job_order_id}}"
+                                                >
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-4 mb-4">
-
-                                    <label class="invoice_challan_lbl">{% if not storeTransaction.job_order_id %}Challan {% else %} Invoice {% endIf %} <span class="required-indicator">*</span></label>
-                                    <input type="text" onkeyup="checkMaxMin(this)"
-                                        name="invoice_challan"  class="form-control invoice_challan" value="{{storeTransaction.invoice_challan}}"
-                                        placeholder="Invoice/challanNo" required>
-                                </div>
+                                {% endif %}
                             </div>
+                            <div class="col-md-4 mb-4">
+                                <label class="invoice_challan_lbl">{% if not storeTransaction.job_order_id %}Challan {% else %} Invoice {% endif %} <span class="required-indicator">*</span></label>
+                                <input type="text" onkeyup="checkMaxMin(this)"
+                                    name="invoice_challan"  class="form-control invoice_challan" value="{{storeTransaction.invoice_challan}}"
+                                    placeholder="Invoice/challanNo" required>
+                            </div>
+                            
                             <div class="purchase_order_details col-md-12">
                                 <div class="original_purchase_order_details">
                                 {% for storeTransactionDetail in storeTransactionDetails%}
                                     <div class="form-row content_parent">
-                                        {% if storeTransaction.purchase_order_header_id %}
-                                        <input type="hidden" class="hidden_item_id" name="item_id" value="{{storeTransactionDetail.item_id}}"> 
-                                        {% endif %}
-                                        <div class="col-md-3 mb-3">
+                                        
+                                        <div class="col-md-2 mb-2">
+                                            {% if storeTransaction.purchase_order_header_id %}
+                                                <input type="hidden" class="hidden_item_id" name="item_id" value="{{storeTransactionDetail.item_id}}"> 
+                                            {% endif %}
                                             <label>Item <span class="required-indicator">*</span></label>
                                             <div class="input-group">
-                                                <select class="custom-select selectpicker item_id" name="item_id" required {% if storeTransaction.purchase_order_header_id %}disabled{% endif %}>
-                                                    <option value="">Choose...</option>
-                                                    {% for item in items %}
-                                                        <option {% if storeTransactionDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
-                                                    {% endfor %}
-                                                </select>
-                                                {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
-                                                    <div class="btn float-end addForm" data-text="Add New item"
-                                                            data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
-                                                            <i class="fa fa-plus"></i>
-                                                    </div>
+                                                {% if storeTransaction.job_order_id %}
+                                                    <select class="custom-select selectpicker item_id" name="item_id" disabled>
+                                                        <option value="">Choose...</option>
+                                                        {% for item in items %}
+                                                            <option {% if storeTransactionDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    <input type="hidden" class="hidden_item_id" name="item_id" value="{{storeTransactionDetail.item_id}}">
+                                                {% else %}
+                                                    <select class="custom-select selectpicker item_id" name="item_id" required {% if storeTransaction.purchase_order_header_id %}disabled{% endif %}>
+                                                        <option value="">Choose...</option>
+                                                        {% for item in items %}
+                                                            <option {% if storeTransactionDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    {% if not storeTransaction.purchase_order_header_id %}
+                                                        {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
+                                                            <div class="btn float-end addForm" data-text="Add New item"
+                                                                    data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
+                                                                    <i class="fa fa-plus"></i>
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endif %}
+
                                                 {% endif %}
                                             </div>
                                         </div>
@@ -156,7 +185,7 @@
                                         </div>
                                         <div class="col-md-1 mb-3">
                                             <label>Quantity <span class="required-indicator">*</span></label>
-                                            <input type="text" onkeyup="checkMaxMin(this)" value="{{storeTransactionDetail.quantity}}"
+                                            <input type="text" onkeyup="checkMaxMin(this)" value="{{storeTransactionDetail.quantity|floatformat}}"
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                 name="item_quantity" min="0.0001" class="form-control item_quantity"
                                                 {% for key, value in max_quantity.items %}
@@ -166,9 +195,9 @@
                                                 {% endfor %}
                                                 placeholder="Quantity" required>
                                         </div>
-                                        <div class="col-md-2 mb-3">
+                                        <div class="col-md-1 mb-3">
                                             <label>Price <span class="required-indicator">*</span></label>
-                                            <input type="text" onkeyup="checkMaxMin(this)" readonly value="{{storeTransactionDetail.amount}}"
+                                            <input type="text" onkeyup="checkMaxMin(this)" readonly value="{{storeTransactionDetail.amount|floatformat}}"
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                 name="item_price" min="0.01" class="form-control item_price"
                                                 placeholder="0.00" required>
@@ -186,7 +215,7 @@
                                                 name="amount_with_gst" min="0.01" class="form-control amount_with_gst"
                                                 placeholder="0.00" required>
                                         </div>
-                                        <div class="col-md-1 mb-3">
+                                        <div class="col-md-2 mb-2">
                                             <label>Store <span class="required-indicator">*</span></label>
                                             <div class="input-group">
                                                 <select class="custom-select selectpicker store_id" name="store_id" required>
@@ -197,11 +226,20 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        {% if storeTransaction.purchase_order_header_id %}
+                                        <div class="col-md-1 mb-1">
+                                            <label for="itemInspect">Inspect</label><br>
+                                            <input type="hidden" name="itemInspect" value="0"><input type="checkbox" onclick="this.previousSibling.value=1-this.previousSibling.value" style="transform: scale(2);margin-top: 12px;">
+                                        </div>
+                                        {% if storeTransaction.purchase_order_header_id  %}
                                             <div class="col-md-1 mb-4 text-center ">
                                                 <button type="button" class="btn remove_item mt-1"><i class="fa fa-minus"></i></button>
                                             </div>
-                                        {% else %}
+                                        {% endif %}
+                                        {% if storeTransaction.job_order_id %}
+                                            <div class="col-md-1 mb-4 text-center ">
+                                            </div>
+                                        {% endif %}
+                                        {% if not storeTransaction.purchase_order_header_id and not storeTransaction.job_order_id %} 
                                             {% if forloop.counter == 1 %}
                                                 <div class="col-md-1 mb-4 text-center ">
                                                     <button type="button" class="btn add_item mt-1"><i class="fa fa-plus"></i></button>
@@ -464,7 +502,7 @@
     });
 
 
-    $(document).on('change', '#with_purchase_order', function () {
+    $(document).on('change', '#with_purchase_job_order', function () {
         purchase_order_type = $(this).val();
         console.log("{{storeTransaction.purchase_order_header_id}}");
         if("{{storeTransaction.purchase_order_header_id}}"=="None" && parseInt(purchase_order_type)==0){
@@ -473,7 +511,7 @@
             })();
         }
         if (parseInt(purchase_order_type) == 1) {
-            $('.purchase_order_type_content').show();
+            $('.purchase_job_order_type_content').show();
             $('#purchase_order_header_id').attr('required', 'required');
             purchase_details = `<div class="form-row content_parent">
                                     <div class="col-md-3 mb-3">
@@ -540,7 +578,7 @@
                                 </div>`;
             $(".purchase_order_details").html(purchase_details);
         } else {
-            $('.purchase_order_type_content').hide();
+            $('.purchase_job_order_type_content').hide();
             $('#purchase_order_header_id').val("")
             $('#purchase_order_header_id').removeAttr("required")
             $('#purchase_order_header_id').removeAttr('required');
@@ -703,7 +741,7 @@
                     } else {
                         var options_text = `<option value="">Select Purchase Order</option>`;
                         $("#purchase_order_header_id").html(options_text);
-                        $('.purchase_order_type_content').hide();
+                        $('.purchase_job_order_type_content').hide();
                         $('#purchase_order_header_id').removeAttr('required');
                         purchase_details = `<div class="form-row content_parent">
                                     <div class="col-md-3 mb-3">
@@ -768,7 +806,7 @@
                                 </div>`;
                         $(".purchase_order_details").html(purchase_details);
                         $("#total_amount").val(0);
-                        $("#with_purchase_order").val(0);
+                        $("#with_purchase_job_order").val(0);
                     }
                     $('.selectpicker').select2({
                         placeholder: '',
@@ -970,7 +1008,7 @@
     $(document).on('change', '#purchase_order_header_id', function () {
         let header_id = $(this).val();
         if (header_id != "") {
-            $("#with_purchase_order").val(1);
+            $("#with_purchase_job_order").val(1);
         }
         $.ajax({
             url: "{% url 'api:purchaseOrderDetails' %}?header_id=" + header_id,

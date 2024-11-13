@@ -242,6 +242,7 @@ def roleView(request, id):
 @login_required
 def clientConfigList(request):
     configList = models.Configuration_User.objects.all()
+   
     context.update({
         'configList': configList,
         'page_title': "Client Config ",
