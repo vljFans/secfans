@@ -646,6 +646,23 @@ def storeEdit(request, id):
     })
     return render(request, 'portal/Store/edit.html', context)
 
+@login_required
+def gstList(request):
+    context.update({
+        'page_title': "Gst List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Gst", 'url': reverse('superuser:gstList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/GST/list.html', context)
+
+
+@login_required
+def gstAdd(request):
+    context.update({
+        'page_title': "Gst Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Gst", 'url': reverse('superuser:gstList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/GST/add.html', context)
+
 
 
 @login_required
@@ -1433,11 +1450,13 @@ def purchaseBillList(request):
 @login_required
 def purchaseBillAdd(request):
     vendor_list = list(models.Vendor.objects.filter(status = 1, deleted =0).values('pk','name'))
+    gst_list =  models.Gst.objects.filter(status = 1, deleted =0)
     if request.GET.get('id', None):
         id = request.GET.get('id', None)
         items = models.Item.objects.all()
         purchaseBill = models.Purchase_Bill.objects.get(pk=id)
         context.update({
+            'gst_list' : gst_list,
             'purchase_bill': purchaseBill,
             'items': items,
             'Vendor_list': vendor_list,
@@ -1463,7 +1482,7 @@ def purchaseBillAdd(request):
 
 @login_required
 def purchaseBillEdit(request,id):
-
+    gst_list = models.Gst.objects.get(status = 1, deleted =0)
     purchaseBill = models.Purchase_Bill.objects.get(pk=id)
     context.update({
         'purchase_bill': purchaseBill,

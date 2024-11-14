@@ -219,7 +219,9 @@
                         const element = page_items[index];
                         tbody_buttom_text =``
                         console.log((element.manufacturing_material_type == 'FG' ? 'true' : 'false'));
-                        if(element.material_issue != 0 && element.material_reciept < 1){
+                        if(element.material_issue > 1 && element.material_reciept < 1){
+                            console.log(223);
+                            
                             tbody_buttom_text = `<td>
                                 {% if request.user.is_superuser == 1 or 'change_job_order'|get_session_permission:request is not None %}
                                 <a href="#" onclick="return alert('cannot edit  as material already get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-pencil"></i> </a>    
@@ -241,7 +243,8 @@
                                     {% endif %}` : ''}
                                 </td>`
                         }
-                        else if(element.material_reciept == 1){
+                        
+                        if(element.material_reciept == 1){
                             tbody_buttom_text = `<td>
                                 {% if request.user.is_superuser == 1 or 'change_job_order'|get_session_permission:request is not None %}
                                 <a href="#" onclick="return alert('cannot edit  as material already get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-pencil"></i> </a>    
@@ -257,7 +260,7 @@
                                 {% endif %}
                                 </td>`
                         }
-                        else{
+                        if(element.material_issue < 2 ){
                             console.log('153');
                             tbody_buttom_text = `<td>
                                     {% if request.user.is_superuser == 1 or 'change_job_order'|get_session_permission:request is not None %}
@@ -282,8 +285,8 @@
                                 <td>${ element.manufacturing_material_type == 'SFG' ? 'Semi finish Goods': ( element.manufacturing_material_type == 'FG' ?'Finished Goods'  : 'NA') }</td>
                                 <td>${element.estimated_time_day}</td>
                                 <td>${element.notes}</td> 
-                                 <td style="color: ${element.job_status == 0 ? 'blue' : ((element.job_status == 1 && element.material_issue ==2) ? 'green' : (element.job_status == 1 && element.material_issue ==1) ? 'black':'red')}; ">
-                                    ${element.job_status == 0 ? 'Open' : ((element.job_status == 1 && element.material_issue ==2) ? 'WIP' : (element.job_status == 1 && element.material_issue ==1) ? 'WIP':'Closed')}
+                                 <td style="color: ${element.job_status == 0 ? 'blue' : ((element.job_status == 1 && element.material_issue ==3) ? 'green' : (element.job_status == 1 && (element.material_issue ==1 || element.material_issue ==2)) ? 'black':'red')}; ">
+                                    ${element.job_status == 0 ? 'Open' : ((element.job_status == 1 && element.material_issue ==3) ? 'WIP' : (element.job_status == 1 && (element.material_issue ==1 || element.material_issue ==2)) ? 'WIP':'Closed')}
                                 </td>`+ tbody_buttom_text+`</tr>`;
                     }
                     // pagination_text = ``;

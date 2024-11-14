@@ -27,7 +27,7 @@ import math
 import environ
 import csv
 from fpdf import FPDF
-from django.db.models import Avg, Count, Min, Sum , Case, When, DecimalField
+from django.db.models import Avg, Count, Min, Sum , Case, When, DecimalField ,F
 from fractions import Fraction
 import pandas as pd
 from django.contrib.auth.models import Permission
@@ -2179,6 +2179,87 @@ def itemColorDelete(request):
         transaction.rollback()
     return JsonResponse(context)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def gstList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    keyword = request.GET.get('keyword', None)
+    find_all = request.GET.get('find_all', None)
+    if id is not None and id != "":
+        gst = list(models.Gst.objects.filter(pk=id)[:1].values(
+            'pk', 'gst_value', 'igst_value', 'cgst_value', 'sgst_value','name'))
+        context.update({
+            'status': 200,
+            'message': "Item Fetched Successfully.",
+            'page_items': gst,
+        })
+        return JsonResponse(context)
+    else:
+        if keyword is not None and keyword != "":
+            gsts=models.Gst.objects.filter(status=1, deleted=0).filter(Q(name__icontains=keyword))
+        else:
+            gsts=models.Gst.objects.filter(status=1, deleted=0)
+
+        gsts = list(gsts.values(
+                'pk', 'gst_value', 'igst_value', 'cgst_value', 'sgst_value','name'))
+
+        if find_all is not None and int(find_all) == 1:
+            context.update({
+                'status': 200,
+                'message': "Gst Fetched Successfully.",
+                'page_items': gsts,
+            })
+            return JsonResponse(context)
+        
+        per_page = int(env("PER_PAGE_DATA"))
+        button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+        current_page = request.GET.get('current_page', 1)
+
+        paginator = CustomPaginator(gsts, per_page)
+        page_items = paginator.get_page(current_page)
+        total_pages = paginator.get_total_pages()
+
+        context.update({
+            'status': 200,
+            'message': "Gst Fetched Successfully.",
+            'page_items': page_items,
+            'total_pages': total_pages,
+            'per_page': per_page,
+            'current_page': int(current_page),
+            'button_to_show': int(button_to_show),
+        })
+    return JsonResponse(context)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def gstAdd(request):
+    context ={}
+    print(request.POST)
+    try:
+        with transaction.atomic():
+            gstHeader = models.Gst()
+            gstHeader.name = request.POST['gst']
+            gstHeader.gst_value = Decimal(request.POST['gst'])
+            gstHeader.igst_value = Decimal(request.POST['gst'])
+            gstHeader.cgst_value = Decimal(request.POST['gst'])/ Decimal('2')
+            gstHeader.sgst_value =  Decimal(request.POST['gst'])/Decimal('2')
+            gstHeader.save()
+        transaction.commit()    
+        userId = request.COOKIES.get('userId', None)
+        user_log_details_add(userId,'new gst updated')
+        context.update({
+            'status': 200,
+            'message': 'gst updated'
+        })
+    except Exception:
+        context.update({
+            'status': 500,
+            'message': 'something went wrong'
+        })
+        transaction.rollback()
+
+    return JsonResponse(context)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -5604,7 +5685,7 @@ def jobOrderTimeComplete(pk):
     total_hours = time_difference.days * 24 + time_difference.seconds / 3600
     jobOrderHeader.actual_time_take = str(round(total_hours, 3)) + 'hr'
     jobOrderHeader.job_status = 2 # 0 for active 1 for in pogress 2 for complete
-    jobOrderHeader.material_reciept = 1 # full mateial recieved
+    jobOrderHeader.material_reciept = 2 # full mateial recieved
     jobOrderHeader.updated_at = datetime.now()
     jobOrderHeader.save()
 
@@ -5712,7 +5793,7 @@ def jobOrderEdit(request):
         with transaction.atomic():
             jobOrderHeader = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=request.POST['id'])
             jobOrderHeader.order_number = request.POST['order_number']
-           
+            print(request.POST)
             jobOrderHeader.order_date = request.POST['order_date']
             # jobOrderHeader.manufacturing_type = request.POST['manufacturing_type']
             if 'vendor_id' in request.POST:
@@ -5726,7 +5807,8 @@ def jobOrderEdit(request):
             jobOrderHeader.notes = request.POST['notes']
             jobOrderHeader.updated_at = now()
             jobOrderHeader.save()
-            jobOrderHeader.job_order_detail_set.all().delete()
+            if jobOrderHeader.material_issue == 0:
+                jobOrderHeader.job_order_detail_set.all().delete()
             job_order_details = []
             outInDetailRatio =[]
             bom_material_details = []
@@ -5740,8 +5822,8 @@ def jobOrderEdit(request):
                 
                 outgoingIncommingratioHead.updated_at = now()
                 outgoingIncommingratioHead.save()
-                
-                outgoingIncommingratioHead.outgoing_incoming_ratio_details_set.all().delete()
+                if jobOrderHeader.material_issue == 0:
+                    outgoingIncommingratioHead.outgoing_incoming_ratio_details_set.all().delete()
                 
                 # ratio table
                 for item_id, quantity in zip(request.POST.getlist('outgoing_item_id'), request.POST.getlist('outgoing_quantity')):
@@ -5758,23 +5840,25 @@ def jobOrderEdit(request):
 
                         )
                     )
-
+                
                 models.Outgoing_Incoming_Ratio_Details.objects.bulk_create(outInDetailRatio)
             #incomming details     
             for item_id, quantity in zip(request.POST.getlist('incoming_item_id'), request.POST.getlist('incoming_quantity')):
-                job_order_details.append(
-                    models.Job_Order_Detail(
-                        job_order_header_id=jobOrderHeader.id,
-                        item_id=int(item_id),
-                        quantity=float(quantity),
-                        required_quantity=float(quantity),
-                        quantity_result = float(quantity),
-                        direction="incoming"
+                
+                if  jobOrderHeader.material_issue == 0:
+                    job_order_details.append(
+                        models.Job_Order_Detail(
+                            job_order_header_id=jobOrderHeader.id,
+                            item_id=int(item_id),
+                            quantity=float(quantity),
+                            required_quantity=float(quantity),
+                            quantity_result = float(quantity),
+                            direction="incoming"
+                        )
                     )
-                )
                 incomming_item_id = int(item_id)
                 incomming_item_quantity = float(quantity)
-            # # # print(5299)
+            print(5299)
             # bill of material add
             if (int(bomNeeded) == 1) : 
         
@@ -5792,16 +5876,21 @@ def jobOrderEdit(request):
             # outgoing details
           
             for item_id, quantity in zip(request.POST.getlist('outgoing_item_id'), request.POST.getlist('outgoing_quantity')):
-                job_order_details.append(
-                    models.Job_Order_Detail(
-                        job_order_header_id=jobOrderHeader.id,
-                        item_id=int(item_id),
-                        quantity=float(quantity),
-                        required_quantity=float(quantity),
-                        quantity_result = float(quantity),
-                        direction="outgoing"
-                    )
-                )
+                jobOrderDetailsExist = models.Job_Order_Detail.objects.filter(job_order_header_id = request.POST['id'], item_id = int(item_id), quantity__gt =F('required_quantity')).exists()
+                if not jobOrderDetailsExist:
+                    jobOrderDetailsExist = models.Job_Order_Detail.objects.filter(job_order_header_id = request.POST['id'], item_id = int(item_id)).exists()
+                    if jobOrderDetailsExist:
+                        models.Job_Order_Detail.objects.filter(job_order_header_id = request.POST['id'], item_id = int(item_id)).delete()
+                        job_order_details.append(
+                            models.Job_Order_Detail(
+                                job_order_header_id=jobOrderHeader.id,
+                                item_id=int(item_id),
+                                quantity=float(quantity),
+                                required_quantity=float(quantity),
+                                quantity_result = float(quantity),
+                                direction="outgoing"
+                            )
+                        )
                 if (int(bomNeeded) == 1) and  bom_head :
                     # # # print(5165)
                     bom_material_details.append(
@@ -6054,7 +6143,7 @@ def materialIssueAdd(request):
             # for incoming material virtual transaction
             thirdPartyInQuantity = 0.00
             itemInThrdParty = ''
-            # # # print(5662)
+            # print(5662)
             if request.POST['vendor_id'] and len(job_order_income_detalis) > 0 :
 
                 # store transaction of virtual incomming material on thrid party stock
@@ -6080,7 +6169,7 @@ def materialIssueAdd(request):
 
                 store_transaction_details = []
                 store_items_add=[]
-                # # # print(job_order_income_detalis)
+                print(job_order_income_detalis)
                # incomming material will be assigned only one time no parial
                 for index in range(0, len(job_order_income_detalis)):
                     # # # print(jobOrderEdits.job_status )
@@ -6136,9 +6225,11 @@ def materialIssueAdd(request):
                 if store_transaction_details and store_items_add:
                     models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
                     models.Store_Item.objects.bulk_create(store_items_add)
-            # # # print(5744)
+            # print(5744)
             #job satatus change
-            jobOrderEdits.job_status = 1 # 0 for 'active' 1 for in 'pogress' 2 for in 'complete'
+            jobOrderDetailsExist = models.Job_Order_Detail.objects.filter(job_order_header_id = request.POST['job_order_id'],direction='outgoing',required_quantity = 0.00).exists()
+            # print(6223)
+            jobOrderEdits.job_status = 1  # 0 for 'active' 1 for in 'pogress' 2 for in 'complete'
             jobOrderEdits.updated_at = datetime.now()
             jobOrderEdits.save()
 
@@ -6147,7 +6238,7 @@ def materialIssueAdd(request):
             outgoing_incomming_details = []
             # material issue for godown
             all_material_issued=True
-            # # # print(5755)
+            # print(5755)
             for index, elem in enumerate(request.POST.getlist('item_id')):
                 sentQuantity = float(request.POST.getlist('quantity_sent')[index])
                 requiredQuantity = float(request.POST.getlist('required_quantity')[index])
@@ -6159,7 +6250,7 @@ def materialIssueAdd(request):
                     joDetail.save()
                 except:
                     pass
-                # # # print(5767)
+                # print(5767)
                 store_transaction_details.append(
                     models.Store_Transaction_Detail(
                         store_transaction_header=storeTransactionHeader,
@@ -6170,7 +6261,7 @@ def materialIssueAdd(request):
                         amount = float(request.POST.getlist('amount')[index])
                     )
                 )
-                # # # print(5778)
+                print(5778)
                 if request.POST['vendor_id']:
 
                     # third party grn transaction for out going material
@@ -6219,16 +6310,24 @@ def materialIssueAdd(request):
                         store_item.updated_at = datetime.now()
                         store_item.save()
                     # # # print(5825)
-            # # # print(5818)
+            # print(5818)
             jobOrderEditsdetails = not models.Job_Order_Detail.objects.filter(direction='outgoing',
             job_order_header_id=jobOrderEdits.id).exclude(required_quantity=0.00).exists()
-
+            # print(6308,'AAAAAAAa')
             all_material_issued = True if jobOrderEditsdetails else False
             
             if all_material_issued:
-                jobOrderEdits.material_issue = 2
+                jobOrderEdits.material_issue = 3
             else:
-                jobOrderEdits.material_issue = 1
+                print(6314,"bbbbbbbb")
+                jobOrderEditsdetails = models.Job_Order_Detail.objects.filter(
+                    direction='outgoing',
+                    job_order_header_id=jobOrderEdits.id,
+                    quantity=F('required_quantity')
+                ).exists()
+
+                print(jobOrderEditsdetails)
+                jobOrderEdits.material_issue = 1 if jobOrderEditsdetails else 2
             jobOrderEdits.save()
               
             models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
@@ -7592,6 +7691,7 @@ def purchaseBillDetailsAdd(request):
 
             purcahse_bill_header.vechical_no = request.POST['vehicle_no']
             # # # # print(purcahse_bill_header.total_igst)
+            purcahse_bill_header.total_gst = request.POST['total_igst'] if float(request.POST['total_igst'])!= 0.00  else (float(request.POST['total_cgst']) + float(request.POST['total_sgst']))
             purcahse_bill_header.total_igst = request.POST['total_igst']
             purcahse_bill_header.total_cgst = request.POST['total_cgst']
             purcahse_bill_header.total_sgst = request.POST['total_sgst']
@@ -7615,7 +7715,9 @@ def purchaseBillDetailsAdd(request):
                             rate = request.POST.getlist('rate')[index],
                             amount = request.POST.getlist('amount')[index],
                             igst_percentage = request.POST.getlist('igst')[index],
-                            igst_amount =  request.POST.getlist('amount_igst')[index],
+                            igst_amount =  request.POST.getlist('amount_igst')[index], 
+                            gst_percentage = request.POST.getlist('gst')[index],
+                            gst_amount = request.POST.getlist('amount_igst')[index],
                             amount_with_gst = request.POST.getlist('amount_gst')[index]
                         )
                     )
@@ -7639,6 +7741,8 @@ def purchaseBillDetailsAdd(request):
                             cgst_amount = request.POST.getlist('amount_cgst')[index],
                             sgst_percentage = request.POST.getlist('sgst')[index],
                             sgst_amount =  request.POST.getlist('amount_sgst')[index],
+                            gst_percentage = request.POST.getlist('gst')[index],
+                            gst_amount = Decimal(request.POST.getlist('amount_cgst')[index]) + Decimal(request.POST.getlist('amount_sgst')[index]),
                             amount_with_gst = request.POST.getlist('amount_gst')[index]
                         )
 

@@ -76,6 +76,9 @@ urlpatterns = [
     path('store-list', views.storeList, name='storeList'),
     path('store-add', views.storeAdd, name='storeAdd'),
     path('store-edit/<int:id>', views.storeEdit, name='storeEdit'),
+
+    path('gst-list', views.gstList, name='gstList'),
+    path('gst-add', views.gstAdd, name='gstAdd'),
     
     path('bill-of-material-list', views.billOfMaterialList, name='billOfMaterialList'),
     path('bill-of-material-add', views.billOfMaterialAdd, name='billOfMaterialAdd'),

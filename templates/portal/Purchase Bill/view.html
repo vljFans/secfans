@@ -107,6 +107,8 @@
                                     <th>Quantity</th>
                                     <th>Rate</th>
                                     <th>Amount</th>
+                                    <th>gst%</th>
+                                    <th>gst Amount</th>
                                     <th>Igst%</th>
                                     <th>Igst Amount</th>
                                     <th>Cgst%</th>
@@ -124,6 +126,8 @@
                                     <td>{{purchaseBillDet.quantity|floatformat}}</td>
                                     <td>{{purchaseBillDet.rate}}</td>
                                     <td>{{purchaseBillDet.amount}}</td>
+                                    <td>{{purchaseBillDet.gst_percentage}}</td>
+                                    <td>{{purchaseBillDet.gst_amount}}</td>
                                     {% if purchaseBillDet.igst_percentage != 0.00  %}
                                     <td>{{purchaseBillDet.igst_percentage}}</td>
                                     <td>{{purchaseBillDet.igst_amount}}</td>
@@ -148,6 +152,8 @@
                                     <td>   </td>
                                     <td>-----</td>
                                     <td>{{purchase_bill.total_amount}}</td>
+                                    <td>    </td>
+                                    <td>{{purchase_bill.total_gst}}</td>
                                     <td>----</td>
                                     <td>{{purchase_bill.total_igst}}</td>
                                     <td>----</td>

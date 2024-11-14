@@ -125,6 +125,16 @@
                                         <input type="text" class="form-control rate" name="rate"  onkeyup="checkMaxMin(this)"
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)" min="0.01" value="{{purchaseBillDet.rate}}" required>
                                     </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>gst<span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker gsthead"  name="gst" required>
+                                                {% for gst in gst_list %}
+                                                <option value="{{gst.gst_value}}">{{gst.gst_value}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
 
                                     <div class="col-md-2 mb-3">
                                         <label>Quantity<span class="required-indicator">*</span></label>
@@ -146,8 +156,7 @@
                                         <input type="number" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="igst" class="form-control igst gst"
-                                            placeholder="0.00" value="{{purchaseBillDet.igst_percentage}}" min="18"
-                                            pattern="18|28" step="10" max="28" required>
+                                            placeholder="0.00" value="{{purchaseBillDet.igst_percentage}}" readonly required>
                                     </div>
                                     <div class="col-md-2 mb-3">
                                         <label>Amount IGST<span class="required-indicator">*</span></label>
@@ -272,7 +281,8 @@
     var page_item_len = 0
     var state_name = ''
     var sum = 0
-
+    var gst_options_text =``
+    var gst_items = []
     function renderTotalAmountWithGst(){
         let total_amount_with_gst=0;
         $('.amount_gst').each(function(){
@@ -423,6 +433,70 @@
         renderTotalCgst()
         renderTotalSGst()
     })
+
+    // Keyup event for calculating amounts dynamically
+    $(document).on('change keyup','.amount, .gst',function(){
+        console.log("Calculating GST Amounts...");
+
+        let amount = parseFloat($(this).closest('.content_parent').find('.amount').val());
+        let total_gst = 0;
+        let amount_gst = 0;
+        let amount_gst_per = 0;
+
+        // Ensure that amount is a valid number
+        if(amount && !isNaN(amount)){
+            $(this).closest('.content_parent').find('.gst').each(function(){
+                let gst = parseFloat($(this).val()) / 100;
+                gst = isNaN(gst) ? 0 : gst
+                console.log(gst,'111111');
+                
+                
+                amount_gst_per = amount * gst; // Calculate GST per value
+                console.log(amount_gst_per);
+                
+                total_gst += amount_gst_per; // Accumulate total GST
+                $(this).parent().next().find('input').val(amount_gst_per.toFixed(2)); // Set the amount for each GST
+            
+            });
+            
+            // Total GST calculation
+            amount_gst = amount + total_gst;
+            if(amount_gst) {
+                $(this).closest('.content_parent').find('.amount_gst').val(amount_gst.toFixed(2)); // Update total amount with GST
+            }
+        }
+
+        // Trigger other functions for recalculating totals
+        renderTotalAmountWithGst();
+        renderTotalIgst();
+        renderTotalCgst();
+        renderTotalSGst();
+    });
+    
+    $(document).on('change','.gsthead',function(){
+        let gstVal = $(this).val();
+        console.log("Selected GST Value:", gstVal);
+
+        let result = gst_items.find(item => parseFloat(item.gst_value) === parseFloat(gstVal));
+        console.log("GST Item Found:", result);
+
+        if(result) {
+            if(state_name == 'West Bengal'){
+                // Set SGST and CGST values if the state is West Bengal
+                $(this).parent().closest('.content_parent').find('.sgst').val(result.sgst_value).trigger('change');
+                $(this).parent().closest('.content_parent').find('.cgst').val(result.cgst_value).trigger('change');
+            } else {
+                // Set IGST value if it's not West Bengal
+                $(this).parent().closest('.content_parent').find('.igst').val(result.igst_value).trigger('change');
+            }
+        }
+        // Recalculate total amounts after GST changes
+        renderTotalAmountWithGst();
+        renderTotalIgst();
+        renderTotalCgst();
+        renderTotalSGst();
+        renderTotalAmount();
+    });
 
 
 
