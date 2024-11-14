@@ -294,6 +294,25 @@ class Child_Uom(models.Model):
         db_table = 'child_uoms'
         verbose_name_plural = 'child_uoms'
 
+class Gst(models.Model):
+    name = models.CharField(max_length=50, blank=True, null=True)
+    gst_value = models.DecimalField(max_digits=4, decimal_places=2,blank=True, null=True)
+    igst_value = models.DecimalField(max_digits=4, decimal_places=2,blank=True, null=True)
+    cgst_value = models.DecimalField(max_digits=4, decimal_places=2,blank=True, null=True)
+    sgst_value = models.DecimalField(max_digits=4, decimal_places=2,blank=True, null=True)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'gst'
+        verbose_name_plural = 'gst'
+
 
 class Item_Category(models.Model):
     name = models.CharField(max_length=50, blank=True, null=True)
@@ -564,7 +583,7 @@ class Job_Order(models.Model):
     status = models.SmallIntegerField(default=1) #0 for not recieved 1 for recieved without inspection 2 for recived with inspection 
     deleted = models.BooleanField(default=0)
     material_reciept = models.SmallIntegerField(default=0) #0->no incoming material/partial received 1->incoming material full received
-    material_issue = models.SmallIntegerField(default=0) # No material Issued 1->Material issued partially 2->Full fulfilled job order
+    material_issue = models.SmallIntegerField(default=0) #0-> No material Issued 1->Material issued partially(some mateial have 0) 2->Material issued partially(all material parity go) 3-> mateial full issued
     created_at = models.DateTimeField(default=django.utils.timezone.now)
     updated_at = models.DateTimeField(default=django.utils.timezone.now)
     def __str__(self):
@@ -834,6 +853,7 @@ class Purchase_Bill(models.Model):
     e_way_no =  models.CharField(max_length=50, blank=True, null=True)
     e_way_date = models.DateField(blank=True, null=True)
     vechical_no = models.CharField(max_length=50, blank=True, null=True)
+    total_gst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_igst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -866,6 +886,8 @@ class Purchase_Bill_Details(models.Model):
         Uom, on_delete=models.CASCADE, blank=True, null=True)
     rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    gst_percentage = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    gst_amount  = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     igst_percentage = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     igst_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     cgst_percentage = models.DecimalField(max_digits=10, decimal_places=2, default=0)

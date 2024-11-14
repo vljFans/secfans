@@ -65,11 +65,11 @@
                             <div class="col-md-4 mb-3">
                                 <label>Job Order Number <span class="required-indicator">*</span></label>
                                 <input type="text"  id="order_number" name="order_number" class="form-control"
-                                    value="{{jobOrder.order_number}}" required>
+                                    value="{{jobOrder.order_number}}" required readonly>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>Job Order Date <span class="required-indicator">*</span></label>
-                                <input type="date" name="order_date" class="form-control" value="{{jobOrder.order_date|date:'Y-m-d'}}" required>
+                                <input type="date" name="order_date" class="form-control" value="{{jobOrder.order_date|date:'Y-m-d'}}" required readonly>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label>Manufacturing type<span class="required-indicator">*</span></label>
@@ -102,13 +102,16 @@
                                 <div class="col-md-4 mb-3">
                                     <label>Manufacture Material Type<span class="required-indicator">*</span></label>
                                     <div class="input-group">
-                                        <select class="custom-select selectpicker manufacturing_material_type" data-placeholder="Select manufacturing type" name="manufacturing_material_type" required>
+                                        <select class="custom-select selectpicker manufacturing_material_type" data-placeholder="Select manufacturing type" name="manufacturing_material_type" required {% if jobOrder.material_issue == 1  %} disabled {% endif %}>
                                             <option value=""></option>
                                             <option value="None" {% if jobOrder.manufacturing_material_type == "None"  %} selected {% endif %}> NA</option>
                                             <option value="SFG" {% if jobOrder.manufacturing_material_type == "SFG"  %} selected {% endif %}>Semi Finished Goods</option>
                                             <option value="FG" {% if jobOrder.manufacturing_material_type == "FG"  %} selected {% endif %}>Finished Goods</option>
                                         </select>
                                     </div>
+                                    {% if jobOrder.material_issue == 1  %}
+                                    <input type="hidden" name="manufacturing_material_type" value = "{{jobOrder.manufacturing_material_type}}">
+                                    {% endif  %}
                                 </div>
                                 {% if page_title == 'Job Order Add' %}
                                     <div class="col-md-2 mb-3">
@@ -133,7 +136,7 @@
                                 <div class="col-md-2 mb-3">
                                     <label>Time Format<span class="required-indicator">*</span></label>
                                     <div class="input-group">
-                                        <select class="custom-select selectpicker timeSpan" data-placeholder="Choose" name="timeSpan" required>
+                                        <select class="custom-select selectpicker timeSpan" data-placeholder="Choose" name="timeSpan" required {% if jobOrder.material_issue == 1  %} disabled {% endif %}>
                                             <!-- Placeholder for default empty selection -->
                                             <option value=""></option>
                                             
@@ -143,6 +146,9 @@
                                             <!-- Option for "Day" -->
                                             <option value="day" {% if time_unit == 'day' %} selected {% endif %}>Day</option>
                                         </select>
+                                        {% if jobOrder.material_issue == 1  %}
+                                        <input type="hidden" name="timeSpan" value ="{{time_unit}}">
+                                        {% endif %}
                                     </div> 
                                 </div>
                             
@@ -151,7 +157,7 @@
                                     <input type="number" onkeyup="checkMaxMin(this)"
                                     onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                     name="hr_day" min="0.0" class="form-control hr_day" value="{{time_value}}" 
-                                    placeholder="0"  required>
+                                    placeholder="0"  required {% if jobOrder.material_issue == 1  %} readonly {% endif %}>
                                 </div>
                                 {% endif %}
                                 <div class="col-md-4 mb-3">
@@ -169,12 +175,14 @@
                                                             <h5 class="text-center flex-grow-1 mb-0">
                                                                 BOM/Raw Material [RM, SFG]
                                                             </h5> 
+                                                            {% if jobOrder.material_issue == 0 %}
                                                             <button type="button" class="btn add_btn  mr-2"> 
                                                                 <i class="fa fa-plus"></i> 
                                                             </button>
                                                             <button type="button" class="btn remove_btn" disabled>
                                                                 <i class="fa fa-minus"></i>
                                                             </button>
+                                                            {% endif %}
                                                         </div>
                                                         <div class="container-fluid">
                                                             {% for jobOrderDetail in outgoing_details %}
@@ -182,12 +190,13 @@
                                                                     <div class="col-md-5 py-2">
                                                                         <label>Item<span class="required-indicator">*</span></label>
                                                                         <div class="input-group">
-                                                                            <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required>
+                                                                            <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required {% if jobOrderDetail.required_quantity < jobOrderDetail.quantity %} disabled {% endif %} >
                                                                                 <option value="">Choose...</option>
                                                                                 {% for item in items %}
                                                                                 <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
                                                                                 {% endfor %}
                                                                             </select>
+                                                                            {% if jobOrderDetail.required_quantity < jobOrderDetail.quantity %} <input type="hidden" name="outgoing_item_id" value="{{jobOrderDetail.item_id}}"> {% endif %}
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-md-4 py-2">
@@ -195,8 +204,8 @@
                                                                         <input type="text" onkeyup="checkMaxMin(this)"
                                                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                                             name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
-                                                                            value="{{jobOrderDetail.quantity|floatformat}}"
-                                                                            required>
+                                                                            value="{{jobOrderDetail.quantity|floatformat}}" 
+                                                                            required {% if jobOrderDetail.required_quantity < jobOrderDetail.quantity %} readonly {% endif %}>
                                                                     </div>
                                                                     <div class="col-md-3  py-2">
                                                                         <label>UOM <span class="required-indicator">*</span></label>
@@ -216,12 +225,16 @@
                                                             <h5 class="text-center flex-grow-1 mb-0">
                                                                 Production/Manufactured Material [SFG, FG]
                                                             </h5> 
+                                                            
+                                                            {% if jobOrder.material_issue == 0 %}
+                                                            
                                                             <button type="button" class="btn add_btn  mr-2" hidden> 
                                                                 <i class="fa fa-plus"></i> 
                                                             </button>
                                                             <button type="button" class="btn remove_btn" disabled hidden>
                                                                 <i class="fa fa-minus"></i>
                                                             </button>
+                                                            {% endif %}
                                                         </div>
                                                         <div class="container-fluid">
                                                             {% for jobOrderDetail in incoming_details %}
@@ -229,12 +242,15 @@
                                                                     <div class="col-md-5 py-2">
                                                                         <label>Item<span class="required-indicator">*</span></label>
                                                                         <div class="input-group">
-                                                                            <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required>
+                                                                            
+                                                                            <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required {% if jobOrder.material_issue == 1 and jobOrder.job_status != 0  %} disabled {% endif %}>
                                                                                 <option value="">Choose...</option>
                                                                                 {% for item in items %}
                                                                                 <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
                                                                                 {% endfor %}
                                                                             </select>
+                                                                            {% if jobOrder.material_issue == 1 and jobOrder.job_status != 0 %} <input type="hidden" name="incoming_item_id" value="{{jobOrderDetail.item_id}}"> {% endif %}
+
                                                                             {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
                                                                             <div class="btn float-end addForm" data-text="Add New item"
                                                                                     data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
@@ -249,7 +265,8 @@
                                                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                                             name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
                                                                             value="{{jobOrderDetail.quantity|floatformat}}"
-                                                                            required>
+                                                                            required {% if jobOrder.material_issue == 1 and jobOrder.job_status != 0 %} readonly {% endif %}
+                                                                            >
                                                                     </div>
                                                                     <div class="col-md-3 py-2">
                                                                         <label>UOM <span class="required-indicator">*</span></label>
@@ -285,12 +302,15 @@
                                     <div class="col-md-4 mb-3">
                                         <label>Vendor/Supplier<span class="required-indicator">*</span></label>
                                         <div class="input-group">
-                                            <select class="custom-select selectpicker vendor_id" data-placeholder="Select Vendor" name="vendor_id" required>
+                                            <select class="custom-select selectpicker vendor_id" data-placeholder="Select Vendor" name="vendor_id" required {% if jobOrder.material_issue == 1  %} disabled {% endif %}>
                                                 <option value="">Choose...</option>
                                                 {% for vendor in vendors %}
                                                 <option {% if jobOrder.vendor_id == vendor.pk %}selected{% endif %} value="{{vendor.pk}}">{{vendor.name}}</option>
                                                 {% endfor %}
                                             </select>
+                                            {% if jobOrder.material_issue == 1  %}
+                                            <input type="hidden" name ="vendor_id" value="{{jobOrder.vendor_id}}">
+                                            {% endif %}
                                             {% if request.user.is_superuser == 1 or 'add_vendor'|get_session_permission:request is not None %}
                                                 <div class="btn float-end addForm" data-text="Add New Vendor"
                                                     data-form="addVendor" id="addVendorModal" data-toggle="modal" data-target="#addFormModal">
@@ -302,23 +322,29 @@
                                     <div class="col-md-4 mb-3">
                                         <label>With/Without item<span class="required-indicator">*</span></label>
                                         <div class="input-group">
-                                            <select class="custom-select selectpicker with_item" data-placeholder="Choose" name="with_item" required>
+                                            <select class="custom-select selectpicker with_item" data-placeholder="Choose" name="with_item" required {% if jobOrder.material_issue == 1  %} disabled {% endif %}>
                                                 <option value=""></option>
                                                 <option value="True" {% if jobOrder.with_item == 'True' %}selected{% endif %} >With item</option>
                                                 <option value="False" {% if jobOrder.with_item == 'False' %}selected{% endif %} >Without item</option>
                                             </select>
+                                            {% if jobOrder.material_issue == 1  %}
+                                            <input type="hidden" name ="with_item" value="{{jobOrder.with_item}}">
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label>Manufacture Material Type<span class="required-indicator">*</span></label>
                                         <div class="input-group">
-                                            <select class="custom-select selectpicker manufacturing_material_type" data-placeholder="Select manufacturing type" name="manufacturing_material_type" required>
+                                            <select class="custom-select selectpicker manufacturing_material_type" data-placeholder="Select manufacturing type" name="manufacturing_material_type" required {% if jobOrder.material_issue == 1  %} disabled {% endif %}>
                                                 <option value=""></option>
                                                 <option value="None" {% if jobOrder.manufacturing_material_type == "None"  %} selected {% endif %}> NA</option>
                                                 <option value="SFG" {% if jobOrder.manufacturing_material_type == "SFG"  %} selected {% endif %}>Semi Finished Goods</option>
                                                 <option value="FG" {% if jobOrder.manufacturing_material_type == "FG"  %} selected {% endif %}>Finished Goods</option>
                                             </select>
                                         </div>
+                                        {% if jobOrder.material_issue == 1  %}
+                                        <input type="hidden" name ="manufacturing_material_type" value="{{jobOrder.manufacturing_material_type}}">
+                                        {% endif %}
                                     </div>
                                     {% if page_title == 'Job Order Add' %}
                                     <div class="col-md-2 mb-3">
@@ -329,6 +355,7 @@
                                                 <option value="hr">Hr</option>
                                                 <option value="day">Day</option>
                                             </select>
+                                            
                                         </div>
                                     </div>
                                     
@@ -343,7 +370,7 @@
                                         <div class="col-md-2 mb-3">
                                             <label>Time Format<span class="required-indicator">*</span></label>
                                             <div class="input-group">
-                                                <select class="custom-select selectpicker timeSpan" data-placeholder="Choose" name="timeSpan" required>
+                                                <select class="custom-select selectpicker timeSpan" data-placeholder="Choose" name="timeSpan" required  {% if jobOrder.material_issue == 1  %} disabled {% endif %}>
                                                     <!-- Placeholder for default empty selection -->
                                                     <option value=""></option>
                                                     
@@ -353,6 +380,9 @@
                                                     <!-- Option for "Day" -->
                                                     <option value="day" {% if time_unit == 'day' %} selected {% endif %}>Day</option>
                                                 </select>
+                                                {% if jobOrder.material_issue == 1  %}
+                                                <input type="hidden" name ="timeSpan" value="{{time_unit}}">
+                                                {% endif %}
                                             </div> 
                                         </div>
                                     
@@ -361,7 +391,7 @@
                                             <input type="number" onkeyup="checkMaxMin(this)"
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="hr_day" min="0.0" class="form-control hr_day" value="{{time_value}}" 
-                                            placeholder="0"  required>
+                                            placeholder="0"  required  {% if jobOrder.material_issue == 1  %} readonly {% endif %} >
                                         </div>
                                     {% endif %}
                                     <div class="col-md-4 mb-3">
@@ -379,12 +409,15 @@
                                                                 <h5 class="text-center flex-grow-1 mb-0">
                                                                     BOM/Raw Material [RM, SFG]
                                                                 </h5> 
+                                                             
+                                                                {% if jobOrder.material_issue == 0 %}
                                                                 <button type="button" class="btn add_btn  mr-2"> 
                                                                     <i class="fa fa-plus"></i> 
                                                                 </button>
                                                                 <button type="button" class="btn remove_btn" disabled>
                                                                     <i class="fa fa-minus"></i>
                                                                 </button>
+                                                                {% endif %}
                                                             </div>
                                                             <div class="container-fluid">
                                                                 {% for jobOrderDetail in outgoing_details %}
@@ -392,12 +425,14 @@
                                                                         <div class="col-md-5 py-2">
                                                                             <label>Item<span class="required-indicator">*</span></label>
                                                                             <div class="input-group">
-                                                                                <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required>
+                                                                                <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required  {% if jobOrderDetail.required_quantity < jobOrderDetail.quantity %} disabled {% endif %}  >
                                                                                     <option value="">Choose...</option>
                                                                                     {% for item in items %}
                                                                                     <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
                                                                                     {% endfor %}
                                                                                 </select>
+                                                                                
+                                                                                
                                                                             </div>
                                                                         </div>
                                                                         <div class="col-md-4 py-2">
@@ -406,7 +441,7 @@
                                                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                                                 name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
                                                                                 value="{{jobOrderDetail.quantity|floatformat}}"
-                                                                                required>
+                                                                                required  {% if jobOrderDetail.required_quantity < jobOrderDetail.quantity %} disabled {% endif %}>
                                                                         </div>
                                                                         <div class="col-md-3  py-2">
                                                                             <label>UOM <span class="required-indicator">*</span></label>
@@ -426,12 +461,14 @@
                                                                 <h5 class="text-center flex-grow-1 mb-0">
                                                                     Production/Manufactured Material [SFG, FG]
                                                                 </h5> 
+                                                                {% if jobOrder.material_issue == 0 %}
                                                                 <button type="button" class="btn add_btn  mr-2" hidden> 
                                                                     <i class="fa fa-plus"></i> 
                                                                 </button>
                                                                 <button type="button" class="btn remove_btn" disabled hidden>
                                                                     <i class="fa fa-minus"></i>
                                                                 </button>
+                                                                {% endif  %}
                                                             </div>
                                                             <div class="container-fluid">
                                                                 {% for jobOrderDetail in incoming_details %}
@@ -439,12 +476,16 @@
                                                                         <div class="col-md-5 py-2">
                                                                             <label>Item<span class="required-indicator">*</span></label>
                                                                             <div class="input-group">
-                                                                                <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required>
+                                                                                
+                                                                                <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required {% if jobOrder.material_issue == 1 and jobOrder.job_status != 0 %} disabled {% endif %}>
                                                                                     <option value="">Choose...</option>
                                                                                     {% for item in items %}
                                                                                     <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
                                                                                     {% endfor %}
                                                                                 </select>
+                                                                               
+                                                                                
+                                                                                
                                                                                 {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
                                                                                 <div class="btn float-end addForm" data-text="Add New item"
                                                                                         data-form="addItem" id="addItem"  data-toggle="modal" data-target="#addFormModal">
@@ -458,8 +499,8 @@
                                                                             <input type="text" onkeyup="checkMaxMin(this)"
                                                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                                                 name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
-                                                                                value="{{jobOrderDetail.quantity|floatformat}}"
-                                                                                required>
+                                                                                value="{{jobOrderDetail.quantity|floatformat}}" 
+                                                                                required  {% if jobOrder.material_issue == 1 and jobOrder.job_status != 0 %} readonly {% endif %}>
                                                                         </div>
                                                                         <div class="col-md-3 py-2">
                                                                             <label>UOM <span class="required-indicator">*</span></label>
