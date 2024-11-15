@@ -8760,7 +8760,7 @@ def reportVendorIssueRecp(request):
         from_date = request.POST['from_date']
         to_date = request.POST['to_date']
         
-        storeTransactionDetails = models.Store_Transaction_Detail.objects.filter(Q(store_transaction_header__transaction_type__name="MIS")|
+        storeTransactionDetails = models.Store_Transaction_Detail.objects.filter(Q(store_transaction_header__transaction_type__name="MIST")|
                                     Q(store_transaction_header__transaction_type__name="GRNT")).filter(
                                         store_transaction_header__transaction_date__range =(from_date,to_date)
                                     ).filter(
