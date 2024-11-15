@@ -577,6 +577,7 @@
     var incoming_item_options_text = ``;
     var outgoing_item_options_used_pk = [];
     var incoming_item_options_used_pk = [];
+    var form , initialFormData ;
 
     $('.selectpicker').select2({
         placeholder: '',
@@ -710,8 +711,20 @@
             }
         }
     }
+    
+    // Function to get form data as a JSON string
+    function getFormData(form) {
+        var formData = new FormData(form[0]);
+        var object = {};
+        formData.forEach((value, key) => {
+            object[key] = value;
+        });
+        return JSON.stringify(object);
+    }
 
     $(document).ready(function () {
+        form = $('#create_form');
+        initialFormData = getFormData(form);
         $.ajax({
             url: "{% url 'api:vendorList' %}?find_all=1",
             type: 'GET',
@@ -1144,7 +1157,15 @@
     });
 
     $(document).on('submit', '#create_form', function (e) {
+            e.preventDefault(); // Prevent default form submission
+            let currentFormData = getFormData(form);
             let pageTitle = '{{page_title}}';
+            
+            if (initialFormData === currentFormData && pageTitle === 'Job Order Edit') {
+                alert('please update something.');
+                return false; // Stop form submission
+            }
+
             let setUrl = pageTitle === 'Job Order Edit' ? "{% url 'api:jobOrderEdit' %}" : "{% url 'api:jobOrderAdd' %}";
             e.preventDefault();
             $('.submit-btn').text('Submitting...');

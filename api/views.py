@@ -7703,7 +7703,8 @@ def getPurchaseBillHeadersList(request):
 @permission_classes([IsAuthenticated])
 def purchaseBillDetailsAdd(request):
     context = {}
-    # # # # print(request.POST)
+    # print(request.POST)
+    # exit()
     try:
         with transaction.atomic():
             purchase_bill_head_count = models.Purchase_Bill.objects.all().count()
@@ -7727,9 +7728,18 @@ def purchaseBillDetailsAdd(request):
             purcahse_bill_header.total_igst = request.POST['total_igst']
             purcahse_bill_header.total_cgst = request.POST['total_cgst']
             purcahse_bill_header.total_sgst = request.POST['total_sgst']
-            purcahse_bill_header.total_amount = request.POST['total']
-            purcahse_bill_header.total_gst_amount = request.POST['total_amount_with_gst']
+            purcahse_bill_header.total_amount = request.POST['total'] # total amount with discount
             purcahse_bill_header.notes = request.POST['notes']
+            purcahse_bill_header.total_amount_exclude_discount = request.POST['total_acc']
+            purcahse_bill_header.total_discount = request.POST['total_discount']
+            purcahse_bill_header.total_discount_amount = request.POST['total_discount_amount']
+            purcahse_bill_header.tds_percentage = request.POST['tds_percentage']
+            purcahse_bill_header.tds_deduction = request.POST['tds_deduction']
+            purcahse_bill_header.tcs_percentage = request.POST['tcs_percentage']
+            purcahse_bill_header.tcs_deduction = request.POST['tcs_decuction']
+            purcahse_bill_header.roundof_amount = request.POST['roundof_amount']
+            purcahse_bill_header.total_gst_amount = request.POST['total_amount_with_gst']
+            purcahse_bill_header.notes = request.POST['notes'] 
 
             purcahse_bill_header.save()
             
@@ -7746,11 +7756,15 @@ def purchaseBillDetailsAdd(request):
                             uom_id = uom_id.id,
                             rate = request.POST.getlist('rate')[index],
                             amount = request.POST.getlist('amount')[index],
+                            amount_exclude_discount = request.POST.getlist('amountac')[index],
+                            discount_percentage = request.POST.getlist('discount')[index],
+                            discount_amount = request.POST.getlist('amountdiscount')[index],
                             igst_percentage = request.POST.getlist('igst')[index],
                             igst_amount =  request.POST.getlist('amount_igst')[index], 
                             gst_percentage = request.POST.getlist('gst')[index],
                             gst_amount = request.POST.getlist('amount_igst')[index],
                             amount_with_gst = request.POST.getlist('amount_gst')[index]
+
                         )
                     )
                 models.Purchase_Bill_Details.objects.bulk_create(bill_details)
@@ -7769,6 +7783,9 @@ def purchaseBillDetailsAdd(request):
                             uom_id = uom_id.id,
                             rate = request.POST.getlist('rate')[index],
                             amount = request.POST.getlist('amount')[index],
+                            amount_exclude_discount = request.POST.getlist('amountac')[index],
+                            discount_percentage = request.POST.getlist('discount')[index],
+                            discount_amount = request.POST.getlist('amountdiscount')[index],
                             cgst_percentage = request.POST.getlist('cgst')[index],
                             cgst_amount = request.POST.getlist('amount_cgst')[index],
                             sgst_percentage = request.POST.getlist('sgst')[index],
@@ -7818,7 +7835,16 @@ def purchaseBillDetailsEdit(request):
                 purcahse_bill_header_update.total_cgst = request.POST['total_cgst']
                 purcahse_bill_header_update.total_sgst = request.POST['total_sgst']
             purcahse_bill_header_update.total_amount = request.POST['total']
-            purcahse_bill_header_update.total_gst_amount = request.POST['total_amount_with_gst']
+            purcahse_bill_header.total_amount_exclude_discount = request.POST['total_acc']
+            purcahse_bill_header.total_discount = request.POST['total_discount']
+            purcahse_bill_header.total_discount_amount = request.POST['total_discount_amount']
+            purcahse_bill_header.tds_percentage = request.POST['tds_percentage']
+            purcahse_bill_header.tds_deduction = request.POST['tds_deduction']
+            purcahse_bill_header.tcs_percentage = request.POST['tcs_percentage']
+            purcahse_bill_header.tcs_deduction = request.POST['tcs_decuction']
+            purcahse_bill_header.roundof_amount = request.POST['roundof_amount']
+            purcahse_bill_header.total_gst_amount = request.POST['total_amount_with_gst']
+            purcahse_bill_header.total_gst = request.POST['total_igst'] if float(request.POST['total_igst'])!= 0.00  else (float(request.POST['total_cgst']) + float(request.POST['total_sgst']))
             purcahse_bill_header_update.notes = request.POST['notes']
             purcahse_bill_header_update.updated_at = datetime.now()
             purcahse_bill_header_update.save()
@@ -7832,12 +7858,20 @@ def purchaseBillDetailsEdit(request):
                 if(request.POST.get('igst')):
                     purcahse_bill_details_update.igst_percentage = request.POST.getlist('igst')[index]
                     purcahse_bill_details_update.igst_amount = request.POST.getlist('amount_igst')[index]
+                    purcahse_bill_details_update.gst_percentage = request.POST.getlist('gst')[index]
+                    purcahse_bill_details_update.gst_amount = request.POST.getlist('amount_igst')[index]
                 else:
                     purcahse_bill_details_update.cgst_percentage =  request.POST.getlist('cgst')[index]
                     purcahse_bill_details_update.cgst_amount = request.POST.getlist('amount_cgst')[index]
                     purcahse_bill_details_update.sgst_percentage = request.POST.getlist('sgst')[index]
                     purcahse_bill_details_update.sgst_amount = request.POST.getlist('amount_sgst')[index]
-                purcahse_bill_details_update.amount_with_gst = request.POST.getlist('amount_gst')[index]
+                    purcahse_bill_details_update.amount_with_gst = request.POST.getlist('amount_gst')[index]
+                    purcahse_bill_details_update.gst_percentage = request.POST.getlist('gst')[index]
+                    purcahse_bill_details_update.gst_amount =Decimal(request.POST.getlist('amount_cgst')[index]) + Decimal(request.POST.getlist('amount_sgst')[index])
+                purcahse_bill_details_update.amount_exclude_discount = request.POST.getlist('amountac')[index]
+                purcahse_bill_details_update.discount_percentage = request.POST.getlist('discount')[index]
+                purcahse_bill_details_update.discount_amount = request.POST.getlist('amountdiscount')[index]             
+                
                 purcahse_bill_details_update.updated_at = datetime.now()
                 purcahse_bill_details_update.save()
                 # # # # print("5510")
@@ -7928,40 +7962,41 @@ def purchaseBillDetailsExport(request):
             'purchase_bill_header__vendor__name',
             'purchase_bill_header__vendor__address',
             'purchase_bill_header__vendor__gst_no',
+            'purchase_bill_header__vendor__state__name',
             'purchase_bill_header__invoice_no',
             'purchase_bill_header__total_amount',
             'purchase_bill_header__total_igst',
             'purchase_bill_header__total_cgst',
             'purchase_bill_header__total_sgst',
-            'purchase_bill_header__total_gst_amount'
+            'purchase_bill_header__total_gst_amount',
+            'purchase_bill_header__total_discount_amount',
+            'purchase_bill_header__tds_deduction',
+            'purchase_bill_header__tcs_deduction',
+            'purchase_bill_header__transaction_number',
+            'purchase_bill_header__transaction_date'
         ).annotate(
-            igst_18=Sum(Case(
-                When(igst_percentage=18, then='igst_amount'),
+            gst_0=Sum(Case(
+                When(gst_percentage=0, then='gst_amount'),
                 default=0,
                 output_field=DecimalField()
             )),
-            igst_28=Sum(Case(
-                When(igst_percentage=28, then='igst_amount'),
+            gst_5=Sum(Case(
+                When(gst_percentage=5, then='gst_amount'),
                 default=0,
                 output_field=DecimalField()
             )),
-            cgst_9=Sum(Case(
-                When(cgst_percentage=9, then='cgst_amount'),
+            gst_12=Sum(Case(
+                When(gst_percentage=12, then='gst_amount'),
                 default=0,
                 output_field=DecimalField()
             )),
-            cgst_14=Sum(Case(
-                When(cgst_percentage=14, then='cgst_amount'),
+            gst_28=Sum(Case(
+                When(gst_percentage=28, then='gst_amount'),
                 default=0,
                 output_field=DecimalField()
             )),
-            sgst_9=Sum(Case(
-                When(sgst_percentage=9, then='sgst_amount'),
-                default=0,
-                output_field=DecimalField()
-            )),
-            sgst_14=Sum(Case(
-                When(sgst_percentage=14, then='sgst_amount'),
+            gst_18=Sum(Case(
+                When(gst_percentage=18, then='gst_amount'),
                 default=0,
                 output_field=DecimalField()
             ))
@@ -7978,44 +8013,82 @@ def purchaseBillDetailsExport(request):
         ws = wb.active
 
         # Add headers 
-        ws['A1'] = "Vendor Name"
-        ws['B1'] = "Vendor Address"
-        ws['C1'] = "Vendor GST No"
-        ws['D1'] = "Invoice No"
-        ws['E1'] = "Total Amount"
-        ws['F1'] = "Total IGST"
-        ws['G1'] = "Total CGST"
-        ws['H1'] = "Total SGST"
-        ws['I1'] = "Total Amount Including GST"
-        ws['J1'] = "IGST 18%"
-        ws['K1'] = "IGST 28%"
-        ws['L1'] = "CGST 9%"
-        ws['M1'] = "CGST 14%"
-        ws['N1'] = "SGST 9%"
-        ws['O1'] = "SGST 14%"
-        ws['P1'] = "vch type"
+        ws['A1'] ="Tran Type"
+        ws['B1'] = "DSDVchNo : $_2"
+        ws['C1'] = "Inv Date1"
+        ws['D1'] = "Act Code4"
+        ws['E1'] = "PartyName : $_3"
+        ws['F1'] = "Place6"
+        ws['G1'] = "Add2"
+        ws['H1'] = "Gst No7"
+        ws['I1'] = "TKGimpPartyState 15"
+        ws['J1'] ="Reference"
+        ws['K1'] = "Ref Dt"
+        ws['L1'] = "GST@ 0%"
+        ws['M1'] = "GST@ 05%"
+        ws['N1'] = "GST@ 18%"
+        ws['O1'] = "GST@ 28%"
+        ws['P1'] = "Output Igst Amt"
+        ws['Q1'] = "Output Cgst Amt"
+        ws['R1'] = "Output Sgst Amt"
+        ws['S1'] ="Gst Cess Amt"
+        ws['T1'] = "LESS DISCOUNT"
+        ws['U1'] = "TCS PAYBLE"
+        ws['V1'] ="TDS RECEIVABLE"
+        ws['W1'] = "RoundOffAmt :$_11"
+        ws['X1'] = "Tran Total"
+        ws['Y1'] = "VchNarration : $_13"
+
+
+        # ws['A1'] = "Vendor Name"
+        # ws['B1'] = "Vendor Address"
+        # ws['C1'] = "Vendor GST No"
+        # ws['D1'] = "Invoice No"
+        # ws['E1'] = "Total Amount"
+        # ws['F1'] = "Total IGST"
+        # ws['G1'] = "Total CGST"
+        # ws['H1'] = "Total SGST"
+        # ws['I1'] = "Total Amount Including GST"
+        # ws['J1'] = "IGST 18%"
+        # ws['K1'] = "IGST 28%"
+        # ws['L1'] = "CGST 9%"
+        # ws['M1'] = "CGST 14%"
+        # ws['N1'] = "SGST 9%"
+        # ws['O1'] = "SGST 14%"
+        # ws['P1'] = "vch type"
 
         # Append data rows
         for each in filtered_data:
+            print(each)
             ws.append([
+                "P",
+                each['purchase_bill_header__transaction_number'],
+                each['purchase_bill_header__transaction_date'], 
+                " ",
                 each['purchase_bill_header__vendor__name'],
                 each['purchase_bill_header__vendor__address'],
+                " ",
+                each['purchase_bill_header__vendor__gst_no'],
                 each['purchase_bill_header__vendor__gst_no'],
                 each['purchase_bill_header__invoice_no'],
-                each['purchase_bill_header__total_amount'],
+                " ",
+                each['gst_0'],
+                each['gst_5'],
+                each['gst_12'],
+                each['gst_18'],
+                each['gst_28'],
                 each['purchase_bill_header__total_igst'],
                 each['purchase_bill_header__total_cgst'],
                 each['purchase_bill_header__total_sgst'],
+                " ",
+                each['purchase_bill_header__total_discount_amount'],
+                each['purchase_bill_header__tcs_deduction'],
+                each['purchase_bill_header__tds_deduction'],
+                
                 each['purchase_bill_header__total_gst_amount'],
-                each['igst_18'],
-                each['igst_28'],
-                each['cgst_9'],
-                each['cgst_14'],
-                each['sgst_9'],
-                each['sgst_14'],
-                "---"
+                " ",
             ])
-
+            print(8058)
         # Save the file
         file_path = os.path.join(directory_path, tmpname)
         wb.save(file_path)
@@ -8687,7 +8760,7 @@ def reportVendorIssueRecp(request):
         from_date = request.POST['from_date']
         to_date = request.POST['to_date']
         
-        storeTransactionDetails = models.Store_Transaction_Detail.objects.filter(Q(store_transaction_header__transaction_type__name="MIS")|
+        storeTransactionDetails = models.Store_Transaction_Detail.objects.filter(Q(store_transaction_header__transaction_type__name="MIST")|
                                     Q(store_transaction_header__transaction_type__name="GRNT")).filter(
                                         store_transaction_header__transaction_date__range =(from_date,to_date)
                                     ).filter(

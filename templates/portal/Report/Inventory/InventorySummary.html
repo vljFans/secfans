@@ -337,18 +337,18 @@
                     console.log(response.page_items);
                     for (let index=0 ; index < response.page_items.length ;index++ ){
                         table_data += `<tr>
-                                             <td>${index+1}</td>
-                                             <td>${response.page_items[index].date}</td>
-                                             <td>${response.page_items[index].transaction_number}</td>
-                                             <td>${response.page_items[index].vendor}</td>
-                                             <td>${response.page_items[index].item}</td>
-                                             <td>${response.page_items[index].item_category}</td>
-                                              <td>${response.page_items[index].uom}</td>
-                                             <td>${+response.page_items[index].previous_onHand_Quantity || "---"}</td>                                 
-                                             <td>${+response.page_items[index].quantity_order || "---"}</td>
-                                             <td>${+response.page_items[index].stock_in || "---"}</td>
-                                             <td>${+response.page_items[index].stock_out || "---"}</td>
-                                             <td>${+response.page_items[index].onHand_quantity || "---"}</td>
+                                            <td>${index+1}</td>
+                                            <td>${response.page_items[index].date.split("-").reverse().join("-")}</td>
+                                            <td>${response.page_items[index].transaction_number}</td>
+                                            <td>${response.page_items[index].vendor}</td>
+                                            <td>${response.page_items[index].item}</td>
+                                            <td>${response.page_items[index].item_category}</td>
+                                            <td>${response.page_items[index].uom}</td>
+                                            <td>${+response.page_items[index].previous_onHand_Quantity || "---"}</td>                                 
+                                            <td>${+response.page_items[index].quantity_order || "---"}</td>
+                                            <td>${+response.page_items[index].stock_in || "---"}</td>
+                                            <td>${+response.page_items[index].stock_out || "---"}</td>
+                                            <td>${+response.page_items[index].onHand_quantity || "---"}</td>
                             
                                         </tr>`
                     }
