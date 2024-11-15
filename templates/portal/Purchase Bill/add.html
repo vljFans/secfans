@@ -124,8 +124,21 @@
                             </div > -->
                             <div class="col-md-2 mb-3 table_form" hidden>
                                 <label>Total<span class="required-indicator">*</span></label>
+                                <input type="text" class="form-control total_amount_acc" name="total_acc" id="total_amount_acc" readonly required>
+                            </div>
+                            <div class="col-md-2 mb-3 table_form" hidden>
+                                <label>Total Discount<span class="required-indicator">*</span></label>
+                                <input type="text" class="form-control total_discount" name="total_discount" id="total_discount" readonly required>
+                            </div>
+                            <div class="col-md-2 mb-3 table_form" hidden>
+                                <label>Total Discount Amount<span class="required-indicator">*</span></label>
+                                <input type="text" class="form-control total_discount_amount" name="total_discount_amount" id="total_discount_amount" readonly required>
+                            </div>
+                            <div class="col-md-2 mb-3 table_form" hidden>
+                                <label>Total Amount after Discount<span class="required-indicator">*</span></label>
                                 <input type="text" class="form-control total_amount" name="total" id="total_amount" readonly required>
                             </div>
+
                             <div class="col-md-2 mb-3 table_form" hidden>
                                 <label>Total IGST<span class="required-indicator">*</span></label>
                                 <input type="text" class="form-control total_igst" name="total_igst" id="total_igst" readonly required>
@@ -141,6 +154,30 @@
                             <div class="col-md-2 mb-3 table_form" hidden>
                                 <label>Total amount with GST<span class="required-indicator">*</span></label>
                                 <input type="text" class="form-control total_amount_with_gst" name="total_amount_with_gst" id="total_amount_with_gst" readonly required>
+                            </div>
+                            <div class="col-md-2 mb-3 table_form" hidden>
+                                <label>TDS%</label>
+                                <input type="number" onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                class="form-control tds_percentage tax"  
+                                placeholder="0.00" name="tds_percentage" min="0.00" ch>
+                            </div>
+                            <div class="col-md-2 mb-3 table_form" hidden>
+                                <label>TDS Deduction</label>
+                                <input type="text" class="form-control tds_deduction" name="tds_deduction" id="tds_deduction" readonly >
+                            </div>
+                            <div class="col-md-2 mb-3 table_form" hidden>
+                                <label>TCS%</label>
+                                <input type="number" onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        class="form-control tcs_percentage tax"  
+                                        placeholder="0.00" name="tcs_percentage" min="0.00" >
+                            </div>
+                            <div class="col-md-2 mb-3 table_form" hidden>
+                                <label>TCS Deduction</label>
+                                <input type="text" class="form-control tcs_decuction" name="tcs_decuction" id="tcs_decuction" readonly >
+                            </div>
+                            <div class="col-md-2 mb-3 table_form" hidden>
+                                <label>Roundof Amount<span class="required-indicator">*</span></label>
+                                <input type="text" class="form-control roundof_amount" name="roundof_amount" id="roundof_amount" readonly required>
                             </div>
                             <div class="col-md-12  table_form"  hidden>
                                 <label>Notes</label>
@@ -259,6 +296,7 @@
         })
 
         $('.total_amount_with_gst').val(total_amount_with_gst.toFixed(2))
+        renderTaxDeduction()
     }
     function renderTotalIgst(){
         let total_igst=0;
@@ -290,6 +328,16 @@
 
         $('.total_sgst').val(total_sgst.toFixed(2))
     }
+    function renderTotalActualAmount(){
+        let total_amount=0;
+        $('.amountac').each(function(){
+            if($(this).val()){
+                total_amount += parseFloat($(this).val())
+            }
+        })
+
+        $('.total_amount_acc').val(total_amount.toFixed(2))
+    }
 
     function renderTotalAmount(){
         let total_amount=0;
@@ -300,7 +348,55 @@
         })
 
         $('.total_amount').val(total_amount.toFixed(2))
+        
     }
+
+    function renderTotalDiscount(){
+        let total_amount=0;
+        $('.discount').each(function(){
+            if($(this).val()){
+                total_amount += parseFloat($(this).val())
+            }
+        })
+
+        $('.total_discount').val(total_amount.toFixed(2))
+    }
+
+    function renderTotalDiscountAmount(){
+        let total_amount=0;
+        $('.amountdiscount').each(function(){
+            if($(this).val()){
+                total_amount += parseFloat($(this).val())
+            }
+        })
+
+        $('.total_discount_amount').val(total_amount.toFixed(2))
+    }
+
+    function renderTaxDeduction(){
+        console.log(379);
+        
+        let total_amount=0;
+        let total_amount_gst =  parseFloat($('.total_amount_with_gst').val())
+        total_amount_gst = total_amount_gst ? total_amount_gst : 0.00 
+        $('.tax').each(function(){
+            console.log(385);
+            
+            let tax = parseFloat($(this).val())
+            tax = tax ?(total_amount_gst * (tax/100))  : 0.00
+            console.log(tax);
+            
+            $(this).parent().next().find('input').val(tax.toFixed(2));
+        })
+        let tdsamnt = parseFloat($('.tds_deduction').val())
+        let tcsamnt = parseFloat($('.tcs_decuction').val())
+        tdsamnt = tdsamnt ? tdsamnt : 0.00 
+        tcsamnt = tcsamnt ? tcsamnt : 0.00
+        let roundof_amount = Math.round(total_amount_gst - (tdsamnt + tcsamnt))
+        $('#roundof_amount').val(roundof_amount)
+
+    }
+
 
     $(document).ready(function(){
         $("#issue_date").val(new Date().toISOString().slice(0, 10))
@@ -446,20 +542,34 @@
                                                 <input type="text" class="form-control uom" name="uom"  readonly required>
                                             </div>
                                             <div class="col-md-2 mb-3">
-                                                <label>Amount<span class="required-indicator">*</span></label>
+                                                <label>Amount <span class="required-indicator">*</span></label>
+                                                <input type="text" class="form-control amountac" name="amountac"  readonly required>
+                                            </div>
+                                            <div class="col-md-2 mb-3">
+                                                <label>Discount% <span class="required-indicator">*</span></label>
+                                                <input type="number" onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                class="form-control discount"  
+                                                placeholder="0.00" name="discount"   required>
+                                            </div>
+                                            <div class="col-md-2 mb-3">
+                                                <label> Discount Amount <span class="required-indicator">*</span></label>
+                                                <input type="text" class="form-control amountdiscount" name="amountdiscount"  readonly required>
+                                            </div>
+                                            <div class="col-md-2 mb-3">
+                                                <label>Amount after discount<span class="required-indicator">*</span></label>
                                                 <input type="text" class="form-control amount" name="amount"  readonly required>
                                             </div>
 
                                             <div class="col-md-2 mb-3">
-                                                <label>IGST% <span class="required-indicator">*</span></label>
-                                                <input type="number" onkeyup="checkMaxMin(this)"
-                                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
-                                                    name="igst" min="18" class="form-control igst gst"  pattern="18|28" step="10" max="28"
-                                                    placeholder="0.00" disabled readonly>
+                                            <label>IGST% <span class="required-indicator">*</span></label>
+                                            <input type="number" 
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="igst" min="18" class="form-control igst gst" 
+                                                placeholder="0.00"  required readonly>
                                             </div>
                                             <div class="col-md-2 mb-3">
-                                                <label>Amount IGST<span class="required-indicator">*</span></label>
-                                                <input type="text" class="form-control amount_igst" name="amount_igst"  readonly disabled>
+                                                <label>Amount Igst<span class="required-indicator">*</span></label>
+                                                <input type="text" class="form-control amount_igst" name="amount_igst"  readonly required>
                                             </div>
                                             <div class="col-md-2 mb-3">
                                                 <label>SGST% <span class="required-indicator">*</span></label>
@@ -542,8 +652,22 @@
                                         <label>UOM<span class="required-indicator">*</span></label>
                                         <input type="text" class="form-control uom" name="uom"  readonly required>
                                     </div>
+                                     <div class="col-md-2 mb-3">
+                                        <label>Amount <span class="required-indicator">*</span></label>
+                                        <input type="text" class="form-control amountac" name="amountac"  readonly required>
+                                    </div>
                                     <div class="col-md-2 mb-3">
-                                        <label>Amount<span class="required-indicator">*</span></label>
+                                        <label>Discount% <span class="required-indicator">*</span></label>
+                                        <input type="number" onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        class="form-control discount"  
+                                        placeholder="0.00" name="discount"   required>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label> Discount Amount <span class="required-indicator">*</span></label>
+                                        <input type="text" class="form-control amountdiscount" name="amountdiscount"  readonly required>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>Amount after discount<span class="required-indicator">*</span></label>
                                         <input type="text" class="form-control amount" name="amount"  readonly required>
                                     </div>
 
@@ -669,8 +793,23 @@
                                         <label>UOM<span class="required-indicator">*</span></label>
                                         <input type="text" class="form-control uom" name="uom"  readonly required>
                                     </div>
+                                     <div class="col-md-2 mb-3">
+                                        <label>Amount <span class="required-indicator">*</span></label>
+                                        <input type="text" class="form-control amountac" name="amountac"  readonly required>
+                                    </div>
+                                   <div class="col-md-2 mb-3">
+                                        <label>Discount% <span class="required-indicator">*</span></label>
+                                        <input type="number" onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        class="form-control discount"  
+                                        placeholder="0.00" name="discount"   required>
+                                    </div>
                                     <div class="col-md-2 mb-3">
-                                        <label>Amount<span class="required-indicator">*</span></label>
+                                        <label> Discount Amount <span class="required-indicator">*</span></label>
+                                        <input type="text" class="form-control amountdiscount" name="amountdiscount"  readonly required>
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
+                                        <label>Amount after discount<span class="required-indicator">*</span></label>
                                         <input type="text" class="form-control amount" name="amount"  readonly required>
                                     </div>
 
@@ -767,8 +906,22 @@
                                         <label>UOM<span class="required-indicator">*</span></label>
                                         <input type="text" class="form-control uom" name="uom"  readonly required>
                                     </div>
+                                     <div class="col-md-2 mb-3">
+                                        <label>Amount <span class="required-indicator">*</span></label>
+                                        <input type="text" class="form-control amountac" name="amountac"  readonly required>
+                                    </div>
                                     <div class="col-md-2 mb-3">
-                                        <label>Amount<span class="required-indicator">*</span></label>
+                                        <label>Discount% <span class="required-indicator">*</span></label>
+                                        <input type="number" onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        class="form-control discount"  
+                                        placeholder="0.00" name="discount"   required>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label> Discount Amount <span class="required-indicator">*</span></label>
+                                        <input type="text" class="form-control amountdiscount" name="amountdiscount"  readonly required>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>Amount after discount<span class="required-indicator">*</span></label>
                                         <input type="text" class="form-control amount" name="amount"  readonly required>
                                     </div>
 
@@ -829,22 +982,30 @@
                 }
             });              
             
-        renderTotalAmountWithGst()
+        
         renderTotalIgst()
         renderTotalCgst()
         renderTotalSGst()
         renderTotalAmount()
+        renderTotalDiscount()  
+        renderTotalDiscountAmount() 
+        renderTotalActualAmount()
+        renderTotalAmountWithGst()
+       
         // callback()
     });
 
     $(document).on('click', '.remove_btn', function () {
         $(this).parents().closest('.content_parent').remove();
-
-        renderTotalAmountWithGst()
+        
+        renderTotalDiscount()  
+        renderTotalDiscountAmount() 
+        renderTotalActualAmount()
+        renderTotalAmount()
         renderTotalIgst()
         renderTotalCgst()
         renderTotalSGst()
-        renderTotalAmount()
+        renderTotalAmountWithGst()
         // callback()
     });
 
@@ -853,6 +1014,9 @@
         var parentDiv =  $(this).parents().closest('.content_parent');
         parentDiv.find('.quantity').val('')
         parentDiv.find('.amount').val('')
+        parentDiv.find('.amountac').val('')
+        parentDiv.find('.amountdiscount').val('')
+        parentDiv.find('.discount').val('')
         parentDiv.find('.igst').val('')
         parentDiv.find('.amount_igst').val('')
         parentDiv.find('.sgst').val('')
@@ -886,12 +1050,15 @@
         });
 
             
-        renderTotalAmountWithGst()
+       
         renderTotalIgst()
         renderTotalCgst()
         renderTotalSGst()
         renderTotalAmount()
-            
+        renderTotalDiscount()  
+        renderTotalDiscountAmount() 
+        renderTotalActualAmount() 
+        renderTotalAmountWithGst()
         // callback()
     })
 
@@ -959,14 +1126,22 @@
     
     });
     
-    $(document).on('keyup','.quantity , .rate',function(){
-        console.log("722");
+    $(document).on('keyup','.quantity , .rate, .discount' ,function(){
+        // console.log("722");
         let quantity = parseFloat($(this).parent().closest('.content_parent').find('.quantity').val())
-            let rate = parseFloat($(this).parent().closest('.content_parent').find('.rate').val())
-            let amount = quantity?(quantity * rate) : 0.00
-
-            $(this).parent().closest('.content_parent').find('.amount').val(amount).trigger('change')
-            renderTotalAmount()
+        let rate = parseFloat($(this).parent().closest('.content_parent').find('.rate').val())
+        let discount = parseFloat($(this).parent().closest('.content_parent').find('.discount').val())
+        let accamount = quantity?(quantity * rate) : 0.00
+        discount = discount ? (discount/100) : 0.00
+        let amountdiscount = accamount * discount
+        let amount =  accamount - amountdiscount
+        $(this).parent().closest('.content_parent').find('.amountac').val(accamount).trigger('change')
+        $(this).parent().closest('.content_parent').find('.amountdiscount').val(amountdiscount).trigger('change')
+        $(this).parent().closest('.content_parent').find('.amount').val(amount).trigger('change')
+        renderTotalAmount()
+        renderTotalDiscount()  
+        renderTotalDiscountAmount() 
+        renderTotalActualAmount()
 
     })
     // Keyup event for calculating amounts dynamically
@@ -1031,7 +1206,15 @@
         renderTotalCgst();
         renderTotalSGst();
         renderTotalAmount();
+        renderTotalDiscount();  
+        renderTotalDiscountAmount(); 
+        renderTotalActualAmount();
     });
+    $(document).on('change keyup','.tcs_percentage, .tds_percentage', function(){
+        
+        
+        renderTaxDeduction()
+    })
 
 </script>
 

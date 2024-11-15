@@ -166,6 +166,33 @@
                         </table>
                     </div>
                     <div class="form-row">
+
+                        <div cclass="col-md-2 mb-3">
+                            <label>TDS%</label>
+                            <input type="number" onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                            class="form-control tds_percentage tax"  
+                            placeholder="0.00" name="tds_percentage" min="0.00" value="{{purchase_bill.tds_percentage|floatformat}}" readonly>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label>TDS Deduction</label>
+                            <input type="text" class="form-control tds_deduction" name="tds_deduction" id="tds_deduction" value="{{purchase_bill.tds_deduction|floatformat}}" readonly >
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label>TCS%</label>
+                            <input type="number" onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                    class="form-control tcs_percentage tax"  
+                                    placeholder="0.00" name="tcs_percentage" min="0.00" value="{{purchase_bill.tcs_percentage|floatformat}}" readonly >
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label>TCS Deduction</label>
+                            <input type="text" class="form-control tcs_decuction" name="tcs_decuction" id="tcs_decuction" value="{{purchase_bill.tcs_deduction|floatformat}}" readonly >
+                        </div>
+                        <div class="col-md-2 mb-3 table_form" >
+                            <label>Roundof Amount<span class="required-indicator">*</span></label>
+                            <input type="text" class="form-control roundof_amount" name="roundof_amount" value="{{purchase_bill.roundof_amount|floatformat}}" id="roundof_amount" val readonly required>
+                        </div>
+                    </div>
+                    <div class="form-row">
                         <div class="col-md-12  table_form"  >
                             <label>Notes</label>
                             <textarea name="notes" rows="5" class="form-control note" placeholder="Note" readonly>{{purchase_bill.notes}}</textarea>

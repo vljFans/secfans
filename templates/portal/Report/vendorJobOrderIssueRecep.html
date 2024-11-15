@@ -47,11 +47,24 @@
         <div class="row">
             <div class="col-md-2 mb-3">
                 <label>From Date <span class="required-indicator">*</span></label>
-                <input type="date" name="from_date" class="form-control" placeholder="From Date" id="to_date" required>
-            </div>
+                <input type="date" name="from_date" class="form-control from_date " placeholder="From Date" id="from_date" required>
+            </div> 
             <div class="col-md-2 mb-3">
                 <label>To Date <span class="required-indicator">*</span></label>
-                <input type="date" name="to_date" class="form-control" placeholder="To Date" id="from_date" required>
+                <input type="date" name="to_date" class="form-control to_date" placeholder="To Date"  id="to_date" required>
+            </div>
+            <div class="col-md-2 mb-3">
+                <label> Day/Month <span class="required-indicator">*</span></label>
+                <div class="input-group">
+                    <select class="custom-select selectpicker day_month" data-placeholder="Choose"  >
+                        <option value="">Choose day month</option>
+                        <option value="7 day">7 Day</option>
+                        <option value="15 day">15 Day</option>
+                        <option value="1 month">1 month</option>
+                        <option value="3 month">3 month</option>
+                        <option value="6 month">6 month</option>
+                    </select>
+                </div>
             </div>
             <div class="col-md-3 mb-3">
                 <label>Vendor/Supplier Store<span class="required-indicator">*</span></label>
@@ -601,6 +614,52 @@
             doc.save(filename + '.pdf');
         }
     });
+
+    $(document).on('change','.day_month',function(){
+        let from_date
+        let to_date = new Date().toISOString().slice(0, 10)
+        let day_month = $('.day_month').val()
+        if(day_month == '7 day'){
+            let dateSevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            from_date =  dateSevenDaysAgo
+            $('.to_date').val(to_date)
+            $('.from_date').val(from_date)
+        }
+        else if(day_month == '15 day'){
+           let dateFifteenDaysAgo = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+           from_date =  dateFifteenDaysAgo
+            $('.to_date').val(to_date)
+            $('.from_date').val(from_date)
+        }
+        else if(day_month == '1 month'){
+            let dateOneMonthAgo = new Date();
+            dateOneMonthAgo.setMonth(dateOneMonthAgo.getMonth() - 1);
+            let formattedDate = dateOneMonthAgo.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+            from_date =  formattedDate
+            $('.to_date').val(to_date)
+            $('.from_date').val(from_date)
+        }
+        
+        else if (day_month == '3 month'){
+            console.log(244);
+            
+            let dateTwoMonthsAgo = new Date();
+            dateTwoMonthsAgo.setMonth(dateTwoMonthsAgo.getMonth() - 3);
+            let formattedDate = dateTwoMonthsAgo.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+            from_date =  formattedDate
+            $('.to_date').val(to_date)
+            $('.from_date').val(from_date)
+        }
+        else{
+            let dateSixMonthsAgo = new Date();
+            dateSixMonthsAgo.setMonth(dateSixMonthsAgo.getMonth() - 6);
+            let formattedDate = dateSixMonthsAgo.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+            from_date =  formattedDate
+            $('.to_date').val(to_date)
+            $('.from_date').val(from_date)
+        }
+    })
+
 
 
 </script>
