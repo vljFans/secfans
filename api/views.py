@@ -27,7 +27,8 @@ import math
 import environ
 import csv
 from fpdf import FPDF
-from django.db.models import Avg, Count, Min, Sum , Case, When, DecimalField ,F
+from django.db.models import Avg, Count, Min, Sum , Case, When, DecimalField, Q, F, IntegerField, Max, Func
+from django.db.models.functions import Substr, Cast
 from fractions import Fraction
 import pandas as pd
 from django.contrib.auth.models import Permission
@@ -37,7 +38,7 @@ import re
 env = environ.Env()
 environ.Env.read_env()
 format = lambda x: f'{x.normalize():f}'
-
+current_year = datetime.today().strftime('%Y')
 
 class CustomPaginator:
     def __init__(self, items, per_page):
@@ -53,6 +54,12 @@ class CustomPaginator:
 
     def get_total_pages(self):
         return math.ceil(len(self.items) / self.per_page)
+
+
+def ai_digit_5():
+    return str(models.Store_Transaction.objects.annotate(
+        num_part=Cast(Substr('transaction_number', 13, 5), IntegerField())
+    ).aggregate(max_value=Max('num_part'))['max_value'] or 0).zfill(5)
 
 
 def handle_empty_cell(x):
@@ -4142,21 +4149,20 @@ def storeTransactionAdd(request):
             #-------for job order present with_purchase_job_order ==2 means joborder---------
 
             if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) == 2):
-                # # # print(4061)
                 storeTransactionDetail =[]
                 jobOrderHeader = models.Job_Order.objects.get(pk=request.POST['purchase_job_order_header_id'] )
                 jobOrderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id =request.POST['purchase_job_order_header_id'] ))
-                # # # print(4064)
-                storeTransactionVHead_count= models.Store_Transaction.objects.all().count()
+                # storeTransactionVHead_count= models.Store_Transaction.objects.all().count()
                 storeTransactionVhead= models.Store_Transaction()
+                transaction_type = models.Transaction_Type.objects.get(name='MIST')
+                storeTransactionVhead.transaction_type = transaction_type
                 storeTransactionVhead.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
-                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(storeTransactionVHead_count + 1).zfill(5))
-                # # # print(4070)
+                    "${CURRENT_YEAR}", current_year).replace(
+                    "${AI_DIGIT_5}", ai_digit_5()).replace(
+                    "${transaction_type_id}", str(transaction_type.id))
                 if request.POST.get('vendor_id',None):
                     storeTransactionVhead.vendor_from_id = request.POST['vendor_id']
-                # # # print( models.Transaction_Type.objects.get(name = 'MIS'))
-                storeTransactionVhead.transaction_type =models.Transaction_Type.objects.get(name = 'MIST')
-                # # # print("3186")
+                # storeTransactionVhead.transaction_type =models.Transaction_Type.objects.get(name = 'MIST')
                 if(int(request.POST['with_purchase_job_order']) == 2):
                     storeTransactionVhead.job_order_id =  request.POST[
                         'purchase_job_order_header_id']
@@ -4300,7 +4306,9 @@ def storeTransactionAdd(request):
                 store_transaction_count = models.Store_Transaction.objects.all().count()
                 storeTransactionHeader = models.Store_Transaction()
                 storeTransactionHeader.vendor_id = request.POST['vendor_id']
-                storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
+                # storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
+                transaction_type = models.Transaction_Type.objects.get(name='GRN')
+                storeTransactionHeader.transaction_type = transaction_type
                 storeTransactionHeader.invoice_challan = request.POST['invoice_challan']
                 # # # # print("3182")
                 if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) != 2):
@@ -4311,7 +4319,9 @@ def storeTransactionAdd(request):
                     storeTransactionHeader.job_order_id =  request.POST[
                         'purchase_job_order_header_id']
                 storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
-                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
+                    "${CURRENT_YEAR}", current_year).replace(
+                    "${AI_DIGIT_5}", ai_digit_5()).replace(
+                    "${transaction_type_id}", str(transaction_type.id))
                 storeTransactionHeader.transaction_date = request.POST['transaction_date']
                 storeTransactionHeader.total_amount = request.POST['total_amount']
                 storeTransactionHeader.notes = request.POST['notes']
@@ -4485,7 +4495,7 @@ def storeTransactionEdit(request):
         #setting new transaction number from old transaction number
         transaction_no = storeTranasctionHeaderOld.transaction_number
         new_transaction_no = re.sub(r"TR(\d*)_", lambda m: f"TR{int(m.group(1) or 0) + 1}_", transaction_no)
-
+        # new_transaction_no=str(storeTranasctionHeaderOld.transaction_number+1).zfill(5)
         # closing this old transaction remove from original list
         storeTranasctionHeaderOld.status = 0 
         storeTranasctionHeaderOld.updated_at = datetime.now()
@@ -4747,12 +4757,16 @@ def storeTransactionEdit(request):
             #vendor job order transaction
             storeTransactionVHead_count= models.Store_Transaction.objects.all().count()
             storeTransactionVhead= models.Store_Transaction()
+            transaction_type = models.Transaction_Type.objects.get(name='MIST')
+            storeTransactionVhead.transaction_type = transaction_type
             storeTransactionVhead.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
-                "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(storeTransactionVHead_count + 1).zfill(5))
+                "${CURRENT_YEAR}", current_year).replace(
+                "${AI_DIGIT_5}", ai_digit_5()).replace(
+                "${transaction_type_id}", str(transaction_type.id))
             
             if request.POST.get('vendor_id',None):
                 storeTransactionVhead.vendor_from_id = request.POST['vendor_id']
-            storeTransactionVhead.transaction_type = models.Transaction_Type.objects.get(name = 'MIST')
+            # storeTransactionVhead.transaction_type = models.Transaction_Type.objects.get(name = 'MIST')
             # # print(int(request.POST['with_purchase_job_order']))
             if(int(request.POST['with_purchase_job_order']) == 2):
                 storeTransactionVhead.job_order_id =  request.POST[
@@ -5711,13 +5725,13 @@ def selfJobOrderReciept(request):
     # creation of store transaction for job order for material recieved
     store_transaction_count = models.Store_Transaction.objects.all().count()
     storeTransactionHeader=models.Store_Transaction()
-    storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'SP')
-    
+    # storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'SP')
+    transaction_type = models.Transaction_Type.objects.get(name='SP')
+    storeTransactionHeader.transaction_type = transaction_type
     storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
-            "${CURRENT_YEAR}", datetime.today().strftime('%Y')
-        ).replace(
-            "${AI_DIGIT_5}",str(store_transaction_count + 1).zfill(5)
-        )
+        "${CURRENT_YEAR}", current_year).replace(
+        "${AI_DIGIT_5}", ai_digit_5()).replace(
+        "${transaction_type_id}", str(transaction_type.id))
     
     storeTransactionHeader.transaction_date= date.today()
     storeTransactionHeader.job_order_id = id
@@ -6121,13 +6135,13 @@ def materialIssueAdd(request):
                 vendor_store=models.Store.objects.get(vendor_id=request.POST['vendor_id'])
                 storeTransactionHeader.vendor_id = request.POST['vendor_id']
             
-            storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'MIS')
-           
+            # storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'MIS')
+            transaction_type = models.Transaction_Type.objects.get(name='MIS')
+            storeTransactionHeader.transaction_type = transaction_type
             storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
-                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')
-                ).replace(
-                    "${AI_DIGIT_5}",str(store_transaction_count + 1).zfill(5)
-                )
+                "${CURRENT_YEAR}", current_year).replace(
+                "${AI_DIGIT_5}", ai_digit_5()).replace(
+                "${transaction_type_id}", str(transaction_type.id))
             
             storeTransactionHeader.transaction_date=request.POST['issue_date']
             storeTransactionHeader.job_order_id = request.POST['job_order_id']
@@ -6154,13 +6168,13 @@ def materialIssueAdd(request):
                 storeTransactionHeaderIn.vendor_id = request.POST['vendor_id']
                 
                 # # # # print(models.Transaction_Type.objects.get(name = 'MIS'))
-                storeTransactionHeaderIn.transaction_type = models.Transaction_Type.objects.get(name = 'GRNT')
-            
+                # storeTransactionHeaderIn.transaction_type = models.Transaction_Type.objects.get(name = 'GRNT')
+                transaction_type = models.Transaction_Type.objects.get(name='GRNT')
+                storeTransactionHeaderIn.transaction_type = transaction_type
                 storeTransactionHeaderIn.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
-                        "${CURRENT_YEAR}", datetime.today().strftime('%Y')
-                    ).replace(
-                        "${AI_DIGIT_5}",str(store_transaction_count + 1).zfill(5)
-                    )
+                    "${CURRENT_YEAR}", current_year).replace(
+                    "${AI_DIGIT_5}", ai_digit_5()).replace(
+                    "${transaction_type_id}", str(transaction_type.id))
                 
                 storeTransactionHeaderIn.transaction_date=request.POST['issue_date']
                 storeTransactionHeaderIn.job_order_id = request.POST['job_order_id']
@@ -6583,7 +6597,9 @@ def addGrnDetailisInsTransaction(request):
                     store_transaction_count = models.Store_Transaction.objects.all().count()
                     storeTransactionHeader = models.Store_Transaction()
                     storeTransactionHeader.vendor_id = request.POST['vendor_id']
-                    storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
+                    # storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
+                    transaction_type = models.Transaction_Type.objects.get(name='GRN')
+                    storeTransactionHeader.transaction_type = transaction_type
                     storeTransactionHeader.invoice_challan = request.POST['invoice_challan']
                     if (request.POST.get('purchase_order_header_id',None) and request.POST['purchase_order_header_id']!=""):
                         storeTransactionHeader.purchase_order_header_id = request.POST[
@@ -6592,7 +6608,9 @@ def addGrnDetailisInsTransaction(request):
                         storeTransactionHeader.job_order_id = request.POST[
                             'job_order_header_id']
                     storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
-                        "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
+                        "${CURRENT_YEAR}", current_year).replace(
+                        "${AI_DIGIT_5}", ai_digit_5()).replace(
+                        "${transaction_type_id}", str(transaction_type.id))
                     storeTransactionHeader.transaction_date = request.POST['issue_date']
                     storeTransactionHeader.total_amount = request.POST['totalPrice']
                     storeTransactionHeader.grn_inspection_id = request.POST['insTraId']
@@ -6744,12 +6762,13 @@ def materialReturnAdd(request):
                 material_issue=models.Store_Transaction.objects.get(transaction_type__name="MIS", job_order_id=request.POST['job_order_id'])
                 material_return=models.Store_Transaction()
                 if material_issue.vendor: material_return.vendor=material_issue.vendor
-                material_return.transaction_type=models.Transaction_Type.objects.get(name="MR")
+                # material_return.transaction_type=models.Transaction_Type.objects.get(name="MR")
+                transaction_type = models.Transaction_Type.objects.get(name='MR')
+                material_return.transaction_type = transaction_type
                 material_return.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
-                        "${CURRENT_YEAR}", datetime.today().strftime('%Y')
-                    ).replace(
-                        "${AI_DIGIT_5}",str(store_transaction_count + 1).zfill(5)
-                    )
+                    "${CURRENT_YEAR}", current_year).replace(
+                    "${AI_DIGIT_5}", ai_digit_5()).replace(
+                    "${transaction_type_id}", str(transaction_type.id))
                 material_return.transaction_date = request.POST['return_date']
                 material_return.job_order=material_issue.job_order
                 material_return.save()
@@ -6790,12 +6809,13 @@ def materialReturnAdd(request):
                 material_return = models.Store_Transaction()
                 material_return.vendor = grn_inspection_transaction_header.vendor
                 if grn_inspection_transaction_header.purchase_order_header: material_return.purchase_order_header = grn_inspection_transaction_header.purchase_order_header
-                material_return.transaction_type = models.Transaction_Type.objects.get(name="MR")
+                # material_return.transaction_type = models.Transaction_Type.objects.get(name="MR")
+                transaction_type = models.Transaction_Type.objects.get(name='MR')
+                material_return.transaction_type = transaction_type
                 material_return.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
-                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')
-                ).replace(
-                    "${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5)
-                )
+                    "${CURRENT_YEAR}", current_year).replace(
+                    "${AI_DIGIT_5}", ai_digit_5()).replace(
+                    "${transaction_type_id}", str(transaction_type.id))
                 material_return.transaction_date = request.POST['return_date']
                 material_return.save()
 
@@ -6994,9 +7014,13 @@ def materialOutDetailsAdd(request):
 
             store_transaction_count = models.Store_Transaction.objects.all().count()
             storeTransactionHeader = models.Store_Transaction()
-            storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'MOUT')
+            # storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'MOUT')
+            transaction_type = models.Transaction_Type.objects.get(name='MOUT')
+            storeTransactionHeader.transaction_type = transaction_type
             storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
-                "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
+                "${CURRENT_YEAR}", current_year).replace(
+                "${AI_DIGIT_5}", ai_digit_5()).replace(
+                "${transaction_type_id}", str(transaction_type.id))
             storeTransactionHeader.transaction_date = request.POST['issue_date']
             storeTransactionHeader.reference_id =  int(on_transit_transaction_header.id)
             storeTransactionHeader.save()
@@ -7329,9 +7353,13 @@ def materialInDetailsAdd(request):
             #store transaction created for material in
             store_transaction_count = models.Store_Transaction.objects.all().count()
             storeTransactionHeader= models.Store_Transaction()
-            storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'MIN')
+            # storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'MIN')
+            transaction_type = models.Transaction_Type.objects.get(name='MIN')
+            storeTransactionHeader.transaction_type = transaction_type
             storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
-                "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
+                "${CURRENT_YEAR}", current_year).replace(
+                "${AI_DIGIT_5}", ai_digit_5()).replace(
+                "${transaction_type_id}", str(transaction_type.id))
             storeTransactionHeader.transaction_date = request.POST['issue_date']
             storeTransactionHeader.reference_id =  int(transitTransactionHeader.id)
             storeTransactionHeader.save()
@@ -7507,9 +7535,13 @@ def physicalInspectionDetailsAdd(request):
              #store transaction created for material in
             store_transaction_count = models.Store_Transaction.objects.all().count()
             storeTransactionHeader= models.Store_Transaction()
-            storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'PHY')
+            # storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'PHY')
+            transaction_type = models.Transaction_Type.objects.get(name='PHY')
+            storeTransactionHeader.transaction_type = transaction_type
             storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
-                "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(store_transaction_count + 1).zfill(5))
+                "${CURRENT_YEAR}", current_year).replace(
+                "${AI_DIGIT_5}", ai_digit_5()).replace(
+                "${transaction_type_id}", str(transaction_type.id))
             storeTransactionHeader.transaction_date = request.POST['issue_date']
             storeTransactionHeader.reference_id =  int(physicalInspectionHeader.id)
             storeTransactionHeader.save()
