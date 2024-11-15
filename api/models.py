@@ -853,12 +853,20 @@ class Purchase_Bill(models.Model):
     e_way_no =  models.CharField(max_length=50, blank=True, null=True)
     e_way_date = models.DateField(blank=True, null=True)
     vechical_no = models.CharField(max_length=50, blank=True, null=True)
+    total_amount_exclude_discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_gst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_igst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0) # total amout with discount
     total_gst_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    tds_percentage = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    tds_deduction = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    tcs_percentage = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    tcs_deduction = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    roundof_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     notes = models.TextField(blank=True, null=True)
     flag = models.SmallIntegerField(default=0)
     purchase_tally_report = models.SmallIntegerField(default=0)
@@ -885,7 +893,10 @@ class Purchase_Bill_Details(models.Model):
     uom = models.ForeignKey(
         Uom, on_delete=models.CASCADE, blank=True, null=True)
     rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0) # with discount
+    amount_exclude_discount = models.DecimalField(max_digits=10, decimal_places=2, default=0) #without dusocunt
+    discount_percentage = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     gst_percentage = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     gst_amount  = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     igst_percentage = models.DecimalField(max_digits=10, decimal_places=2, default=0)

@@ -1120,6 +1120,8 @@ def materialIssuePrint(request, id):
     materialIssue = models.Store_Transaction.objects.prefetch_related(
         'store_transaction_detail_set').get(pk=id)
     total_amount = 0
+    configList = models.Configuration_User.objects.first()
+
     materialIssuestores = list(models.Store_Transaction_Detail.objects.filter(store_transaction_header = id).values('pk','store__name',
     'store__address','store__country__name',
     'store__state__name',
@@ -1131,7 +1133,8 @@ def materialIssuePrint(request, id):
         'page_title': "Delivery Challan",
         'materialIssue': materialIssue,
         'materialIssuestore':materialIssuestores[0],
-        'materialIssueNumToword': materialIssueNumToword
+        'materialIssueNumToword': materialIssueNumToword,
+        'config': configList
     })
     return render(request, 'portal/Material Issue/print.html', context)
 
@@ -1482,9 +1485,11 @@ def purchaseBillAdd(request):
 
 @login_required
 def purchaseBillEdit(request,id):
-    gst_list = models.Gst.objects.get(status = 1, deleted =0)
+    gst_list = models.Gst.objects.filter(status = 1, deleted =0)
+    print()
     purchaseBill = models.Purchase_Bill.objects.get(pk=id)
     context.update({
+        'gst_list': gst_list,
         'purchase_bill': purchaseBill,
         'page_title': "Purchase Bill Edit",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},

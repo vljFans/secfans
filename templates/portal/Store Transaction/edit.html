@@ -314,6 +314,7 @@
     var item_options = [];
     var item_options_used_pk = [];
     var store_options_text = ``;
+    var form , initialFormData ;
     $('.selectpicker').select2({
         placeholder: ''
     });
@@ -338,8 +339,18 @@
             item_options_used_pk.push($(this).val())
         }); 
     }
+    // Function to get form data as a JSON string
+    function getFormData(form) {
+        var formData = new FormData(form[0]);
+        var object = {};
+        formData.forEach((value, key) => {
+            object[key] = value;
+        });
+        return JSON.stringify(object);
+    }
 
     $(document).ready(function () {
+        initialFormData = getFormData(form);
         if("{{storeTransaction.purchase_order_header_id}}"=="None"){
             $(".item_id").each(function() {
                 item_options_used_pk.push($(this).val())
@@ -1119,6 +1130,13 @@
 
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
+        let currentFormData = getFormData(form);
+            
+        if (initialFormData === currentFormData) {
+            alert('please update something.');
+            return false; // Stop form submission
+        }
+
         $('.submit-btn').text('Submitting...');
         $('.submit-btn').prop('disabled', true);
         var formData = new FormData(create_form);

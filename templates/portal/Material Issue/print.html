@@ -69,17 +69,12 @@
             <table style="border-width:0px; border-spacing:0px; width: 100%;">
             <tr>
                 <td style="width:60%; margin-top: -10px;">
-                    <Strong>Shiva Engineering Co.</Strong><br>
+                    <Strong>{{config.client_name}}</Strong><br>
                     
-                        47, Biplabi Anukul Chandra Street, Kolkata-72<br>
-                        Factory214A, Raja Ram Mohon Roy Road, Kolkata, W.B- 700008<br>
-                        16F, Khanpur Road, Kolkata, West Bengal, 700047<br>
-                        Sarmastarchak, D H Road, Kolkata, South 24 Parganas, W B- 700104<br>
-                        2D, Temple Street, Kolkata - 700072<br>
-                        CONTACT - 9433525676_IEC CODE- 0216927218 UDYAM-WB-10-0017669_ MEDIUM<br>
-                        GSTIN/UIN: 19ACRPJ8066A1ZC<br>
-                        State Name : West Bengal, Code : 19<br>
-                        E-Mail : shivaenggco@yahoo.in/shivaenggco1987@gmail.com<br>
+                        {{config.client_address}}<br>
+                        Ph. – {{config.client_contact}}<br>
+                        Works – {{config.client_work_address}}<br>
+                        GST - {{config.client_gst}}
                    
                 </td>
                 <td colspan="10" rowspan="12" style="width:40%; padding: 0px;">
@@ -169,10 +164,14 @@
             </tr>
             <tr>
                 <td>Party <br>
+                    {% if materialIssue.vendor %}
                     <strong>{{materialIssue.vendor.name}}</strong>
                     <p style="margin-top: 0px;">{{materialIssue.vendor.address}}</p>
                     <p style="margin-top: -5px;"> {{materialIssuestore.vendor.country.name}} &nbsp; {{materialIssuestore.vendor.state.name}} &nbsp; {{materialIssuestore.vendor.city.name}}</p>
                     <p style="margin-top: -5px;"> {{materialIssuestore.vendor.pin}}</p>
+                    {% else %}
+                    <strong>self</strong>
+                    {% endif %}
                 </td>
                 
             </tr>
@@ -224,7 +223,7 @@
         
             <table style="border-width:0px; border-spacing:0px; width:50%; padding-top: 200px; padding-left: 80px; margin-left: 346px;">
                 <tr>
-                    <td  colspan="2" style="text-align: center;"><p style="float: right; margin-top: 0px">for Shiva Engineering Co.</p>
+                    <td  colspan="2" style="text-align: center;"><p style="float: right; margin-top: 0px">for {{config.client_name}}</p>
                     <br>
                     {% if materialIssue.creator.user_sign is not None  %}
                     <img src="{{materialIssue.creator.user_sign}}" class="img-responsive" width="125" height="80" ><br><span >({{materialIssue.creator.name}})</span><br>
