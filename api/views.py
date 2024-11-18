@@ -4170,7 +4170,7 @@ def storeTransactionAdd(request):
                 storeTransactionVhead.total_amount = request.POST['total_amount']
                 storeTransactionVhead.notes = request.POST['notes']
                 storeTransactionVhead.save()
-                # # # print(4083)
+                print(4083)
                 for index in range(0, len(jobOrderDetails)):
                     # # # print(409)
                     if jobOrderDetails[index].direction == 'outgoing' and float(jobOrderDetails[index].quantity_result) != 0:
