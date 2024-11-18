@@ -97,6 +97,7 @@
                                     <th>#</th>
                                     <th>Transaction Type Name</th>
                                     <th> Transaction Type Desc</th>
+                                    <th>Transaction type Id</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -139,6 +140,7 @@
                                 <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
                                 <td>${element.name}</td>
                                 <td>${element.desc ? element.desc : ''}</td>
+                                <td>${element.pk}</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'delete_transaction_type'|get_session_permission:request is not None %}
                                 <a id="delete-btn" data-id="${element.pk}" data-name="${element.name}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
