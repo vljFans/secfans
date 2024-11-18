@@ -4500,7 +4500,7 @@ def storeTransactionEdit(request):
         storeTranasctionHeaderOld.status = 0 
         storeTranasctionHeaderOld.updated_at = datetime.now()
         storeTranasctionHeaderOld.save()
-
+        print(4503)
         #retriving orginal data to in house store
         if int(request.POST['with_purchase_job_order']) != 2: #it is a purchase(with/without) 
             
