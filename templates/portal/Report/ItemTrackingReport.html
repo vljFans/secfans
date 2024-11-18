@@ -122,7 +122,8 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Date</th>
+                                    <th>Transaction Date</th>
+                                    <th>Last update</th>
                                     <th>Transaction Number</th>
                                     <th>Transaction Type</th>
                                     <th>Rate</th>
@@ -258,7 +259,8 @@
                         tbody_html += `
                             <tr>
                                 <td>${index + 1}</td>
-                                <td>${transaction.updated_at}</td>
+                                <td>${transaction.transaction_date.split("-").reverse().join("-")}</td>
+                                <td>${transaction.updated_at.split("-").reverse().join("-")}</td>
                                 <td>${transaction.transaction_number}</td>
                                 <td>${transaction.transaction_type}</td>
                                 <td>${transaction.rate}</td>

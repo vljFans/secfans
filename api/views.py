@@ -8146,7 +8146,8 @@ def reportItemTrackingReport(request):
                 'amount_with_gst': store_transaction_detail.amount_with_gst,
                 'transaction_number': store_transaction_detail.store_transaction_header.transaction_number,
                 'transaction_type': store_transaction_detail.store_transaction_header.transaction_type.name,
-                'updated_at': store_transaction_detail.updated_at.date()
+                'updated_at': store_transaction_detail.updated_at.date(),
+                'transaction_date' : store_transaction_detail.store_transaction_header.transaction_date
             })
 
     context.update({
