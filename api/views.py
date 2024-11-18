@@ -57,9 +57,9 @@ class CustomPaginator:
 
 
 def ai_digit_5():
-    return str(models.Store_Transaction.objects.annotate(
+    return str((models.Store_Transaction.objects.annotate(
         num_part=Cast(Substr('transaction_number', 13, 5), IntegerField())
-    ).aggregate(max_value=Max('num_part'))['max_value'] or 0).zfill(5)
+    ).aggregate(max_value=Max('num_part'))['max_value'] or 0) + 1).zfill(5)
 
 
 def handle_empty_cell(x):
