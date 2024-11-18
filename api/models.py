@@ -445,7 +445,7 @@ class Store_Item(models.Model):
 
 class Bill_Of_Material(models.Model):
     bom_item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
-    # name = models.CharField(max_length=250, blank=True, null=True)
+    name = models.CharField(max_length=250, blank=True, null=True)
     uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
