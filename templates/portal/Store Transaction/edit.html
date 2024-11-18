@@ -350,6 +350,7 @@
     }
 
     $(document).ready(function () {
+        let form = $('#create_form');
         initialFormData = getFormData(form);
         if("{{storeTransaction.purchase_order_header_id}}"=="None"){
             $(".item_id").each(function() {
@@ -1130,6 +1131,7 @@
 
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
+        let form = $('#create_form');
         let currentFormData = getFormData(form);
             
         if (initialFormData === currentFormData) {

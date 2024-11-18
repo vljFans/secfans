@@ -57,9 +57,9 @@ class CustomPaginator:
 
 
 def ai_digit_5():
-    return str(models.Store_Transaction.objects.annotate(
+    return str((models.Store_Transaction.objects.annotate(
         num_part=Cast(Substr('transaction_number', 13, 5), IntegerField())
-    ).aggregate(max_value=Max('num_part'))['max_value'] or 0).zfill(5)
+    ).aggregate(max_value=Max('num_part'))['max_value'] or 0) + 1).zfill(5)
 
 
 def handle_empty_cell(x):
@@ -4159,7 +4159,7 @@ def storeTransactionAdd(request):
                 storeTransactionVhead.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                     "${CURRENT_YEAR}", current_year).replace(
                     "${AI_DIGIT_5}", ai_digit_5()).replace(
-                    "${transaction_type_id}", str(transaction_type.id))
+                    "${transaction_type_id}", str(transaction_type.id).zfill(2))
                 if request.POST.get('vendor_id',None):
                     storeTransactionVhead.vendor_from_id = request.POST['vendor_id']
                 # storeTransactionVhead.transaction_type =models.Transaction_Type.objects.get(name = 'MIST')
@@ -4170,7 +4170,7 @@ def storeTransactionAdd(request):
                 storeTransactionVhead.total_amount = request.POST['total_amount']
                 storeTransactionVhead.notes = request.POST['notes']
                 storeTransactionVhead.save()
-                # # # print(4083)
+                print(4083)
                 for index in range(0, len(jobOrderDetails)):
                     # # # print(409)
                     if jobOrderDetails[index].direction == 'outgoing' and float(jobOrderDetails[index].quantity_result) != 0:
@@ -4321,7 +4321,7 @@ def storeTransactionAdd(request):
                 storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                     "${CURRENT_YEAR}", current_year).replace(
                     "${AI_DIGIT_5}", ai_digit_5()).replace(
-                    "${transaction_type_id}", str(transaction_type.id))
+                    "${transaction_type_id}", str(transaction_type.id).zfill(2))
                 storeTransactionHeader.transaction_date = request.POST['transaction_date']
                 storeTransactionHeader.total_amount = request.POST['total_amount']
                 storeTransactionHeader.notes = request.POST['notes']
@@ -4500,7 +4500,7 @@ def storeTransactionEdit(request):
         storeTranasctionHeaderOld.status = 0 
         storeTranasctionHeaderOld.updated_at = datetime.now()
         storeTranasctionHeaderOld.save()
-
+        print(4503)
         #retriving orginal data to in house store
         if int(request.POST['with_purchase_job_order']) != 2: #it is a purchase(with/without) 
             
@@ -4762,7 +4762,7 @@ def storeTransactionEdit(request):
             storeTransactionVhead.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                 "${CURRENT_YEAR}", current_year).replace(
                 "${AI_DIGIT_5}", ai_digit_5()).replace(
-                "${transaction_type_id}", str(transaction_type.id))
+                "${transaction_type_id}", str(transaction_type.id).zfill(2))
             
             if request.POST.get('vendor_id',None):
                 storeTransactionVhead.vendor_from_id = request.POST['vendor_id']
@@ -5731,7 +5731,7 @@ def selfJobOrderReciept(request):
     storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
         "${CURRENT_YEAR}", current_year).replace(
         "${AI_DIGIT_5}", ai_digit_5()).replace(
-        "${transaction_type_id}", str(transaction_type.id))
+        "${transaction_type_id}", str(transaction_type.id).zfill(2))
     
     storeTransactionHeader.transaction_date= date.today()
     storeTransactionHeader.job_order_id = id
@@ -6141,7 +6141,7 @@ def materialIssueAdd(request):
             storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                 "${CURRENT_YEAR}", current_year).replace(
                 "${AI_DIGIT_5}", ai_digit_5()).replace(
-                "${transaction_type_id}", str(transaction_type.id))
+                "${transaction_type_id}", str(transaction_type.id).zfill(2))
             
             storeTransactionHeader.transaction_date=request.POST['issue_date']
             storeTransactionHeader.job_order_id = request.POST['job_order_id']
@@ -6174,7 +6174,7 @@ def materialIssueAdd(request):
                 storeTransactionHeaderIn.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                     "${CURRENT_YEAR}", current_year).replace(
                     "${AI_DIGIT_5}", ai_digit_5()).replace(
-                    "${transaction_type_id}", str(transaction_type.id))
+                    "${transaction_type_id}", str(transaction_type.id).zfill(2))
                 
                 storeTransactionHeaderIn.transaction_date=request.POST['issue_date']
                 storeTransactionHeaderIn.job_order_id = request.POST['job_order_id']
@@ -6610,7 +6610,7 @@ def addGrnDetailisInsTransaction(request):
                     storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                         "${CURRENT_YEAR}", current_year).replace(
                         "${AI_DIGIT_5}", ai_digit_5()).replace(
-                        "${transaction_type_id}", str(transaction_type.id))
+                        "${transaction_type_id}", str(transaction_type.id).zfill(2))
                     storeTransactionHeader.transaction_date = request.POST['issue_date']
                     storeTransactionHeader.total_amount = request.POST['totalPrice']
                     storeTransactionHeader.grn_inspection_id = request.POST['insTraId']
@@ -6768,7 +6768,7 @@ def materialReturnAdd(request):
                 material_return.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                     "${CURRENT_YEAR}", current_year).replace(
                     "${AI_DIGIT_5}", ai_digit_5()).replace(
-                    "${transaction_type_id}", str(transaction_type.id))
+                    "${transaction_type_id}", str(transaction_type.id).zfill(2))
                 material_return.transaction_date = request.POST['return_date']
                 material_return.job_order=material_issue.job_order
                 material_return.save()
@@ -6815,7 +6815,7 @@ def materialReturnAdd(request):
                 material_return.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                     "${CURRENT_YEAR}", current_year).replace(
                     "${AI_DIGIT_5}", ai_digit_5()).replace(
-                    "${transaction_type_id}", str(transaction_type.id))
+                    "${transaction_type_id}", str(transaction_type.id).zfill(2))
                 material_return.transaction_date = request.POST['return_date']
                 material_return.save()
 
@@ -7020,7 +7020,7 @@ def materialOutDetailsAdd(request):
             storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                 "${CURRENT_YEAR}", current_year).replace(
                 "${AI_DIGIT_5}", ai_digit_5()).replace(
-                "${transaction_type_id}", str(transaction_type.id))
+                "${transaction_type_id}", str(transaction_type.id).zfill(2))
             storeTransactionHeader.transaction_date = request.POST['issue_date']
             storeTransactionHeader.reference_id =  int(on_transit_transaction_header.id)
             storeTransactionHeader.save()
@@ -7359,7 +7359,7 @@ def materialInDetailsAdd(request):
             storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                 "${CURRENT_YEAR}", current_year).replace(
                 "${AI_DIGIT_5}", ai_digit_5()).replace(
-                "${transaction_type_id}", str(transaction_type.id))
+                "${transaction_type_id}", str(transaction_type.id).zfill(2))
             storeTransactionHeader.transaction_date = request.POST['issue_date']
             storeTransactionHeader.reference_id =  int(transitTransactionHeader.id)
             storeTransactionHeader.save()
@@ -7541,7 +7541,7 @@ def physicalInspectionDetailsAdd(request):
             storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                 "${CURRENT_YEAR}", current_year).replace(
                 "${AI_DIGIT_5}", ai_digit_5()).replace(
-                "${transaction_type_id}", str(transaction_type.id))
+                "${transaction_type_id}", str(transaction_type.id).zfill(2))
             storeTransactionHeader.transaction_date = request.POST['issue_date']
             storeTransactionHeader.reference_id =  int(physicalInspectionHeader.id)
             storeTransactionHeader.save()
@@ -8146,7 +8146,8 @@ def reportItemTrackingReport(request):
                 'amount_with_gst': store_transaction_detail.amount_with_gst,
                 'transaction_number': store_transaction_detail.store_transaction_header.transaction_number,
                 'transaction_type': store_transaction_detail.store_transaction_header.transaction_type.name,
-                'updated_at': store_transaction_detail.updated_at.date()
+                'updated_at': store_transaction_detail.updated_at.date(),
+                'transaction_date' : store_transaction_detail.store_transaction_header.transaction_date
             })
 
     context.update({
