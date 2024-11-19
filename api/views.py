@@ -2916,43 +2916,106 @@ def storeExport(request):
         'name':  tmpname
     })
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def billOfMaterialMasterList(request):
+    context = {}
+    id = request.GET.get('id', None)
+    find_all = request.GET.get('find_all', None)
+    keyword = request.GET.get('keyword', None)
+    if id is not None and id != "":
+        billOfMaterialMaster = list(models.Bill_Of_Material_Master.objects.filter(
+            pk=id)[:1].values('pk', 'name', 'item__name', 'item__uom__name'))
+        context.update({
+            'status': 200,
+            'message': "Bill Of Material Master Fetched Successfully.",
+            'page_items': billOfMaterialMaster,
+        })
+        return JsonResponse(context)
+    
+    if keyword is not None and keyword != "":
+        print(2937)
+        billOfMaterialMaster = models.Bill_Of_Material_Master.objects.filter(
+            Q(item__name__icontains=keyword) | Q(item__uom__name__icontains=keyword)).filter(status=1, deleted=0)
+    else:
+        billOfMaterialMaster = models.Bill_Of_Material_Master.objects.filter(
+            status=1, deleted=0)
+    billOfMaterialMaster = list(billOfMaterialMaster.values(
+            'pk', 'name', 'item__name', 'item__uom__name'))
+    if find_all is not None and int(find_all) == 1:
+        context.update({
+            'status': 200,
+            'message': "Bill Of Materials Master Fetched Successfully.",
+            'page_items': billOfMaterialMaster,
+        })
+        return JsonResponse(context)
+    print(billOfMaterialMaster)
+    per_page = int(env("PER_PAGE_DATA"))
+    button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
+    current_page = request.GET.get('current_page', 1)
+
+    paginator = CustomPaginator(billOfMaterialMaster, per_page)
+    page_items = paginator.get_page(current_page)
+    total_pages = paginator.get_total_pages()
+
+    context.update({
+        'status': 200,
+        'message': "BOM Levels Master Fetched Successfully.",
+        'page_items': page_items,
+        'total_pages': total_pages,
+        'per_page': per_page,
+        'current_page': int(current_page),
+        'button_to_show': int(button_to_show),
+    })
+    return JsonResponse(context)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def billOfMaterialList(request):
     context = {}
     id = request.GET.get('id', None)
+    bomMasterId = request.GET.get('bomMasterId', None)
     find_all = request.GET.get('find_all', None)
     level = request.GET.get('level', None)
     keyword = request.GET.get('keyword', None)
     item_id = request.GET.get('item_id', None)
+    type_bom =  request.GET.get('type_bom', None)
     if id is not None and id != "":
         billOfMaterial = list(models.Bill_Of_Material.objects.filter(
-            pk=id)[:1].values('pk', 'bom_item__name', 'uom__name', 'quantity', 'price'))
+            pk=id)[:1].values('pk', 'bom_item__name', 'uom__name', 'quantity', 'price','bom_master_id','bom_type'))
         context.update({
             'status': 200,
             'message': "Bill Of Material Fetched Successfully.",
             'page_items': billOfMaterial,
         })
+   
     if item_id is not None and item_id != "":
         billOfMaterial = list(models.Bill_Of_Material.objects.filter(
-            pk=id)[:1].values('pk', 'bom_item__name', 'uom__name', 'quantity', 'price'))
+            pk=id)[:1].values('pk', 'bom_item__name', 'uom__name', 'quantity', 'price','bom_master_id','bom_type'))
         context.update({
             'status': 200,
             'message': "Bill Of Material Fetched Successfully.",
             'page_items': billOfMaterial,
         })
     else:
+        if bomMasterId is not None and bomMasterId !="":
+            billOfMaterials = models.Bill_Of_Material.objects.filter(bom_master_id = bomMasterId)
+        else :
+            billOfMaterials = models.Bill_Of_Material.objects.filter(status=1, deleted=0)
+
         if keyword is not None and keyword != "":
-            billOfMaterials = models.Bill_Of_Material.objects.filter(
-                Q(bom_item__name__icontains=keyword) | Q(uom__name__icontains=keyword) | Q(price__icontains=keyword)).filter(status=1, deleted=0)
+            billOfMaterials = billOfMaterials.filter(
+                Q(bom_item__name__icontains=keyword) | Q(uom__name__icontains=keyword) | Q(price__icontains=keyword)| Q(bom_type__icontains=keyword)).filter(status=1, deleted=0)
         else:
-            billOfMaterials = models.Bill_Of_Material.objects.filter(
+            billOfMaterials = billOfMaterials.filter(
                 status=1, deleted=0)
+        if type_bom is not None and type_bom !="":
+            billOfMaterials =billOfMaterials.filter(bom_type=type_bom)
+
         if level is not None:
             billOfMaterials = billOfMaterials.filter(level__lte=level)
         billOfMaterials = list(billOfMaterials.values(
-            'pk', 'bom_item__name', 'uom__name', 'quantity', 'price'))
+            'pk', 'bom_item__name', 'uom__name', 'quantity', 'price','bom_master_id','bom_type'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -2985,10 +3048,18 @@ def billOfMaterialList(request):
 @permission_classes([IsAuthenticated])
 def billOfMaterialAdd(request):
     context = {}
+    print(2988)
     if not request.POST['bom_item_id'] or not request.POST['uom_id'] or not request.POST['total_amount'] or not request.POST['level']:
         context.update({
             'status': 573,
             'message': "BOM Item/UOM/Total Amount/Level has not been provided."
+        })
+        return JsonResponse(context)
+    billOfMaterialHeaderTypeExist = models.Bill_Of_Material.objects.filter(bom_item_id = request.POST['bom_item_id'],bom_type = request.POST['type_bom']).exists()
+    if billOfMaterialHeaderTypeExist :
+        context.update({
+        'status': 574,
+        'message': "Bill Of Material with this item as BOM and type already exists.",
         })
         return JsonResponse(context)
     exist_data = models.Bill_Of_Material.objects.filter(
@@ -2999,12 +3070,27 @@ def billOfMaterialAdd(request):
             'message': "Bill Of Material with this item as BOM and level already exists.",
         })
         return JsonResponse(context)
+    print(3003)
     try:
         with transaction.atomic():
+            print(3005)
+            billOfMaterialMasterHeaderExist = models.Bill_Of_Material_Master.objects.filter(item_id = request.POST['bom_item_id']).exists()
+            
+            if not billOfMaterialMasterHeaderExist:
+                billOfMaterialHeaderMaster =   models.Bill_Of_Material_Master()
+                billOfMaterialHeaderMaster.item_id = request.POST['bom_item_id']
+                billOfMaterialHeaderMaster.save()
+            else:
+                print(request.POST['bom_item_id'])
+                billOfMaterialHeaderMaster = models.Bill_Of_Material_Master.objects.filter(item_id = request.POST['bom_item_id']).first()
+                # billOfMaterialHeaderMaster = models.Bill_Of_Material_Master.objects.get(item_id = int(request.POST['bom_item_id']))
             billOfMaterialHeader = models.Bill_Of_Material()
             billOfMaterialHeader.bom_item_id = request.POST['bom_item_id']
             billOfMaterialHeader.uom_id = request.POST['uom_id']
             billOfMaterialHeader.quantity = 1
+            billOfMaterialHeader.bom_master_id = billOfMaterialHeaderMaster.id
+            billOfMaterialHeader.bom_type = request.POST['type_bom']
+            print(3029)
             billOfMaterialHeader.price = request.POST['total_amount']
             billOfMaterialHeader.level = request.POST['level']
             billOfMaterialHeader.save()
