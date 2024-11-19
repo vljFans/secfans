@@ -88,6 +88,7 @@ urlpatterns = [
     path('store-delete', views.storeDelete, name='storeDelete'),
     path('store-export', views.storeExport, name='storeExport'),
     
+    path('bill-of-material-master-list', views.billOfMaterialMasterList, name='billOfMaterialMasterList'),
     path('bill-of-material-list', views.billOfMaterialList, name='billOfMaterialList'),
     path('bill-of-material-add', views.billOfMaterialAdd, name='billOfMaterialAdd'),
     path('bill-of-material-edit', views.billOfMaterialEdit, name='billOfMaterialEdit'),
