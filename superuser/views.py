@@ -985,6 +985,7 @@ def jobOrderAdd(request):
     # for bom in models.Bill_Of_Material.objects.all():
     #     item_id_n_bom_id[str(bom.bom_item_id)]=bom.id
     # bom_items_id_list = list(models.Bill_Of_Material.objects.all().values_list('bom_item_id', flat=True))
+    item_ids = list(models.Bill_Of_Material_Master.objects.values_list('item_id', flat=True))
    
     if request.GET.get('id', None):
         id = request.GET.get('id', None)
@@ -1007,6 +1008,7 @@ def jobOrderAdd(request):
             'jobOrder': jobOrder,
             'items': items,
             'vendors': vendors,
+            'item_ids': item_ids,
             'outgoing_details': outgoing_details,
             'incoming_details': incoming_details,
             'page_title': "Job Order Add",
@@ -1015,7 +1017,7 @@ def jobOrderAdd(request):
         return render(request, 'portal/Job Order/edit.html', context)
 
     else:
-        item_ids = list(models.Bill_Of_Material_Master.objects.values_list('item_id', flat=True))
+        # item_ids = list(models.Bill_Of_Material_Master.objects.values_list('item_id', flat=True))
         context.update({
             'page_title': "Job Order Add",
             'item_ids': item_ids,
@@ -1047,10 +1049,12 @@ def jobOrderEdit(request, id):
     time_value = ''.join(filter(str.isdigit, jobOrder.estimated_time_day))
     outgoing_details = jobOrder.job_order_detail_set.filter(direction='outgoing')
     incoming_details = jobOrder.job_order_detail_set.filter(direction='incoming')
+    item_ids = list(models.Bill_Of_Material_Master.objects.values_list('item_id', flat=True))
 
     context.update({
         'jobOrder': jobOrder,
         'items': items,
+        'item_ids': item_ids,
         'vendors': vendors,
         'time_unit':time_unit,
         'time_value':time_value,

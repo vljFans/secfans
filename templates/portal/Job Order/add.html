@@ -890,7 +890,8 @@
                             $("#checkbox").prop('disabled', true);
                         }
                         else{
-                            $('.incoming_row').children().last().remove();
+                            // $('.incoming_row').children().last().remove();
+                            $('.incoming_row').children().eq(3).remove();
                             $('.outgoing_row').html(`
                                 <div class="col-md-5 py-2">
                                     <label>Item<span class="required-indicator">*</span></label>
@@ -936,9 +937,21 @@
             });
         }
     });
+    
+    $(document).on('change keyup','.incoming_quantity',function(){
+        $('.outgoing_quantity').each(function(){
+            let originalValue = parseFloat($(this).attr('originalValue'));
+            let incomeQuantity = parseFloat($('.incoming_quantity').val());
+            let acctQuantity = originalValue * incomeQuantity
+            $(this).val(acctQuantity)
+        })
+    })
 
     $(document).on('change', '.bom_type_id', function () {
         let bom_type_id=$(this).val();
+        let incoming_parent = $(this).parent().closest('.incoming_row')
+        console.log(incoming_parent);
+        
         $.ajax({
             url: "{% url 'api:jobOrderBomDetails' %}?id="+bom_type_id,
             type: 'GET',
@@ -951,6 +964,7 @@
                     $('.outgoing_row').empty();
                     let outgoing_row_html_text = ``;
                     console.log(response.page_items);
+                    incoming_parent.find('.incoming_quantity').val(1)
                     
                     for (let index = 0; index < response.page_items.length; index++) {
                         outgoing_row_html_text += `
@@ -976,6 +990,7 @@
                                     class="form-control outgoing_quantity"
                                     placeholder="Quantity" 
                                     value="${+response.page_items[index].quantity}" 
+                                    originalValue="${+response.page_items[index].quantity}" 
                                     required>
                             </div>
                             <div class="col-md-3 py-2">
