@@ -1015,8 +1015,10 @@ def jobOrderAdd(request):
         return render(request, 'portal/Job Order/edit.html', context)
 
     else:
+        item_ids = list(models.Bill_Of_Material_Master.objects.values_list('item_id', flat=True))
         context.update({
             'page_title': "Job Order Add",
+            'item_ids': item_ids,
             'breadcrumbs': [
                 {
                     'name': "Dashboard", 
