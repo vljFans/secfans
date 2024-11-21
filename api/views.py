@@ -2300,6 +2300,8 @@ def itemList(request):
         if item_category is not None and item_category!="":
             if item_category=="not-finish":
                 items = items.filter(Q(item_type__item_category__name__icontains="raw") | Q(item_type__item_category__name__icontains="semi"))
+            if item_category=="semi":
+                items = items.filter(item_type__item_category__name__icontains="semi")
             if item_category=="finish":
                 items = items.filter(item_type__item_category__name__icontains="finish")
 
