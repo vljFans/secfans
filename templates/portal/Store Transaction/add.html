@@ -1168,7 +1168,7 @@
                 vendor_id = $('#vendor_id').val()
                 console.log(vendor_id);
                 $.ajax({
-                url: "{% url 'api:jobOrderList' %}?find_all=1&vendor_id=" + vendor_id+"&material_reciept=0&material_issue=1,2&with_item=True&manufacturing_type=Third party",
+                url: "{% url 'api:jobOrderList' %}?find_all=1&vendor_id=" + vendor_id+"&material_reciept=0&material_issue=2,3&with_item=True&manufacturing_type=Third party",
                 type: 'GET',
                 data: ({}),
                 headers: {
