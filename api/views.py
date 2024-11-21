@@ -2300,6 +2300,8 @@ def itemList(request):
         if item_category is not None and item_category!="":
             if item_category=="not-finish":
                 items = items.filter(Q(item_type__item_category__name__icontains="raw") | Q(item_type__item_category__name__icontains="semi"))
+            if item_category=="semi":
+                items = items.filter(item_type__item_category__name__icontains="semi")
             if item_category=="finish":
                 items = items.filter(item_type__item_category__name__icontains="finish")
 
@@ -2932,7 +2934,6 @@ def billOfMaterialMasterList(request):
             'page_items': billOfMaterialMaster,
         })
         return JsonResponse(context)
-    
     if keyword is not None and keyword != "":
         print(2937)
         billOfMaterialMaster = models.Bill_Of_Material_Master.objects.filter(
@@ -2991,7 +2992,7 @@ def billOfMaterialList(request):
    
     if item_id is not None and item_id != "":
         billOfMaterial = list(models.Bill_Of_Material.objects.filter(
-            pk=id)[:1].values('pk', 'bom_item__name', 'uom__name', 'quantity', 'price','bom_master_id','bom_type'))
+            bom_item_id=item_id).values('pk', 'bom_master_id','bom_type'))
         context.update({
             'status': 200,
             'message': "Bill Of Material Fetched Successfully.",
@@ -3062,14 +3063,14 @@ def billOfMaterialAdd(request):
         'message': "Bill Of Material with this item as BOM and type already exists.",
         })
         return JsonResponse(context)
-    exist_data = models.Bill_Of_Material.objects.filter(
-        bom_item_id=request.POST['bom_item_id'], level=request.POST['level']).filter(deleted=0)
-    if len(exist_data) > 0:
-        context.update({
-            'status': 574,
-            'message': "Bill Of Material with this item as BOM and level already exists.",
-        })
-        return JsonResponse(context)
+    # exist_data = models.Bill_Of_Material.objects.filter(
+    #     bom_item_id=request.POST['bom_item_id'], level=request.POST['level']).filter(deleted=0)
+    # if len(exist_data) > 0:
+    #     context.update({
+    #         'status': 574,
+    #         'message': "Bill Of Material with this item as BOM and level already exists.",
+    #     })
+    #     return JsonResponse(context)
     print(3003)
     try:
         with transaction.atomic():
@@ -3142,14 +3143,14 @@ def billOfMaterialEdit(request):
             'message': "BOM Item/UOM/Total Amount/Level has not been provided."
         })
         return JsonResponse(context)
-    exist_data = models.Bill_Of_Material.objects.filter(
-        bom_item_id=request.POST['bom_item_id'], level=request.POST['level']).exclude(pk=request.POST['id']).filter(deleted=0)
-    if len(exist_data) > 0:
-        context.update({
-            'status': 577,
-            'message': "Bill Of Material with this item as bom already exists.",
-        })
-        return JsonResponse(context)
+    # exist_data = models.Bill_Of_Material.objects.filter(
+    #     bom_item_id=request.POST['bom_item_id'], level=request.POST['level']).exclude(pk=request.POST['id']).filter(deleted=0)
+    # if len(exist_data) > 0:
+    #     context.update({
+    #         'status': 577,
+    #         'message': "Bill Of Material with this item as bom already exists.",
+    #     })
+    #     return JsonResponse(context)
     try:
         with transaction.atomic():
             billOfMaterialHeader = models.Bill_Of_Material.objects.prefetch_related(
@@ -3268,6 +3269,44 @@ def getBillOfMaterialStructure(request):
         })
     return JsonResponse(context)
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def jobOrderBomDetails(request):
+    context = {}
+    id = request.GET.get('id', None)
+    try:
+        details = models.Bill_Of_Material_Detail.objects.filter(bill_of_material_header_id=id)
+        result = []
+        for detail in details:
+            # Case 1: item_id is not null
+            if detail.item_id:
+                result.append({
+                    "item_id" : detail.item_id,
+                    "uom_name" : detail.item.uom.name,  # Fetch the uom_id directly from the item
+                    "quantity" : detail.quantity
+                })
+            # Case 2: bom_level_id is not null
+            elif detail.bom_level_id:
+                bom_item = detail.bom_level.bom_item  # Navigate through bom_level to bom_item
+                if bom_item:
+                    result.append({
+                        "item_id" : bom_item.id,
+                        "uom_name" : bom_item.uom.name,  # Fetch the uom_id from the bom_item
+                        "quantity" : detail.quantity
+                    })
+        print(result)
+        context.update({
+            'status': 200,
+            'message': "Bill Of Material- items Fetched Successfully.",
+            'page_items': result,
+        })
+    except Exception:
+        context.update({
+            'status': 568,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+    return JsonResponse(context)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

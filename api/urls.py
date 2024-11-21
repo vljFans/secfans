@@ -94,6 +94,7 @@ urlpatterns = [
     path('bill-of-material-edit', views.billOfMaterialEdit, name='billOfMaterialEdit'),
     path('bill-of-material-delete', views.billOfMaterialDelete, name='billOfMaterialDelete'),
     path('bill-of-material-structure', views.getBillOfMaterialStructure, name='getBillOfMaterialStructure'),
+    path('job-order-bom-details', views.jobOrderBomDetails, name='jobOrderBomDetails'),
     
     path('purchase-order-list', views.purchaseOrderList, name='purchaseOrderList'),
     path('purchase-order-add', views.purchaseOrderAdd, name='purchaseOrderAdd'),

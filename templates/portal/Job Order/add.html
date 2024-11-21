@@ -615,7 +615,6 @@
     })
     
     $(document).on('change', '.with_item', function(){
-        
         if($(this).val()==="False"){
             $(".item_table").empty()
             $('.warnText').attr('hidden',true)
@@ -623,7 +622,7 @@
         
         if($(this).val()==="True"){
             $('.warnText').removeAttr('hidden')
-            itemIncomingDropDown("not-finish")
+            itemIncomingDropDown("semi")
             $(".item_table").html(`
                 <div class="container-fluid" style="border: 2px solid darkgray;">
                     <div class="row">
@@ -676,7 +675,7 @@
                                 <div class="row">
                                     <div class="col-md-12 d-flex align-items-center" style="border-bottom: 2px solid darkgray;padding-top: 13px;padding-bottom: 13px;">
                                         <h5 class="text-center flex-grow-1 mb-0">
-                                            Production/Manufactured Material [SFG, FG]
+                                            Production/Manufactured Material [SFG]
                                         </h5> 
                                         
                                         <button type="button" class="btn add_btn  mr-2" hidden> 
@@ -820,6 +819,103 @@
                     if (response.status == 200) {
                         callback("incoming");
                         element.closest('.incoming_row').find('.uom').val(response.page_items[0].uom__name);
+                        if (JSON.parse("{{item_ids}}").includes(Number(item_id))){
+                            $('.outgoing_row').html(`
+                                <div class="col-md-5 py-2">
+                                    <label>Item<span class="required-indicator">*</span></label>
+                                    <div class="input-group">
+                                        <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required>
+                                            ${outgoing_item_options_text}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 py-2">
+                                    <label>Quantity<span class="required-indicator">*</span></label>
+                                    <input type="text" onkeyup="checkMaxMin(this)"
+                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
+                                        placeholder="Quantity" required>
+                                </div>
+                                <div class="col-md-3 py-2">
+                                    <label>UOM <span class="required-indicator">*</span></label>
+                                    <input type="text" 
+                                        name="uom"  class="form-control uom"
+                                        placeholder="" readonly>
+                                </div>`
+                            )
+                        
+                            $.ajax({
+                                url: "{% url 'api:billOfMaterialList' %}?item_id="+item_id,
+                                type: 'GET',
+                                data: ({}),
+                                headers: {
+                                    'Authorization': getCookieValue("accessToken")
+                                },
+                                success: function (response) {
+                                    if (response.status == 200) {
+                                        $('.incoming_row').children().eq(3).remove();
+                                        let bom_type_options_text = `
+                                            <div class="col-md-5 py-2">
+                                                <label>BOM Type<span class="required-indicator">*</span></label>
+                                                    <div class="input-group">
+                                                        <select class="custom-select selectpicker bom_type_id" name="bom_type_id" data-placeholder="Select BOM Type" required>    
+                                                            <option value="">Choose bom type</option>
+                                        `;
+                                        for (let index = 0; index < response.page_items.length; index++) {
+                                            bom_type_options_text += `<option value="${response.page_items[index].pk}">Type ${response.page_items[index].bom_type}</option>`;
+                                        }
+                                        bom_type_options_text += `
+                                                        </select>
+                                                    </div>
+                                            </div>`;
+                                        $('.incoming_row').append(bom_type_options_text);
+                                        $('.selectpicker').select2({
+                                            placeholder: '',
+                                            templateResult: function(option) {
+                                                if(option.element && (option.element).hasAttribute('hidden')){
+                                                    return null;
+                                                }
+                                                return option.text;
+                                            }
+                                        });
+                                        
+                                    } else {
+                                        alert(response.message);
+                                    }
+                                },
+                                error: function (error) {
+                                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                                }
+                            });  
+                            $("#checkbox").prop('disabled', true);
+                        }
+                        else{
+                            $('.incoming_row').children().last().remove();
+                            $('.outgoing_row').html(`
+                                <div class="col-md-5 py-2">
+                                    <label>Item<span class="required-indicator">*</span></label>
+                                    <div class="input-group">
+                                        <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required>
+                                            ${outgoing_item_options_text}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 py-2">
+                                    <label>Quantity<span class="required-indicator">*</span></label>
+                                    <input type="text" onkeyup="checkMaxMin(this)"
+                                        onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                        name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
+                                        placeholder="Quantity" required>
+                                </div>
+                                <div class="col-md-3 py-2">
+                                    <label>UOM <span class="required-indicator">*</span></label>
+                                    <input type="text" 
+                                        name="uom"  class="form-control uom"
+                                        placeholder="" readonly>
+                                </div>`
+                            )
+                            $("#checkbox").prop('disabled', false);
+                        }
                         $('.selectpicker').select2({
                             placeholder: '',
                             templateResult: function(option) {
@@ -841,6 +937,82 @@
         }
     });
 
+    $(document).on('change', '.bom_type_id', function () {
+        let bom_type_id=$(this).val();
+        $.ajax({
+            url: "{% url 'api:jobOrderBomDetails' %}?id="+bom_type_id,
+            type: 'GET',
+            data: ({}),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    $('.outgoing_row').empty();
+                    let outgoing_row_html_text = ``;
+                    console.log(response.page_items);
+                    
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        outgoing_row_html_text += `
+                            <div class="col-md-5 py-2">
+                                <label>Item<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker outgoing_item_id" 
+                                        name="outgoing_item_id" 
+                                        data-placeholder="Select Item" 
+                                        required>
+                                    <option value="">Select Item</option>
+                                    ${outgoing_item_options_text}
+                                </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4 py-2">
+                                <label>Quantity<span class="required-indicator">*</span></label>
+                                <input type="text" 
+                                    onkeyup="checkMaxMin(this)"
+                                    onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                    name="outgoing_quantity" 
+                                    min="0.0001" 
+                                    class="form-control outgoing_quantity"
+                                    placeholder="Quantity" 
+                                    value="${+response.page_items[index].quantity}" 
+                                    required>
+                            </div>
+                            <div class="col-md-3 py-2">
+                                <label>UOM <span class="required-indicator">*</span></label>
+                                <input type="text" 
+                                    name="uom"  
+                                    class="form-control uom"
+                                    placeholder="" 
+                                    value="${response.page_items[index].uom_name}" 
+                                    readonly>
+                            </div>`.replace(
+                                `<option value="${response.page_items[index].item_id}">`,
+                                `<option value="${response.page_items[index].item_id}" selected>`
+                            );
+                    }
+                    $('.outgoing_row').html(outgoing_row_html_text)
+                    $('.selectpicker').select2({
+                        placeholder: '',
+                        templateResult: function(option) {
+                            if(option.element && (option.element).hasAttribute('hidden')){
+                                return null;
+                            }
+                            return option.text;
+                        }
+                    });
+                    
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });  
+
+    })
+    
     $(document).on('click', '.add_btn', function () {
         if ($(this).closest(".container-fluid").hasClass("outgoing_materials")){
             let element=$(this).closest(".container-fluid").find(".container-fluid")
@@ -932,6 +1104,9 @@
             $('.incoming_materials').find('.row').children().slice(-2).remove();
             callback("incoming")
             updateMinusButtonState("incoming");
+        }
+        if ($(".outgoing_row").length>0){
+            $('.remove_btn').prop('disabled', true);
         }
     });
 

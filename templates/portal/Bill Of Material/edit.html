@@ -748,7 +748,7 @@
                 $('.submit-btn').text('Submitting...');
                 $('.submit-btn').prop('disabled', false);
                 if (response.status == 200) {
-                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:billOfMaterialList' %}");
+                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:billOfMaterialMasterList' %}");
                 } else {
                     alert(response.message);
                 }
