@@ -1064,8 +1064,32 @@
     // });
 
     $(document).on('change', '.incoming_item_id', function () {
-       
+       $('.outgoing_materials').children().find('.container-fluid').empty()
+       $('.outgoing_materials').children().find('.container-fluid').html(` <div class="row outgoing_row">
+                                                                    <div class="col-md-5 py-2">
+                                                                        <label>Item<span class="required-indicator">*</span></label>
+                                                                        <div class="input-group">
+                                                                            <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required  >
+                                                                                ${outgoing_item_options_text}
+                                                                            </select>
+                                                                            
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-4 py-2">
+                                                                        <label>Quantity<span class="required-indicator">*</span></label>
+                                                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                                            name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
+                                                                            required >
+                                                                    </div>
+                                                                    <div class="col-md-3  py-2">
+                                                                        <label>UOM <span class="required-indicator">*</span></label>
+                                                                        <input type="text" name="uom"  class="form-control uom"  readonly>
+                                                                    </div>
+                                                                </div>`)                                                        
+        
         let element=$(this)
+        element.parent().closest('.incoming_row').find('.incoming_quantity').val(``).attr('placeholder', 'Quantity');
         let item_id = element.val()
         if (item_id != null && item_id != "") {
             $.ajax({
@@ -1200,10 +1224,12 @@
     
     $(document).on('change keyup','.incoming_quantity',function(){
         $('.outgoing_quantity').each(function(){
-            let originalValue = parseFloat($(this).attr('originalValue'));
+            let originalValue =$(this).attr('originalValue') ?  parseFloat($(this).attr('originalValue')) : 1;
             let incomeQuantity = parseFloat($('.incoming_quantity').val());
             let acctQuantity = originalValue * incomeQuantity
-            $(this).val(acctQuantity)
+            if ($(this).attr('originalValue')){
+                $(this).val(acctQuantity)
+            }
         })
     })
 

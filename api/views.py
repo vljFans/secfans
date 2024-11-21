@@ -3248,6 +3248,7 @@ def getStructureOfBOM(bom_id):
             each_child_structure['bom'] = getStructureOfBOM(
                 childDetail.bom_level_id)
         structure.append(each_child_structure)
+    print(billOfMaterial)
     billOfMaterial['structure'] = structure
     return billOfMaterial
 
@@ -5665,7 +5666,8 @@ def jobOrderAdd(request):
     context = {}
     # # # # print(request.POST)
     # exit()
-    bomNeeded = request.POST['bomNeeded']
+    
+    bomNeeded = request.POST.get('bomNeeded',None)
     if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['manufacturing_type'] or not request.POST['notes']:
         context.update({
             'status': 589,
@@ -5749,21 +5751,35 @@ def jobOrderAdd(request):
                 incomming_item_quantity = float(quantity)
 
             # bill of material add
-            if (int(bomNeeded) == 1) : 
+            if (request.POST.get('bomNeeded',None) and int(bomNeeded) == 1 ) : 
                 if  (models.Bill_Of_Material.objects.filter(bom_item_id = incomming_item_id, status=1, deleted=0).exists()) :
                     bom_head_exit = models.Bill_Of_Material.objects.filter(bom_item_id = incomming_item_id, status=1, deleted=0).first()
                     
                 else: 
                     # # # print(5145)
+                    billOfMaterialMasterHeaderExist = models.Bill_Of_Material_Master.objects.filter(item_id = incomming_item_id).exists()
+                    if not billOfMaterialMasterHeaderExist:
+                        
+                        billOfMaterialHeaderMaster = models.Bill_Of_Material_Master()
+                        
+                        billOfMaterialHeaderMaster.item_id = incomming_item_id
+                        billOfMaterialHeaderMaster.save()
+                       
+                    else:
+                        print(request.POST['bom_item_id'])
+                        billOfMaterialHeaderMaster = models.Bill_Of_Material_Master.objects.filter(item_id = request.POST['bom_item_id']).first()
                     bom_head = models.Bill_Of_Material()
                     bom_head.bom_item_id = incomming_item_id
                     bom_head.quantity = incomming_item_quantity
                     bom_head.price =  models.Item.objects.get(pk=incomming_item_id).price
                     bom_head.uom_id =models.Item.objects.get(pk=incomming_item_id).uom_id
+                    bom_head.bom_master_id = billOfMaterialHeaderMaster.id
+                    bom_head.bom_type = 1
                     bom_head.save()
+            bomLevel = 1
             #for Outgoing Quantity
             for item_id, quantity in zip(request.POST.getlist('outgoing_item_id'),request.POST.getlist('outgoing_quantity')):
-                # # # print(5154)
+                print(5154)
                 job_order_details.append(
                     models.Job_Order_Detail(
                         job_order_header_id=jobOrderHeader.id,
@@ -5775,28 +5791,46 @@ def jobOrderAdd(request):
                     )
                 )
               
-                if (int(bomNeeded) == 1) and  bom_head :
-                    # # # print(5165)
+                if (request.POST.get('bomNeeded',None) and int(bomNeeded) == 1) and  bom_head  :
+                    bomExist = models.Bill_Of_Material_Master.objects.filter(item_id = item_id).exists()
+                    print(bomExist,'sssssssss',item_id)
+                    if bomExist :
+                        bomHead =  models.Bill_Of_Material.objects.filter(bom_item_id = item_id).first()
+                        x = bomHead.level
+                        bomHeadId = bomHead.id
+                        print(type(bomLevel) == type(bomHead.level))
+                        bomLevel += x
+                        print(bomLevel)
                     bom_material_details.append(
                         models.Bill_Of_Material_Detail(
                             bill_of_material_header_id=bom_head.id,
-                            item_id = int(item_id),
+                            item_id = int(item_id) if not bomExist else None,
+                            bom_level_id  = bomHeadId if bomExist else None,
                             quantity=float(quantity),
                             price = models.Item.objects.get(pk=item_id).price
                         )
                     )
           
 
-                if(int(bomNeeded) == 1) and bom_head_exit :
+                if(request.POST.get('bomNeeded',None) and int(bomNeeded) == 1) and bom_head_exit :
                     models.Bill_Of_Material_Detail.objects.filter(bill_of_material_header_id = bom_head_exit.id).delete()
+                    bomExist = models.models.Bill_Of_Material_Master.objects.filter(item_id = item_id).exists()
+                    if bomExist :
+                        bomHead =  models.Bill_Of_Material.objects.filter(bom_item_id = item_id).first()
+                        bomHeadId = bomHead.id
+                        x = bomHead.level
+                        bomLevel += x
                     bom_material_details.append(
                         models.Bill_Of_Material_Detail(
                             bill_of_material_header_id=bom_head_exit.id,
-                            item_id = int(item_id),
+                            item_id = int(item_id) if not bomExist else None,
+                            bom_level_id  = bomHeadId if bomExist else None,
                             quantity=float(quantity),
                             price = models.Item.objects.get(pk=item_id).price
                         )
                     )
+            bom_head.level = bomLevel
+            bom_head.save() 
             if bom_material_details:
                 models.Bill_Of_Material_Detail.objects.bulk_create(bom_material_details)
             models.Job_Order_Detail.objects.bulk_create(job_order_details)
@@ -5921,7 +5955,7 @@ def selfJobOrderReciept(request):
 @permission_classes([IsAuthenticated])
 def jobOrderEdit(request):
     context = {}
-    bomNeeded = request.POST['bomNeeded']
+    bomNeeded = request.POST.get('bomNeeded',None)
     if not request.POST['order_number'] or not request.POST['order_date']  or not request.POST['notes']:
         context.update({
             'status': 589,
@@ -5997,23 +6031,37 @@ def jobOrderEdit(request):
                     )
                 incomming_item_id = int(item_id)
                 incomming_item_quantity = float(quantity)
-            print(5299)
+            print(5299,'aaaaaaaaaaa')
             # bill of material add
-            if (int(bomNeeded) == 1) : 
+            if (request.POST.get('bomNeeded',None) and int(bomNeeded) == 1) : 
         
                 if  (models.Bill_Of_Material.objects.filter(bom_item_id = incomming_item_id, status=1, deleted=0).exists()) :
                     bom_head_exit = models.Bill_Of_Material.objects.filter(bom_item_id = incomming_item_id, status=1, deleted=0).first()
                     
                 else: 
+                    billOfMaterialMasterHeaderExist = models.Bill_Of_Material_Master.objects.filter(item_id = incomming_item_id).exists()
+                    if not billOfMaterialMasterHeaderExist:
+                        print(6011,'aaaaaaaaaaa')
+                        billOfMaterialHeaderMaster = models.Bill_Of_Material_Master()
+                        print('11111111')
+                        billOfMaterialHeaderMaster.item_id = incomming_item_id
+                        print(6040)
+                        billOfMaterialHeaderMaster.save()
+                    else:
+                        print(request.POST['bom_item_id'])
+                        billOfMaterialHeaderMaster = models.Bill_Of_Material_Master.objects.filter(item_id = request.POST['bom_item_id']).first()
   
                     bom_head = models.Bill_Of_Material()
                     bom_head.bom_item_id = incomming_item_id
-                    bom_head.quantity = incomming_item_quantity
+                    bom_head.quantity = incomming_item_quantity 
+                    bom_head.bom_master_id = billOfMaterialHeaderMaster.id
+                    bom_head.bom_type = 1
+                    
                     bom_head.price =  models.Item.objects.get(pk=incomming_item_id).price
                     bom_head.uom_id =models.Item.objects.get(pk=incomming_item_id).uom_id
-                    bom_head.save()
+                    # bom_head.save()
             # outgoing details
-          
+            bomLevel = 1
             for item_id, quantity in zip(request.POST.getlist('outgoing_item_id'), request.POST.getlist('outgoing_quantity')):
                 jobOrderDetailsExist = models.Job_Order_Detail.objects.filter(job_order_header_id = request.POST['id'], item_id = int(item_id), quantity__gt =F('required_quantity')).exists()
                 if not jobOrderDetailsExist:
@@ -6030,30 +6078,49 @@ def jobOrderEdit(request):
                                 direction="outgoing"
                             )
                         )
-                if (int(bomNeeded) == 1) and  bom_head :
+                if (request.POST.get('bomNeeded',None) and int(bomNeeded) == 1) and  bom_head :
                     # # # print(5165)
+                    bomExist = models.Bill_Of_Material_Master.objects.filter(item_id = item_id).exists()
+                    if bomExist :
+                        bomHead =   models.Bill_Of_Material.objects.filter(bom_item_id = item_id).first()
+                        bomHeadId = bomHead.id
+                        x = bomHeadId.level
+                        bomLevel += x
+                        
                     bom_material_details.append(
                         models.Bill_Of_Material_Detail(
                             bill_of_material_header_id=bom_head.id,
-                            item_id = int(item_id),
+                            item_id = int(item_id) if not bomExist else None,
+                            bom_level_id  = bomHeadId if bomExist else None,
                             quantity=float(quantity),
                             price = models.Item.objects.get(pk=item_id).price
                         )
                     )
           
 
-                if(int(bomNeeded) == 1) and bom_head_exit :
+                if(request.POST.get('bomNeeded',None) and int(bomNeeded) == 1) and bom_head_exit :
+
                     models.Bill_Of_Material_Detail.objects.filter(bill_of_material_header_id = bom_head_exit.id).delete()
+                    bomExist = models.models.Bill_Of_Material_Master.objects.filter(item_id = item_id).exists()
+                    if bomExist :
+                        bomHead = models.Bill_Of_Material.objects.filter(bom_item_id = item_id).first()
+                        bomHeadId = bomHead.id
+                        x = bomHeadId.level
+                        bomLevel += x
                     bom_material_details.append(
                         models.Bill_Of_Material_Detail(
                             bill_of_material_header_id=bom_head_exit.id,
-                            item_id = int(item_id),
+                            item_id = int(item_id) if not bomExist else None,
+                            bom_level_id  = bomHeadId if bomExist else None,
                             quantity=float(quantity),
                             price = models.Item.objects.get(pk=item_id).price
                         )
                     )
+            bom_head.level = bomLevel
+            bom_head.save()
             if bom_material_details:
-                models.Bill_Of_Material_Detail.objects.bulk_create(bom_material_details)
+                # models.Bill_Of_Material_Detail.objects.bulk_create(bom_material_details)
+                pass
             models.Job_Order_Detail.objects.bulk_create(job_order_details)
             userId = request.COOKIES.get('userId', None)
             user_log_details_add(userId,'Job Order Edit')

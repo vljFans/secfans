@@ -940,10 +940,12 @@
     
     $(document).on('change keyup','.incoming_quantity',function(){
         $('.outgoing_quantity').each(function(){
-            let originalValue = parseFloat($(this).attr('originalValue'));
+            let originalValue =$(this).attr('originalValue') ?  parseFloat($(this).attr('originalValue')) : 1;
             let incomeQuantity = parseFloat($('.incoming_quantity').val());
             let acctQuantity = originalValue * incomeQuantity
-            $(this).val(acctQuantity)
+            if ($(this).attr('originalValue')){
+                $(this).val(acctQuantity)
+            }
         })
     })
 
