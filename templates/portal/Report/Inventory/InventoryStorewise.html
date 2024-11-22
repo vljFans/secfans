@@ -42,6 +42,16 @@
     <!-- Filter box Start -->
     <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
         <div class="row">
+            <div class="col-md-2 mb-3">
+                <label>Store Type<span class="required-indicator">*</span></label>
+                <div class="input-group">
+                    <select class="custom-select selectpicker" id="store_type" name="store_type">
+                        <option value="">Choose...</option>
+                        <option value="inHouse">In House</option>
+                        <option value="Vendor">Vendor</option>
+                    </select>
+                </div>
+            </div>
             <div class="col-md-4 mb-3">
                 <label>Item Category<span class="required-indicator">*</span></label>
                 <div class="input-group">
@@ -164,69 +174,70 @@
 
     });
 
-    $(document).ready(function () {
-        $.ajax({
-            url: "{% url 'api:reportInventoryStorewise' %}?find_all=1",
-            type: 'GET',
-            data: ({}),
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                if (response.status == 200) {
-                    var table_html = ``;
-                    $.each(response.page_items, function (storeName, storeData) {
-                        table_html += `
-                            <h5 style="padding: 20px;">${storeName}</h5>
-                            <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Item Category</th>
-                                    <th>Item</th>
-                                    <th>On Hand Quantity</th>
-                                    <th>value</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                        `;
+    // $(document).ready(function () {
+    //     $.ajax({
+    //         url: "{% url 'api:reportInventoryStorewise' %}?find_all=1",
+    //         type: 'GET',
+    //         data: ({}),
+    //         headers: {
+    //             'Authorization': getCookieValue("accessToken")
+    //         },
+    //         success: function (response) {
+    //             if (response.status == 200) {
+    //                 var table_html = ``;
+    //                 $.each(response.page_items, function (storeName, storeData) {
+    //                     table_html += `
+    //                         <h5 style="padding: 20px;">${storeName}</h5>
+    //                         <table class="table">
+    //                         <thead>
+    //                             <tr>
+    //                                 <th>#</th>
+    //                                 <th>Item Category</th>
+    //                                 <th>Item</th>
+    //                                 <th>On Hand Quantity</th>
+    //                                 <th>value</th>
+    //                             </tr>
+    //                         </thead>
+    //                         <tbody>
+    //                     `;
 
-                        $.each(storeData, function (index, transaction) {
-                            table_html += `
-                                <tr>
-                                <td>${++index}</td>
-                                <td>${transaction.item_category}</td>
-                                <td>${transaction.item}</td>
-                                <td>${+transaction.on_hand_qty}</td>
-                                <td>${transaction.value}</td>
-                                </tr>
-                            `;
-                        });
+    //                     $.each(storeData, function (index, transaction) {
+    //                         table_html += `
+    //                             <tr>
+    //                             <td>${++index}</td>
+    //                             <td>${transaction.item_category}</td>
+    //                             <td>${transaction.item}</td>
+    //                             <td>${+transaction.on_hand_qty}</td>
+    //                             <td>${transaction.value}</td>
+    //                             </tr>
+    //                         `;
+    //                     });
 
-                        table_html += `
-                        </tbody>
-                        </table>
-                        `;
-                    });
-                    $('.table-responsive').html(table_html);
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });
-        pdfDownload()
-        xlsxDownload()
-        csvDownload()
+    //                     table_html += `
+    //                     </tbody>
+    //                     </table>
+    //                     `;
+    //                 });
+    //                 $('.table-responsive').html(table_html);
+    //             } else {
+    //                 alert(response.message);
+    //             }
+    //         },
+    //         error: function (error) {
+    //             $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+    //         }
+    //     });
+    //     pdfDownload()
+    //     xlsxDownload()
+    //     csvDownload()
 
-    });
+    // });
 
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
         var formData = new FormData(create_form);
         keyword = formData.get('item_cat_id')
+        store_type = formData.get('store_type')
         $.ajax({
             type: "POST",
             evalScripts: true,
@@ -242,30 +253,68 @@
                     var table_html = ``;
                     $.each(response.page_items, function (storeName, storeData) {
                         table_html += `
-                            <h5 style="padding: 20px;">${storeName}</h5>
-                            <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Item Category</th>
-                                    <th>Item</th>
-                                    <th>On Hand Quantity</th>
-                                    <th>value</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                        `;
+                            <h5 style="padding: 20px;">${storeName}</h5>`
+                            if(store_type == 'inHouse'){
+                                table_html +=`
+                                <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Item Category</th>
+                                        <th>Item</th>
+                                        <th>On Hand Quantity</th>
+                                        <th>value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                            `;
+                            } 
+                            else{
+                                table_html +=`
+                                <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Item Category</th>
+                                        <th>Item</th>
+                                        <th>On Hand Quantity</th>
+                                        <th>Total Issued</th>
+                                        <th>WIP Quantity</th>
+                                        <th>Actual on hand quantity</th>
+                                        <th>value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                            `;
+                            }
 
                         $.each(storeData, function (index, transaction) {
-                            table_html += `
-                                <tr>
-                                <td>${++index}</td>
-                                <td>${transaction.item_category}</td>
-                                <td>${transaction.item}</td>
-                                <td>${+transaction.on_hand_qty}</td>
-                                <td>${transaction.value}</td>
-                                </tr>
-                            `;
+                            if(store_type == 'inHouse'){
+
+                                table_html += `
+                                    <tr>
+                                    <td>${++index}</td>
+                                    <td>${transaction.item_category}</td>
+                                    <td>${transaction.item}</td>
+                                    <td>${+transaction.on_hand_qty}</td>
+                                    <td>${transaction.value}</td>
+                                    </tr>
+                                `;
+                            }
+                            else{
+                                table_html += `
+                                    <tr>
+                                    <td>${++index}</td>
+                                    <td>${transaction.item_category}</td>
+                                    <td>${transaction.item}</td>
+                                    <td>${+transaction.on_hand_qty}</td>
+                                    <td>${+transaction.issue_Quantity}</td>
+                                    <td>${+transaction.Wip_Quantity}</td>
+                                    <td>${+transaction.actual_onhand}</td>
+                                    <td>${transaction.value}</td>
+                                    </tr>
+                                `;
+                            }
                         });
 
                         table_html += `

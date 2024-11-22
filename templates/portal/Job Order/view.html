@@ -54,7 +54,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <!-- <h6 class="card-header-title tx-13 mb-0">{{parent_page_title}} {{page_title}}</h6> -->
-                            <h6 class="card-header-title tx-13 mb-0">Job Order Details of {{jobOrder.order_number}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: blue;">  Estimated Time: {{jobOrder.estimated_time_day}}</span>  </h6>
+                            <h6 class="card-header-title tx-13 mb-0">Job Order Details of {{jobOrder.order_number}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: blue;">  Estimated Time: {{jobOrder.estimated_time_day}}</span> <span>Vendor :</span> <span>{% if jobOrder.vendor %} {{jobOrder.vendor.name}} {% endif %}</span> </h6>
 
                         </div>
                         <div class="text-right">
