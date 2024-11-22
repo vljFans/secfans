@@ -1132,11 +1132,13 @@ def materialIssueView(request,id):
 
 @login_required
 def materialIssuePrint(request, id):
+    print(1111)
     materialIssue = models.Store_Transaction.objects.prefetch_related(
         'store_transaction_detail_set').get(pk=id)
+    print(materialIssue)
     total_amount = 0
     configList = models.Configuration_User.objects.first()
-
+    
     materialIssuestores = list(models.Store_Transaction_Detail.objects.filter(store_transaction_header = id).values('pk','store__name',
     'store__address','store__country__name',
     'store__state__name',
@@ -1151,6 +1153,7 @@ def materialIssuePrint(request, id):
         'materialIssueNumToword': materialIssueNumToword,
         'config': configList
     })
+   
     return render(request, 'portal/Material Issue/print.html', context)
 
 
