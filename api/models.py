@@ -442,11 +442,29 @@ class Store_Item(models.Model):
         db_table = 'store_items'
         verbose_name_plural = 'store_items'
 
+class Bill_Of_Material_Master(models.Model):
+    name = models.CharField(max_length=250, blank=True, null=True)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
+    status = models.SmallIntegerField(default=1)
+    deleted = models.BooleanField(default=0)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return self.item.name
+
+    class Meta:
+        managed = True
+        db_table = 'bill_of_material_headers_master'
+        verbose_name_plural = 'bill_of_material_headers_master'
+
 
 class Bill_Of_Material(models.Model):
+    bom_master = models.ForeignKey(Bill_Of_Material_Master, on_delete=models.CASCADE, blank=True, null=True)
     bom_item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=250, blank=True, null=True)
     uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True)
+    bom_type = models.CharField(max_length=250, blank=True, null=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     is_final = models.SmallIntegerField(default=0)

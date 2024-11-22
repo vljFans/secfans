@@ -80,6 +80,7 @@ urlpatterns = [
     path('gst-list', views.gstList, name='gstList'),
     path('gst-add', views.gstAdd, name='gstAdd'),
     
+    path('bill-of-material-master-list', views.billOfMaterialMasterList, name='billOfMaterialMasterList'),
     path('bill-of-material-list', views.billOfMaterialList, name='billOfMaterialList'),
     path('bill-of-material-add', views.billOfMaterialAdd, name='billOfMaterialAdd'),
     path('bill-of-material-edit/<int:id>', views.billOfMaterialEdit, name='billOfMaterialEdit'),

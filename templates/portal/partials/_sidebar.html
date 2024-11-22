@@ -104,9 +104,9 @@
           </ul>
         </li>
         {% endif %}
-        {% if request.user.is_superuser == 1 or 'view_bill_of_material'|get_session_permission:request is not None %}
-        <li class="{% if request.path == '/bill-of-material-list' %}open active{% endif %}">
-          <a href="{% url 'superuser:billOfMaterialList' %}"><i data-feather="printer"></i>
+        {% if request.user.is_superuser == 1 or 'view_bill_of_material_master'|get_session_permission:request is not None %}
+        <li class="{% if request.path == '/bill-of-material-master-list' %}open active{% endif %}">
+          <a href="{% url 'superuser:billOfMaterialMasterList' %}"><i data-feather="printer"></i>
             <span>Bill Of Material</span></a>
         </li>
         {% endif %}

@@ -66,7 +66,7 @@
                 <div class="card-body">
                     <form id="create_form" class="needs-validation" novalidate>
                         <div class="form-row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label>Item<span class="required-indicator">*</span></label>
                                 <div class="input-group">
                                     <select class="custom-select selectpicker bom_item_id" name="bom_item_id" required>
@@ -74,7 +74,13 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
+                                <label>Bom Type <span class="required-indicator">*</span></label>
+                                <input type="text" onkeyup="checkMaxMin(this)" 
+                                    onkeypress="return  (event.charCode >= 48 && event.charCode <= 57)"
+                                    name="type_bom" min="1" class="form-control type_bom" placeholder="0" required disabled>
+                            </div>
+                            <div class="col-md-4 mb-3">
                                 <label>Level <span class="required-indicator">*</span></label>
                                 <input type="text" name="level" class="form-control bom_level_level" placeholder="Level"
                                     required id="bom_level_level" onkeyup="checkMaxMin(this)" value="1" min="1"
@@ -282,15 +288,16 @@
             success: function (response) {
                 if (response.status == 200) {
                     item_options = response.page_items;
-                    bom_items_id_list=JSON.parse("{{bom_items_id_list}}")
+                    // bom_items_id_list=JSON.parse("{{bom_items_id_list}}")
                     item_options_text = `<option value="">Choose...</option>`;
                     bom_item_options_text = `<option value="">Choose...</option>`;
                     
                     for (let index = 0; index < item_options.length; index++) {
                         item_options_text += `<option value="${item_options[index].pk}">${item_options[index].name}</option>`;
-                        if (! bom_items_id_list.includes(item_options[index].pk)){
-                            bom_item_options_text += `<option value="${item_options[index].pk}">${item_options[index].name}</option>`;
-                        }
+                        // if (! bom_items_id_list.includes(item_options[index].pk)){
+                        //     bom_item_options_text += `<option value="${item_options[index].pk}">${item_options[index].name}</option>`;
+                        // }
+                        bom_item_options_text += `<option value="${item_options[index].pk}">${item_options[index].name}</option>`;
                     }
                     $('.item_id').html(item_options_text);
                     $('.bom_item_id').html(bom_item_options_text);
@@ -491,6 +498,8 @@
 
     $(document).on('change', '.bom_item_id', function(){
         callback();
+        
+        $('.type_bom').removeAttr('disabled')
         $('.selectpicker').select2({
             placeholder: '',
             templateResult: function(option) {
@@ -502,7 +511,7 @@
         });
     })
 
-    $(document).on('change', '.item_id', function () {
+    $(document).on('change', '.item_id', function () {        
         let element = $(this);
         item_id = element.val();
         if (item_id != null && item_id != "") {
@@ -728,7 +737,7 @@
                 $('.submit-btn').text('Submitting...');
                 $('.submit-btn').prop('disabled', false);
                 if (response.status == 200) {
-                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:billOfMaterialList' %}");
+                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:billOfMaterialMasterList' %}");
                 } else {
                     alert(response.message);
                 }

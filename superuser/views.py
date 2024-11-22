@@ -663,13 +663,21 @@ def gstAdd(request):
     })
     return render(request, 'portal/GST/add.html', context)
 
-
+@login_required
+def billOfMaterialMasterList(request):
+    context.update({
+        'page_title': "Bill Of Material Master List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Bill Of Material Master", 'url': reverse('superuser:billOfMaterialMasterList')}, {'name': "MasterList"}]
+    })
+    return render(request, 'portal/Bill Of Material/listMaster.html', context)
 
 @login_required
 def billOfMaterialList(request):
+    id = request.GET['id']
     context.update({
         'page_title': "Bill Of Material List",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Bill Of Material", 'url': reverse('superuser:billOfMaterialList')}, {'name': "List"}]
+        'Page_id' : id,
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},{'name': "Bill Of Material Master", 'url': reverse('superuser:billOfMaterialMasterList')}, {'name': "Bill Of Material", 'url': reverse('superuser:billOfMaterialList')}, {'name': "List"}]
     })
     return render(request, 'portal/Bill Of Material/list.html', context)
 
@@ -677,10 +685,11 @@ def billOfMaterialList(request):
 @login_required
 def billOfMaterialAdd(request):
     bom_items_id_list = list(models.Bill_Of_Material.objects.all().values_list('bom_item_id', flat=True))
+    # max_value = models.Bill_Of_Material.objects.aggregate(max_bom_type=Max('bom_type'))['bom_type'] +1
     context.update({
         'bom_items_id_list': bom_items_id_list,
         'page_title': "Bill Of Material Add",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Bill Of Material", 'url': reverse('superuser:billOfMaterialList')}, {'name': "Add"}]
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Bill Of Material Master", 'url': reverse('superuser:billOfMaterialMasterList')},  {'name': "Add"}]
     })
     return render(request, 'portal/Bill Of Material/add.html', context)
 
@@ -699,7 +708,7 @@ def billOfMaterialEdit(request, id):
         'items': items,
         'uoms': uoms,
         'page_title': "Bill Of Material Edit",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Bill Of Material", 'url': reverse('superuser:billOfMaterialList')}, {'name': "Edit"}]
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Bill Of Material Master", 'url': reverse('superuser:billOfMaterialMasterList')},  {'name': "Edit"}]
     })
     return render(request, 'portal/Bill Of Material/edit.html', context)
 
@@ -738,7 +747,7 @@ def billOfMaterialView(request, id):
     context.update({
         'billOfMaterial': billOfMaterial,
         'page_title': "Bill Of Material View",
-        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Bill Of Material", 'url': reverse('superuser:billOfMaterialList')}, {'name': "View"}]
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Bill Of Material Master", 'url': reverse('superuser:billOfMaterialMasterList')},  {'name': "View"}]
     })
     return render(request, 'portal/Bill Of Material/view.html', context)
 
@@ -976,6 +985,7 @@ def jobOrderAdd(request):
     # for bom in models.Bill_Of_Material.objects.all():
     #     item_id_n_bom_id[str(bom.bom_item_id)]=bom.id
     # bom_items_id_list = list(models.Bill_Of_Material.objects.all().values_list('bom_item_id', flat=True))
+    item_ids = list(models.Bill_Of_Material_Master.objects.values_list('item_id', flat=True))
    
     if request.GET.get('id', None):
         id = request.GET.get('id', None)
@@ -998,6 +1008,7 @@ def jobOrderAdd(request):
             'jobOrder': jobOrder,
             'items': items,
             'vendors': vendors,
+            'item_ids': item_ids,
             'outgoing_details': outgoing_details,
             'incoming_details': incoming_details,
             'page_title': "Job Order Add",
@@ -1006,8 +1017,10 @@ def jobOrderAdd(request):
         return render(request, 'portal/Job Order/edit.html', context)
 
     else:
+        # item_ids = list(models.Bill_Of_Material_Master.objects.values_list('item_id', flat=True))
         context.update({
             'page_title': "Job Order Add",
+            'item_ids': item_ids,
             'breadcrumbs': [
                 {
                     'name': "Dashboard", 
@@ -1036,10 +1049,12 @@ def jobOrderEdit(request, id):
     time_value = ''.join(filter(str.isdigit, jobOrder.estimated_time_day))
     outgoing_details = jobOrder.job_order_detail_set.filter(direction='outgoing')
     incoming_details = jobOrder.job_order_detail_set.filter(direction='incoming')
+    item_ids = list(models.Bill_Of_Material_Master.objects.values_list('item_id', flat=True))
 
     context.update({
         'jobOrder': jobOrder,
         'items': items,
+        'item_ids': item_ids,
         'vendors': vendors,
         'time_unit':time_unit,
         'time_value':time_value,
