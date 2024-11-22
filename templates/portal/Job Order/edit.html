@@ -1424,6 +1424,9 @@
             callback("incoming")
             updateMinusButtonState("incoming");
         }
+        if ($(".outgoing_row").length>0){
+            $('.remove_btn').prop('disabled', true);
+        }
     });
 
     $(document).on('submit', '#create_form', function (e) {
