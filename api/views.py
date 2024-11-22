@@ -4256,6 +4256,7 @@ def storeTransactionAdd(request):
     check1 = 0
     test =""
     check2 = 0
+    # print(request.POST)
     if not request.POST['vendor_id'] or not request.POST['transaction_date'] or not request.POST['total_amount']:
         context.update({
             'status': 586,
@@ -4296,7 +4297,7 @@ def storeTransactionAdd(request):
                 storeTransactionVhead.total_amount = request.POST['total_amount']
                 storeTransactionVhead.notes = request.POST['notes']
                 storeTransactionVhead.save()
-                print(4083)
+                # print(4083)
                 for index in range(0, len(jobOrderDetails)):
                     # # # print(409)
                     if jobOrderDetails[index].direction == 'outgoing' and float(jobOrderDetails[index].quantity_result) != 0:
@@ -4428,7 +4429,7 @@ def storeTransactionAdd(request):
                 
 
             if "0" in inspect:
-                # # # # print(4214)
+                # print(4214)
                 store_transaction_count = models.Store_Transaction.objects.all().count()
                 storeTransactionHeader = models.Store_Transaction()
                 storeTransactionHeader.vendor_id = request.POST['vendor_id']
@@ -4453,7 +4454,7 @@ def storeTransactionAdd(request):
                 storeTransactionHeader.notes = request.POST['notes']
                 storeTransactionHeader.save()
 
-                # # # print('3549')
+                # print('3549')
                 order_details = []
                 total_amounts = 0 
                 material_reciept_all = 0
@@ -4479,7 +4480,9 @@ def storeTransactionAdd(request):
                         # # # # print('3569')
                         storeItem = models.Store_Item.objects.filter(
                             item_id=elem, store_id=request.POST.getlist('store_id')[index]).first()
+                        # print(storeItem)
                         if storeItem is None:
+                            # print(4484)
                             storeItem = models.Store_Item()
                             storeItem.opening_qty = Decimal(
                                 request.POST.getlist('item_quantity')[index])
@@ -4491,15 +4494,18 @@ def storeTransactionAdd(request):
                             storeItem.store_id = request.POST.getlist('store_id')[
                                 index]
                             storeItem.save()
+                            # print(4496)
                         else:
+                            # print(4498)
                             storeItem.on_hand_qty += Decimal(
                                 request.POST.getlist('item_quantity')[index])
+                            # print(4501)
                             storeItem.closing_qty += Decimal(
-                                request.POST.getlist('item_quantity')[index])
+                                request.POST.getlist('item_quantity')[index])  
                             storeItem.updated_at = datetime.now()
+                            # print(storeItem.closing_qty)
                             storeItem.save()
-                        # # # # print('3639')
-                        if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) == 2):
+                        if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) == 2): #it is a job order
                             # # # # print('3641')
                             job_order_details= models.Job_Order_Detail.objects.filter(item_id=elem, 
                                                 job_order_header_id= request.POST['purchase_job_order_header_id']).get()
@@ -4544,6 +4550,7 @@ def storeTransactionAdd(request):
                                 job_order.actual_time_take = str(round(total_hours, 3)) + 'hr'
                                 job_order.updated_at = datetime.now()   
                                 job_order.save()
+                print(4548)
                 if storeTransactionDetail:
                     models.Store_Transaction_Detail.objects.bulk_create(storeTransactionDetail)
                 models.Store_Transaction_Detail.objects.bulk_create(order_details)
@@ -5693,7 +5700,7 @@ def jobOrderAdd(request):
             bom_material_details = []
             bom_head = None 
             bom_head_exit = None
-            # # # # print('5065')
+            print('5065')
             if (request.POST.getlist('incoming_item_id')) and (request.POST.getlist('outgoing_item_id')) and ('with_item' in request.POST):
                 # # # # print('5050')
                 outgoingIncommingratioHeadCount = models.Outgoing_Incoming_Ratio.objects.all().count() 
@@ -5766,7 +5773,7 @@ def jobOrderAdd(request):
                         billOfMaterialHeaderMaster.save()
                        
                     else:
-                        print(request.POST['bom_item_id'])
+                        # print(request.POST['bom_item_id'])
                         billOfMaterialHeaderMaster = models.Bill_Of_Material_Master.objects.filter(item_id = request.POST['bom_item_id']).first()
                     bom_head = models.Bill_Of_Material()
                     bom_head.bom_item_id = incomming_item_id
@@ -5776,10 +5783,11 @@ def jobOrderAdd(request):
                     bom_head.bom_master_id = billOfMaterialHeaderMaster.id
                     bom_head.bom_type = 1
                     bom_head.save()
+            
             bomLevel = 1
             #for Outgoing Quantity
             for item_id, quantity in zip(request.POST.getlist('outgoing_item_id'),request.POST.getlist('outgoing_quantity')):
-                print(5154)
+                # print(5154)
                 job_order_details.append(
                     models.Job_Order_Detail(
                         job_order_header_id=jobOrderHeader.id,
@@ -5800,7 +5808,7 @@ def jobOrderAdd(request):
                         bomHeadId = bomHead.id
                         print(type(bomLevel) == type(bomHead.level))
                         bomLevel += x
-                        print(bomLevel)
+                        print(bom_head.id)
                     bom_material_details.append(
                         models.Bill_Of_Material_Detail(
                             bill_of_material_header_id=bom_head.id,
@@ -5811,7 +5819,7 @@ def jobOrderAdd(request):
                         )
                     )
           
-
+                # print(5822)
                 if(request.POST.get('bomNeeded',None) and int(bomNeeded) == 1) and bom_head_exit :
                     models.Bill_Of_Material_Detail.objects.filter(bill_of_material_header_id = bom_head_exit.id).delete()
                     bomExist = models.models.Bill_Of_Material_Master.objects.filter(item_id = item_id).exists()
@@ -5829,10 +5837,12 @@ def jobOrderAdd(request):
                             price = models.Item.objects.get(pk=item_id).price
                         )
                     )
-            bom_head.level = bomLevel
-            bom_head.save() 
+                
+            # print(5843)
             if bom_material_details:
                 models.Bill_Of_Material_Detail.objects.bulk_create(bom_material_details)
+                bom_head.level = int(bomLevel)
+                bom_head.save() 
             models.Job_Order_Detail.objects.bulk_create(job_order_details)
             # # # # print('4271')
             userId = request.COOKIES.get('userId', None)
@@ -5966,7 +5976,7 @@ def jobOrderEdit(request):
         with transaction.atomic():
             jobOrderHeader = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=request.POST['id'])
             jobOrderHeader.order_number = request.POST['order_number']
-            print(request.POST)
+            # print(request.POST)
             jobOrderHeader.order_date = request.POST['order_date']
             # jobOrderHeader.manufacturing_type = request.POST['manufacturing_type']
             if 'vendor_id' in request.POST:
@@ -6031,7 +6041,7 @@ def jobOrderEdit(request):
                     )
                 incomming_item_id = int(item_id)
                 incomming_item_quantity = float(quantity)
-            print(5299,'aaaaaaaaaaa')
+            # print(5299,'aaaaaaaaaaa')
             # bill of material add
             if (request.POST.get('bomNeeded',None) and int(bomNeeded) == 1) : 
         
@@ -6041,14 +6051,14 @@ def jobOrderEdit(request):
                 else: 
                     billOfMaterialMasterHeaderExist = models.Bill_Of_Material_Master.objects.filter(item_id = incomming_item_id).exists()
                     if not billOfMaterialMasterHeaderExist:
-                        print(6011,'aaaaaaaaaaa')
+                        # print(6011,'aaaaaaaaaaa')
                         billOfMaterialHeaderMaster = models.Bill_Of_Material_Master()
-                        print('11111111')
+                        # print('11111111')
                         billOfMaterialHeaderMaster.item_id = incomming_item_id
-                        print(6040)
+                        # print(6040)
                         billOfMaterialHeaderMaster.save()
                     else:
-                        print(request.POST['bom_item_id'])
+                        # print(request.POST['bom_item_id'])
                         billOfMaterialHeaderMaster = models.Bill_Of_Material_Master.objects.filter(item_id = request.POST['bom_item_id']).first()
   
                     bom_head = models.Bill_Of_Material()
@@ -6059,7 +6069,7 @@ def jobOrderEdit(request):
                     
                     bom_head.price =  models.Item.objects.get(pk=incomming_item_id).price
                     bom_head.uom_id =models.Item.objects.get(pk=incomming_item_id).uom_id
-                    # bom_head.save()
+                    bom_head.save()
             # outgoing details
             bomLevel = 1
             for item_id, quantity in zip(request.POST.getlist('outgoing_item_id'), request.POST.getlist('outgoing_quantity')):
@@ -6116,11 +6126,11 @@ def jobOrderEdit(request):
                             price = models.Item.objects.get(pk=item_id).price
                         )
                     )
-            bom_head.level = bomLevel
-            bom_head.save()
+            
             if bom_material_details:
-                # models.Bill_Of_Material_Detail.objects.bulk_create(bom_material_details)
-                pass
+                models.Bill_Of_Material_Detail.objects.bulk_create(bom_material_details)
+                bom_head.level = bomLevel
+                bom_head.save()
             models.Job_Order_Detail.objects.bulk_create(job_order_details)
             userId = request.COOKIES.get('userId', None)
             user_log_details_add(userId,'Job Order Edit')
@@ -8566,50 +8576,202 @@ def reportInventorySummary(request):
 
     return JsonResponse(context)
 
-@api_view(['GET','POST'])
+# @api_view(['GET','POST'])
+# @permission_classes([IsAuthenticated])
+# def reportInventoryStorewise(request):
+#     context = {}
+#     print(request.POST)
+#     item_cat_id = request.POST.get('item_cat_id', None)
+#     store_type = request.POST.get('store_type', None)
+#     data ={}
+#     store_item =[]
+#     try:
+#         if request.method == 'GET':
+#             store_item = list(models.Store_Item.objects.filter(status=1 , deleted = 0 ).values('pk','on_hand_qty','item__item_type__item_category__name','item__price','store__name','item__name'))
+#         else:
+#             if store_type == 'inHouse':
+#                 store_item = models.Store_Item.objects.filter(item__item_type__item_category_id=item_cat_id ,store__vendor__isnull=True)
+#             else :
+#                 store_item = models.Store_Item.objects.filter(item__item_type__item_category_id=item_cat_id ,store__vendor__isnull=False)
+#             store_item = list(store_item.values('pk','on_hand_qty','item__item_type__item_category__name','item__price','store__name','item__name','item_id'))    
+#         if(len(store_item) == 0):
+#             context.update({
+#                 'status': 200,
+#                 'message': "no item found  ",
+#             })
+#             return JsonResponse(context)
+#         total_material_issue = 0.00
+#         total_material_reciept = 0.00
+
+#         for index in range(0,len(store_item)):
+#             if store_item[index]['store__name'] not in data:
+#                 data[store_item[index]['store__name']] =[]
+#             if store_type == 'inHouse':
+#                 data[store_item[index]['store__name']].append({
+#                     'pk':store_item[index]['pk'],
+#                     'on_hand_qty' : store_item[index]['on_hand_qty'],
+#                     'item': store_item[index]['item__name'],
+#                     'item_category' : store_item[index]['item__item_type__item_category__name'],
+#                     'value' : float(store_item[index]['on_hand_qty']) * float(store_item[index]['item__price']),
+#                 })
+#             else:
+#                 print(8618)
+#                 if models.Job_Order_Detail.objects.filter(item_id = store_item[index]['item_id'],job_order_header__job_status =1).exists() :
+#                     jobOrderDetails = models.Job_Order_Detail.objects.filter(item_id = store_item[index]['item_id'],job_order_header__job_status =1)
+#                     for jobdet in jobOrderDetails:
+#                         print(8622)
+#                         total_material_issue += float(jobdet.quantity - jobdet.required_quantity) if (jobdet.job_order_header.material_issue == 2 and jobdet.required_quantity > 0) else 0.00
+#                         print(jobdet.quantity_result if (jobdet.job_order_header.material_issue > 1 and jobdet.quantity_result > 0) else 0.00  )
+
+#                         total_material_receipt += float(jobdet.quantity_result) if (jobdet.job_order_header.material_issue > 1 and jobdet.quantity_result > 0) else 0.00
+#                         print(8626)
+#                 data[store_item[index]['store__name']].append({
+#                     'pk':store_item[index]['pk'],
+#                     'on_hand_qty' : store_item[index]['on_hand_qty'],
+#                     'issue_Quantity': total_material_issue,
+#                     'reciept_left': total_material_receipt,
+#                     'used_quantity' : total_material_issue + total_material_receipt,
+#                     'actual_onhand' : float(store_item[index]['on_hand_qty']) - float(total_material_issue + total_material_receipt),
+#                     'item': store_item[index]['item__name'],
+#                     'item_category' : store_item[index]['item__item_type__item_category__name'],
+#                     'value' : float(store_item[index]['on_hand_qty']) * float(store_item[index]['item__price']),
+#                 })
+        
+#         context.update({
+#             'status': 200,
+#             'message': "Items Fetched Successfully.",
+#             'page_items': data,
+#         })
+
+#     except Exception:
+#         context.update({
+#             'status': 592.1,
+#             'message': "Internal Server Error",
+#         })
+
+#     return JsonResponse(context)
+
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def reportInventoryStorewise(request):
     context = {}
-    # # # # print(request.POST)
-    item_cat_id = request.POST.get('item_cat_id', None)
-    data ={}
-    store_item =[]
+    data = {}
+    store_items = []
     try:
+        # Fetch parameters
+        item_cat_id = request.POST.get('item_cat_id', None)
+        store_type = request.POST.get('store_type', None)
+        total_material_issue = Decimal('0.00')
+        total_material_receipt = Decimal('0.00')
+
+        # Handle GET request
         if request.method == 'GET':
-            store_item = list(models.Store_Item.objects.filter(status=1 , deleted = 0 ).values('pk','on_hand_qty','item__item_type__item_category__name','item__price','store__name','item__name'))
+            store_items = list(
+                models.Store_Item.objects.filter(status=1, deleted=0)
+                .values(
+                    'pk', 'on_hand_qty', 'item__item_type__item_category__name',
+                    'item__price', 'store__name', 'item__name'
+                )
+            )
         else:
-            store_item = list(models.Store_Item.objects.filter(item__item_type__item_category_id=item_cat_id).values('pk','on_hand_qty','item__item_type__item_category__name','item__price','store__name','item__name'))    
-        if(len(store_item) == 0):
+            # Handle POST request
+            if store_type == 'inHouse':
+                store_items = models.Store_Item.objects.filter(
+                    item__item_type__item_category_id=item_cat_id,
+                    store__vendor__isnull=True
+                )
+            else:
+                store_items = models.Store_Item.objects.filter(
+                    item__item_type__item_category_id=item_cat_id,
+                    store__vendor__isnull=False
+                )
+            store_items = list(
+                store_items.values(
+                    'pk', 'on_hand_qty', 'item__item_type__item_category__name',
+                    'item__price', 'store__name', 'item__name', 'item_id'
+                )
+            )
+
+        # Check if no items were found
+        if not store_items:
             context.update({
                 'status': 200,
-                'message': "no item found  ",
+                'message': "No items found.",
             })
             return JsonResponse(context)
-        
-        for index in range(0,len(store_item)):
-            if store_item[index]['store__name'] not in data:
-                data[store_item[index]['store__name']] =[]
-            data[store_item[index]['store__name']].append({
-                'pk':store_item[index]['pk'],
-                'on_hand_qty' : store_item[index]['on_hand_qty'],
-                'item': store_item[index]['item__name'],
-                'item_category' : store_item[index]['item__item_type__item_category__name'],
-                'value' : float(store_item[index]['on_hand_qty']) * float(store_item[index]['item__price']),
-            })
+
+        # Process store items
+        for store_item in store_items:
+            total_material_issue = Decimal('0.00')
+            total_material_receipt = Decimal('0.00')
+            store_name = store_item['store__name']
+            if store_name not in data:
+                data[store_name] = []
+
+            if store_type == 'inHouse':
+                # In-house store processing
+                data[store_name].append({
+                    'pk': store_item['pk'],
+                    'on_hand_qty': store_item['on_hand_qty'],
+                    'item': store_item['item__name'],
+                    'item_category': store_item['item__item_type__item_category__name'],
+                    'value': float(store_item['on_hand_qty']) * float(store_item['item__price']),
+                })
+            else:
+                # Vendor store processing
+                print(total_material_issue)
+                if models.Job_Order_Detail.objects.filter(
+                    item_id=store_item['item_id'], job_order_header__job_status=1,job_order_header__vendor__store__name = store_item['store__name']
+                ).exists():
+                    jobOrderDetails = models.Job_Order_Detail.objects.filter(
+                        item_id=store_item['item_id'], job_order_header__job_status=1,job_order_header__vendor__store__name = store_item['store__name']
+                    )
+
+                    for jobdet in jobOrderDetails:
+                        # Update material issue and receipt totals
+                        total_material_issue = Decimal('0.00')
+                        total_material_receipt = Decimal('0.00')
+                        print(total_material_issue)
+                        total_material_issue += (
+                            Decimal(jobdet.quantity - jobdet.required_quantity)
+                            if jobdet.job_order_header.material_issue > 1 and jobdet.direction == 'outgoing'
+                            else Decimal('0.00')
+                        )
+                        total_material_receipt += jobdet.quantity_result if jobdet.job_order_header.material_issue > 1 and jobdet.direction == 'incoming' else Decimal('0.00')
+
+                        
+                # print(total_material_issue,total_material_receipt)
+                # Append vendor data
+                data[store_name].append({
+                    'pk': store_item['pk'],
+                    'on_hand_qty': store_item['on_hand_qty'],
+                    'issue_Quantity': float(total_material_issue),
+                    'Wip_Quantity' : float(total_material_receipt),
+                    'actual_onhand': float(store_item['on_hand_qty']) - float(total_material_issue + total_material_receipt ),
+                    'item': store_item['item__name'],
+                    'item_category': store_item['item__item_type__item_category__name'],
+                    'value': float(store_item['on_hand_qty']) * float(store_item['item__price']),
+                })
+        # print(data)
+
+        # Update context with data
         context.update({
             'status': 200,
-            'message': "Items Fetched Successfully.",
+            'message': "Items fetched successfully.",
             'page_items': data,
         })
 
-    except Exception:
+    except Exception as e:
+        # Log the exception for debugging purposes
+        print(f"Error: {e}")
+
+        # Return internal server error
         context.update({
-            'status': 592.1,
+            'status': 500,
             'message': "Internal Server Error",
         })
 
     return JsonResponse(context)
-
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
