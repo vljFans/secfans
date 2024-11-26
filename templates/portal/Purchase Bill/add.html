@@ -374,17 +374,17 @@
     }
 
     function renderTaxDeduction(){
-        console.log(379);
+        // console.log(379);
         
         let total_amount=0;
         let total_amount_gst =  parseFloat($('.total_amount_with_gst').val())
         total_amount_gst = total_amount_gst ? total_amount_gst : 0.00 
         $('.tax').each(function(){
-            console.log(385);
+            // console.log(385);
             
             let tax = parseFloat($(this).val())
             tax = tax ?(total_amount_gst * (tax/100))  : 0.00
-            console.log(tax);
+            // console.log(tax);
             
             $(this).parent().next().find('input').val(tax.toFixed(2));
         })
@@ -476,7 +476,7 @@
             $('#table_form').html(``)
             let vendorId = $('select#vendor option:selected').val()
             
-            console.log(vendorId);
+            // console.log(vendorId);
 
             $.ajax({
             url: "{% url 'api:vendorList' %}?id="+vendorId ,
@@ -491,7 +491,7 @@
                     $('#totalAmount').removeAttr('hidden')
                     let text_inp = ``
                     state_name = response.page_items[0].state__name
-                    // console.log(response.page_items[0].state__name == );
+                    // // console.log(response.page_items[0].state__name == );
                     if(state_name == 'West Bengal'){
                         // cgst igst
                         $('#sameState').val("0")
@@ -605,7 +605,7 @@
                                         </div>`
                     }
                     else{
-                        // console.log("256");
+                        // // console.log("256");
                         $('#sameState').val("1")
                         text_inp =`<div class="form-row content_parent">
                                             <div class="col-md-3 mb-3">
@@ -726,7 +726,7 @@
                     return option.text;
                 }
             });
-                    // console.log(item_options_text,"saswata");
+                    // // console.log(item_options_text,"saswata");
                 } 
                 else {
                     alert(response.message);
@@ -737,7 +737,7 @@
                 }
             });
             
-            // console.log(item_options_text,"saswata");
+            // // console.log(item_options_text,"saswata");
           
         })
         
@@ -748,7 +748,7 @@
         let text_inp = ``
         if(state_name == 'West Bengal'){
             // cgst igst
-            console.log();
+            // console.log();
             text_inp =`<div class="form-row content_parent">
                                     <div class="col-md-3 mb-3">
                                         <label>Item<span class="required-indicator">*</span></label>
@@ -1033,7 +1033,7 @@
         },
         success: function (response) {
             if (response.status == 200) {
-                // console.log(response.page_items[0].price);
+                // // console.log(response.page_items[0].price);
                 parentDiv.find('.rate').val(response.page_items[0].price);
                 parentDiv.find('.uom').val(response.page_items[0].uom__name)
                 parentDiv.find('.hsn').val(response.page_items[0].hsn_code)
@@ -1081,17 +1081,17 @@
 
             // $(element).parent().closest('.content_parent').find('.amount').val(amount).trigger('change')
         }
-        // console.log($('#sameState').val(),"saswata");
+        // // console.log($('#sameState').val(),"saswata");
     }
 
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        // console.log("426");
+        // // console.log("426");
         $('.submit-btn').text('Submitting...');
         $('.submit-btn').prop('disabled', true);
         var formData = new FormData(create_form);
-        // console.log(formData.getAll('quantity_sent'))
+        // // console.log(formData.getAll('quantity_sent'))
         $.ajax({
             type: "POST",
             evalScripts: true,
@@ -1127,7 +1127,7 @@
     });
     
     $(document).on('keyup','.quantity , .rate, .discount' ,function(){
-        // console.log("722");
+        // // console.log("722");
         let quantity = parseFloat($(this).parent().closest('.content_parent').find('.quantity').val())
         let rate = parseFloat($(this).parent().closest('.content_parent').find('.rate').val())
         let discount = parseFloat($(this).parent().closest('.content_parent').find('.discount').val())
@@ -1146,7 +1146,7 @@
     })
     // Keyup event for calculating amounts dynamically
     $(document).on('change keyup','.amount, .gst',function(){
-        console.log("Calculating GST Amounts...");
+        // console.log("Calculating GST Amounts...");
 
         let amount = parseFloat($(this).closest('.content_parent').find('.amount').val());
         let total_gst = 0;
@@ -1158,11 +1158,11 @@
             $(this).closest('.content_parent').find('.gst').each(function(){
                 let gst = parseFloat($(this).val()) / 100;
                 gst = isNaN(gst) ? 0 : gst
-                console.log(gst,'111111');
+                // console.log(gst,'111111');
                 
                 
                 amount_gst_per = amount * gst; // Calculate GST per value
-                console.log(amount_gst_per);
+                // console.log(amount_gst_per);
                 
                 total_gst += amount_gst_per; // Accumulate total GST
                 $(this).parent().next().find('input').val(amount_gst_per.toFixed(2)); // Set the amount for each GST
@@ -1185,10 +1185,10 @@
     
     $(document).on('change','.gsthead',function(){
         let gstVal = $(this).val();
-        console.log("Selected GST Value:", gstVal);
+        // console.log("Selected GST Value:", gstVal);
 
         let result = gst_items.find(item => parseFloat(item.gst_value) === parseFloat(gstVal));
-        console.log("GST Item Found:", result);
+        // console.log("GST Item Found:", result);
 
         if(result) {
             if(state_name == 'West Bengal'){

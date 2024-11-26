@@ -323,7 +323,7 @@
     }
    
     $(document).on('keyup','.quantity , .rate',function(){
-        // console.log("722");
+        // // console.log("722");
         let quantity = parseFloat($(this).parent().closest('.content_parent').find('.quantity').val())
             let rate = parseFloat($(this).parent().closest('.content_parent').find('.rate').val())
             let amount = quantity?(quantity * rate) : 0.00
@@ -427,7 +427,7 @@
         $("#e_way_date").val(new Date().toISOString().slice(0, 10))
         let state_name = $('.state__name').val()
         // Check if vendor is from Kolkata (West Bengal)
-        console.log('458');
+        // console.log('458');
         
         if(state_name == 'West Bengal'){
             // Enable CGST and SGST, disable IGST
@@ -485,7 +485,7 @@
     // Clear specific fields when vendor changes
         clearAllItemDetGstTotAmount()
         renderTotalAmount()
-        console.log('481');
+        // console.log('481');
         
         let vendorId = $('select#vendor option:selected').val();
 
@@ -532,7 +532,7 @@
     //         $('#table_form').html(``)
     //         let vendorId = $('select#vendor option:selected').val()
             
-    //         console.log(vendorId);
+    //         // console.log(vendorId);
 
     //         $.ajax({
     //         url: "{% url 'api:vendorList' %}?id="+vendorId ,
@@ -547,7 +547,7 @@
     //                 $('#totalAmount').removeAttr('hidden')
     //                 let text_inp = ``
     //                 state_name = response.page_items[0].state__name
-    //                 console.log(response.page_items[0].state__name == );
+    //                 // console.log(response.page_items[0].state__name == );
     //                 if(state_name == 'West Bengal'){
     //                     cgst igst
     //                     $('#sameState').val("0")
@@ -639,7 +639,7 @@
     //                                     </div>`
     //                 }
     //                 else{
-    //                     console.log("256");
+    //                     // console.log("256");
     //                     $('#sameState').val("1")
     //                     text_inp =`<div class="form-row content_parent">
     //                                         <div class="col-md-3 mb-3">
@@ -736,7 +736,7 @@
     //                 return option.text;
     //             }
     //         });
-    //                 console.log(item_options_text,"saswata");
+    //                 // console.log(item_options_text,"saswata");
     //             } 
     //             else {
     //                 alert(response.message);
@@ -747,7 +747,7 @@
     //             }
     //         });
             
-    //         console.log(item_options_text,"saswata");
+    //         // console.log(item_options_text,"saswata");
           
     //     })
         
@@ -757,7 +757,7 @@
         state_name = $('.state__name').val()
         if(state_name == 'West Bengal'){
             // cgst igst
-            console.log();
+            // console.log();
             text_inp =`<div class="form-row content_parent">
                                     <div class="col-md-3 mb-3">
                                         <label>Item<span class="required-indicator">*</span></label>
@@ -987,7 +987,7 @@
         },
         success: function (response) {
             if (response.status == 200) {
-                // console.log(response.page_items[0].price);
+                // // console.log(response.page_items[0].price);
                 parentDiv.find('.rate').val(response.page_items[0].price);
                 parentDiv.find('.uom').val(response.page_items[0].uom__name)
                 parentDiv.find('.hsn').val(response.page_items[0].hsn_code)
@@ -1032,17 +1032,17 @@
 
             // $(element).parent().closest('.content_parent').find('.amount').val(amount).trigger('change')
         }
-        // console.log($('#sameState').val(),"saswata");
+        // // console.log($('#sameState').val(),"saswata");
     }
 
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        // console.log("426");
+        // // console.log("426");
         $('.submit-btn').text('Submitting...');
         $('.submit-btn').prop('disabled', true);
         var formData = new FormData(create_form);
-        // console.log(formData.getAll('quantity_sent'))
+        // // console.log(formData.getAll('quantity_sent'))
         $.ajax({
             type: "POST",
             evalScripts: true,
@@ -1078,7 +1078,7 @@
     });
     
     $(document).on('keyup','.quantity , .rate',function(){
-        console.log("722");
+        // console.log("722");
         clearAllGst(this)
         let quantity = parseFloat($(this).parent().closest('.content_parent').find('.quantity').val())
             let rate = parseFloat($(this).parent().closest('.content_parent').find('.rate').val())
@@ -1092,7 +1092,7 @@
         sum = 0 
         let amount, gst, amount_gst=0 , amount_gst_per = 0,total_gst =0;
         amount = parseFloat($(this).closest('.content_parent').find('.amount').val())
-        // console.log($(this).closest('.content_parent').find('.gst')[0].html(),"saswata");
+        // // console.log($(this).closest('.content_parent').find('.gst')[0].html(),"saswata");
         if(amount){
             $(this).closest('.content_parent').find('.gst').each(function(){
                 if (parseFloat($(this).val())){
@@ -1106,7 +1106,7 @@
         }
 
         if(amount_gst){
-            console.log(amount_gst);
+            // console.log(amount_gst);
             
             $(this).closest('.content_parent').find('.amount_gst').val(amount_gst.toFixed(2))
         }

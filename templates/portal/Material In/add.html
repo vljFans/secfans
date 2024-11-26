@@ -163,7 +163,7 @@
              $('#table_form').html(``)
             let transactionNumber = $('select#transactionNumber option:selected').val()
             
-            console.log(transactionNumber);
+            // // console.log(transactionNumber);
 
             $.ajax({
             url: "{% url 'api:getOnTransitTransactionDetalisList' %}?transactionNumber="+transactionNumber ,
@@ -182,7 +182,7 @@
                 //    source_store_id
                     var page_item = response.onTransitTransactionDetails
                     for(let index = 0 ; index < page_item.length ; index ++){
-                        // console.log(index);
+                        // // console.log(index);
                         var text_inp =`<div class="form-row content_parent">
                                         <div class="col-md-2 mb-3">
                                             <label>Item<span class="required-indicator">*</span></label>
@@ -257,7 +257,7 @@
                 }
             });
             
-            // console.log(item_options_text,"saswata");
+            // // console.log(item_options_text,"saswata");
           
         })
     
@@ -274,12 +274,12 @@
             }
         }
         if($(element).attr('class') == 'form-control quantity_recieved'){
-            console.log($(element).parent().closest('.content_parent').find('.note').val('')); 
+            // console.log($(element).parent().closest('.content_parent').find('.note').val('')); 
             var quantity_recv = parseFloat($(element).val())
             var quantity_sent = parseFloat($(element).parent().closest('.content_parent').find('.quantity_sent').val())
             var quantity_reject = quantity_sent - quantity_recv
             var rate = parseFloat($(element).parent().closest('.content_parent').find('.rate').val())
-            console.log(rate);
+            // console.log(rate);
             if(quantity_reject > 0.00){
                 $(element).parent().closest('.content_parent').find('.notes').removeAttr('hidden')
                 $(element).parent().closest('.content_parent').find('.note').attr('required','true')
@@ -306,11 +306,11 @@
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        console.log("426");
+        // console.log("426");
         $('.submit-btn').text('Submitting...');
         $('.submit-btn').prop('disabled', true);
         var formData = new FormData(create_form);
-        console.log(formData.getAll('quantity_sent'))
+        // console.log(formData.getAll('quantity_sent'))
         $.ajax({
             type: "POST",
             evalScripts: true,

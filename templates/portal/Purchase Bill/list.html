@@ -175,7 +175,7 @@
 
     }
     $(document).ready(function () {
-        // console.log("168");
+        // // console.log("168");
         getPurchaseBillList(keyword)
     });
 
@@ -198,11 +198,11 @@
                 success: function (response) {
                     if (response.status == 200) {
                         // alert(response.message)
-                        // console.log('201');
+                        // // console.log('201');
                         
                         locationAfterMessageStore(response.message, 'success', "{% url 'superuser:purchaseBillList' %}");
                     } else {
-                        // console.log('205');
+                        // // console.log('205');
                         
                         alert(response.message);
                     }
@@ -223,7 +223,7 @@
 //     let selector = $(this).attr('id');
 //     let dataId = $(this).data('id');  // Capture the data-id
 
-//     // console.log('Sending data-id:', dataId);  // Debugging
+//     // // console.log('Sending data-id:', dataId);  // Debugging
 
 //     $.ajax({
 //         url: "{% url 'superuser:getAjaxFormType' %}",  // Replace with your actual view URL
@@ -238,7 +238,7 @@
 //             'Authorization': getCookieValue("accessToken"),  // Include this if needed
 //         },
 //         success: function(response) {
-//             console.log('Response received:', response);  // Debugging
+//             // console.log('Response received:', response);  // Debugging
 //         },
 //         error: function(error) {
 //             console.error('Error occurred:', error);  // Debugging

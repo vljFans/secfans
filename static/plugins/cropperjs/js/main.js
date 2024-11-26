@@ -18,21 +18,21 @@ window.onload = function () {
     aspectRatio: 16 / 9,
     preview: '.img-preview',
     ready: function (e) {
-      console.log(e.type);
+      // console.log(e.type);
     },
     cropstart: function (e) {
-      console.log(e.type, e.detail.action);
+      // console.log(e.type, e.detail.action);
     },
     cropmove: function (e) {
-      console.log(e.type, e.detail.action);
+      // console.log(e.type, e.detail.action);
     },
     cropend: function (e) {
-      console.log(e.type, e.detail.action);
+      // console.log(e.type, e.detail.action);
     },
     crop: function (e) {
       var data = e.detail;
 
-      console.log(e.type);
+      // console.log(e.type);
       dataX.value = Math.round(data.x);
       dataY.value = Math.round(data.y);
       dataHeight.value = Math.round(data.height);
@@ -42,7 +42,7 @@ window.onload = function () {
       dataScaleY.value = typeof data.scaleY !== 'undefined' ? data.scaleY : '';
     },
     zoom: function (e) {
-      console.log(e.type, e.detail.ratio);
+      // console.log(e.type, e.detail.ratio);
     }
   };
   var cropper = new Cropper(image, options);
@@ -97,13 +97,13 @@ window.onload = function () {
         canvasData = cropper.getCanvasData();
 
         options.ready = function () {
-          console.log('ready');
+          // console.log('ready');
           cropper.setCropBoxData(cropBoxData).setCanvasData(canvasData);
         };
       } else {
         options[target.name] = target.value;
         options.ready = function () {
-          console.log('ready');
+          // console.log('ready');
         };
       }
 
@@ -155,7 +155,7 @@ window.onload = function () {
           try {
             data.option = JSON.parse(input.value);
           } catch (e) {
-            console.log(e.message);
+            // console.log(e.message);
           }
         }
       }
@@ -172,7 +172,7 @@ window.onload = function () {
           try {
             data.option = JSON.parse(data.option);
           } catch (e) {
-            console.log(e.message);
+            // console.log(e.message);
           }
 
           if (uploadedImageType === 'image/jpeg') {
@@ -230,7 +230,7 @@ window.onload = function () {
         try {
           input.value = JSON.stringify(result);
         } catch (e) {
-          console.log(e.message);
+          // console.log(e.message);
         }
       }
     }

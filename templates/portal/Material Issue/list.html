@@ -121,7 +121,7 @@
 <script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
     function getMaterialIssuedList(keyword) {
-        // console.log("123")
+        // // console.log("123")
         $.ajax({
             type: "GET",
             url: "{% url 'api:storeTransactionList' %}?keyword=" + keyword+"&transaction_type=MIS",
@@ -176,7 +176,7 @@
 
     }
     $(document).ready(function () {
-        // console.log("168");
+        // // console.log("168");
         getMaterialIssuedList(keyword)
     });
 

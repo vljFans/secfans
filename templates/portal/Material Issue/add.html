@@ -378,12 +378,12 @@
 
     $(document).on('change','.item_id',function(){
         let selected_item_pk=$(this).val()
-        //console.log(selected_item_pk);
+        //// console.log(selected_item_pk);
         let store_id =  $('select#store_id option:selected').val()
         let actual_quantity = $(this).closest('.content_parent').find('.actual_quantity')
         let quantity_sent = $(this).closest('.content_parent').find('.quantity_sent')
         let rate =  $(this).closest('.content_parent').find('.rate')
-        // console.log(quantity_sents.html());
+        // // console.log(quantity_sents.html());
         $.ajax({
             url: "{% url 'api:getActualQuantity' %}?",
             type: 'GET',
@@ -507,10 +507,10 @@
                 if (response.status == 200) {
                     $('#submit').removeAttr('hidden') 
                     $('#tAmount').removeAttr('hidden')
-                    console.log(response.job_order_details.length);
+                    // console.log(response.job_order_details.length);
                     
                     if(response.job_order_details.length==0){
-                        console.log(510);
+                        // console.log(510);
                         
                         $('#submit').attr('hidden','true') 
                         $('#tAmount').attr('hidden','true')
@@ -906,7 +906,7 @@
     }
     
     $(document).on('change keyup','.quantity_sent ',function(){
-        // console.log("hi");
+        // // console.log("hi");
         let sum = 0 
         let amount , rate , quantitysent
         quantitysent = parseFloat($(this).val())

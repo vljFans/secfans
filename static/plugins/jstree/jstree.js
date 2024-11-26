@@ -6581,7 +6581,7 @@
 								e.preventDefault();
 								break;
 							default:
-								//console.log(e.which);
+								//// console.log(e.which);
 								break;
 						}
 					})
@@ -6826,7 +6826,7 @@
 						.find('.jstree-copy').first()[ is_copy ? 'show' : 'hide' ]();
 
 					// if are hovering the container itself add a new root node
-					//console.log(data.event);
+					//// console.log(data.event);
 					if( (data.event.target === ins.element[0] || data.event.target === ins.get_container_ul()[0]) && ins.get_container_ul().children().length === 0) {
 						ok = true;
 						for(t1 = 0, t2 = data.data.nodes.length; t1 < t2; t1++) {

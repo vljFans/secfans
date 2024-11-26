@@ -180,7 +180,7 @@
         }); 
     }
     function renderStoreDropdown(){
-        console.log('181');
+        // console.log('181');
         $('.store').each(function(){
             let selected_store_id=$(this).val()
             $(this).children("option").each(function(index, element){
@@ -194,14 +194,14 @@
         })
     }
     function update_store_options_used_pk(){
-        console.log('195');
+        // console.log('195');
         store_opt_used_pk=[]
         $('.store').each(function(){
             store_opt_used_pk.push($(this).val())
         }); 
     }
     $(document).on('change','.store',function(){
-        console.log('ok');
+        // console.log('ok');
         update_store_options_used_pk()
         renderStoreDropdown()
         
@@ -233,7 +233,7 @@
             $('#table_form').html(``)
             let storeId = $('select#sourceStore option:selected').val()
             
-            // console.log(sourceStore);
+            // // console.log(sourceStore);
 
             $.ajax({
             url: "{% url 'api:storeItemList' %}?storeId="+storeId ,
@@ -249,9 +249,9 @@
                     page_item_len = response.page_items.length
                     for (let index = 0; index < response.page_items.length; index++) {
                         item_options_text += `<option value="${response.page_items[index].item_id}">${response.page_items[index].item__name}</option>`;
-                        // console.log(item_options_text);
+                        // // console.log(item_options_text);
                     }
-                    // console.log(item_options_text,"saswata");
+                    // // console.log(item_options_text,"saswata");
                 } 
                 else {
                     alert(response.message);
@@ -321,7 +321,7 @@
                 }
             });
             
-            // console.log(item_options_text,"saswata");
+            // // console.log(item_options_text,"saswata");
           
         })
         
@@ -391,7 +391,7 @@
     $(document).on('change','.item_id',function(){
         var valu = $(this).val()
         let storeId = $('select#sourceStore option:selected').val()
-        console.log(storeId);
+        // console.log(storeId);
         var parentDiv =  $(this).parents().closest('.content_parent');
         parentDiv.find('.quantity_sent').val('')
 
@@ -404,7 +404,7 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    // console.log(response.page_items[0].price);
+                    // // console.log(response.page_items[0].price);
                     parentDiv.find('.rate').val(response.page_items[0].price);
                     
                 } 
@@ -413,7 +413,7 @@
                 }
             },
             complete: function(response){
-            // console.log("325");
+            // // console.log("325");
             $.ajax({
             url: "{% url 'api:storeItemList' %}?itemId="+valu+"&storeId="+storeId ,
             type: 'GET',
@@ -423,7 +423,7 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    // console.log(response.page_items[0].on_hand_qty);
+                    // // console.log(response.page_items[0].on_hand_qty);
                     parentDiv.find('.handquantity').val(+response.page_items[0].on_hand_qty);
                     parentDiv.find('.quantity_sent').attr('max',response.page_items[0].on_hand_qty)
                     
@@ -467,11 +467,11 @@
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        console.log("426");
+        // console.log("426");
         $('.submit-btn').text('Submitting...');
         $('.submit-btn').prop('disabled', true);
         var formData = new FormData(create_form);
-        console.log(formData.getAll('quantity_sent'))
+        // console.log(formData.getAll('quantity_sent'))
         $.ajax({
             type: "POST",
             evalScripts: true,

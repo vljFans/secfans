@@ -225,7 +225,7 @@
 
     $(document).on('change', '#store_id', function () {
         let store_id = $(this).val();
-        console.log(store_id)
+        // console.log(store_id)
         $(document).ready(function () {
             $.ajax({
                 url: "{% url 'api:storeItemList' %}?storeId=" + store_id,
@@ -270,11 +270,11 @@
             success: function (response) {
                 if (response.status == 200) {
                     let data = response.page_items
-                    console.log(data, 'hi');
+                    // console.log(data, 'hi');
                     var tbody_html = ``;
 
                     for (let index = 0; index < data.length; index++) {
-                        // console.log(data[index+1].transaction_date);
+                        // // console.log(data[index+1].transaction_date);
                         const element = data[index];
                         tbody_html += `<tr>
                                      <td>${index + 1}</td>
@@ -283,9 +283,9 @@
                                      <td>${element.transaction_type_name}</td>
                                      <td></td>
                                 `
-                        console.log(element.transaction_type_name);
+                        // console.log(element.transaction_type_name);
                         if (element.transaction_type_name == 'RECIEPT' || element.transaction_type_name == 'OPENING') {
-                            console.log('278');
+                            // console.log('278');
                             tbody_html += `
                                            <td>${parseFloat(element.tranquantity).toString()}</td>
                                            <td>${element.totquantity}</td>
@@ -303,7 +303,7 @@
 
                         }
                         else {
-                            console.log('292');
+                            // console.log('292');
                             tbody_html += ` <td></td>
                                            <td></td>
                                            <td></td>
@@ -641,7 +641,7 @@
         }
         
         else if (day_month == '3 month'){
-            console.log(244);
+            // console.log(244);
             
             let dateTwoMonthsAgo = new Date();
             dateTwoMonthsAgo.setMonth(dateTwoMonthsAgo.getMonth() - 3);

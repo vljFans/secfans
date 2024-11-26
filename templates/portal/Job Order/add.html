@@ -304,14 +304,14 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    console.log(response.page_items.length);
+                    // console.log(response.page_items.length);
                     
                     incoming_item_options_text = `<option value="">Choose order item</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
                         incoming_item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
                     $('.incoming_item_id').append(incoming_item_options_text);
-                    // console.log($('.incoming_item_id').html());
+                    // // console.log($('.incoming_item_id').html());
                     
                     $('.selectpicker').select2({
                         placeholder: '',
@@ -952,7 +952,7 @@
     $(document).on('change', '.bom_type_id', function () {
         let bom_type_id=$(this).val();
         let incoming_parent = $(this).parent().closest('.incoming_row')
-        console.log(incoming_parent);
+        // console.log(incoming_parent);
         
         $.ajax({
             url: "{% url 'api:jobOrderBomDetails' %}?id="+bom_type_id,
@@ -965,7 +965,7 @@
                 if (response.status == 200) {
                     $('.outgoing_row').empty();
                     let outgoing_row_html_text = ``;
-                    console.log(response.page_items);
+                    // console.log(response.page_items);
                     incoming_parent.find('.incoming_quantity').val(1)
                     
                     for (let index = 0; index < response.page_items.length; index++) {

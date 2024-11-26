@@ -1258,7 +1258,7 @@
     });
     
     $(document).on('change keyup','.incoming_quantity',function(){
-        console.log(1226)
+        // console.log(1226)
         $('.outgoing_quantity').each(function(){
             let originalValue =$(this).attr('originalValue') ?  parseFloat($(this).attr('originalValue')) : 1;
             let incomeQuantity = parseFloat($('.incoming_quantity').val());
@@ -1272,11 +1272,11 @@
     $(document).on('change', '.bom_type_id', function () {
        
         let outgoing_parent = $(this).closest('.outgoing_materials').html();
-        console.log(outgoing_parent);
+        // console.log(outgoing_parent);
         
         let bom_type_id=$(this).val();
         let incoming_parent = $(this).parent().closest('.incoming_row')
-        console.log(incoming_parent);
+        // console.log(incoming_parent);
         
         $.ajax({
             url: "{% url 'api:jobOrderBomDetails' %}?id="+bom_type_id,
@@ -1289,7 +1289,7 @@
                 if (response.status == 200) {
                     $('.outgoing_row').empty();
                     let outgoing_row_html_text = ``;
-                    console.log(response.page_items);
+                    // console.log(response.page_items);
                     incoming_parent.find('.incoming_quantity').val(1)
                     
                     for (let index = 0; index < response.page_items.length; index++) {
@@ -1332,7 +1332,7 @@
                                 `<option value="${response.page_items[index].item_id}" selected>`
                             );
                     }
-                    console.log( $('.outgoing_row').html());
+                    // console.log( $('.outgoing_row').html());
                     
                     $('.outgoing_row').html(outgoing_row_html_text)
                     $('.selectpicker').select2({
@@ -1468,7 +1468,7 @@
     $(document).on('submit', '#create_form', function (e) {
             e.preventDefault(); // Prevent default form submission
             let form = $('#create_form');
-            console.log(1461)
+            // console.log(1461)
             let currentFormData = getFormData(form);
             let pageTitle = '{{page_title}}';
             
@@ -1478,7 +1478,7 @@
             }
 
             let setUrl = pageTitle === 'Job Order Edit' ? "{% url 'api:jobOrderEdit' %}" : "{% url 'api:jobOrderAdd' %}";
-            console.log(setUrl);
+            // console.log(setUrl);
             
             $('.submit-btn').text('Submitting...');
             $('.submit-btn').prop('disabled', true);
