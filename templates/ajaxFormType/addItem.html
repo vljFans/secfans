@@ -54,7 +54,7 @@
         $('.submit-modal-btn').text('Submitting...');
         $('.submit-modal-btn').prop('disabled', true);
         var formData = new FormData(addItemForm);
-        console.log(formData.values())
+        // console.log(formData.values())
         $.ajax({
             type: "POST",
             evalScripts: true,
@@ -98,7 +98,7 @@
                     }
                     $("#{{selector}}").parents('.input-group').find('select').html(options_text);
                     $("#{{selector}}").parents('#create_form').find('.item_id').html(options_text);
-                    console.log($("#{{selector}}").parents('.content_parent').html());
+                    // console.log($("#{{selector}}").parents('.content_parent').html());
                     $('#addFormModal').modal('hide');
                     $('.selectpicker').select2({
                         placeholder: ''

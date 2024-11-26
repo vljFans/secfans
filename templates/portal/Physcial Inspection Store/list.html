@@ -109,7 +109,7 @@
 <script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
     function getPhysivcalInspectList(keyword) {
-        // console.log("123")
+        // // console.log("123")
         $.ajax({
             type: "GET",
             url: "{% url 'api:getPhysicalInspectionHeadersList' %}?keyword=" + keyword,
@@ -164,7 +164,7 @@
 
     }
     $(document).ready(function () {
-        // console.log("168");
+        // // console.log("168");
         function isLastDayOfMonth(date) {
                 var month = date.getMonth();
                 var year = date.getFullYear();
@@ -175,11 +175,11 @@
 
             var today = new Date();
             if (isLastDayOfMonth(today)) {
-                console.log("Today is the last day of the month.");
+                // console.log("Today is the last day of the month.");
                 $('.cornJob').attr('disabled',false)
             } else {
                 $('.cornJob').prop('disabled', true);
-                console.log("Today is not the last day of the month.");
+                // console.log("Today is not the last day of the month.");
             }
         getPhysivcalInspectList(keyword)
     });

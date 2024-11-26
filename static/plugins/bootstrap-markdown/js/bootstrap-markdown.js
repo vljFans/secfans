@@ -489,14 +489,14 @@
                   textarea.val(text.substring(0, caretPos) + '\n![description](' + path + ')\n' + text.substring(caretPos));
                   });
               this.on('error', function(file, error, xhr) {
-                  console.log('Error:', error);
+                  // console.log('Error:', error);
                   });
             };
           }
           this.$editor.addClass('dropzone');
           this.$editor.dropzone(options.dropZoneOptions);
         } else {
-          console.log('dropZoneOptions was configured, but DropZone was not detected.');
+          // console.log('dropZoneOptions was configured, but DropZone was not detected.');
         }
       }
 

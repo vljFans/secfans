@@ -69,7 +69,7 @@ $.site = $.fn.site = function(parameters) {
     fix: {
       console: function() {
         module.debug('Normalizing window.console');
-        if (console === undefined || console.log === undefined) {
+        if (console === undefined || // console.log === undefined) {
           module.verbose('Console not available, normalizing events');
           module.disable.console();
         }
@@ -350,7 +350,7 @@ $.site = $.fn.site = function(parameters) {
           }
           else {
             $.each(performance, function(index, data) {
-              console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+              // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
             });
           }
           console.groupEnd();
@@ -1628,7 +1628,7 @@ $.fn.form = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -2676,7 +2676,7 @@ $.fn.accordion = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -3506,7 +3506,7 @@ $.fn.checkbox = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -4220,7 +4220,7 @@ $.fn.dimmer = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -7995,7 +7995,7 @@ $.fn.dropdown = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -8831,7 +8831,7 @@ $.fn.embed = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -9911,7 +9911,7 @@ $.fn.modal = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -10437,7 +10437,7 @@ $.fn.nag = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -11831,7 +11831,7 @@ $.fn.popup = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -12882,7 +12882,7 @@ $.fn.progress = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -13421,7 +13421,7 @@ $.fn.rating = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -14692,7 +14692,7 @@ $.fn.search = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -15843,7 +15843,7 @@ $.fn.shape = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -16855,7 +16855,7 @@ $.fn.sidebar = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -17829,7 +17829,7 @@ $.fn.sticky = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -18778,7 +18778,7 @@ $.fn.tab = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -19875,7 +19875,7 @@ $.fn.transition = function() {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -20975,7 +20975,7 @@ $.api = $.fn.api = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();
@@ -22325,7 +22325,7 @@ $.fn.visibility = function(parameters) {
               }
               else {
                 $.each(performance, function(index, data) {
-                  console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+                  // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
               console.groupEnd();

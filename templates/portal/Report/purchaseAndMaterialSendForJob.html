@@ -270,11 +270,11 @@
             success: function (response) {
                 if (response.status == 200) {
                     let data = response.page_items
-                    console.log(data);
+                    // console.log(data);
                     var tbody_html = ``;
 
                     for (let index = 0; index < data.length; index++) {
-                        // console.log(data[index+1].transaction_date);
+                        // // console.log(data[index+1].transaction_date);
                         const element = data[index];
                         tbody_html += `<tr>
                                      <td>${index + 1}</td>
@@ -640,7 +640,7 @@
         }
         
         else if (day_month == '3 month'){
-            console.log(244);
+            // console.log(244);
             
             let dateTwoMonthsAgo = new Date();
             dateTwoMonthsAgo.setMonth(dateTwoMonthsAgo.getMonth() - 3);

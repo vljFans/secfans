@@ -106,7 +106,7 @@
 <script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
     function getMaterialOutList(keyword) {
-        // console.log("123")
+        // // console.log("123")
         $.ajax({
             type: "GET",
             url: "{% url 'api:getOnTransitTransactionHeadersList' %}?keyword=" + keyword,
@@ -122,7 +122,7 @@
                     print_url = "{% url 'superuser:materialOutPrint' 1 %}";
                     page_items = response.page_items;
                     tbody_text = ``;
-                    // console.log(page_items[0].transaction_number);
+                    // // console.log(page_items[0].transaction_number);
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index];
                         tbody_text += `<tr>
@@ -167,7 +167,7 @@
 
     }
     $(document).ready(function () {
-        // console.log("168");
+        // // console.log("168");
         getMaterialOutList(keyword)
     });
 

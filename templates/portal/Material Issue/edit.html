@@ -227,7 +227,7 @@
     }
 
     function renderTotalAmount(){
-        console.log("hi");
+        // console.log("hi");
         let total_amount=0;
         $('.amount').each(function(){
             if($(this).val()){
@@ -303,12 +303,12 @@
     
     $(document).on('change','.item_id',function(){
         let selected_item_pk=$(this).val()
-        //console.log(selected_item_pk);
+        //// console.log(selected_item_pk);
         let store_id =  $('select#store_id option:selected').val()
         let actual_quantitys = $(this).closest('.content_parent').find('.actual_quantity')
         let quantity_sents = $(this).closest('.content_parent').find('.quantity_sent')
         let rate =  $(this).closest('.content_parent').find('.rate')
-        // console.log(quantity_sents.html());
+        // // console.log(quantity_sents.html());
         $.ajax({
             url: "{% url 'api:getActualQuantity' %}?",
             type: 'GET',
@@ -479,7 +479,7 @@
                         'Authorization': getCookieValue("accessToken")
                     },
                     success: function (response) {
-                        console.log(response)
+                        // console.log(response)
                         if (response.status == 200) {
                             actual_quantity_element.val(+response.actual_quantity);
                             quantity_sent_element.attr('max',+response.actual_quantity)
@@ -510,7 +510,7 @@
     }
 
     $(document).on('change keyup','.quantity_sent ',function(){
-        // console.log("hi");
+        // // console.log("hi");
         let sum = 0 
         let amount , rate , quantitysent
         quantitysent = parseFloat($(this).val())

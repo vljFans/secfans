@@ -150,7 +150,7 @@
         $('.submit-modal-btn').text('Submitting...');
         $('.submit-modal-btn').prop('disabled', true);
         var formData = new FormData(addStoreForm);
-        console.log(formData.values())
+        // console.log(formData.values())
         $.ajax({
             type: "POST",
             evalScripts: true,
