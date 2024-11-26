@@ -234,7 +234,7 @@
         }
         
         else if (day_month == '3 month'){
-            console.log(244);
+            // console.log(244);
             
             let dateTwoMonthsAgo = new Date();
             dateTwoMonthsAgo.setMonth(dateTwoMonthsAgo.getMonth() - 3);
@@ -331,10 +331,10 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    console.log("hi");
+                    // console.log("hi");
                     var table_data = ``;
 
-                    console.log(response.page_items);
+                    // console.log(response.page_items);
                     for (let index=0 ; index < response.page_items.length ;index++ ){
                         table_data += `<tr>
                                             <td>${index+1}</td>

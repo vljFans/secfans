@@ -1038,7 +1038,7 @@ var methods = {};
         verdictText = verdictText[0];
 
         if (options.common.debug) {
-            console.log(score + ' - ' + verdictText);
+            // console.log(score + ' - ' + verdictText);
         }
 
         if ($.isFunction(options.common.onKeyUp)) {

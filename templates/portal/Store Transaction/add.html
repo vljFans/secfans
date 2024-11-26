@@ -319,7 +319,7 @@
 
     function renderItemDropdown(){
         $('.item_id').each(function(){
-            // console.log("store transaction 296");
+            // // console.log("store transaction 296");
             let selected_item_pk=$(this).val()
             $(this).children("option").each(function(index, element){
                 if( $(this).val()!==selected_item_pk && item_options_used_pk.includes($(this).val()) ){
@@ -340,9 +340,9 @@
     }
 
     $(document).on('change', '#with_purchase_job_order', function () {
-        // console.log("328");
+        // // console.log("328");
         purchase_job_order_type = $(this).val();
-        // console.log(purchase_job_order_type);
+        // // console.log(purchase_job_order_type);
         //purchase order
         if (parseInt(purchase_job_order_type) == 1  ) {
             // $('.purchase_job_order_type_content').show();
@@ -368,7 +368,7 @@
         }
         else{
             // $('.purchase_job_order_type_content').hide();
-            console.log(378);
+            // console.log(378);
             
             $('#purchase_job_order_header_id').removeAttr('required');
             $('#purchase_job_order_header_id').attr('disabled','true');
@@ -459,7 +459,7 @@
         let vendor_id = $(this).val();
         let with_purchase_job_order = $('#with_purchase_job_order').val()
         if(with_purchase_job_order == 2){
-            // console.log('446');
+            // // console.log('446');
             callJobOrderList()
             purchase_details = `<div class="form-row content_parent">
                                         <div class="col-md-2 mb-3">
@@ -533,7 +533,7 @@
             });
         }
         else{
-            // console.log('525');
+            // // console.log('525');
             $.ajax({
                 url: "{% url 'api:purchaseOrderList' %}?vendor_id=" + vendor_id + "&delivery_status=1,2",
                 type: 'GET',
@@ -890,9 +890,9 @@
 
     $(document).on('change', '#purchase_job_order_header_id', function () {
         let header_id = $(this).val();
-        // console.log(header_id);
+        // // console.log(header_id);
         let jobOrPurchaseOrder = parseInt($('#with_purchase_job_order').val())
-        console.log(jobOrPurchaseOrder);
+        // console.log(jobOrPurchaseOrder);
         if(jobOrPurchaseOrder == 2 ){
 
             $.ajax({
@@ -904,10 +904,10 @@
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        // console.log("784");
+                        // // console.log("784");
                         var purchase_details = ``;
                         var page_items = response.job_order_details
-                        console.log(page_items);
+                        // console.log(page_items);
                         // var total_amount = response.header_detail[0].total_amount - response.header_detail[0].delivered_total_amount;
                         for (let index = 0; index < page_items.length; index++) {
                                 purchase_details += `<div class="form-row content_parent">
@@ -1010,7 +1010,7 @@
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        // console.log("784");
+                        // // console.log("784");
                         var purchase_details = ``;
                         // var total_amount = response.header_detail[0].total_amount - response.header_detail[0].delivered_total_amount;
                         for (let index = 0; index < response.page_items.length; index++) {
@@ -1150,10 +1150,10 @@
     //     }
     // });
         // function check(element){
-        //     // console.log($(element).parent().closest('.content_parent').html());
-        //     // console.log($(element).parent().closest('.inspect').find('.insc').val());
-        //     // console.log($(element).parent().closest('.inspect').html());
-        //     // console.log($(element).parent().html());
+        //     // // console.log($(element).parent().closest('.content_parent').html());
+        //     // // console.log($(element).parent().closest('.inspect').find('.insc').val());
+        //     // // console.log($(element).parent().closest('.inspect').html());
+        //     // // console.log($(element).parent().html());
         //     if($(element).val() === "0"){
         //         $(element).val("1")
         //         $(element).parent().closest('.inspect').find('.insc').val("1")
@@ -1166,7 +1166,7 @@
         
         function callJobOrderList(){
                 vendor_id = $('#vendor_id').val()
-                console.log(vendor_id);
+                // console.log(vendor_id);
                 $.ajax({
                 url: "{% url 'api:jobOrderList' %}?find_all=1&vendor_id=" + vendor_id+"&material_reciept=0&material_issue=2,3&with_item=True&manufacturing_type=Third party",
                 type: 'GET',

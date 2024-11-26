@@ -426,17 +426,17 @@
 
 
     function renderTaxDeduction(){
-        console.log(379);
+        // console.log(379);
         
         let total_amount=0;
         let total_amount_gst =  parseFloat($('.total_amount_with_gst').val())
         total_amount_gst = total_amount_gst ? total_amount_gst : 0.00 
         $('.tax').each(function(){
-            console.log(385);
+            // console.log(385);
             
             let tax = parseFloat($(this).val())
             tax = tax ?(total_amount_gst * (tax/100))  : 0.00
-            console.log(tax);
+            // console.log(tax);
             
             $(this).parent().next().find('input').val(tax.toFixed(2));
         })
@@ -471,11 +471,11 @@
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        // console.log("426");
+        // // console.log("426");
         $('.submit-btn').text('Submitting...');
         $('.submit-btn').prop('disabled', true);
         var formData = new FormData(create_form);
-        // console.log(formData.getAll('quantity_sent'))
+        // // console.log(formData.getAll('quantity_sent'))
         $.ajax({
             type: "POST",
             evalScripts: true,
@@ -511,7 +511,7 @@
     });
     
     $(document).on('keyup','.quantity , .rate',function(){
-        console.log("722");
+        // console.log("722");
         let quantity = parseFloat($(this).parent().closest('.content_parent').find('.quantity').val())
             let rate = parseFloat($(this).parent().closest('.content_parent').find('.rate').val())
             let amount = quantity?(quantity * rate) : 0.00
@@ -524,7 +524,7 @@
         sum = 0 
         let amount, gst, amount_gst=0 , amount_gst_per = 0,total_gst =0;
         amount = parseFloat($(this).closest('.content_parent').find('.amount').val())
-        // console.log($(this).closest('.content_parent').find('.gst')[0].html(),"saswata");
+        // // console.log($(this).closest('.content_parent').find('.gst')[0].html(),"saswata");
         if(amount){
             $(this).closest('.content_parent').find('.gst').each(function(){
                 if (parseFloat($(this).val())){
@@ -549,7 +549,7 @@
 
     // Keyup event for calculating amounts dynamically
     $(document).on('change keyup','.amount, .gst',function(){
-        console.log("Calculating GST Amounts...");
+        // console.log("Calculating GST Amounts...");
 
         let amount = parseFloat($(this).closest('.content_parent').find('.amount').val());
         let total_gst = 0;
@@ -561,11 +561,11 @@
             $(this).closest('.content_parent').find('.gst').each(function(){
                 let gst = parseFloat($(this).val()) / 100;
                 gst = isNaN(gst) ? 0 : gst
-                console.log(gst,'111111');
+                // console.log(gst,'111111');
                 
                 
                 amount_gst_per = amount * gst; // Calculate GST per value
-                console.log(amount_gst_per);
+                // console.log(amount_gst_per);
                 
                 total_gst += amount_gst_per; // Accumulate total GST
                 $(this).parent().next().find('input').val(amount_gst_per.toFixed(2)); // Set the amount for each GST
@@ -588,10 +588,10 @@
     
     $(document).on('change','.gsthead',function(){
         let gstVal = $(this).val();
-        console.log("Selected GST Value:", gstVal);
+        // console.log("Selected GST Value:", gstVal);
 
         let result = gst_items.find(item => parseFloat(item.gst_value) === parseFloat(gstVal));
-        console.log("GST Item Found:", result);
+        // console.log("GST Item Found:", result);
 
         if(result) {
             if(state_name == 'West Bengal'){

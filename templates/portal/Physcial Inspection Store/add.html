@@ -216,7 +216,7 @@
                         item_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
                     }
                     $('#itemType').html(item_options_text)
-                    // console.log(item_options_text,"saswata");
+                    // // console.log(item_options_text,"saswata");
                 } 
                 else {
                     alert(response.message);
@@ -237,7 +237,7 @@
             let storeId = $('select#storeId option:selected').val()
             let itemCatId = $('select#itemCat option:selected').val()
             
-            // console.log(sourceStore);
+            // // console.log(sourceStore);
 
             $.ajax({
             url: "{% url 'api:storeItemList' %}?storeId="+storeId+"&itemTypeId="+itemTypeId+"&itemCatId="+itemCatId,
@@ -248,13 +248,13 @@
             },
             success: function (response) {
                 if (response.status == 200) {
-                    // console.log("saswata");
+                    // // console.log("saswata");
                     page_items = response.page_items;
                     tbody_text = ``;
                     if(page_items.length>0){
                         $('#nav').removeAttr('hidden')
                         $('#table_form').removeAttr('hidden')
-                        // console.log(page_items);
+                        // // console.log(page_items);
                         for (let index = 0; index < page_items.length; index++) {
                             const element = page_items[index];
                             tbody_text += `<tr style="width:10%" class="content_parent">
@@ -270,14 +270,14 @@
                                                 <td><input type="text" size="6" name="notes" rows="5" class="form-control note" placeholder="Note"></td>   
                                             </tr>`;
                         }
-                        // console.log(tbody_text)
+                        // // console.log(tbody_text)
                         pagination_text = generatePaginationLinks(response.current_page, response.total_pages, response.button_to_show);
                         $('#table-body').html(tbody_text);
                         $('#submit').removeAttr('hidden')
                         $('#pagination').html(pagination_text);
                     }
                     else{
-                        // console.log("260");
+                        // // console.log("260");
                         tbody_text = ` `;
                         $('#table-body').html(tbody_text);
                         $('#table_form').attr('hidden','true')
@@ -294,7 +294,7 @@
                 }
             });
             
-            // console.log(item_options_text,"saswata");
+            // // console.log(item_options_text,"saswata");
           
         })
     
@@ -317,7 +317,7 @@
         let book_quantity = parseFloat($(element).parent().closest('.content_parent').find('.book_quantity').val())
         let physical_quantity = parseFloat($(element).parent().closest('.content_parent').find('.physical_quantity').val())
         let adj_quntity = book_quantity - physical_quantity
-        console.log($(element).parent().closest('.content_parent').find('.book_quantity').val());
+        // console.log($(element).parent().closest('.content_parent').find('.book_quantity').val());
         if(isNaN(adj_quntity)){
             $(element).parent().closest('.content_parent').find('.note').removeAttr('required')
         }
@@ -333,7 +333,7 @@
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        // console.log("426");
+        // // console.log("426");
         $('.submit-btn').text('Submitting...');
         $('.submit-btn').prop('disabled', true);
         var formData = new FormData(create_form);

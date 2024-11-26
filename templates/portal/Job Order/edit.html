@@ -175,11 +175,11 @@
                                                             <h5 class="text-center flex-grow-1 mb-0">
                                                                 BOM/Raw Material [RM, SFG]
                                                             </h5> 
-                                                            {% if jobOrder.material_issue == 0 %}
+                                                            {% if jobOrder.material_issue == 0 or page_title == 'Job Order Add' %}
                                                             <button type="button" class="btn add_btn  mr-2"> 
                                                                 <i class="fa fa-plus"></i> 
                                                             </button>
-                                                            <button type="button" class="btn remove_btn" disabled>
+                                                            <button type="button" class="btn remove_btn"{%  if page_title != 'Job Order Add' %} disabled {% endif %}>
                                                                 <i class="fa fa-minus"></i>
                                                             </button>
                                                             {% endif %}
@@ -191,13 +191,13 @@
                                                                     <div class="col-md-5 py-2">
                                                                         <label>Item<span class="required-indicator">*</span></label>
                                                                         <div class="input-group">
-                                                                            <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required {% if jobOrderDetail.required_quantity < jobOrderDetail.quantity %} disabled {% endif %} >
+                                                                            <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required {% if jobOrderDetail.required_quantity < jobOrderDetail.quantity and page_title != 'Job Order Add' %} disabled {% endif %} >
                                                                                 <option value="">Choose...</option>
                                                                                 {% for item in items %}
                                                                                 <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
                                                                                 {% endfor %}
                                                                             </select>
-                                                                            {% if jobOrderDetail.required_quantity < jobOrderDetail.quantity %} <input type="hidden" name="outgoing_item_id" value="{{jobOrderDetail.item_id}}"> {% endif %}
+                                                                            {% if jobOrderDetail.required_quantity < jobOrderDetail.quantity and page_title != 'Job Order Add' %} <input type="hidden" name="outgoing_item_id" value="{{jobOrderDetail.item_id}}"> {% endif %}
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-md-4 py-2">
@@ -206,7 +206,7 @@
                                                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                                             name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
                                                                             value="{{jobOrderDetail.quantity|floatformat}}" 
-                                                                            required {% if jobOrderDetail.required_quantity < jobOrderDetail.quantity %} readonly {% endif %}>
+                                                                            required {% if jobOrderDetail.required_quantity < jobOrderDetail.quantity  and page_title != 'Job Order Add' %} readonly {% endif %}>
                                                                     </div>
                                                                     <div class="col-md-3  py-2">
                                                                         <label>UOM <span class="required-indicator">*</span></label>
@@ -231,7 +231,7 @@
                                                                 Production/Manufactured Material [SFG, FG]
                                                             </h5> 
                                                             
-                                                            {% if jobOrder.material_issue == 0 %}
+                                                            {% if jobOrder.material_issue == 0 or  page_title == 'Job Order Add' %}
                                                             
                                                             <button type="button" class="btn add_btn  mr-2" hidden> 
                                                                 <i class="fa fa-plus"></i> 
@@ -248,13 +248,13 @@
                                                                         <label>Item<span class="required-indicator">*</span></label>
                                                                         <div class="input-group">
                                                                             
-                                                                            <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required {% if jobOrder.material_issue == 1 and jobOrder.job_status != 0  %} disabled {% endif %}>
+                                                                            <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required {% if jobOrder.material_issue == 1 and jobOrder.job_status != 0 and page_title != 'Job Order Add' %} disabled {% endif %}>
                                                                                 <option value="">Choose...</option>
                                                                                 {% for item in items %}
                                                                                 <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
                                                                                 {% endfor %}
                                                                             </select>
-                                                                            {% if jobOrder.material_issue == 1 and jobOrder.job_status != 0 %} <input type="hidden" name="incoming_item_id" value="{{jobOrderDetail.item_id}}"> {% endif %}
+                                                                            {% if jobOrder.material_issue == 1 and jobOrder.job_status != 0 and page_title != 'Job Order Add' %} <input type="hidden" name="incoming_item_id" value="{{jobOrderDetail.item_id}}"> {% endif %}
 
                                                                             {% if request.user.is_superuser == 1 or 'add_item'|get_session_permission:request is not None %}
                                                                             <div class="btn float-end addForm" data-text="Add New item"
@@ -270,13 +270,31 @@
                                                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                                             name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
                                                                             value="{{jobOrderDetail.quantity|floatformat}}"
-                                                                            required {% if jobOrder.material_issue == 1 and jobOrder.job_status != 0 %} readonly {% endif %}
+                                                                            required {% if jobOrder.material_issue == 1 and jobOrder.job_status != 0 and page_title != 'Job Order Add' %} readonly {% endif %}
                                                                             >
                                                                     </div>
                                                                     <div class="col-md-3 py-2">
                                                                         <label>UOM <span class="required-indicator">*</span></label>
                                                                         <input type="text" name="uom"  class="form-control uom" value="{{jobOrderDetail.item.uom.name}}" readonly>
                                                                     </div>
+                                                                    {% if  jobOrder.bom_type_head_id %}
+                                                                       <div class="col-md-5 py-2">
+                                                                            <label>BOM Type<span class="required-indicator">*</span></label>
+                                                                            <div class="input-group">
+                                                                                <input type="text" 
+                                                                               
+                                                                                min="0.0001" class="form-control bom_type_id"
+                                                                                value="{{jobOrder.bom_type_head.bom_type}}" 
+                                                                                required  readonly>
+                                                                                <input type="hidden" 
+                                                                               
+                                                                                name="bom_type_id" min="0.0001" class="form-control"
+                                                                                value="{{jobOrder.bom_type_head.id}}" 
+                                                                                required  readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    {% endif %}
                                                                 </div>
                                                             {% endfor %}
                                                         </div>
@@ -415,11 +433,11 @@
                                                                     BOM/Raw Material [RM, SFG]
                                                                 </h5> 
                                                              
-                                                                {% if jobOrder.material_issue == 0 %}
+                                                                {% if jobOrder.material_issue == 0 or   page_title == 'Job Order Add' %}
                                                                 <button type="button" class="btn add_btn  mr-2"> 
                                                                     <i class="fa fa-plus"></i> 
                                                                 </button>
-                                                                <button type="button" class="btn remove_btn" disabled>
+                                                                <button type="button" class="btn remove_btn" {% if page_title != 'Job Order Add' %} disabled {% endif %}>
                                                                     <i class="fa fa-minus"></i>
                                                                 </button>
                                                                 {% endif %}
@@ -431,7 +449,7 @@
                                                                         <div class="col-md-5 py-2">
                                                                             <label>Item<span class="required-indicator">*</span></label>
                                                                             <div class="input-group">
-                                                                                <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required  {% if jobOrderDetail.required_quantity < jobOrderDetail.quantity %} disabled {% endif %}  >
+                                                                                <select class="custom-select selectpicker outgoing_item_id" name="outgoing_item_id" data-placeholder="Select Item" required  {% if jobOrderDetail.required_quantity < jobOrderDetail.quantity and  page_title != 'Job Order Add' %} disabled {% endif %}  >
                                                                                     <option value="">Choose...</option>
                                                                                     {% for item in items %}
                                                                                     <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
@@ -447,7 +465,7 @@
                                                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                                                 name="outgoing_quantity" min="0.0001" class="form-control outgoing_quantity"
                                                                                 value="{{jobOrderDetail.quantity|floatformat}}"
-                                                                                required  {% if jobOrderDetail.required_quantity < jobOrderDetail.quantity %} disabled {% endif %}>
+                                                                                required  {% if jobOrderDetail.required_quantity < jobOrderDetail.quantity and  page_title != 'Job Order Add' %} disabled {% endif %}>
                                                                         </div>
                                                                         <div class="col-md-3  py-2">
                                                                             <label>UOM <span class="required-indicator">*</span></label>
@@ -469,15 +487,13 @@
                                                             <div class="col-md-12 d-flex align-items-center" style="border-bottom: 2px solid darkgray; padding-top: 13px; padding-bottom: 13px;">
                                                                 <h5 class="text-center flex-grow-1 mb-0">
                                                                     Production/Manufactured Material [SFG, FG]
-                                                                </h5> 
-                                                                {% if jobOrder.material_issue == 0 %}
-                                                                <button type="button" class="btn add_btn  mr-2" hidden> 
+                                                                </h5>                                                                 
+                                                                <button type="button" class="btn add_btn  mr-2"  hidden > 
                                                                     <i class="fa fa-plus"></i> 
                                                                 </button>
-                                                                <button type="button" class="btn remove_btn" disabled hidden>
+                                                                <button type="button" class="btn remove_btn"  disabled hidden >
                                                                     <i class="fa fa-minus"></i>
                                                                 </button>
-                                                                {% endif  %}
                                                             </div>
                                                             <div class="container-fluid">
                                                                 {% if incoming_details %}
@@ -487,7 +503,7 @@
                                                                             <label>Item<span class="required-indicator">*</span></label>
                                                                             <div class="input-group">
                                                                                 
-                                                                                <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required {% if jobOrder.material_issue == 1 and jobOrder.job_status != 0 %} disabled {% endif %}>
+                                                                                <select class="custom-select selectpicker incoming_item_id" name="incoming_item_id" data-placeholder="Select Item" required {% if jobOrder.material_issue == 1 and jobOrder.job_status != 0 and  page_title != 'Job Order Add' %} disabled {% endif %}>
                                                                                     <option value="">Choose...</option>
                                                                                     {% for item in items %}
                                                                                     <option {% if jobOrderDetail.item_id == item.pk %}selected{% endif %} value="{{item.pk}}">{{item.name}}</option>
@@ -510,13 +526,30 @@
                                                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                                                 name="incoming_quantity" min="0.0001" class="form-control incoming_quantity"
                                                                                 value="{{jobOrderDetail.quantity|floatformat}}" 
-                                                                                required  {% if jobOrder.material_issue == 1 and jobOrder.job_status != 0 %} readonly {% endif %}>
+                                                                                required  {% if jobOrder.material_issue == 1 and jobOrder.job_status != 0 and  page_title != 'Job Order Add' %} readonly {% endif %}>
                                                                         </div>
                                                                         <div class="col-md-3 py-2">
                                                                             <label>UOM <span class="required-indicator">*</span></label>
                                                                             <input type="text" name="uom"  class="form-control uom" value="{{jobOrderDetail.item.uom.name}}" readonly>
                                                                         </div>
+                                                                       {% if  jobOrder.bom_type_head_id %}
+                                                                       <div class="col-md-5 py-2">
+                                                                            <label>BOM Type<span class="required-indicator">*</span></label>
+                                                                            <div class="input-group">
+                                                                                <input type="text" 
+                                                                               
+                                                                                name="bom_type_id" min="0.0001" class="form-control bom_type_id"
+                                                                                value="{{jobOrder.bom_type_head.bom_type}}" 
+                                                                                required  readonly>
+                                                                                <input type="hidden" 
+                                                                               
+                                                                                name="bom_type_id" min="0.0001" class="form-control"
+                                                                                value="{{jobOrder.bom_type_head.id}}" 
+                                                                                required  readonly>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
+                                                                    {% endif %}
                                                                 {% endfor %}
                                                                 {% else %}
                                                                 <div class="row incoming_row"></div>
@@ -529,12 +562,14 @@
                                             </div>
                                             
                                         </div>
-                                        {% if incoming_details %}
+                                        {% if incoming_details  %}
                                         <div class="col-md-12 mb-12 warnText">
                                             <div class="col-md-12 mb-12">
                                                 <label for="bomNeeded">Bom Needed</label><br>
-                                                <input type="hidden" name="bomNeeded" value="0"><input type="checkbox" id="checkbox" onclick="this.previousSibling.value=1-this.previousSibling.value" style="transform: scale(2);margin-top: 12px;">
+                                                <input type="hidden" name="bomNeeded" value="0" {% if jobOrder.bom_type_head_id != null %} disabled {% endif %}>
+                                                <input type="checkbox" id="checkbox" onclick="this.previousSibling.value=1-this.previousSibling.value" style="transform: scale(2);margin-top: 12px;" {% if jobOrder.bom_type_head_id != null %} disabled {% endif %}>
                                             </div>
+                                            
                                         </div>
                                         <div class="col-md-12 mb-3 warnText">
                                             <p><span style="font-weight: bold;">Note:</span> You can only request one item for Production/Manufactured Material & each BOM/Raw Material quantity must be greater than Production/Manufactured Material quantity</p>
@@ -1223,6 +1258,7 @@
     });
     
     $(document).on('change keyup','.incoming_quantity',function(){
+        // console.log(1226)
         $('.outgoing_quantity').each(function(){
             let originalValue =$(this).attr('originalValue') ?  parseFloat($(this).attr('originalValue')) : 1;
             let incomeQuantity = parseFloat($('.incoming_quantity').val());
@@ -1236,11 +1272,11 @@
     $(document).on('change', '.bom_type_id', function () {
        
         let outgoing_parent = $(this).closest('.outgoing_materials').html();
-        console.log(outgoing_parent);
+        // console.log(outgoing_parent);
         
         let bom_type_id=$(this).val();
         let incoming_parent = $(this).parent().closest('.incoming_row')
-        console.log(incoming_parent);
+        // console.log(incoming_parent);
         
         $.ajax({
             url: "{% url 'api:jobOrderBomDetails' %}?id="+bom_type_id,
@@ -1253,7 +1289,7 @@
                 if (response.status == 200) {
                     $('.outgoing_row').empty();
                     let outgoing_row_html_text = ``;
-                    console.log(response.page_items);
+                    // console.log(response.page_items);
                     incoming_parent.find('.incoming_quantity').val(1)
                     
                     for (let index = 0; index < response.page_items.length; index++) {
@@ -1296,7 +1332,7 @@
                                 `<option value="${response.page_items[index].item_id}" selected>`
                             );
                     }
-                    console.log( $('.outgoing_row').html());
+                    // console.log( $('.outgoing_row').html());
                     
                     $('.outgoing_row').html(outgoing_row_html_text)
                     $('.selectpicker').select2({
@@ -1432,6 +1468,7 @@
     $(document).on('submit', '#create_form', function (e) {
             e.preventDefault(); // Prevent default form submission
             let form = $('#create_form');
+            // console.log(1461)
             let currentFormData = getFormData(form);
             let pageTitle = '{{page_title}}';
             
@@ -1441,6 +1478,8 @@
             }
 
             let setUrl = pageTitle === 'Job Order Edit' ? "{% url 'api:jobOrderEdit' %}" : "{% url 'api:jobOrderAdd' %}";
+            // console.log(setUrl);
+            
             $('.submit-btn').text('Submitting...');
             $('.submit-btn').prop('disabled', true);
             var formData = new FormData(create_form);

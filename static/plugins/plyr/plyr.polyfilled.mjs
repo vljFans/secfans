@@ -9804,7 +9804,7 @@ function () {
     key: "log",
     get: function get() {
       // eslint-disable-next-line no-console
-      return this.enabled ? Function.prototype.bind.call(console.log, console) : noop;
+      return this.enabled ? Function.prototype.bind.call(// console.log, console) : noop;
     }
   }, {
     key: "warn",

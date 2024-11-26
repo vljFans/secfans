@@ -136,6 +136,9 @@
                                 <input type="text" onkeyup="checkMaxMin(this)"
                                     name="invoice_challan"  class="form-control invoice_challan" value="{{storeTransaction.invoice_challan}}"
                                     placeholder="Invoice/challanNo" required>
+                                    <input type="hidden" 
+                                    name="invoice_challan_old"  class="form-control invoice_challan_old" value="{{storeTransaction.invoice_challan}}"
+                                     >
                             </div>
                             
                             <div class="purchase_order_details col-md-12">
@@ -437,7 +440,7 @@
         //         if (response.status == 200) {
         //             var purchase_details = ``;
         //             for (let index = 0; index < response.page_items.length; index++) {
-        //                 // console.log(response.page_items[index].quantity, response.page_items[index].delivered_quantity)
+        //                 // // console.log(response.page_items[index].quantity, response.page_items[index].delivered_quantity)
         //                 // total_amount = response.header_detail[0].total_amount - response.header_detail[0].delivered_total_amount;
         //                 purchase_details += `<div class="form-row content_parent">
         //                         <div class="col-md-3 mb-3">
@@ -516,7 +519,7 @@
 
     $(document).on('change', '#with_purchase_job_order', function () {
         purchase_order_type = $(this).val();
-        console.log("{{storeTransaction.purchase_order_header_id}}");
+        // console.log("{{storeTransaction.purchase_order_header_id}}");
         if("{{storeTransaction.purchase_order_header_id}}"=="None" && parseInt(purchase_order_type)==0){
             (function(){
                 location.reload(true);
@@ -1132,6 +1135,7 @@
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
         let form = $('#create_form');
+        
         let currentFormData = getFormData(form);
             
         if (initialFormData === currentFormData) {

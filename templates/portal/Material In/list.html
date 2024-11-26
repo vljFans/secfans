@@ -105,7 +105,7 @@
 <script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
     function getMaterialIssuedList(keyword) {
-        console.log("123")
+        // console.log("123")
         $.ajax({
             type: "GET",
             url: "{% url 'api:getOnTransitTransactionHeadersList' %}?keyword=" + keyword+"&flag=1",
@@ -159,7 +159,7 @@
 
     }
     $(document).ready(function () {
-        // console.log("168");
+        // // console.log("168");
         getMaterialIssuedList(keyword)
     });
 

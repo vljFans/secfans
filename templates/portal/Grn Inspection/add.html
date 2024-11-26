@@ -221,7 +221,7 @@
 
     $(document).ready(function(){
         $(document).on('change','#insTraId' , function(){
-            // console.log('230',$('select#job_Order_id option:selected').val())
+            // // console.log('230',$('select#job_Order_id option:selected').val())
             $('#table_form').html(`<p></p>`)
             if( $('select#job_Order_id option:selected').val() != "" ){ 
                 callMaterialIssue()
@@ -232,10 +232,10 @@
     });
 
     function callMaterialIssue(){
-        // console.log("246")
+        // // console.log("246")
         var insId = $('select#insTraId option:selected').val()
         //Purchase/Job Order Reference
-        // console.log(insId);
+        // // console.log(insId);
         $('#vendor_name').val("")
         $('.vendor_id').val("")
         $.ajax({
@@ -278,7 +278,7 @@
                    }
                    var tbody_text = ``;
                    for(let index=0 ; response.page_items.length>index ; index++){
-                    // console.log(index);
+                    // // console.log(index);
                         tbody_text += `<div class="form-row content_parent">
                                         <input type="hidden" name="ins_det_id" value="${response.page_items[index].pk}">
                                         <div class="col-md-2 mb-3">
@@ -338,7 +338,7 @@
                                     </div>`
 
                     }
-                    // console.log(tbody_text);
+                    // // console.log(tbody_text);
 
                     $('#table_form').html(tbody_text)
                     
@@ -355,11 +355,11 @@
         $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        // console.log("426");
+        // // console.log("426");
         $('.submit-btn').text('Submitting...');
         $('.submit-btn').prop('disabled', true);
         var formData = new FormData(create_form);
-        // console.log(formData.getAll('quantity_sent'))
+        // // console.log(formData.getAll('quantity_sent'))
         $.ajax({
             type: "POST",
             evalScripts: true,
@@ -409,19 +409,19 @@
                 $(element).val($(element).attr('min'));
             }
         }
-    //    console.log($(element).attr('class'));
+    //    // console.log($(element).attr('class'));
         // if($(element).attr('class') == 'form-control accp_quantity'){
 
         //     var acc_quan = parseFloat($(element).val())
         //     var recp_quan= parseFloat( $(element).parent().closest('.content_parent').find('.recp_quantity').val())
         //     var rate = parseFloat( $(element).parent().closest('.content_parent').find('.rate').val())
-        //     // console.log($(element).parent().closest('.content_parent').find('.gst_percentage').val());
+        //     // // console.log($(element).parent().closest('.content_parent').find('.gst_percentage').val());
         //     var gstPer = parseFloat( $(element).parent().closest('.content_parent').find('.gst_percentage').val())
         //     var rej_quan = recp_quan - acc_quan
         //     var amount = rate * acc_quan
         //     var accAmount = amount + (amount * (gstPer/100))
         //     totalPrice += accAmount
-        //     // console.log(accAmount,amount,gstPer);
+        //     // // console.log(accAmount,amount,gstPer);
 
         //     $(element).parent().closest('.content_parent').find('.rej_quantity').val(rej_quan)
         //     $(element).parent().closest('.content_parent').find('.amount').val(amount)
@@ -434,17 +434,17 @@
     }
 
     $(document).on('change keyup','.accp_quantity' ,function(){
-        // console.log("hi");
+        // // console.log("hi");
         var acc_quan = parseFloat($(this).val())
         var recp_quan= parseFloat( $(this).parent().closest('.content_parent').find('.recp_quantity').val())
         var rate = parseFloat( $(this).parent().closest('.content_parent').find('.rate').val())
-        // console.log($(element).parent().closest('.content_parent').find('.gst_percentage').val());
+        // // console.log($(element).parent().closest('.content_parent').find('.gst_percentage').val());
         var gstPer = parseFloat( $(this).parent().closest('.content_parent').find('.gst_percentage').val())
         var rej_quan = recp_quan - acc_quan
         var amount = rate * acc_quan
         var accAmount = amount + (amount * (gstPer/100))
         // totalPrice += accAmount
-        // console.log(accAmount,amount,gstPer);
+        // // console.log(accAmount,amount,gstPer);
 
         $(this).parent().closest('.content_parent').find('.rej_quantity').val(rej_quan)
         $(this).parent().closest('.content_parent').find('.amount').val(amount)

@@ -59,7 +59,7 @@ $.site = $.fn.site = function(parameters) {
     fix: {
       console: function() {
         module.debug('Normalizing window.console');
-        if (console === undefined || console.log === undefined) {
+        if (console === undefined || // console.log === undefined) {
           module.verbose('Console not available, normalizing events');
           module.disable.console();
         }
@@ -340,7 +340,7 @@ $.site = $.fn.site = function(parameters) {
           }
           else {
             $.each(performance, function(index, data) {
-              console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
+              // console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
             });
           }
           console.groupEnd();
