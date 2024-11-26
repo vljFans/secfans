@@ -594,6 +594,7 @@ class Job_Order(models.Model):
     job_status = models.SmallIntegerField(default=0) # 0->job just created 1->material issued partially or fully 2->job completed
     estimated_time_day = models.CharField(max_length=20, blank=True, null=True)
     actual_time_take = models.CharField(max_length=20, blank=True, null=True)
+    bom_type_head  = models.ForeignKey(Bill_Of_Material, on_delete=models.CASCADE, blank=True, null=True)
     # total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     notes = models.TextField(blank=True, null=True)
     status = models.SmallIntegerField(default=1) #0 for not recieved 1 for recieved without inspection 2 for recived with inspection 
@@ -621,7 +622,7 @@ class Job_Order_Detail(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=3, default=0)
     required_quantity = models.DecimalField(max_digits=10, decimal_places=3, default=0) # for mterial Issue
-    quantity_result = models.DecimalField(max_digits=10, decimal_places=3, default=0) #for material recieved
+    quantity_result = models.DecimalField(max_digits=10, decimal_places=3, default=0) #for material recieved/utilised
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=now)
@@ -751,6 +752,7 @@ class Store_Transaction_Detail(models.Model):
     amount_with_gst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
+    direction = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(default=now)
     updated_at = models.DateTimeField(default=now)
 
