@@ -75,7 +75,7 @@
                                     <th>Item</th>
                                     <th>Job Quantity</th>
                                     <th>Resultant Issued Job Quantity</th>
-                                    <th>Resultant Reciept Job Quantity</th>
+                                    <th>Resultant Reciept/Utilised Job Quantity</th>
                                     <th>Material</th>
                                 </tr>
                             </thead>
@@ -86,16 +86,22 @@
                                     <td>{{orderDetail.item.name}}</td>
                                     <td>{{orderDetail.quantity | floatformat}}</td>
                                     <td>{% if  orderDetail.direction == 'outgoing'  %} {{orderDetail.required_quantity | floatformat}} {% else %} --- {% endif %}</td>
-                                    <td>{% if  orderDetail.direction == 'incoming'  %} {{orderDetail.quantity_result | floatformat}} {% else %} --- {% endif %}</td>
+                                    <td> {{orderDetail.quantity_result | floatformat}} </td>
+                                    
+
                                     <td>{% if orderDetail.direction == 'incoming' %} Production/Manufactured Material {% else %} BOM/Raw Material {% endif %}</td>
                                     <!-- <td>{{orderDetail.direction}}</td> -->
                                 </tr>
                                 {% endfor %}
                             </tbody>
                             <tfoot>
-                                <th>
+                                <tr>
                                     <td colspan="12">  <Span style="color: red;">BOM/Raw Material:</Span> <Span>[Raw Material , Semi Finished Good] ,</Span > <Span style="color: red;"> Production/Manufactured Material:</Span> <Span >[Semi Finished good , Finished Goods]</Span> </td>
-                                </th>
+                                </tr>
+                                <tr>
+                                    <td colspan="12">  <Span style="color: red;"> For  BOM/Raw Material it is </Span> <Span>Utilised ,</Span > <Span style="color: red;"> For Production/Manufactured Material It is </Span> <Span >Reciept </Span> </td>
+                                    
+                                </tr>
                             </tfoot>
                         </table>
                     </div>
