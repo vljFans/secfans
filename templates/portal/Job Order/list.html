@@ -213,6 +213,7 @@
                     edit_url = "{% url 'superuser:jobOrderEdit' 1 %}";
                     view_url = "{% url 'superuser:jobOrderView' 1 %}";
                     copy_url = "{% url 'superuser:jobOrderAdd'  %}?id=";
+                    print_url = "{% url 'superuser:jobOrderPrint' 1 %}";
                     page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
@@ -241,6 +242,9 @@
                                         <i class="fa fa-stop"></i>
                                         </a>
                                     {% endif %}` : ''}
+                                {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
+                                <a href="${print_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-print"></i> </a>
+                                {% endif %}
                                 </td>`
                         }
                         
@@ -258,6 +262,9 @@
                                 {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
                                 <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
                                 {% endif %}
+                                {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
+                                <a href="${print_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-print"></i> </a>
+                                {% endif %}
                                 </td>`
                         }
                         if(element.material_issue < 2 ){
@@ -274,6 +281,9 @@
                                     {% endif %}
                                     {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
                                     <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
+                                    {% endif %} 
+                                    {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
+                                    <a href="${print_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-print"></i> </a>
                                     {% endif %}
                                     </td>`
                         }
@@ -386,6 +396,7 @@
 
     $(document).on('keyup', '#search', function () {
         keyword = $(this).val();
+        getJobOrderList(keyword)
     })
 
     $(document).on('submit','#create_form', function(e) {
