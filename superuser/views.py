@@ -989,14 +989,14 @@ def jobOrderAdd(request):
    
     if request.GET.get('id', None):
         id = request.GET.get('id', None)
-        print(id)
+        # print(id)
         jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
         jobOrderCount = models.Job_Order.objects.filter(manufacturing_type=jobOrder.manufacturing_type).count()
         vendorShort = 'SLF' if jobOrder.manufacturing_type == 'Self' else 'TPM'
         jobOrderNumber =  env("JOB_ORDER_NUMBER_SEQ").replace("${VENDOR_SHORT}", vendorShort).replace(
                 "${AI_DIGIT_3}", str(jobOrderCount + 1).zfill(3)).replace("${FINANCE_YEAR}", datetime.today().strftime('%y') + "-" + (datetime(datetime.today().year + 1, 1, 1).strftime('%y')))
         jobOrder.order_number =jobOrderNumber
-        print(jobOrder.order_number)
+        # print(jobOrder.order_number)
         stores = models.Store.objects.filter(status=1, deleted=0)
         vendors = models.Vendor.objects.filter(status=1, deleted=0)
         items = models.Item.objects.filter(status=1, deleted=0)
@@ -1080,6 +1080,20 @@ def jobOrderView(request, id):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "View"}]
     })
     return render(request, 'portal/Job Order/view.html', context)
+
+
+@login_required
+def jobOrderPrint(request, id):
+    configList = models.Configuration_User.objects.first()
+    jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
+    print(jobOrder.job_order_detail_set.all())
+    context.update({
+        'config': configList,
+        'jobOrder': jobOrder,
+        'page_title': "Job Order",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Job Order", 'url': reverse('superuser:jobOrderList')}, {'name': "View"}]
+    })
+    return render(request, 'portal/Job Order/print.html', context)
 
 #--- developed by saswata
 

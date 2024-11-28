@@ -104,6 +104,7 @@
                                     <th>#</th>
                                     <th>Vendor</th>
                                     <th>Transaction Number</th>
+                                    <th>Invoice/Challan</th>
                                     <th>Transaction Date</th>
                                     <th>Total Price</th>
                                     <th>Action</th>
@@ -155,6 +156,7 @@
                                 <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
                                 <td>${element.vendor__name ? element.vendor__name : 'Self'}</td>
                                 <td>${element.transaction_number}</td>
+                                <td>${element.invoice_challan}</td>
                                 <td>${element.transaction_date}</td>
                                 <td>₹${element.total_amount}</td>
                                 <td>
