@@ -100,7 +100,7 @@ def user_log_details_add(user,task_name):
             user_log_details.save()
        
     except Exception as e:
-        # # # # print(f'Something went wrong: {e}')
+        print(f'Something went wrong: {e}')
         transaction.rollback()
 
 
@@ -4265,7 +4265,7 @@ def storeTransactionAdd(request):
         return JsonResponse(context)
     message = 'Something Went Wrong. Please Try Again.'
     try:
-        # # # # # print("3130")
+        # print("3130")
         inspect = request.POST.getlist('inspect')
         # if "1" in inspect:
         #     # # # # # print("SAswata")
@@ -4344,7 +4344,7 @@ def storeTransactionAdd(request):
                 storeTransactionVhead.save()      
             storeTransactionDetail =[]
             if "1" in inspect:
-                # # # # print("313s4")
+                # print("313s4")
                 grn_inspection_transaction_count = models.Grn_Inspection_Transaction.objects.all().count()
                 grnTransactionheader = models.Grn_Inspection_Transaction()
                 grnTransactionheader.vendor_id = request.POST['vendor_id']
@@ -4373,7 +4373,7 @@ def storeTransactionAdd(request):
                 total_amounts = 0 
                 material_reciept_all = 0
                 for index, elem in enumerate(request.POST.getlist('item_id')):
-                    # # # # # print('3605')
+                    # print('3605')
                     if inspect[index] == "1":
                         check1 +=1
                         # # # # # print( request.POST.getlist(
@@ -4634,6 +4634,9 @@ def storeTransactionAdd(request):
 def storeTransactionEdit(request):
     context = {}
     # # print(request.POST)
+    check1 = 0
+    test =""
+    check2 = 0
     
     inspect = 1 if '1' in request.POST.getlist('itemInspect') else 0
 
@@ -4703,7 +4706,7 @@ def storeTransactionEdit(request):
                         storeItem = models.Store_Item.objects.get(store_id=transact.store_id,item_id = transact.item_id)
                         storeItem.on_hand_qty -= transact.quantity
                         storeItem.closing_qty -= transact.quantity
-                        print(4707)
+                        # print(4707)
                         storeItem.updated_at = datetime.now()
                         storeItem.save()
                     # from vendor store recieved quantity
@@ -4717,7 +4720,7 @@ def storeTransactionEdit(request):
                         storeItem.save()
                     # changes in job order detail
                     jobOrderDetExist = models.Job_Order_Detail.objects.filter(item_id = transact.item_id , job_order_header_id = request.POST['job_order_header_id'] , direction ='incoming')
-                    print(jobOrderDetExist)
+                    
                 
                     if jobOrderDetExist:
                         jobOrderDet = models.Job_Order_Detail.objects.get(item_id = transact.item_id , job_order_header_id = request.POST['job_order_header_id'], direction ='incoming' )
@@ -4814,7 +4817,7 @@ def storeTransactionEdit(request):
 
             # if some data not in inspect
             if inspectZero == 1 :
-                print(4541)
+                
 
                 # storeTransaction Header
                 storeTransactionHeader = models.Store_Transaction()
@@ -4887,7 +4890,7 @@ def storeTransactionEdit(request):
                             storeItem.save()
                 models.Store_Transaction_Detail.objects.bulk_create(order_details)
                 storeTransactionHeader.total_amount = total_amounts
-                print(4891)
+                
                 storeTransactionHeader.save()
                 # # # # print(4607)
                 if(int(request.POST['with_purchase_job_order']) == 1 and request.POST.get('purchase_order_header_id',None)): #it is a purchase order
@@ -5702,7 +5705,7 @@ def jobOrderList(request):
             jobOrders = jobOrders.filter(material_issue__in=material_issue_list ).filter(status=1, deleted=0)
         jobOrders = list(jobOrders.values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor_id', 'vendor__name', 'with_item', 'notes','material_issue','job_status','estimated_time_day','material_reciept','manufacturing_material_type'))
         if find_all is not None and int(find_all) == 1:
-            print(jobOrders)
+            # print(jobOrders)
             context.update({
                 'status': 200,
                 'message': "Job Orders Fetched Successfully.",
@@ -8470,7 +8473,7 @@ def reportItemTrackingReport(request):
             item=item,
             store=store,
             created_at__range=(from_date, to_date + timedelta(days=1)),  # Include to_date
-        ).select_related('store_transaction_header', 'store_transaction_header__transaction_type')
+        ).filter(store_transaction_header__status=1,store_transaction_header__deleted=0).select_related('store_transaction_header', 'store_transaction_header__transaction_type')
 
         # Group store_transaction_details by store
         for store_transaction_detail in store_transaction_details:
@@ -8485,6 +8488,7 @@ def reportItemTrackingReport(request):
                 'updated_at': store_transaction_detail.updated_at.date(),
                 'transaction_date' : store_transaction_detail.store_transaction_header.transaction_date
             })
+        data.sort(key=lambda x: (x['transaction_date'], x['transaction_number']))
 
     context.update({
         'status': 200,
@@ -8626,6 +8630,8 @@ def reportInventorySummary(request):
             store_transactions_MIS = models.Store_Transaction_Detail.objects.filter(
                 store_id=store_id,
                 item_id=each.item_id,
+                store_transaction_header__status = 1,
+                store_transaction_header__deleted = 0,
                 store_transaction_header__transaction_type__name='MIS',
                 store_transaction_header__transaction_date__range=(from_date, to_date)
             ).order_by('item_id')
@@ -8633,6 +8639,8 @@ def reportInventorySummary(request):
             store_transactions_GRN = models.Store_Transaction_Detail.objects.filter(
                 store_id=store_id,
                 item_id=each.item_id,
+                store_transaction_header__status = 1,
+                store_transaction_header__deleted = 0,
                 store_transaction_header__transaction_type__name='GRN',
                 store_transaction_header__transaction_date__range=(from_date, to_date)
             ).order_by('item_id')
@@ -8797,7 +8805,7 @@ def reportInventoryStorewise(request):
         store_type = request.POST.get('store_type', None)
         total_material_issue = Decimal('0.00')
         total_material_receipt = Decimal('0.00')
-
+        blocked_quantity = Decimal('0.00')
         # Handle GET request
         if request.method == 'GET':
             store_items = list(
@@ -8838,6 +8846,7 @@ def reportInventoryStorewise(request):
         for store_item in store_items:
             total_material_issue = Decimal('0.00')
             total_material_receipt = Decimal('0.00')
+            blocked_quantity = Decimal('0.00')
             store_name = store_item['store__name']
             if store_name not in data:
                 data[store_name] = []
@@ -8849,7 +8858,7 @@ def reportInventoryStorewise(request):
                     'on_hand_qty': store_item['on_hand_qty'],
                     'item': store_item['item__name'],
                     'item_category': store_item['item__item_type__item_category__name'],
-                    'value': float(store_item['on_hand_qty']) * float(store_item['item__price']),
+                    'value': round((float(store_item['on_hand_qty']) * float(store_item['item__price'])),2),
                 })
             else:
                 # Vendor store processing
@@ -8865,9 +8874,15 @@ def reportInventoryStorewise(request):
                         # Update material issue and receipt totals
                         total_material_issue = Decimal('0.00')
                         total_material_receipt = Decimal('0.00')
+                        blocked_quantity = Decimal('0.00')
                         
                         total_material_issue += (
-                            Decimal(jobdet.quantity - jobdet.required_quantity)
+                            (Decimal(jobdet.quantity - jobdet.required_quantity) )
+                            if jobdet.job_order_header.material_issue > 1 and jobdet.direction == 'outgoing'
+                            else Decimal('0.00')
+                        )
+                        blocked_quantity = (
+                            (Decimal(jobdet.quantity - jobdet.required_quantity) - (Decimal(jobdet.quantity - jobdet.quantity_result)))
                             if jobdet.job_order_header.material_issue > 1 and jobdet.direction == 'outgoing'
                             else Decimal('0.00')
                         )
@@ -8879,12 +8894,13 @@ def reportInventoryStorewise(request):
                 data[store_name].append({
                     'pk': store_item['pk'],
                     'on_hand_qty': store_item['on_hand_qty'],
-                    'issue_Quantity': float(total_material_issue),
-                    'Wip_Quantity' : float(total_material_receipt),
-                    'actual_onhand': float(store_item['on_hand_qty']) - float(total_material_issue + total_material_receipt ),
+                    'issue_Quantity': round(float(total_material_issue),2),
+                    'Wip_manufacture_Quantity' : round(float(total_material_receipt),2),
+                    'Wip_issued_Quantity' : round(float(blocked_quantity),2),
+                    'actual_onhand': round((float(store_item['on_hand_qty']) - float(blocked_quantity + total_material_receipt )),2),
                     'item': store_item['item__name'],
                     'item_category': store_item['item__item_type__item_category__name'],
-                    'value': float(store_item['on_hand_qty']) * float(store_item['item__price']),
+                    'value': round((float(store_item['on_hand_qty']) * float(store_item['item__price'])),2),
                 })
         # # print(data)
 

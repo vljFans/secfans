@@ -96,6 +96,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Material Issue Number</th>
+                                    <th>Job Order No</th>
                                     <th>Issue Date</th>
                                     <th>Action</th>
                                     
@@ -142,6 +143,7 @@
                         tbody_text += `<tr>
                                 <td>${((response.total_pages - 1) * response.per_page) +  index + 1}</td>
                                 <td>${element.transaction_number}</td>
+                                <td>${element.job_order__order_number}</td>
                                 <td>${element.transaction_date}</td>
                                 <td>
                                 {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
