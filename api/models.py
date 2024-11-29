@@ -721,6 +721,7 @@ class Store_Transaction(models.Model):
     transaction_date = models.DateField(blank=True, null=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     vehicle = models.CharField(max_length=25, blank=True, null=True)
+    dispatch_no = models.CharField(max_length=25, blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
@@ -729,6 +730,7 @@ class Store_Transaction(models.Model):
     job_order = models.ForeignKey(Job_Order, on_delete=models.CASCADE, blank=True, null=True)
     grn_inspection =  models.ForeignKey(Grn_Inspection_Transaction, on_delete=models.CASCADE, blank=True, null=True)
     reference_id = models.SmallIntegerField(default=0)
+    destination =  models.CharField(max_length=25, blank=True, null=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE,blank=True, null=True)
 
 

@@ -7093,6 +7093,7 @@ def materialReturnAdd(request):
             'message': "Reason or return date has not been provided."
         })
         return JsonResponse(context)
+    total_amount = 0.00
     try:
         with transaction.atomic():
             # Reason = On excess issue of items against a job
@@ -7110,6 +7111,7 @@ def materialReturnAdd(request):
                     "${transaction_type_id}", str(transaction_type.id).zfill(2))
                 material_return.transaction_date = request.POST['return_date']
                 material_return.job_order=material_issue.job_order
+
                 material_return.save()
 
                 in_house_store=models.Store_Transaction_Detail.objects.filter(store_transaction_header=material_issue).first().store
@@ -7156,6 +7158,17 @@ def materialReturnAdd(request):
                     "${AI_DIGIT_5}", ai_digit_5()).replace(
                     "${transaction_type_id}", str(transaction_type.id).zfill(2))
                 material_return.transaction_date = request.POST['return_date']
+                material_return.destination = request.POST['destination']
+                material_return.vehicle = request.POST['Vehicle_no']
+                material_return.dispatch_no = request.POST['dispatch_no']
+                if request.POST.get('invoice_challan_no',None):
+                    material_return.invoice_challan = request.POST['invoice_challan_no']
+                if request.POST.get('note',None):
+                    material_return.notes = request.POST['note']
+                if request.POST.get('grn_inspection_no',None):
+                    material_return.grn_inspection_id = request.POST['grn_inspection_no']
+                if request.POST.get('dispatch_no',None):
+                    material_return.dispatch_no = request.POST['dispatch_no']    
                 material_return.save()
 
                 store_transaction_details = []
@@ -7169,6 +7182,9 @@ def materialReturnAdd(request):
                                 quantity=request.POST.getlist('reject_quantity')[i]
                             )
                         )
+                        total_amount += float(request.POST.getlist('reject_quantity')[i])
+                material_return.total_amount = total_amount
+                material_return.save()
                 models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
             userId = request.COOKIES.get('userId', None)
             user_log_details_add(userId,'Material Return Add')
@@ -8464,6 +8480,9 @@ def reportItemTrackingReport(request):
 
     item = models.Item.objects.filter(pk=item_id)
     store = models.Store.objects.filter(pk=store_id)
+    total_quantity = Decimal(0.00)
+    total_reciept = Decimal(0.00)
+    total_out = Decimal(0.00)
     data = []
     if item.exists():
         item = item.first()
@@ -8475,15 +8494,32 @@ def reportItemTrackingReport(request):
             created_at__range=(from_date, to_date + timedelta(days=1)),  # Include to_date
         ).filter(store_transaction_header__status=1,store_transaction_header__deleted=0).select_related('store_transaction_header', 'store_transaction_header__transaction_type')
 
+        
         # Group store_transaction_details by store
         for store_transaction_detail in store_transaction_details:
+            reciept_quantity = Decimal(0.00)
+            out_quantity = Decimal(0.00)
+            if  (store_transaction_detail.store_transaction_header.transaction_type.name == 'MIS' or 
+            store_transaction_detail.store_transaction_header.transaction_type.name == 'MR' or 
+            store_transaction_detail.store_transaction_header.transaction_type.name == 'MOUT' or  
+            store_transaction_detail.store_transaction_header.transaction_type.name == 'MIST' or  
+            store_transaction_detail.store_transaction_header.transaction_type.name == 'MIV' 
+            ):
+                out_quantity = store_transaction_detail.quantity
+                total_out += out_quantity
+            else:
+                reciept_quantity = store_transaction_detail.quantity
+                total_reciept += reciept_quantity
             data.append({
-                'quantity': store_transaction_detail.quantity,
+                'reciept_quantity': reciept_quantity ,
+                'out_quantity' : out_quantity,
                 'rate': store_transaction_detail.rate,
                 'amount': store_transaction_detail.amount,
                 'gst_percentage': store_transaction_detail.gst_percentage,
                 'amount_with_gst': store_transaction_detail.amount_with_gst,
                 'transaction_number': store_transaction_detail.store_transaction_header.transaction_number,
+                'transaction_id' : store_transaction_detail.store_transaction_header_id,
+                'invoice_challan_no' : store_transaction_detail.store_transaction_header.invoice_challan if store_transaction_detail.store_transaction_header.invoice_challan else '---',
                 'transaction_type': store_transaction_detail.store_transaction_header.transaction_type.name,
                 'updated_at': store_transaction_detail.updated_at.date(),
                 'transaction_date' : store_transaction_detail.store_transaction_header.transaction_date
@@ -8493,9 +8529,11 @@ def reportItemTrackingReport(request):
     context.update({
         'status': 200,
         'message': "Items Fetched Successfully.",
-        'page_items': data,
+        'total_reciept': str(total_reciept),
+        'total_out' : str(total_out),
+        'page_items': data
+        
     })
-
     return JsonResponse(context)
 
 

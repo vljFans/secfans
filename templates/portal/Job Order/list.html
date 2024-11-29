@@ -283,7 +283,7 @@
                                     <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
                                     {% endif %} 
                                     {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
-                                    <a href="${print_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-print"></i> </a>
+                                    <a href="${print_url.replace('1', element.pk)}" class="table-action mg-r-10" target="_blank"> <i class="fa fa-print"></i> </a>
                                     {% endif %}
                                     </td>`
                         }

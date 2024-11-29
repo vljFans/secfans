@@ -112,6 +112,7 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
+                                <h6 class="card-header-title tx-13 mb-0" > <Span><strong>Total Recieved: </strong></Span>  <span class="tota_recieved"></span> ; <span><strong>Total Issue/Out: </strong></span> <span class="tota_out"></span>; </h6>
                             </div>
                         </div>
                     </div>
@@ -126,8 +127,10 @@
                                     <th>Last update</th>
                                     <th>Transaction Number</th>
                                     <th>Transaction Type</th>
+                                    <th>Invoice/Challan No</th>
                                     <th>Rate</th>
-                                    <th>Quantity</th>
+                                    <th>Recieved Quantity</th>
+                                    <th>Issueed/Out Quantity</th>
                                     <th>Amount</th>
                                     <th>GST Percentage</th>
                                     <th>Amount with GST</th>
@@ -252,19 +255,23 @@
                 'Authorization': getCookieValue("accessToken")
             },
             success: function (response) {
-                if (response.status == 200) {
+                if (response.status == 200) { 
+                    $('.tota_recieved').html(response.total_reciept);
+                    $('.tota_out').html(response.total_out);
                     var tbody_html = ``;
-
+                    view_url ="{% url 'superuser:storeTransactionView' 1 %}";
                     $.each(response.page_items, function (index, transaction) {
                         tbody_html += `
                             <tr>
                                 <td>${index + 1}</td>
                                 <td>${transaction.transaction_date.split("-").reverse().join("-")}</td>
                                 <td>${transaction.updated_at.split("-").reverse().join("-")}</td>
-                                <td>${transaction.transaction_number}</td>
+                                <td><a href="${view_url.replace('1', transaction.transaction_id)}" target="_blank">${transaction.transaction_number}</a></td>
                                 <td>${transaction.transaction_type}</td>
+                                <td>${transaction.invoice_challan_no}</td>
                                 <td>${transaction.rate}</td>
-                                <td>${+transaction.quantity}</td>
+                                <td>${+transaction.reciept_quantity}</td>
+                                <td>${+transaction.out_quantity}</td>
                                 <td>${transaction.amount}</td>
                                 <td>${transaction.gst_percentage}</td>
                                 <td>${transaction.amount_with_gst}</td>
