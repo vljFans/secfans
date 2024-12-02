@@ -17,7 +17,6 @@ from datetime import datetime, timedelta,timezone,date
 from django.utils.timezone import now
 from openpyxl import Workbook, load_workbook
 from django.db import transaction
-from django.db.models import Q
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from pathlib import Path
@@ -28,7 +27,7 @@ import environ
 import csv
 from fpdf import FPDF
 from django.db.models import Avg, Count, Min, Sum , Case, When, DecimalField, Q, F, IntegerField, Max, Func
-from django.db.models.functions import Substr, Cast
+from django.db.models.functions import Substr, Cast, StrIndex, Length
 from fractions import Fraction
 import pandas as pd
 from django.contrib.auth.models import Permission
@@ -56,11 +55,15 @@ class CustomPaginator:
         return math.ceil(len(self.items) / self.per_page)
 
 
+# def ai_digit_5():
+#     return str((models.Store_Transaction.objects.annotate(
+#         num_part=Cast(Substr('transaction_number', 13, 5), IntegerField())
+#     ).aggregate(max_value=Max('num_part'))['max_value'] or 0) ).zfill(5)
+
 def ai_digit_5():
     return str((models.Store_Transaction.objects.annotate(
-        num_part=Cast(Substr('transaction_number', 13, 5), IntegerField())
+        num_part=Cast(Substr('transaction_number', Length('transaction_number') - 4,5), IntegerField())
     ).aggregate(max_value=Max('num_part'))['max_value'] or 0) + 1).zfill(5)
-
 
 def handle_empty_cell(x):
     if isinstance(x, str):
@@ -4462,6 +4465,7 @@ def storeTransactionAdd(request):
                 if(int(request.POST['with_purchase_job_order']) == 2):
                     storeTransactionHeader.job_order_id =  request.POST[
                         'purchase_job_order_header_id']
+               
                 storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                     "${CURRENT_YEAR}", current_year).replace(
                     "${AI_DIGIT_5}", ai_digit_5()).replace(
@@ -5993,7 +5997,7 @@ def selfJobOrderReciept(request):
                 "${AI_DIGIT_5}", ai_digit_5()).replace(
                 "${transaction_type_id}", str(transaction_type.id).zfill(2))
 
-            storeTransactionHeader.transaction_date= date.today()
+            storeTransactionHeader.transaction_date= request.POST['transaction_date']
             storeTransactionHeader.job_order_id = id
             storeTransactionHeader.creator_id = userId
             storeTransactionHeader.save()
