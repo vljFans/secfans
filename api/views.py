@@ -8646,6 +8646,7 @@ def reportInventorySummary(request):
     from_date = request.POST.get('from_date')
     to_date = request.POST.get('to_date')
     store_id = request.POST.get('store_id')
+    vendor_id = request.POST.get('vendor_id',None)
     data = []
     total_stockOut = 0.00
     total_stockIn = 0.00
@@ -8653,6 +8654,7 @@ def reportInventorySummary(request):
     try:
         # Determine the queryset based on the request method
         if request.method == 'GET':
+            
             store_items = models.Store_Transaction_Detail.objects.filter(
                 status=1,
                 deleted=0
@@ -8844,6 +8846,7 @@ def reportInventoryStorewise(request):
         total_material_issue = Decimal('0.00')
         total_material_receipt = Decimal('0.00')
         blocked_quantity = Decimal('0.00')
+        vendor_id = request.POST.get('vendor_id',None)
         # Handle GET request
         if request.method == 'GET':
             store_items = list(
@@ -8861,17 +8864,26 @@ def reportInventoryStorewise(request):
                     store__vendor__isnull=True
                 )
             else:
-                store_items = models.Store_Item.objects.filter(
-                    item__item_type__item_category_id=item_cat_id,
+                if vendor_id is not None and (vendor_id != "" and vendor_id !="           ") :
+                    
+                    store_items = models.Store_Item.objects.filter(store__vendor_id = vendor_id)
+
+                else:
+                    store_items = models.Store_Item.objects.filter(
                     store__vendor__isnull=False
                 )
+                store_items = store_items.filter(
+                    item__item_type__item_category_id=item_cat_id,
+                    
+                )
+       
             store_items = list(
                 store_items.values(
                     'pk', 'on_hand_qty', 'item__item_type__item_category__name',
                     'item__price', 'store__name', 'item__name', 'item_id'
                 )
             )
-
+           
         # Check if no items were found
         if not store_items:
             context.update({
@@ -8882,6 +8894,7 @@ def reportInventoryStorewise(request):
 
         # Process store items
         for store_item in store_items:
+            print(8896)
             total_material_issue = Decimal('0.00')
             total_material_receipt = Decimal('0.00')
             blocked_quantity = Decimal('0.00')
@@ -8951,10 +8964,11 @@ def reportInventoryStorewise(request):
 
     except Exception as e:
         # Log the exception for debugging purposes
-        # print(f"Error: {e}")
+        print(f"Error: {e}")
 
         # Return internal server error
         context.update({
+
             'status': 500,
             'message': "Internal Server Error",
         })

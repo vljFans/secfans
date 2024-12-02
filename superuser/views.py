@@ -1597,7 +1597,9 @@ def reportInventorySummary(request):
 
 @login_required
 def reportInventoryStorewise(request):
+    vendors = models.Vendor.objects.all()
     context.update({
+        'vendors': vendors,
         'page_title': "Inventory Storewise",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports"}, {'name': "Inventory"}, {'name': "Inventory Storewise", 'url': reverse('superuser:reportInventoryStorewise')}]
     })

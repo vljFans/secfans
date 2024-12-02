@@ -52,6 +52,18 @@
                     </select>
                 </div>
             </div>
+            <div class="col-md-4 mb-3 vendor" hidden>
+                <label>Vendor</label>
+                <div class="input-group">
+                    <select class="custom-select selectpicker" id="vendor_id" name="vendor_id" disabled>
+                        <option value="           ">Choose...</option>
+                        {% for vendor in vendors %}
+                        <option value="{{vendor.pk}}">{{vendor.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
             <div class="col-md-4 mb-3">
                 <label>Item Category<span class="required-indicator">*</span></label>
                 <div class="input-group">
@@ -251,6 +263,7 @@
             success: function (response) {
                 if (response.status == 200) {
                     var table_html = ``;
+                    
                     $.each(response.page_items, function (storeName, storeData) {
                         table_html += `
                             <h5 style="padding: 20px;">${storeName}</h5>`
@@ -262,7 +275,7 @@
                                         <th>#</th>
                                         <th>Item Category</th>
                                         <th>Item</th>
-                                        <th>On Hand Quantity</th>
+                                        <th>In Hand Quantity</th>
                                         <th>value</th>
                                     </tr>
                                 </thead>
@@ -277,12 +290,12 @@
                                         <th>#</th>
                                         <th>Item Category</th>
                                         <th>Item</th>
-                                        <th>On Hand Quantity</th>
-                                        <th>Total Issued</th>
-                                        <th>Wip Issued Quantity</th>
-                                        <th>WIP Delivered Quantity</th>
-                                        <th>Actual on hand quantity</th>
+                                        <th>In Hand Quantity</th>
                                         <th>value</th>
+                                        <th>Quantity Allocated</th>
+                                        <th>WIP</th>
+                                        <th>Quantity Available For Further Allocation</th>
+                                        
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -309,11 +322,11 @@
                                     <td>${transaction.item_category}</td>
                                     <td>${transaction.item}</td>
                                     <td>${+transaction.on_hand_qty}</td>
-                                    <td>${+transaction.issue_Quantity}</td>
+                                    <td>${transaction.value}</td>
                                     <td>${+transaction.Wip_issued_Quantity}</td>
                                     <td>${+transaction.Wip_manufacture_Quantity}</td>
                                     <td>${+transaction.actual_onhand}</td>
-                                    <td>${transaction.value}</td>
+                                   
                                     </tr>
                                 `;
                             }
@@ -469,6 +482,20 @@
         }
     });
 
+    $(document).on('change','#store_type',function(){
+        let store_type = $('#store_type').val()
+       
+        if (store_type == 'inHouse'){
+           
+            $('.vendor ').attr('hidden','true')
+            $('#vendor_id').attr('disabled','true')
+        }
+        else{
+            
+            $('.vendor ').removeAttr('hidden')
+            $('#vendor_id').removeAttr('disabled')
+        }
+    })
    
 </script>
 {% endblock %}
