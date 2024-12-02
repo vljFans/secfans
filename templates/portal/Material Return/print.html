@@ -1,0 +1,229 @@
+{% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+    <title>{{page_title}}</title>
+    <style type="text/css">
+        body {
+            position: absolute;
+            top: 2%;
+            left: 2%;
+            right: 2%;
+        }
+
+        table,
+        th,
+        tr,
+        td {
+            border: 1px solid rgb(195, 195, 195);
+        }
+
+        tr,
+        th,
+        td {
+            font-family: sans-serif;
+            font-size: 12px;
+            padding: 7px;
+            text-align: left;
+        }
+
+        .fs-16 {
+            font-size: 16px;
+            
+        }
+
+        .fs-10 {
+            font-size: 10px;
+            
+        }
+        .fs-8 {
+            font-size: 8px;
+            
+        }
+
+        .fs-11 {
+            font-size: 11px;
+        }
+
+        .upperTab{
+            margin-left: 0px;
+            margin-right:0px;
+            padding: 0px;
+           }
+    </style>
+</head>
+
+<body >
+    <div style="text-align: center; width: 100%; padding-left: 150px;">
+        <table style="border-width:0px; border-spacing:0px;width: 100%;">
+        <tr>
+            <td style=" border: white; text-align: center; padding-left: 10px;" colspan="4"><strong class="fs-16">{{ page_title|upper }}</strong></td>
+            <td style=" border: white; margin-left: 600px;" colspan="2"><p >(ORIGINAL FOR RECIPIENT)</p></td>
+        </tr>
+        </table>     
+    </div>
+    <div style="border: 1px solid black;">
+        <div style="width: 100%; ">
+            <table style="border-width:0px; border-spacing:0px; width: 100%;">
+                <tr>
+                    <td style="width:60%; margin-top: -10px;">
+                        <strong>{{ config.client_name }}</strong><br>
+                        {{ config.client_address }}<br>
+                        Ph. – {{ config.client_contact }}<br>
+                        Works – {{ config.client_work_address }}<br>
+                        GST - {{ config.client_gst }}
+                    </td>
+                    <td colspan="10" rowspan="6" style="width:40%; padding: 0px;">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td>Transaction No.<br>
+                                    <strong>{{ material_return.transaction_number }}</strong>
+                                </td>
+                                <td>Transaction Date.<br>
+                                    <strong>{{ material_return.transaction_date }}</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Reference No.<br>(Invoice/Challan No.)<br>
+                                    <strong>{{ material_return.invoice_challan }}</strong>
+                                </td>
+                                <td>Other References<br>(Inspection No.)<br>
+                                    <strong>{{ material_return.grn_inspection.transaction_number }}</strong>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>Dispatch Doc No.<br>
+                                    <strong>{{material_return.dispatch_no}}</strong>
+                                </td>
+                                <td><strong></strong></td>
+                            </tr>
+                            <tr>
+                                <td>Destination<br>
+                                    <strong>{{ material_return.destination }}</strong>
+                                </td>
+                                <td>Motor Vehicle No<br>
+                                    <strong>{{ material_return.vehicle }}</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">Nature of Processing<br>
+                                    <strong></strong>
+                                    <br>
+                                    <br>
+                                    <br>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span style="text-decoration: underline;">Party Name</span><br>
+                        {% if material_return.vendor %}
+                        <strong>{{ material_return.vendor.name }}</strong>
+                        <p style="margin-top: 0px;">{{ material_return.vendor.address }}</p>
+                        <p style="margin-top: -5px;">
+                            {{ material_return.vendor.country.name }} &nbsp; 
+                            {{ material_return.vendor.state.name }} &nbsp; 
+                            {{ material_return.vendor.city.name }}
+                        </p>
+                        <p style="margin-top: -5px;">{{ material_return.vendor.pin }}</p>
+                        <p style="margin-top: -5px;"><span>GST No:</span> {{ material_return.vendor.gst_no }}</p>
+                        {% else %}
+                        <strong>Self</strong>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        
+            <div>
+                <div style="text-align: center;">
+                    <h4><span style="text-decoration: underline;">Details Of Material To Be Returned</span></h4>
+                </div>
+                <div>
+                    <table style="border-width:0px; border-spacing:0px; width: 100%;">
+                        <tr>
+                            <th>Sl No</th>
+                            <th>Description of Goods</th>
+                            <th>HSN/SAC</th>
+                            <th>Return Quantity</th>
+                            <th>UOM</th>
+                        </tr>
+                        {% for details in material_return.store_transaction_detail_set.all %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ details.item.name }}</td>
+                            <td>{{ details.item.hsn_code }}</td>
+                            <td>{{ details.quantity }}</td>
+                            <td>{{ details.item.uom.name }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr>
+                            <td>Total:</td>
+                            <td></td>
+                            <td></td>
+                            <td>{{ material_return.total_amount }}</td>
+                            <td></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        
+            {% if material_return.notes %}
+            <div style="border: 2px solid black; padding: 10px; margin-top: 50px; margin-left: 5px; width: 50%;">
+                <strong>Note:</strong><br>
+                <p style="margin: 0; padding-left: 10px;">
+                    {{ material_return.notes }}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- <table style="border-width:0px; border-spacing:0px; width: 100%;">
+            <tr>
+                <td rowspan="3" colspan="4" style="width:40%;"><strong class="fs-16">{{client_name}}.</strong><br>
+                    {{client_address}},<br>
+                    Ph. – {{client_contact}}<br>
+                    Works – {{client_work_address}}
+                </td>
+               
+        </table> -->
+        <div>
+            <table style="border-width:0px; border-spacing:0px; width:50%; padding-top: 200px; padding-left: 80px; margin-left: 346px;">
+                <tr>
+                    <td  colspan="2" style="text-align: center;"><p style="float: right; margin-top: 0px">for {{config.client_name}}</p>
+                    <br>
+                    
+                    <br>
+                    <p style="text-align: center;"> Authorised Signatory</p>
+                    </td>
+                </tr>
+             </table>
+        </div>
+    </div>
+</body>
+<footer>
+    <div>
+        <table style=" border-width:0px; border-spacing:0px; width:50%; padding-left: 80px; margin-left: 80px;">
+           <tr>
+               <td rowspan="10" style="text-align: center; border: white;"> SUBJECT TO KOLKATA JURISDICTION <br>
+                   This is a Computer Generated Document
+               </td>
+           </tr>
+        </table>
+    </div>
+     
+</footer>
+
+
+</html>
+
+<script>
+    $(document).ready(function () {
+        window.print();
+       
+    });
+</script>

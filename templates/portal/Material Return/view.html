@@ -48,7 +48,8 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <!-- <h6 class="card-header-title tx-13 mb-0">{{parent_page_title}} {{page_title}}</h6> -->
-                            <h6 class="card-header-title tx-13 mb-0">Item Details of {{material_return.transaction_number}}</h6>
+                            <h6 class="card-header-title tx-13 mb-0"><span>Item Details of </span> <Span>{{material_return.transaction_number}}</Span> &nbsp; &nbsp; <span>Return Date: </span> <Span>{{material_return.transaction_date}}</Span></h6><br>
+                            <h6 class="card-header-title tx-13 mb-0"><span>Invoice/Challan No</span> <Span>{{material_return.invoice_challan}}</Span> &nbsp; &nbsp; <span>Destination: </span>  <span>{{material_return.destination}}</span> <span></span></h6>
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
@@ -78,6 +79,13 @@
                                 </tr>
                                 {% endfor %}
                             </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td>Total: </td>
+                                    <td></td>
+                                    <td>{{material_return.total_amount|floatformat}}</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                     <nav>

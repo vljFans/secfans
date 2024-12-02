@@ -1298,6 +1298,21 @@ def materialReturnView(request,id):
 
     return render(request, 'portal/Material Return/view.html', context)
 
+@login_required
+def materialReturnPrint(request,id):
+    configList = models.Configuration_User.objects.first()
+    material_return = models.Store_Transaction.objects.prefetch_related('store_transaction_detail_set').get(pk=id)
+    context.update({
+        'material_return': material_return,
+        'config': configList,
+        'page_title': "Material Return",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Material Return", 'url': reverse('superuser:materialReturnList')},
+                        {'name': "View"}]
+    })
+
+    return render(request, 'portal/Material Return/print.html', context)
+
 # on transit transaction --- developed by saswata
 
 # material out
@@ -1582,7 +1597,9 @@ def reportInventorySummary(request):
 
 @login_required
 def reportInventoryStorewise(request):
+    vendors = models.Vendor.objects.all()
     context.update({
+        'vendors': vendors,
         'page_title': "Inventory Storewise",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Reports"}, {'name': "Inventory"}, {'name': "Inventory Storewise", 'url': reverse('superuser:reportInventoryStorewise')}]
     })

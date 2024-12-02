@@ -17,7 +17,6 @@ from datetime import datetime, timedelta,timezone,date
 from django.utils.timezone import now
 from openpyxl import Workbook, load_workbook
 from django.db import transaction
-from django.db.models import Q
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from pathlib import Path
@@ -28,7 +27,7 @@ import environ
 import csv
 from fpdf import FPDF
 from django.db.models import Avg, Count, Min, Sum , Case, When, DecimalField, Q, F, IntegerField, Max, Func
-from django.db.models.functions import Substr, Cast
+from django.db.models.functions import Substr, Cast, StrIndex, Length
 from fractions import Fraction
 import pandas as pd
 from django.contrib.auth.models import Permission
@@ -56,11 +55,15 @@ class CustomPaginator:
         return math.ceil(len(self.items) / self.per_page)
 
 
+# def ai_digit_5():
+#     return str((models.Store_Transaction.objects.annotate(
+#         num_part=Cast(Substr('transaction_number', 13, 5), IntegerField())
+#     ).aggregate(max_value=Max('num_part'))['max_value'] or 0) ).zfill(5)
+
 def ai_digit_5():
     return str((models.Store_Transaction.objects.annotate(
-        num_part=Cast(Substr('transaction_number', 13, 5), IntegerField())
+        num_part=Cast(Substr('transaction_number', Length('transaction_number') - 4,5), IntegerField())
     ).aggregate(max_value=Max('num_part'))['max_value'] or 0) + 1).zfill(5)
-
 
 def handle_empty_cell(x):
     if isinstance(x, str):
@@ -4462,6 +4465,7 @@ def storeTransactionAdd(request):
                 if(int(request.POST['with_purchase_job_order']) == 2):
                     storeTransactionHeader.job_order_id =  request.POST[
                         'purchase_job_order_header_id']
+               
                 storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                     "${CURRENT_YEAR}", current_year).replace(
                     "${AI_DIGIT_5}", ai_digit_5()).replace(
@@ -5993,7 +5997,7 @@ def selfJobOrderReciept(request):
                 "${AI_DIGIT_5}", ai_digit_5()).replace(
                 "${transaction_type_id}", str(transaction_type.id).zfill(2))
 
-            storeTransactionHeader.transaction_date= date.today()
+            storeTransactionHeader.transaction_date= request.POST['transaction_date']
             storeTransactionHeader.job_order_id = id
             storeTransactionHeader.creator_id = userId
             storeTransactionHeader.save()
@@ -7093,6 +7097,7 @@ def materialReturnAdd(request):
             'message': "Reason or return date has not been provided."
         })
         return JsonResponse(context)
+    total_amount = 0.00
     try:
         with transaction.atomic():
             # Reason = On excess issue of items against a job
@@ -7110,6 +7115,7 @@ def materialReturnAdd(request):
                     "${transaction_type_id}", str(transaction_type.id).zfill(2))
                 material_return.transaction_date = request.POST['return_date']
                 material_return.job_order=material_issue.job_order
+
                 material_return.save()
 
                 in_house_store=models.Store_Transaction_Detail.objects.filter(store_transaction_header=material_issue).first().store
@@ -7156,6 +7162,17 @@ def materialReturnAdd(request):
                     "${AI_DIGIT_5}", ai_digit_5()).replace(
                     "${transaction_type_id}", str(transaction_type.id).zfill(2))
                 material_return.transaction_date = request.POST['return_date']
+                material_return.destination = request.POST['destination']
+                material_return.vehicle = request.POST['Vehicle_no']
+                material_return.dispatch_no = request.POST['dispatch_no']
+                if request.POST.get('invoice_challan_no',None):
+                    material_return.invoice_challan = request.POST['invoice_challan_no']
+                if request.POST.get('note',None):
+                    material_return.notes = request.POST['note']
+                if request.POST.get('grn_inspection_no',None):
+                    material_return.grn_inspection_id = request.POST['grn_inspection_no']
+                if request.POST.get('dispatch_no',None):
+                    material_return.dispatch_no = request.POST['dispatch_no']    
                 material_return.save()
 
                 store_transaction_details = []
@@ -7169,6 +7186,9 @@ def materialReturnAdd(request):
                                 quantity=request.POST.getlist('reject_quantity')[i]
                             )
                         )
+                        total_amount += float(request.POST.getlist('reject_quantity')[i])
+                material_return.total_amount = total_amount
+                material_return.save()
                 models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
             userId = request.COOKIES.get('userId', None)
             user_log_details_add(userId,'Material Return Add')
@@ -8464,6 +8484,9 @@ def reportItemTrackingReport(request):
 
     item = models.Item.objects.filter(pk=item_id)
     store = models.Store.objects.filter(pk=store_id)
+    total_quantity = Decimal(0.00)
+    total_reciept = Decimal(0.00)
+    total_out = Decimal(0.00)
     data = []
     if item.exists():
         item = item.first()
@@ -8475,15 +8498,32 @@ def reportItemTrackingReport(request):
             created_at__range=(from_date, to_date + timedelta(days=1)),  # Include to_date
         ).filter(store_transaction_header__status=1,store_transaction_header__deleted=0).select_related('store_transaction_header', 'store_transaction_header__transaction_type')
 
+        
         # Group store_transaction_details by store
         for store_transaction_detail in store_transaction_details:
+            reciept_quantity = Decimal(0.00)
+            out_quantity = Decimal(0.00)
+            if  (store_transaction_detail.store_transaction_header.transaction_type.name == 'MIS' or 
+            store_transaction_detail.store_transaction_header.transaction_type.name == 'MR' or 
+            store_transaction_detail.store_transaction_header.transaction_type.name == 'MOUT' or  
+            store_transaction_detail.store_transaction_header.transaction_type.name == 'MIST' or  
+            store_transaction_detail.store_transaction_header.transaction_type.name == 'MIV' 
+            ):
+                out_quantity = store_transaction_detail.quantity
+                total_out += out_quantity
+            else:
+                reciept_quantity = store_transaction_detail.quantity
+                total_reciept += reciept_quantity
             data.append({
-                'quantity': store_transaction_detail.quantity,
+                'reciept_quantity': reciept_quantity ,
+                'out_quantity' : out_quantity,
                 'rate': store_transaction_detail.rate,
                 'amount': store_transaction_detail.amount,
                 'gst_percentage': store_transaction_detail.gst_percentage,
                 'amount_with_gst': store_transaction_detail.amount_with_gst,
                 'transaction_number': store_transaction_detail.store_transaction_header.transaction_number,
+                'transaction_id' : store_transaction_detail.store_transaction_header_id,
+                'invoice_challan_no' : store_transaction_detail.store_transaction_header.invoice_challan if store_transaction_detail.store_transaction_header.invoice_challan else '---',
                 'transaction_type': store_transaction_detail.store_transaction_header.transaction_type.name,
                 'updated_at': store_transaction_detail.updated_at.date(),
                 'transaction_date' : store_transaction_detail.store_transaction_header.transaction_date
@@ -8493,9 +8533,11 @@ def reportItemTrackingReport(request):
     context.update({
         'status': 200,
         'message': "Items Fetched Successfully.",
-        'page_items': data,
+        'total_reciept': str(total_reciept),
+        'total_out' : str(total_out),
+        'page_items': data
+        
     })
-
     return JsonResponse(context)
 
 
@@ -8608,6 +8650,7 @@ def reportInventorySummary(request):
     from_date = request.POST.get('from_date')
     to_date = request.POST.get('to_date')
     store_id = request.POST.get('store_id')
+    vendor_id = request.POST.get('vendor_id',None)
     data = []
     total_stockOut = 0.00
     total_stockIn = 0.00
@@ -8615,6 +8658,7 @@ def reportInventorySummary(request):
     try:
         # Determine the queryset based on the request method
         if request.method == 'GET':
+            
             store_items = models.Store_Transaction_Detail.objects.filter(
                 status=1,
                 deleted=0
@@ -8806,6 +8850,7 @@ def reportInventoryStorewise(request):
         total_material_issue = Decimal('0.00')
         total_material_receipt = Decimal('0.00')
         blocked_quantity = Decimal('0.00')
+        vendor_id = request.POST.get('vendor_id',None)
         # Handle GET request
         if request.method == 'GET':
             store_items = list(
@@ -8823,17 +8868,26 @@ def reportInventoryStorewise(request):
                     store__vendor__isnull=True
                 )
             else:
-                store_items = models.Store_Item.objects.filter(
-                    item__item_type__item_category_id=item_cat_id,
+                if vendor_id is not None and (vendor_id != "" and vendor_id !="           ") :
+                    
+                    store_items = models.Store_Item.objects.filter(store__vendor_id = vendor_id)
+
+                else:
+                    store_items = models.Store_Item.objects.filter(
                     store__vendor__isnull=False
                 )
+                store_items = store_items.filter(
+                    item__item_type__item_category_id=item_cat_id,
+                    
+                )
+       
             store_items = list(
                 store_items.values(
                     'pk', 'on_hand_qty', 'item__item_type__item_category__name',
                     'item__price', 'store__name', 'item__name', 'item_id'
                 )
             )
-
+           
         # Check if no items were found
         if not store_items:
             context.update({
@@ -8844,6 +8898,7 @@ def reportInventoryStorewise(request):
 
         # Process store items
         for store_item in store_items:
+            print(8896)
             total_material_issue = Decimal('0.00')
             total_material_receipt = Decimal('0.00')
             blocked_quantity = Decimal('0.00')
@@ -8913,10 +8968,11 @@ def reportInventoryStorewise(request):
 
     except Exception as e:
         # Log the exception for debugging purposes
-        # print(f"Error: {e}")
+        print(f"Error: {e}")
 
         # Return internal server error
         context.update({
+
             'status': 500,
             'message': "Internal Server Error",
         })

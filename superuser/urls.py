@@ -132,6 +132,7 @@ urlpatterns = [
     path('material-return-add',views.materialReturnAdd, name='materialReturnAdd'),
     path('material-return-edit/<int:id>',views.materialReturnEdit, name='materialReturnEdit'),
     path('material-return-view/<int:id>',views.materialReturnView, name='materialReturnView'),
+    path('material-return-print/<int:id>',views.materialReturnPrint, name='materialReturnPrint'),
 
     # path on transit transaction ---developed by saswata
 

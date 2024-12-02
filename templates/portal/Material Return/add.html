@@ -78,7 +78,36 @@
                                 required>
 
                             </div>
+                            <div class="col-md-2 mb-3 invoice_challan_no_hidden" hidden>
+                                <label> Invoice/Challan No  <span class="required-indicator">*</span></label>
+                                <input type="text" name="invoice_challan_no" class="form-control invoice_challan_no" placeholder="invoice Challan no"
+                                 readonly>
+
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label> Vehicle No<span class="required-indicator">*</span></label>
+                                <input type="text" name="Vehicle_no" class="form-control Vehicle_no" placeholder="Vehicle no"
+                                required>
+
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label>Desitination<span class="required-indicator">*</span></label>
+                                <input type="text" name="destination" class="form-control destination" placeholder="destination"
+                                required>
+
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label>Dispatch Doc no.<span class="required-indicator">*</span></label>
+                                <input type="text" name="dispatch_no" class="form-control dispatch_no" placeholder="dispatch_no"
+                                required>
+
+                            </div>
                             <div class="col-md-12 mb-3 items_div"></div>
+                            <div class="col-md-12 mb-3 items_div">
+                                <label>Note</label>
+                                <textarea name="note" class="form-control note" placeholder="note" required></textarea>
+                            </div>
+                            <input type="hidden" name="grn_inspection_no" class="form-control grn_inspection_no">
                         </div>
                         {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
                         <button class="btn btn-success submit-btn" type="submit">Submit</button>
@@ -125,6 +154,7 @@
     });
 
     $(document).on('change', '#reason', function () {
+        $('.invoice_challan_no_hidden').attr('hidden')
         if ($(this).val()==="1"){
             let options_text=`
                 <label>Job Order<span class="required-indicator">*</span></label>
@@ -144,6 +174,7 @@
             });
         }
         if ($(this).val()==="2"){
+            
             let options_text=`
                 <label>GRN Inspection<span class="required-indicator">*</span></label>
                 <div class="input-group">
@@ -207,6 +238,7 @@
     })
     
     $(document).on('change', '.grn_inspection', function () {
+        $('.invoice_challan_no_hidden').removeAttr('hidden') 
         let job_order_id=$(this).val()
         $.ajax({
             url: "{% url 'api:getGrnInspectionTransactionDetail' %}?insId=" + $(".grn_inspection").val() + "&ins_done=1",
@@ -219,6 +251,9 @@
                 if (response.status == 200) {
                     $(".submit-btn").prop("disabled",   false);
                     let items_div=``;
+                    $('.invoice_challan_no').removeAttr('hidden')
+                    $('.invoice_challan_no').val(response.page_items[0].grn_inspection_transaction_header__invoice_challan)
+                    $('.grn_inspection_no').val( response.page_items[0].grn_inspection_transaction_header_id)
                     for (const x of response.page_items){
                         items_div+=`
                         <div class="form-row">
