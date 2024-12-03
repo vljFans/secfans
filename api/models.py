@@ -404,6 +404,7 @@ class Store(models.Model):
     manager_name = models.CharField(max_length=50, blank=True, null=True)
     vendor = models.OneToOneField(Vendor, on_delete=models.CASCADE, blank=True, null=True)
     store_type = models.CharField(max_length=60, blank=False, null=False)
+    logical_grn_store = models.SmallIntegerField(default=0) # 1 for logiaclgrn input store ; 2 logicalgrn output store 
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)
