@@ -2674,7 +2674,7 @@ def storeList(request):
     keyword = request.GET.get('keyword', None)
     
     if id is not None and id != "":
-        store = list(models.Store.objects.filter(pk=id)[:1].values(
+        store = list(models.Store.objects.filter(logical_grn_store=0).filter(pk=id)[:1].values(
             'pk', 'name', 'address', 'contact_name', 'contact_no', 'contact_email', 'manager_name', 'pin', 'city__name', 'state__name', 'country__name'))
         context.update({
             'status': 200,
@@ -2684,10 +2684,10 @@ def storeList(request):
    
     else:
         if keyword is not None and keyword != "":
-            stores = list(models.Store.objects.filter(Q(name__icontains=keyword) | Q(address__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(contact_no__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(manager_name__icontains=keyword) | Q(pin__icontains=keyword)).filter(
+            stores = list(models.Store.objects.filter(logical_grn_store=0).filter(Q(name__icontains=keyword) | Q(address__icontains=keyword) | Q(contact_name__icontains=keyword) | Q(contact_no__icontains=keyword) | Q(contact_email__icontains=keyword) | Q(manager_name__icontains=keyword) | Q(pin__icontains=keyword)).filter(
                 status=1, deleted=0).values('pk', 'name', 'address', 'contact_name', 'contact_no', 'contact_email', 'manager_name', 'pin', 'city__name', 'state__name', 'country__name'))
         else:
-            stores = list(models.Store.objects.filter(status=1, deleted=0).values('pk', 'name', 'address', 'contact_name',
+            stores = list(models.Store.objects.filter(logical_grn_store=0).filter(status=1, deleted=0).values('pk', 'name', 'address', 'contact_name',
                           'contact_no', 'contact_email', 'manager_name', 'pin', 'city__name', 'state__name', 'country__name'))
 
 
@@ -2701,7 +2701,7 @@ def storeList(request):
 
         if store_type is not None :
             if store_type=="InHouse":
-                stores = list(models.Store.objects.filter(status=1, deleted=0,vendor_id=None).values('pk', 'name', 'address', 'contact_name',
+                stores = list(models.Store.objects.filter(logical_grn_store=0).filter(status=1, deleted=0,vendor_id=None).values('pk', 'name', 'address', 'contact_name',
                               'contact_no', 'contact_email', 'manager_name', 'pin', 'city__name', 'state__name', 'country__name'))
                 context.update({
                     'status': 200,
@@ -2711,7 +2711,7 @@ def storeList(request):
                 return JsonResponse(context)
 
             if store_type=="Vendor":
-                stores = list(models.Store.objects.filter(status=1, deleted=0,vendor_id__isnull=False).values('pk', 'name', 'address', 'contact_name',
+                stores = list(models.Store.objects.filter(logical_grn_store=0).filter(status=1, deleted=0,vendor_id__isnull=False).values('pk', 'name', 'address', 'contact_name',
                               'contact_no', 'contact_email', 'manager_name', 'pin', 'vendor_id', 'city__name', 'state__name', 'country__name'))
                 context.update({
                     'status': 200,
@@ -4345,7 +4345,9 @@ def storeTransactionAdd(request):
                     models.Store_Transaction_Detail.objects.bulk_create(storeTransactionDetail)
                 storeTransactionVhead.total_amount = amount_total
                 storeTransactionVhead.save()      
+            
             storeTransactionDetail =[]
+            
             if "1" in inspect:
                 # print("313s4")
                 grn_inspection_transaction_count = models.Grn_Inspection_Transaction.objects.all().count()
