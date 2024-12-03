@@ -8385,18 +8385,19 @@ def purchaseBillDetailsExport(request):
         ws['K1'] = "Ref Dt"
         ws['L1'] = "GST@ 0%"
         ws['M1'] = "GST@ 05%"
-        ws['N1'] = "GST@ 18%"
-        ws['O1'] = "GST@ 28%"
-        ws['P1'] = "Output Igst Amt"
-        ws['Q1'] = "Output Cgst Amt"
-        ws['R1'] = "Output Sgst Amt"
-        ws['S1'] ="Gst Cess Amt"
-        ws['T1'] = "LESS DISCOUNT"
-        ws['U1'] = "TCS PAYBLE"
-        ws['V1'] ="TDS RECEIVABLE"
-        ws['W1'] = "RoundOffAmt :$_11"
-        ws['X1'] = "Tran Total"
-        ws['Y1'] = "VchNarration : $_13"
+        ws['N1'] = "GST@ 12%"
+        ws['O1'] = "GST@ 18%"
+        ws['P1'] = "GST@ 28%"
+        ws['Q1'] = "Output Igst Amt"
+        ws['R1'] = "Output Cgst Amt"
+        ws['S1'] = "Output Sgst Amt"
+        ws['T1'] ="Gst Cess Amt"
+        ws['U1'] = "LESS DISCOUNT"
+        ws['V1'] = "TCS PAYBLE"
+        ws['W1'] ="TDS RECEIVABLE"
+        ws['X1'] = "RoundOffAmt :$_11"
+        ws['Y1'] = "Tran Total"
+        ws['Z1'] = "VchNarration : $_13"
 
 
         # ws['A1'] = "Vendor Name"
@@ -8428,7 +8429,7 @@ def purchaseBillDetailsExport(request):
                 each['purchase_bill_header__vendor__address'],
                 " ",
                 each['purchase_bill_header__vendor__gst_no'],
-                each['purchase_bill_header__vendor__gst_no'],
+                each['purchase_bill_header__vendor__state__name'],
                 each['purchase_bill_header__invoice_no'],
                 " ",
                 each['gst_0'],
