@@ -8361,7 +8361,7 @@ def purchaseBillDetailsExport(request):
                 default=0,
                 output_field=DecimalField()
             ))
-        ).order_by('purchase_bill_header_id')[:25]
+        ).order_by('purchase_bill_header_id')
 
         # Create directory if not exists
         directory_path = settings.MEDIA_ROOT + '/purchase_transition_tally/'
