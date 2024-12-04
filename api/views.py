@@ -4259,7 +4259,8 @@ def storeTransactionAdd(request):
     check1 = 0
     test =""
     check2 = 0
-    # # print(request.POST)
+    print(request.POST)
+    exit()
     if not request.POST['vendor_id'] or not request.POST['transaction_date'] or not request.POST['total_amount']:
         context.update({
             'status': 586,
@@ -8286,7 +8287,7 @@ def purchaseBillDetailsExport(request):
         # Fetch page items
         page_items = models.Purchase_Bill.objects.filter(status=1, deleted=0, purchase_tally_report=0)
         page_items_exist = page_items.exists()
-        
+       
         # If no page items exist, return a response indicating no transactions left
         if not page_items_exist:
             return JsonResponse({
@@ -8361,7 +8362,7 @@ def purchaseBillDetailsExport(request):
                 default=0,
                 output_field=DecimalField()
             ))
-        ).order_by('purchase_bill_header_id')[:25]
+        ).order_by('purchase_bill_header_id')
 
         # Create directory if not exists
         directory_path = settings.MEDIA_ROOT + '/purchase_transition_tally/'
