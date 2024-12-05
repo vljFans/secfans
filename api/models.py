@@ -441,6 +441,7 @@ class Store_Item(models.Model):
         db_table = 'store_items'
         verbose_name_plural = 'store_items'
 
+
 class Bill_Of_Material_Master(models.Model):
     name = models.CharField(max_length=250, blank=True, null=True)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
@@ -887,7 +888,9 @@ class Purchase_Bill(models.Model):
     tds_deduction = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     tcs_percentage = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     tcs_deduction = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    roundof_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    roundof_total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    round_off_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    accet_amount_tax_deduc = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     notes = models.TextField(blank=True, null=True)
     flag = models.SmallIntegerField(default=0)
     purchase_tally_report = models.SmallIntegerField(default=0)

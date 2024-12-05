@@ -100,7 +100,7 @@ urlpatterns = [
     path('store-item-list', views.storeItemList, name='storeItemList'),
     path('store-item-add', views.storeItemAdd, name='storeItemAdd'),
     path('store-item-edit/<int:id>', views.storeItemEdit, name='storeItemEdit'),
-    
+    path('stock-transfer', views.stockTransfer, name='stockTransfer'),
 
     path('store-transaction-list', views.storeTransactionList, name='storeTransactionList'),
     path('store-transaction-add', views.storeTransactionAdd, name='storeTransactionAdd'),
