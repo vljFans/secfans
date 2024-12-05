@@ -32,6 +32,7 @@ from fractions import Fraction
 import pandas as pd
 from django.contrib.auth.models import Permission
 import re
+from django.http import HttpResponse
 
 
 env = environ.Env()
@@ -3960,7 +3961,6 @@ def storeItemExport(request):
             item__name__icontains=keyword) | Q(opening_qty__icontains=keyword)).filter(status=1, deleted=0)
     else:
         page_items = models.Store_Item.objects.filter(status=1, deleted=0)
-
     directory_path = settings.MEDIA_ROOT + '/reports/'
     path = Path(directory_path)
     path.mkdir(parents=True, exist_ok=True)
@@ -8358,7 +8358,6 @@ def purchaseBillDetailsExport(request):
         # LIMIT 0, 25;
         #         Filtered data with aggregations`)
         #------sql-----
-
         filtered_data = models.Purchase_Bill_Details.objects.filter(
             purchase_bill_header__purchase_tally_report=0
         ).values(
@@ -8377,7 +8376,8 @@ def purchaseBillDetailsExport(request):
             'purchase_bill_header__tds_deduction',
             'purchase_bill_header__tcs_deduction',
             'purchase_bill_header__transaction_number',
-            'purchase_bill_header__transaction_date'
+            'purchase_bill_header__transaction_date',
+            'purchase_bill_header__round_off_price'
         ).annotate(
             gst_0=Sum(Case(
                 When(gst_percentage=0, then='gst_amount'),
@@ -8489,26 +8489,32 @@ def purchaseBillDetailsExport(request):
                 each['purchase_bill_header__total_discount_amount'],
                 each['purchase_bill_header__tcs_deduction'],
                 each['purchase_bill_header__tds_deduction'],
-                
-                each['purchase_bill_header__total_gst_amount'],
+                each['purchase_bill_header__round_off_price'],
                 " ",
             ])
-            # print(8058)
+        print(8058)
         # Save the file
         file_path = os.path.join(directory_path, tmpname)
+        
+       # Save the file to the server
         wb.save(file_path)
+
+        # os.chmod(settings.MEDIA_ROOT + '/purchase_transition_tally/' + tmpname, 0o777)
+
         os.chmod(file_path, 0o777)
 
         # Update page items
         page_items.update(purchase_tally_report=1)
 
         filename = settings.MEDIA_URL + 'purchase_transition_tally/' + tmpname
+
         context.update({
             'status': 200,
             'message': 'File generated successfully in server Media :' + filename,
             'file_url': filename
         })
     except Exception as e:
+        print(f'error{e}')
         context.update({
             'status': 546.1,
             'message': "Something went wrong. Please try again."
