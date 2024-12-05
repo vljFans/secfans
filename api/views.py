@@ -8065,7 +8065,8 @@ def getPurchaseBillHeadersList(request):
 @permission_classes([IsAuthenticated])
 def purchaseBillDetailsAdd(request):
     context = {}
-    # # print(request.POST)
+    # print(request.POST)
+   
     # exit()
     try:
         with transaction.atomic():
@@ -8085,25 +8086,36 @@ def purchaseBillDetailsAdd(request):
             purcahse_bill_header.e_way_date = request.POST['e_way_date']
 
             purcahse_bill_header.vechical_no = request.POST['vehicle_no']
-            # # # # # print(purcahse_bill_header.total_igst)
-            purcahse_bill_header.total_gst = request.POST['total_igst'] if float(request.POST['total_igst'])!= 0.00  else (float(request.POST['total_cgst']) + float(request.POST['total_sgst']))
-            purcahse_bill_header.total_igst = request.POST['total_igst']
-            purcahse_bill_header.total_cgst = request.POST['total_cgst']
-            purcahse_bill_header.total_sgst = request.POST['total_sgst']
-            purcahse_bill_header.total_amount = request.POST['total'] # total amount with discount
+            print(purcahse_bill_header.total_igst)
+            purcahse_bill_header.total_gst = Decimal(request.POST['total_igst']) if float(request.POST['total_igst'])!= 0.00  else (Decimal(float(request.POST['total_cgst']) + float(request.POST['total_sgst'])))
+            print(8091)
+            purcahse_bill_header.total_igst = Decimal(request.POST['total_igst'])
+            purcahse_bill_header.total_cgst = Decimal(request.POST['total_cgst'])
+            purcahse_bill_header.total_sgst = Decimal(request.POST['total_sgst'])
+            purcahse_bill_header.total_amount = Decimal(request.POST['total']) # total amount with discount
+            print(8096)
             purcahse_bill_header.notes = request.POST['notes']
-            purcahse_bill_header.total_amount_exclude_discount = request.POST['total_acc']
-            purcahse_bill_header.total_discount = request.POST['total_discount']
-            purcahse_bill_header.total_discount_amount = request.POST['total_discount_amount']
-            purcahse_bill_header.tds_percentage = request.POST['tds_percentage']
-            purcahse_bill_header.tds_deduction = request.POST['tds_deduction']
-            purcahse_bill_header.tcs_percentage = request.POST['tcs_percentage']
-            purcahse_bill_header.tcs_deduction = request.POST['tcs_decuction']
-            purcahse_bill_header.roundof_amount = request.POST['roundof_amount']
-            purcahse_bill_header.total_gst_amount = request.POST['total_amount_with_gst']
+            purcahse_bill_header.total_amount_exclude_discount = Decimal(request.POST['total_acc'])
+            purcahse_bill_header.total_discount = Decimal(request.POST['total_discount'])
+            print(8100)
+            purcahse_bill_header.total_discount_amount = Decimal(request.POST['total_discount_amount'])
+            print((request.POST['tds_percentage']))
+            if request.POST.get('tds_percentage',None):
+                purcahse_bill_header.tds_percentage = Decimal(request.POST['tds_percentage']) 
+            purcahse_bill_header.tds_deduction = Decimal(request.POST['tds_deduction'])
+            if request.POST.get('tcs_percentage',None):
+                purcahse_bill_header.tcs_percentage = Decimal(request.POST['tcs_percentage'])
+            purcahse_bill_header.tcs_deduction = Decimal(request.POST['tcs_decuction'])
+            purcahse_bill_header.accet_amount_tax_deduc =Decimal(request.POST['accet_tds_tcs_de_amount'])
+            purcahse_bill_header.roundof_total_amount =  Decimal(request.POST['roundof_amount'])
+            print(8106)
+            purcahse_bill_header.round_off_price = Decimal(request.POST['accet_tds_tcs_de_amount'].split('.')[1])
+            print(8107)
+            purcahse_bill_header.total_gst_amount = Decimal(request.POST['total_amount_with_gst'])
             purcahse_bill_header.notes = request.POST['notes'] 
-
+            print(8110)
             purcahse_bill_header.save()
+            print(8112)
             
             if(request.POST.get('igst',None)):
                 bill_details = []
@@ -8166,7 +8178,8 @@ def purchaseBillDetailsAdd(request):
             'status': 200,
             'message': "purchase bill added succesfully"
         })
-    except Exception:
+    except Exception as e:
+        print(f"error as {e}")
         context.update({
             'status': 544,
             'message': "Something Went Wrong. Please Try Again."
@@ -8197,16 +8210,19 @@ def purchaseBillDetailsEdit(request):
                 purcahse_bill_header_update.total_cgst = request.POST['total_cgst']
                 purcahse_bill_header_update.total_sgst = request.POST['total_sgst']
             purcahse_bill_header_update.total_amount = request.POST['total']
-            purcahse_bill_header.total_amount_exclude_discount = request.POST['total_acc']
-            purcahse_bill_header.total_discount = request.POST['total_discount']
-            purcahse_bill_header.total_discount_amount = request.POST['total_discount_amount']
-            purcahse_bill_header.tds_percentage = request.POST['tds_percentage']
-            purcahse_bill_header.tds_deduction = request.POST['tds_deduction']
-            purcahse_bill_header.tcs_percentage = request.POST['tcs_percentage']
-            purcahse_bill_header.tcs_deduction = request.POST['tcs_decuction']
-            purcahse_bill_header.roundof_amount = request.POST['roundof_amount']
-            purcahse_bill_header.total_gst_amount = request.POST['total_amount_with_gst']
-            purcahse_bill_header.total_gst = request.POST['total_igst'] if float(request.POST['total_igst'])!= 0.00  else (float(request.POST['total_cgst']) + float(request.POST['total_sgst']))
+            purcahse_bill_header_update.total_amount_exclude_discount = request.POST['total_acc']
+            purcahse_bill_header_update.total_discount = request.POST['total_discount']
+            purcahse_bill_header_update.total_discount_amount = request.POST['total_discount_amount']
+            purcahse_bill_header_update.tds_percentage = request.POST['tds_percentage']
+            purcahse_bill_header_update.tds_deduction = request.POST['tds_deduction']
+            purcahse_bill_header_update.tcs_percentage = request.POST['tcs_percentage']
+            purcahse_bill_header_update.tcs_deduction = request.POST['tcs_decuction']
+            purcahse_bill_header_update.accet_amount_tax_deduc =Decimal(request.POST['accet_tds_tcs_de_amount'])
+            purcahse_bill_header_update.roundof_total_amount =  Decimal(request.POST['roundof_amount'])
+            print(8106)
+            purcahse_bill_header_update.round_off_price = Decimal(request.POST['accet_tds_tcs_de_amount'].split('.')[1])
+            purcahse_bill_header_update.total_gst_amount = request.POST['total_amount_with_gst']
+            purcahse_bill_header_update.total_gst = request.POST['total_igst'] if float(request.POST['total_igst'])!= 0.00  else (float(request.POST['total_cgst']) + float(request.POST['total_sgst']))
             purcahse_bill_header_update.notes = request.POST['notes']
             purcahse_bill_header_update.updated_at = datetime.now()
             purcahse_bill_header_update.save()
@@ -8245,7 +8261,8 @@ def purchaseBillDetailsEdit(request):
             'message': "Purchase bill updated sucessfully"
         })
     
-    except Exception:
+    except Exception as e:
+        print(f"error is {e}")
         context.update({
             'status': 545,
             'message': "Something Went Wrong. Please Try Again."

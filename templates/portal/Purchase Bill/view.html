@@ -187,9 +187,13 @@
                             <label>TCS Deduction</label>
                             <input type="text" class="form-control tcs_decuction" name="tcs_decuction" id="tcs_decuction" value="{{purchase_bill.tcs_deduction|floatformat}}" readonly >
                         </div>
+                        <div class="col-md-3 mb-3 table_form" >
+                            <label>Total Amount After Tcs/Tds Deduction</label>
+                            <input type="text" class="form-control accet_tds_tcs_de_amount" name="accet_tds_tcs_de_amount" id="accet_tds_tcs_de_amount" value="{{purchase_bill.accet_amount_tax_deduc}}" readonly >
+                        </div>
                         <div class="col-md-2 mb-3 table_form" >
-                            <label>Roundof Amount<span class="required-indicator">*</span></label>
-                            <input type="text" class="form-control roundof_amount" name="roundof_amount" value="{{purchase_bill.roundof_amount|floatformat}}" id="roundof_amount" val readonly required>
+                            <label>Round of Total Amount<span class="required-indicator">*</span></label>
+                            <input type="text" class="form-control roundof_amount" name="roundof_amount" value="{{purchase_bill.roundof_total_amount|floatformat}}" id="roundof_amount"  readonly required>
                         </div>
                     </div>
                     <div class="form-row">

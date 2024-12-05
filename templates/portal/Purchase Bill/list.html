@@ -148,7 +148,7 @@
                                 <a id="delete-btn" data-id="${element.pk}" data-name="${element.transaction_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
                                 {% endif %}
                                 {% if request.user.is_superuser == 1 or 'add_purchase_bill'|get_session_permission:request is not None %}
-                                <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
+                                <a hidden href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
                                 {% endif %}
                                 </td>
                             </tr>`;

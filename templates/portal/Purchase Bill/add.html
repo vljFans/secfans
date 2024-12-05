@@ -176,7 +176,11 @@
                                 <input type="text" class="form-control tcs_decuction" name="tcs_decuction" id="tcs_decuction" readonly >
                             </div>
                             <div class="col-md-2 mb-3 table_form" hidden>
-                                <label>Roundof Amount<span class="required-indicator">*</span></label>
+                                <label>Total Amount After Tcs/Tds Deduction</label>
+                                <input type="text" class="form-control accet_tds_tcs_de_amount" name="accet_tds_tcs_de_amount" id="accet_tds_tcs_de_amount" readonly >
+                            </div>
+                            <div class="col-md-2 mb-3 table_form" hidden>
+                                <label>Round of Total Amount<span class="required-indicator">*</span></label>
                                 <input type="text" class="form-control roundof_amount" name="roundof_amount" id="roundof_amount" readonly required>
                             </div>
                             <div class="col-md-12  table_form"  hidden>
@@ -393,6 +397,8 @@
         tdsamnt = tdsamnt ? tdsamnt : 0.00 
         tcsamnt = tcsamnt ? tcsamnt : 0.00
         let roundof_amount = Math.round(total_amount_gst - (tdsamnt + tcsamnt))
+        let accet_tds_tcs_de_amount = total_amount_gst - (tdsamnt + tcsamnt)
+        $('#accet_tds_tcs_de_amount').val(accet_tds_tcs_de_amount)
         $('#roundof_amount').val(roundof_amount)
 
     }
