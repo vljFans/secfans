@@ -915,6 +915,16 @@ def storeTransactionList(request):
 
 
 @login_required
+def stockTransfer(request):
+    stores =models.Store.objects.filter(store_item__isnull=False,).distinct()
+    context.update({
+        'page_title': "Stock Transfer",
+        'stores': stores,
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Item", 'url': reverse('superuser:storeItemList')}, {'name': "Stock Transfer"}]
+    })
+    return render(request, 'portal/Store Item/stockTransfer.html', context)
+
+@login_required
 def storeTransactionAdd(request):
     
     context.update({
