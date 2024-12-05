@@ -450,7 +450,7 @@
         tcsamnt = tcsamnt ? tcsamnt : 0.00
         let roundof_amount = Math.round(total_amount_gst - (tdsamnt + tcsamnt))
         let accet_tds_tcs_de_amount = total_amount_gst - (tdsamnt + tcsamnt)
-        $('#accet_tds_tcs_de_amount').val(accet_tds_tcs_de_amount)
+        $('#accet_tds_tcs_de_amount').val(accet_tds_tcs_de_amount.toFixed(2))
         $('#roundof_amount').val(roundof_amount)
 
     }

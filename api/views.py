@@ -8114,20 +8114,17 @@ def purchaseBillDetailsAdd(request):
             purcahse_bill_header.e_way_date = request.POST['e_way_date']
 
             purcahse_bill_header.vechical_no = request.POST['vehicle_no']
-            print(purcahse_bill_header.total_igst)
             purcahse_bill_header.total_gst = Decimal(request.POST['total_igst']) if float(request.POST['total_igst'])!= 0.00  else (Decimal(float(request.POST['total_cgst']) + float(request.POST['total_sgst'])))
-            print(8091)
             purcahse_bill_header.total_igst = Decimal(request.POST['total_igst'])
             purcahse_bill_header.total_cgst = Decimal(request.POST['total_cgst'])
             purcahse_bill_header.total_sgst = Decimal(request.POST['total_sgst'])
             purcahse_bill_header.total_amount = Decimal(request.POST['total']) # total amount with discount
-            print(8096)
             purcahse_bill_header.notes = request.POST['notes']
             purcahse_bill_header.total_amount_exclude_discount = Decimal(request.POST['total_acc'])
             purcahse_bill_header.total_discount = Decimal(request.POST['total_discount'])
-            print(8100)
+            # print(8100)
             purcahse_bill_header.total_discount_amount = Decimal(request.POST['total_discount_amount'])
-            print((request.POST['tds_percentage']))
+            # print((request.POST['tds_percentage']))
             if request.POST.get('tds_percentage',None):
                 purcahse_bill_header.tds_percentage = Decimal(request.POST['tds_percentage']) 
             purcahse_bill_header.tds_deduction = Decimal(request.POST['tds_deduction'])
@@ -8136,14 +8133,14 @@ def purchaseBillDetailsAdd(request):
             purcahse_bill_header.tcs_deduction = Decimal(request.POST['tcs_decuction'])
             purcahse_bill_header.accet_amount_tax_deduc =Decimal(request.POST['accet_tds_tcs_de_amount'])
             purcahse_bill_header.roundof_total_amount =  Decimal(request.POST['roundof_amount'])
-            print(8106)
-            purcahse_bill_header.round_off_price = Decimal(request.POST['accet_tds_tcs_de_amount'].split('.')[1])
-            print(8107)
+            # print(8106)
+            # print(Decimal(request.POST['accet_tds_tcs_de_amount']))
+            # x= 10/0
+            purcahse_bill_header.round_off_price = Decimal((request.POST['accet_tds_tcs_de_amount'].split('.')[1]))
             purcahse_bill_header.total_gst_amount = Decimal(request.POST['total_amount_with_gst'])
             purcahse_bill_header.notes = request.POST['notes'] 
-            print(8110)
             purcahse_bill_header.save()
-            print(8112)
+           
             
             if(request.POST.get('igst',None)):
                 bill_details = []
