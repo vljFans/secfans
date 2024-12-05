@@ -113,7 +113,7 @@ urlpatterns = [
     path('store-item-delete', views.storeItemDelete, name='storeItemDelete'),
     path('store-item-export', views.storeItemExport, name='storeItemExport'),
     path('store-item-import', views.storeItemImport, name='storeItemImport'),
-
+    path('stock-transfer', views.stockTransfer, name='stockTransfer'),
     # path('store-item-report-export', views.storeItemReportExport, name='storeItemReportExport'),
 
 

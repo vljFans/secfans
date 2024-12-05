@@ -3924,6 +3924,34 @@ def storeItemDelete(request):
     return JsonResponse(context)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def stockTransfer(request):
+    context = {}
+    try:
+        with transaction.atomic():
+            from_store_item=models.Store_Item.objects.get(store_id=request.POST["store_id"], item_id=request.POST["from_item_id"])
+            from_store_item.on_hand_qty-=Decimal(request.POST["quantity"])
+            from_store_item.closing_qty-=Decimal(request.POST["quantity"])
+            from_store_item.save()
+            to_store_item = models.Store_Item.objects.get(store_id=request.POST["store_id"], item_id=request.POST["to_item_id"])
+            to_store_item.on_hand_qty += Decimal(request.POST["quantity"])
+            to_store_item.closing_qty += Decimal(request.POST["quantity"])
+            to_store_item.save()
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Store Transfer completed Successfully."
+        })
+    except Exception:
+        context.update({
+            'status': 588,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
 @api_view(['GET'])
 def storeItemExport(request):
     keyword = request.GET.get('keyword')
