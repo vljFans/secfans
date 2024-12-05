@@ -441,6 +441,7 @@ class Store_Item(models.Model):
         db_table = 'store_items'
         verbose_name_plural = 'store_items'
 
+
 class Bill_Of_Material_Master(models.Model):
     name = models.CharField(max_length=250, blank=True, null=True)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
