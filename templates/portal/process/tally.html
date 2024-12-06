@@ -99,6 +99,15 @@ $(document).on('submit', '#create_form', function (e) {
             $('.submit-btn').text('Processing...');
             $('.submit-btn').prop('disabled', false);
             if (response.status == 200 || response.status == 404  ) {
+                //file download locally
+                if(response.status == 200){
+                    const fileUrl = window.location.origin + '/' + response.file_url;
+                    // Trigger the download
+                    const anchor = document.createElement('a');
+                    anchor.href = fileUrl;
+                    anchor.download = ''; // Optional: Add a default filename if needed
+                    anchor.click(); 
+                }
                 locationAfterMessageStore(response.message, 'success', "{% url 'superuser:purchaseBillTallyReport' %}");
             } else {
                 alert(response.message)
