@@ -4287,8 +4287,8 @@ def storeTransactionAdd(request):
     check1 = 0
     test =""
     check2 = 0
-    print(request.POST)
-    exit()
+    # print(request.POST)
+    # exit()
     if not request.POST['vendor_id'] or not request.POST['transaction_date'] or not request.POST['total_amount']:
         context.update({
             'status': 586,
@@ -8377,7 +8377,8 @@ def purchaseBillDetailsExport(request):
             'purchase_bill_header__tcs_deduction',
             'purchase_bill_header__transaction_number',
             'purchase_bill_header__transaction_date',
-            'purchase_bill_header__round_off_price'
+            'purchase_bill_header__round_off_price',
+            'purchase_bill_header__roundof_total_amount'
         ).annotate(
             gst_0=Sum(Case(
                 When(gst_percentage=0, then='gst_amount'),
@@ -8490,7 +8491,8 @@ def purchaseBillDetailsExport(request):
                 each['purchase_bill_header__tcs_deduction'],
                 each['purchase_bill_header__tds_deduction'],
                 each['purchase_bill_header__round_off_price'],
-                " ",
+                each['purchase_bill_header__roundof_total_amount'],
+                " "
             ])
         print(8058)
         # Save the file

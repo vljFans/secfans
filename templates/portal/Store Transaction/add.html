@@ -319,40 +319,40 @@
             }
         });
     });
-    $(document).on('change','.store_id',function(){
-        let newHtml = `<label for="logical_grn_inspect">Logical Grn</label><br>
-                                        <input type="hidden" name="logical_grn" class="logical_grn" value="0"><input type="checkbox" onclick="this.previousSibling.value=1-this.previousSibling.value" style="transform: scale(2);margin-top: 12px;">`
-        let cls = 'logical_grn_show'
-        let value = $(this).val()
-        $.ajax({
-            url: "{% url 'api:storeList' %}?find_all=2",
-            type: 'GET',
-            data: ({}),
-            headers: {
-                'Authorization': getCookieValue("accessToken")
-            },
-            success: function (response) {
-                if (response.status == 200) {
-                    store_options_text = `<option value="">Choose...</option>`;
-                    for (let index = 0; index < response.page_items.length; index++) {
-                        store_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
-                    }
-                    $('.store_id').html(store_options_text);
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (error) {
-                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-            }
-        });
-    });
-        let thisHtmla = $(this).parent().closest('.content_parent').find('.logical_grn_show')
-        thisHtmla.html(newHtml)
+    // $(document).on('change','.store_id',function(){
+    //     let newHtml = `<label for="logical_grn_inspect">Logical Grn</label><br>
+    //                                     <input type="hidden" name="logical_grn" class="logical_grn" value="0"><input type="checkbox" onclick="this.previousSibling.value=1-this.previousSibling.value" style="transform: scale(2);margin-top: 12px;">`
+    //     let cls = 'logical_grn_show'
+    //     let value = $(this).val()
+    //     $.ajax({
+    //         url: "{% url 'api:storeList' %}?find_all=2",
+    //         type: 'GET',
+    //         data: ({}),
+    //         headers: {
+    //             'Authorization': getCookieValue("accessToken")
+    //         },
+    //         success: function (response) {
+    //             if (response.status == 200) {
+    //                 store_options_text = `<option value="">Choose...</option>`;
+    //                 for (let index = 0; index < response.page_items.length; index++) {
+    //                     store_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+    //                 }
+    //                 $('.store_id').html(store_options_text);
+    //             } else {
+    //                 alert(response.message);
+    //             }
+    //         },
+    //         error: function (error) {
+    //             $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+    //         }
+    //     });
+    //     let thisHtmla = $(this).parent().closest('.content_parent').find('.logical_grn_show')
+    //     //thisHtmla.html(newHtml)
+    // });
      
         
         
-        })
+        
 
     function renderItemDropdown(){
         $('.item_id').each(function(){
