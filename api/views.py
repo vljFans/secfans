@@ -4287,8 +4287,8 @@ def storeTransactionAdd(request):
     check1 = 0
     test =""
     check2 = 0
-    print(request.POST)
-    exit()
+    # print(request.POST)
+    # exit()
     if not request.POST['vendor_id'] or not request.POST['transaction_date'] or not request.POST['total_amount']:
         context.update({
             'status': 586,
