@@ -26,7 +26,7 @@ import math
 import environ
 import csv
 from fpdf import FPDF
-from django.db.models import Avg, Count, Min, Sum , Case, When, DecimalField, Q, F, IntegerField, Max, Func,Prefetch
+from django.db.models import Avg, Count, Min, Sum , Case, When, DecimalField, Q, F, IntegerField, Max, Func
 from django.db.models.functions import Substr, Cast, StrIndex, Length
 from fractions import Fraction
 import pandas as pd
@@ -3859,7 +3859,7 @@ def storeItemTrackingList(request):
                 })
         elif itemId is not None and itemId != "" :
             storeItem = list(models.Store_Item_Current.objects.filter(store_id = storeId ,item_id = itemId)[:1].values(
-                    'pk', 'store__name','item_id','item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','item__price','item__item_type_id','transaction_date','store_transaction_id','store_transaction__transaction_number').order_by('transaction_date', 'created_at', 'item_id'))
+                    'pk', 'store__name','item_id','item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','item__price','item__item_type_id','transaction_date','store_transaction_id','store_transaction__transaction_number','quantity_Transfer').order_by('transaction_date', 'created_at', 'item_id'))
             context.update({
                 'status': 200,
                 'message': "Store Item tracking Fetched Successfully.",
@@ -3868,7 +3868,7 @@ def storeItemTrackingList(request):
         
         else:
             storeItem = list(models.Store_Item_Current.objects.filter(store_id = storeId ).values(
-            'pk', 'store__name','item_id','item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','item__price','transaction_date','store_transaction_id','store_transaction__transaction_number').order_by('transaction_date', 'created_at', 'item_id'))
+            'pk', 'store__name','item_id','item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','item__price','transaction_date','store_transaction_id','store_transaction__transaction_number','quantity_Transfer').order_by('transaction_date', 'created_at', 'item_id'))
             context.update({
                 'status': 200,
                 'message': "Store Item tracking Fetched Successfully.",
@@ -3882,11 +3882,11 @@ def storeItemTrackingList(request):
                     Q(store__name__icontains=keyword) | Q(item__name__icontains=keyword) | Q(
                         opening_qty__icontains=keyword) | Q(on_hand_qty__icontains=keyword) | Q(closing_qty__icontains=keyword)|Q(transaction_date__icontains=keyword)
                 ).filter(
-                    status=1, deleted=0).values('pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','transaction_date','store_transaction_id','store_transaction__transaction_number').order_by('transaction_date', 'created_at', 'item_id')
+                    status=1, deleted=0).values('pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','transaction_date','store_transaction_id','store_transaction__transaction_number','quantity_Transfer').order_by('transaction_date', 'created_at', 'item_id')
             )
         else:
             storeItems = list(models.Store_Item_Current.objects.filter(status=1, deleted=0).values(
-                'pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','transaction_date','store_transaction_id','store_transaction__transaction_number').order_by('transaction_date', 'created_at', 'item_id'))
+                'pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','transaction_date','store_transaction_id','store_transaction__transaction_number','quantity_Transfer').order_by('transaction_date', 'created_at', 'item_id'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -4071,6 +4071,7 @@ def stockTransfer(request):
                 store_item_instance.opening_qty = record.closing_qty
                 store_item_instance.on_hand_qty = record.closing_qty - Decimal(request.POST["quantity"])
                 store_item_instance.closing_qty = record.closing_qty -  Decimal(request.POST["quantity"])
+                store_item_instance.quantity_Transfer = f"{request.POST["quantity"]} get transafer from {request.POST["from_item_id"]} to { request.POST["to_item_id"]} "
             
 
                 # Set other fields for the new transaction
@@ -4131,6 +4132,7 @@ def stockTransfer(request):
                 store_item_instance.closing_qty = Decimal(request.POST["quantity"])
 
             # Set other fields for the new transaction
+            store_item_instance.quantity_Transfer = f"{request.POST["quantity"]} get transafer from {request.POST["from_item_id"]} to { request.POST["to_item_id"]} "
             store_item_instance.transaction_date = given_date
             store_item_instance.item_id = request.POST["to_item_id"]
             store_item_instance.store_id = request.POST["store_id"]
@@ -5116,6 +5118,27 @@ def storeTransactionEdit(request):
                         storeItem.closing_qty -= transact.quantity
                         storeItem.updated_at = datetime.now()
                         storeItem.save()
+                    storeItemCurrent = models.Store_Item_Current.objects.filter(store_transaction_id = storeTranasctionHeaderOld.id ,transaction_date = storeTranasctionHeaderOld.transaction_date,store_id=transact.store_id,item_id = transact.item_id)
+                    if storeItemCurrent.exists():
+                        storeItemCurrent = storeItemCurrent.first()
+                        storeItemCurrent.on_hand_qty -= Decimal(transact.quantity)
+                        storeItemCurrent.closing_qty -= Decimal(transact.quantity)
+                        storeItemCurrent.status = 0
+                        storeItemCurrent.updated_at = datetime.now()
+                        storeItemCurrent.save()
+                        storeItemCurrentGt = models.Store_Item_Current.objects.filter(
+                            store_id=transact.store_id,item_id = transact.item_id,
+                            store_transaction_id__gt=storeTranasctionHeaderOld.id
+                        ).order_by('transaction_date', 'created_at', 'item_id')
+
+                        # Update the records
+                        for item in storeItemCurrentGt:
+                            item.closing_qty -= Decimal(transact.quantity)
+                            item.opening_qty -= Decimal(transact.quantity)
+                            item.on_hand_qty -= Decimal(transact.quantity)
+                            item.updated_at = datetime.now()
+                            item.save()
+
                     if int(request.POST['with_purchase_job_order']) == 1: #with purchase order
                         purchaseOrderDetExist = models.Purchase_Order_Detail.objects.filter(purchase_order_header_id =request.POST['purchase_job_order_header_id'],item_id = transact.item_id).exists()
                         if purchaseOrderDetExist:
@@ -5156,6 +5179,26 @@ def storeTransactionEdit(request):
                         # print(4707)
                         storeItem.updated_at = datetime.now()
                         storeItem.save()
+                        storeItemCurrent = models.Store_Item_Current.objects.filter(store_transaction_id = storeTranasctionHeaderOld.id ,transaction_date = storeTranasctionHeaderOld.transaction_date,store_id=transact.store_id,item_id = transact.item_id)
+                        if storeItemCurrent.exists():
+                            storeItemCurrent = storeItemCurrent.first()
+                            storeItemCurrent.on_hand_qty -= Decimal(transact.quantity)
+                            storeItemCurrent.closing_qty -= Decimal(transact.quantity)
+                            storeItemCurrent.status = 0
+                            storeItemCurrent.updated_at = datetime.now()
+                            storeItemCurrent.save()
+                            storeItemCurrentGt = models.Store_Item_Current.objects.filter(
+                                store_id=transact.store_id,item_id = transact.item_id,
+                                store_transaction_id__gt=storeTranasctionHeaderOld.id
+                            ).order_by('transaction_date', 'created_at', 'item_id')
+
+                            # Update the records
+                            for item in storeItemCurrentGt:
+                                item.closing_qty -= Decimal(transact.quantity)
+                                item.opening_qty -= Decimal(transact.quantity)
+                                item.on_hand_qty -= Decimal(transact.quantity)
+                                item.updated_at = datetime.now()
+                                item.save()
                     # from vendor store recieved quantity
                     store = models.Store.objects.get(vendor_id = storeTranasctionHeaderOld.vendor_id)
                     storeItemExists = models.Store_Item.objects.filter(store_id=store.id,item_id = transact.item_id).exists()
@@ -5165,6 +5208,57 @@ def storeTransactionEdit(request):
                         storeItem.closing_qty += transact.quantity
                         storeItem.updated_at = datetime.now()
                         storeItem.save()
+
+                    # change in storeItemCurrent min
+                    # Fetch the last transaction_date less than the given_date
+                    given_date = storeTranasctionHeaderOld.transaction_date
+                    
+                    
+                    # Check for the last record on the given_date
+                    record = models.Store_Item_Current.objects.filter(transaction_date=given_date,store_id=transact.store_id,item_id = transact.item_id).last()
+
+                    if not record:
+                        # If no record is found for the given_date, look for the last record before that date
+                        last_transaction_date = models.Store_Item_Current.objects.filter(
+                            transaction_date__lt=given_date,store_id=transact.store_id,item_id = transact.item_id
+                        ).aggregate(Max('transaction_date'))['transaction_date__max']
+
+                        
+
+                        if last_transaction_date:
+                            # Fetch the record for the last_transaction_date
+                            record = models.Store_Item_Current.objects.filter(
+                                transaction_date=last_transaction_date,store_id=transact.store_id,item_id = transact.item_id
+                            ).last()
+
+                    # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
+                    
+                    
+                    store_item_instance = models.Store_Item_Current()
+
+                    if record:
+                        # Set values based on the last record found
+                        store_item_instance.opening_qty = record.closing_qty
+                        store_item_instance.on_hand_qty = record.closing_qty + transact.quantity
+                        store_item_instance.closing_qty = record.closing_qty + transact.quantity
+                    else:
+                        # Set values based on the current transaction if no prior record exists
+                        store_item_instance.opening_qty = Decimal(
+                            0.00
+                        )
+                        store_item_instance.on_hand_qty = transact.quantity
+                        store_item_instance.closing_qty = transact.quantity
+
+                    # Set other fields for the new transaction
+                    store_item_instance.quantity_Transfer = f"{transact.quantity} get transfer to vendor stock due to editing of {storeTranasctionHeaderOld.transaction_number} of date {transaction_date}"
+                    store_item_instance.transaction_date = given_date
+                    store_item_instance.item_id = transact.item_id
+                    store_item_instance.store_id = transact.store_id
+                    # Save the instance to the database
+                    store_item_instance.save()
+                    
+                    store_item_curreEdit(transact.store_id,transact.item_id,given_date,'min', transact.quantity) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
+
                     # changes in job order detail
                     jobOrderDetExist = models.Job_Order_Detail.objects.filter(item_id = transact.item_id , job_order_header_id = request.POST['job_order_header_id'] , direction ='incoming')
                     
@@ -5190,6 +5284,56 @@ def storeTransactionEdit(request):
                             storeItem.closing_qty +=  (bomDetails.quantity * transact.quantity)
                             storeItem.updated_at = datetime.now()
                             storeItem.save()  
+                         # change in storeItemCurrent min
+                        # Fetch the last transaction_date less than the given_date
+                        given_date = storeTranasctionHeaderOld.transaction_date
+                        
+                        
+                        # Check for the last record on the given_date
+                        record = models.Store_Item_Current.objects.filter(transaction_date=given_date,store_id=store.id,item_id = detail.item_id).last()
+
+                        if not record:
+                            # If no record is found for the given_date, look for the last record before that date
+                            last_transaction_date = models.Store_Item_Current.objects.filter(
+                                transaction_date__lt=given_date,store_id=store.id,item_id = detail.item_id
+                            ).aggregate(Max('transaction_date'))['transaction_date__max']
+
+                            
+
+                            if last_transaction_date:
+                                # Fetch the record for the last_transaction_date
+                                record = models.Store_Item_Current.objects.filter(
+                                    transaction_date=last_transaction_date,store_id=store.id,item_id = detail.item_id
+                                ).last()
+
+                        # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
+                        
+                        
+                        store_item_instance = models.Store_Item_Current()
+
+                        if record:
+                            # Set values based on the last record found
+                            store_item_instance.opening_qty = record.closing_qty
+                            store_item_instance.on_hand_qty = record.closing_qty +(bomDetails.quantity * transact.quantity)
+                            store_item_instance.closing_qty = record.closing_qty + (bomDetails.quantity * transact.quantity)
+                        else:
+                            # Set values based on the current transaction if no prior record exists
+                            store_item_instance.opening_qty = Decimal(
+                                0.00
+                            )
+                            store_item_instance.on_hand_qty = (bomDetails.quantity * transact.quantity)
+                            store_item_instance.closing_qty = (bomDetails.quantity * transact.quantity)
+
+                        # Set other fields for the new transaction
+                        store_item_instance.quantity_Transfer = f"{(bomDetails.quantity * transact.quantity)} get transfer to vendor stock due to editing of {storeTranasctionHeaderOld.transaction_number} of date {transaction_date}"
+                        store_item_instance.transaction_date = given_date
+                        store_item_instance.item_id = detail.item_id
+                        store_item_instance.store_id = store.id
+                        # Save the instance to the database
+                        store_item_instance.save()
+                        
+                        store_item_curreEdit(store.id,transact.detail.item_id,given_date,'min', (bomDetails.quantity * transact.quantity)) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
+
                         jobOrderDetailsNew.updated_at = datetime.now()
                         jobOrderDetailsNew.save()
                 # job order status change
@@ -5335,6 +5479,65 @@ def storeTransactionEdit(request):
                                 request.POST.getlist('item_quantity')[index])
                             storeItem.updated_at = datetime.now()
                             storeItem.save()
+                        # change in storeItemCurrent min
+                        # Fetch the last transaction_date less than the given_date
+                        given_date = request.POST['transaction_date']
+                        
+                        
+                        # Check for the last record on the given_date
+                        record = models.Store_Item_Current.objects.filter(transaction_date=given_date, item_id=elem, store_id=request.POST.getlist('store_id')[index]).last()
+
+                        if not record:
+                            # If no record is found for the given_date, look for the last record before that date
+                            last_transaction_date = models.Store_Item_Current.objects.filter(
+                                transaction_date__lt=given_date, item_id=elem, store_id=request.POST.getlist('store_id')[index]
+                            ).aggregate(Max('transaction_date'))['transaction_date__max']
+
+                            
+
+                            if last_transaction_date:
+                                # Fetch the record for the last_transaction_date
+                                record = models.Store_Item_Current.objects.filter(
+                                    transaction_date=last_transaction_date, item_id=elem, store_id=request.POST.getlist('store_id')[index]
+                                ).last()
+
+                        # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
+                        
+                        
+                        store_item_instance = models.Store_Item_Current()
+
+                        if record:
+                            # Set values based on the last record found
+                            store_item_instance.opening_qty = record.closing_qty
+                            store_item_instance.on_hand_qty = record.closing_qty + Decimal(
+                               request.POST.getlist('item_quantity')[index]
+                            )
+                            store_item_instance.closing_qty = record.closing_qty + Decimal(
+                               request.POST.getlist('item_quantity')[index]
+                            )
+                        else:
+                            # Set values based on the current transaction if no prior record exists
+                            store_item_instance.opening_qty = Decimal(
+                                0.00
+                            )
+                            store_item_instance.on_hand_qty = Decimal(
+                                request.POST.getlist('item_quantity')[index]
+                            )
+                            store_item_instance.closing_qty = Decimal(
+                                request.POST.getlist('item_quantity')[index]
+                            )
+
+                        # Set other fields for the new transaction
+                        store_item_instance.store_transaction_id = storeTransactionHeader.id
+                        store_item_instance.transaction_date = given_date
+                        store_item_instance.item_id = elem
+                        store_item_instance.store_id = request.POST.getlist('store_id')[index]
+
+                        # Save the instance to the database
+                        store_item_instance.save()
+                        
+                        store_item_curreEdit(request.POST.getlist('store_id')[index],elem,given_date,'min', request.POST.getlist('item_quantity')[index]) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
+
                 models.Store_Transaction_Detail.objects.bulk_create(order_details)
                 storeTransactionHeader.total_amount = total_amounts
                 
@@ -5435,6 +5638,54 @@ def storeTransactionEdit(request):
                                 request.POST.getlist('item_quantity')[index])
                             storeItem.updated_at = datetime.now()
                             storeItem.save()
+                        # change in storeItemCurrent mout
+                        # Fetch the last transaction_date less than the given_date if mout
+                        given_date = request.POST['transaction_date']
+                        
+                        
+                        # Check for the last record on the given_date
+                        record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=elem, store_id=store.id).last()
+
+                        if not record:
+                            # If no record is found for the given_date, look for the last record before that date
+                            last_transaction_date = models.Store_Item_Current.objects.filter(
+                                transaction_date__lt=given_date ,item_id=elem, store_id=store.id
+                            ).aggregate(Max('transaction_date'))['transaction_date__max']
+
+                            
+
+                            if last_transaction_date:
+                                # Fetch the record for the last_transaction_date
+                                record = models.Store_Item_Current.objects.filter(
+                                    transaction_date=last_transaction_date ,item_id=elem, store_id=store.id
+                                ).last()
+
+                        # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
+                       
+                        
+                        store_item_instance = models.Store_Item_Current()
+
+                        if record:
+                            # Set values based on the last record found
+                            store_item_instance.opening_qty = record.closing_qty
+                            store_item_instance.on_hand_qty = record.closing_qty - Decimal(request.POST.getlist('item_quantity')[index]) 
+                            store_item_instance.closing_qty = record.closing_qty - Decimal(request.POST.getlist('item_quantity')[index]) 
+                        
+
+                            # Set other fields for the new transaction
+                            store_item_instance.store_transaction_id = storeTransactionVhead.id
+                            store_item_instance.transaction_date = given_date
+                            store_item_instance.item_id = elem
+                            store_item_instance.store_id = store.id
+
+                            # Save the instance to the database
+                            store_item_instance.save()
+                           
+                        else:
+                            message = "canot possible Item not present in store"
+                            raise ValueError(message)
+                        store_item_curreEdit(store.id,elem,given_date,'mout', request.POST.getlist('item_quantity')[index]) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
+
 
                     jobOrderDetailsExist  =  models.Job_Order_Detail.objects.filter(job_order_header_id =  request.POST['job_order_header_id'] ,direction='incoming').exists()
                     # # # print(jobOrderDetailsExist)
@@ -5476,6 +5727,53 @@ def storeTransactionEdit(request):
                         storeItem.closing_qty -=  (bomDetails.quantity * Decimal(request.POST.getlist('item_quantity')[0]))
                         storeItem.updated_at = datetime.now()
                         storeItem.save()  
+                    # change in storeItemCurrent mout
+                    # Fetch the last transaction_date less than the given_date if mout
+                    given_date = request.POST['transaction_date']
+                    
+                    
+                    # Check for the last record on the given_date
+                    record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=detail.item_id, store_id=store.id ).last()
+
+                    if not record:
+                        # If no record is found for the given_date, look for the last record before that date
+                        last_transaction_date = models.Store_Item_Current.objects.filter(
+                            transaction_date__lt=given_date ,iitem_id=detail.item_id, store_id=store.id
+                        ).aggregate(Max('transaction_date'))['transaction_date__max']
+                        
+
+                        if last_transaction_date:
+                            # Fetch the record for the last_transaction_date
+                            record = models.Store_Item_Current.objects.filter(
+                                transaction_date=last_transaction_date ,item_id=detail.item_id, store_id=store.id
+                            ).last()
+
+                    # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
+                    
+                    
+                    store_item_instance = models.Store_Item_Current()
+
+                    if record:
+                        # Set values based on the last record found
+                        store_item_instance.opening_qty = record.closing_qty
+                        store_item_instance.on_hand_qty = record.closing_qty - (bomDetails.quantity * Decimal(request.POST.getlist('item_quantity')[0]))
+                        store_item_instance.closing_qty = record.closing_qty - (bomDetails.quantity * Decimal(request.POST.getlist('item_quantity')[0]))
+                    
+
+                        # Set other fields for the new transaction
+                        store_item_instance.store_transaction_id = storeTransactionVhead.id
+                        store_item_instance.transaction_date = given_date
+                        store_item_instance.item_id = detail.item_id
+                        store_item_instance.store_id = store.id
+
+                        # Save the instance to the database
+                        store_item_instance.save()
+                        
+                    else:
+                        message = "canot possible Item not present in store"
+                        raise ValueError(message)
+                    store_item_curreEdit(store.id,detail.item_id,given_date,'mout', (bomDetails.quantity * Decimal(request.POST.getlist('item_quantity')[0]))) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
+
                     jobOrderDetailsNew.updated_at = datetime.now()
                     jobOrderDetailsNew.save()
                 models.Store_Transaction_Detail.objects.bulk_create(order_details)
@@ -9284,53 +9582,115 @@ def reportItemTrackingReport(request):
     total_reciept = Decimal(0.00)
     total_out = Decimal(0.00)
     data = []
-    if item.exists():
-        item = item.first()
-        store = store.first()
-        # Get all store_transaction_details for the item within the date range
-        store_transaction_details = models.Store_Transaction_Detail.objects.filter(
-            item=item,
-            store=store,
-            created_at__range=(from_date, to_date + timedelta(days=1)),  # Include to_date
-        ).filter(store_transaction_header__status=1,store_transaction_header__deleted=0).select_related('store_transaction_header', 'store_transaction_header__transaction_type')
+    # if item.exists():
+    #     item = item.first()
+    #     store = store.first()
+    #     # Get all store_transaction_details for the item within the date range
+    #     store_transaction_details = models.Store_Transaction_Detail.objects.filter(
+    #         item=item,
+    #         store=store,
+    #         created_at__range=(from_date, to_date + timedelta(days=1)),  # Include to_date
+    #     ).filter(store_transaction_header__status=1,store_transaction_header__deleted=0).select_related('store_transaction_header', 'store_transaction_header__transaction_type')
 
         
-        # Group store_transaction_details by store
-        for store_transaction_detail in store_transaction_details:
+    #     # Group store_transaction_details by store
+    #     for store_transaction_detail in store_transaction_details:
+    #         reciept_quantity = Decimal(0.00)
+    #         out_quantity = Decimal(0.00)
+    #         if  (store_transaction_detail.store_transaction_header.transaction_type.name == 'MIS' or 
+    #         store_transaction_detail.store_transaction_header.transaction_type.name == 'MR' or 
+    #         store_transaction_detail.store_transaction_header.transaction_type.name == 'MOUT' or  
+    #         store_transaction_detail.store_transaction_header.transaction_type.name == 'MIST' or  
+    #         store_transaction_detail.store_transaction_header.transaction_type.name == 'MIV' 
+    #         ):
+    #             out_quantity = store_transaction_detail.quantity
+    #             total_out += out_quantity
+    #         else:
+    #             reciept_quantity = store_transaction_detail.quantity
+    #             total_reciept += reciept_quantity
+    #         data.append({
+    #             'reciept_quantity': reciept_quantity ,
+    #             'out_quantity' : out_quantity,
+    #             'rate': store_transaction_detail.rate,
+    #             'amount': store_transaction_detail.amount,
+    #             'gst_percentage': store_transaction_detail.gst_percentage,
+    #             'amount_with_gst': store_transaction_detail.amount_with_gst,
+    #             'transaction_number': store_transaction_detail.store_transaction_header.transaction_number,
+    #             'transaction_id' : store_transaction_detail.store_transaction_header_id,
+    #             'invoice_challan_no' : store_transaction_detail.store_transaction_header.invoice_challan if store_transaction_detail.store_transaction_header.invoice_challan else '---',
+    #             'transaction_type': store_transaction_detail.store_transaction_header.transaction_type.name,
+    #             'updated_at': store_transaction_detail.updated_at.date(),
+    #             'transaction_date' : store_transaction_detail.store_transaction_header.transaction_date
+    #         })
+    #     data.sort(key=lambda x: (x['transaction_date'], x['transaction_number']))
+    if item.exists():
+        
+        store_item_currents = models.Store_Item_Current.objects.filter(
+            status = 1,
+            deleted = 0,
+            store_id=store_id,
+            item_id=item_id,
+            transaction_date__range=(from_date, to_date)
+        ).order_by('transaction_date', 'created_at')
+        for store_item_current in store_item_currents:
+            rate = item.first().price
+            amount = Decimal(0.00)
             reciept_quantity = Decimal(0.00)
             out_quantity = Decimal(0.00)
-            if  (store_transaction_detail.store_transaction_header.transaction_type.name == 'MIS' or 
-            store_transaction_detail.store_transaction_header.transaction_type.name == 'MR' or 
-            store_transaction_detail.store_transaction_header.transaction_type.name == 'MOUT' or  
-            store_transaction_detail.store_transaction_header.transaction_type.name == 'MIST' or  
-            store_transaction_detail.store_transaction_header.transaction_type.name == 'MIV' 
-            ):
-                out_quantity = store_transaction_detail.quantity
-                total_out += out_quantity
+            if store_item_current.store_transaction_id:
+                store_transaction_detail = models.Store_Transaction_Detail.objects.filter(store_id=store_id,
+                    item_id=item_id, store_transaction_header_id = store_item_current.store_transaction_id).first()
+                if store_item_current.store_transaction.transaction_type.name == "MIS" or store_item_current.store_transaction.transaction_type.name == "MOUT" or store_item_current.store_transaction.transaction_type.name == "MIST" or store_item_current.store_transaction.transaction_type.name == "MIV":
+                    out_quantity = store_transaction_detail.quantity
+                    total_reciept += out_quantity
+                if  store_item_current.store_transaction.transaction_type.name == "GRN" or store_item_current.store_transaction.transaction_type.name == "GRNT" or store_item_current.store_transaction.transaction_type.name == "MIN" or store_item_current.store_transaction.transaction_type.name == "SP":
+                    reciept_quantity = store_transaction_detail.quantity
+                    total_reciept += reciept_quantity
+                rate = store_transaction_detail.rate
+                amount = store_transaction_detail.amount
+                data.append({
+                    'reciept_quantity': reciept_quantity ,
+                    'out_quantity' : out_quantity,
+                    'rate':rate,
+                    'amount': store_transaction_detail.amount,
+                    'gst_percentage': store_transaction_detail.gst_percentage,
+                    'amount_with_gst': store_transaction_detail.amount_with_gst,
+                    'transaction_number': store_transaction_detail.store_transaction_header.transaction_number,
+                    'transaction_id' : store_transaction_detail.store_transaction_header_id,
+                    'invoice_challan_no' : store_transaction_detail.store_transaction_header.invoice_challan if store_transaction_detail.store_transaction_header.invoice_challan else '---',
+                    'transaction_type': store_transaction_detail.store_transaction_header.transaction_type.name,
+                    'updated_at': store_transaction_detail.updated_at.date(),
+                    'transaction_date' : store_transaction_detail.store_transaction_header.transaction_date,
+                    'opening_qty': store_item_current.opening_qty,
+                    'closing_qty': store_item_current.closing_qty,
+                    'notes': store_item_current.quantity_Transfer if store_item_current.quantity_Transfer else '---'
+                })
             else:
-                reciept_quantity = store_transaction_detail.quantity
-                total_reciept += reciept_quantity
-            data.append({
-                'reciept_quantity': reciept_quantity ,
-                'out_quantity' : out_quantity,
-                'rate': store_transaction_detail.rate,
-                'amount': store_transaction_detail.amount,
-                'gst_percentage': store_transaction_detail.gst_percentage,
-                'amount_with_gst': store_transaction_detail.amount_with_gst,
-                'transaction_number': store_transaction_detail.store_transaction_header.transaction_number,
-                'transaction_id' : store_transaction_detail.store_transaction_header_id,
-                'invoice_challan_no' : store_transaction_detail.store_transaction_header.invoice_challan if store_transaction_detail.store_transaction_header.invoice_challan else '---',
-                'transaction_type': store_transaction_detail.store_transaction_header.transaction_type.name,
-                'updated_at': store_transaction_detail.updated_at.date(),
-                'transaction_date' : store_transaction_detail.store_transaction_header.transaction_date
-            })
-        data.sort(key=lambda x: (x['transaction_date'], x['transaction_number']))
+                data.append({
+                    'reciept_quantity':reciept_quantity ,
+                    'out_quantity' : out_quantity,
+                    'rate':rate,
+                    'amount': '--',
+                    'gst_percentage': '---',
+                    'amount_with_gst': '---',
+                    'transaction_number':'--',
+                    'transaction_id' : '---',
+                    'invoice_challan_no' : '---',
+                    'transaction_type': '---',
+                    'updated_at': store_item_current.updated_at.date(),
+                    'transaction_date' :store_item_current.transaction_date,
+                    'opening_qty': store_item_current.opening_qty,
+                    'closing_qty': store_item_current.closing_qty,
+                    'notes': store_item_current.quantity_Transfer if store_item_current.quantity_Transfer else '---'
+                })
+                
+
 
     context.update({
         'status': 200,
         'message': "Items Fetched Successfully.",
-        'total_reciept': str(total_reciept),
-        'total_out' : str(total_out),
+        'total_reciept': total_reciept,
+        'total_out' : total_out,
         'page_items': data
         
     })
@@ -9439,127 +9799,6 @@ def reportItemTrackingReport(request):
 #         })
 #     return JsonResponse(context)
 
-# @api_view(['GET', 'POST'])
-# @permission_classes([IsAuthenticated])
-# def reportInventorySummary(request):
-#     context = {}
-#     from_date = request.POST.get('from_date')
-#     to_date = request.POST.get('to_date')
-#     store_id = request.POST.get('store_id')
-#     vendor_id = request.POST.get('vendor_id',None)
-#     data = []
-#     total_stockOut = 0.00
-#     total_stockIn = 0.00
-    
-#     try:
-#         # Determine the queryset based on the request method
-#         if request.method == 'GET':
-            
-#             store_items = models.Store_Transaction_Detail.objects.filter(
-#                 status=1,
-#                 deleted=0
-#             ).filter(
-#                 Q(store_transaction_header__transaction_type__name='MIS') |
-#                 Q(store_transaction_header__transaction_type__name='GRN')
-#             ).order_by('store_transaction_header__transaction_date')
-#         else:
-#             store_items = models.Store_Item.objects.filter(store_id=store_id)
-
-#         for each in store_items:
-#             # Filter transactions by item and date range
-#             store_transactions_MIS = models.Store_Transaction_Detail.objects.filter(
-#                 store_id=store_id,
-#                 item_id=each.item_id,
-#                 store_transaction_header__status = 1,
-#                 store_transaction_header__deleted = 0,
-#                 store_transaction_header__transaction_type__name='MIS',
-#                 store_transaction_header__transaction_date__range=(from_date, to_date)
-#             ).order_by('item_id')
-            
-#             store_transactions_GRN = models.Store_Transaction_Detail.objects.filter(
-#                 store_id=store_id,
-#                 item_id=each.item_id,
-#                 store_transaction_header__status = 1,
-#                 store_transaction_header__deleted = 0,
-#                 store_transaction_header__transaction_type__name='GRN',
-#                 store_transaction_header__transaction_date__range=(from_date, to_date)
-#             ).order_by('item_id')
-#             # Process stock out transactions
-#             if(store_transactions_MIS):
-#                 for store_transaction in store_transactions_MIS:
-#                     total_stockOut += float(store_transaction.quantity)
-#                     orderQuantity = models.Job_Order_Detail.objects.filter(
-#                         item_id=each.item_id,
-#                         direction='outgoing',
-#                         job_order_header_id=store_transaction.store_transaction_header.job_order_id
-#                     ).first()
-#                     data.append({
-#                         'item': each.item.name,
-#                         'item_category': each.item.item_type.item_category.name,
-#                         'quantity_order': str(orderQuantity.quantity) if orderQuantity else '---',
-#                         'date': store_transaction.store_transaction_header.transaction_date,
-#                         'transaction_number': store_transaction.store_transaction_header.transaction_number,
-#                         'vendor': store_transaction.store_transaction_header.vendor.name if store_transaction.store_transaction_header.vendor_id else 'self' ,
-#                         'previous_onHand_Quantity': float(each.on_hand_qty) + float(store_transaction.quantity),
-#                         'uom': each.item.uom.name,
-#                         'stock_in': '---',
-#                         'stock_in_upto': '---',
-#                         'stock_out': store_transaction.quantity,
-#                         'stock_out_upto': total_stockOut,
-#                         'onHand_quantity': each.on_hand_qty
-#                     })
-#             # # # # # print(data ,"aaaa")
-#             # Process stock in transactions
-#             if(store_transactions_GRN):
-#                 for store_transaction in store_transactions_GRN:
-#                     total_stockIn += float(store_transaction.quantity)
-#                     orderQuantity = None
-#                     if store_transaction.store_transaction_header.job_order_id:
-#                         orderQuantity = models.Job_Order_Detail.objects.filter(
-#                             item_id=each.item_id,
-#                             direction='incoming',
-#                             job_order_header_id=store_transaction.store_transaction_header.job_order_id
-#                         ).first()
-#                     else:
-#                         orderQuantity = models.Purchase_Order_Detail.objects.filter(
-#                             item_id=each.item_id,
-#                             purchase_order_header_id=store_transaction.store_transaction_header.purchase_order_header_id
-#                         ).first()
-                    
-#                     data.append({
-#                         'item': each.item.name,
-#                         'item_category': each.item.item_type.item_category.name,
-#                         'quantity_order': str(orderQuantity.quantity) if orderQuantity else '---',
-#                         'date': store_transaction.store_transaction_header.transaction_date,
-#                         'transaction_number': store_transaction.store_transaction_header.transaction_number,
-#                         'vendor': store_transaction.store_transaction_header.vendor.name if store_transaction.store_transaction_header.vendor_id else 'self',
-#                         'previous_onHand_Quantity': float(each.on_hand_qty) - float(store_transaction.quantity),
-#                         'uom': each.item.uom.name,
-#                         'stock_in': store_transaction.quantity ,
-#                         'stock_in_upto': total_stockIn ,
-#                         'stock_out': '---', 
-#                         'stock_out_upto': '---',
-#                         'onHand_quantity': each.on_hand_qty
-#                     })
-
-#         # Sort and prepare final context response
-#         sorted_data = sorted(data, key=lambda x: (x['item'], x['date']))
-#         context.update({
-#             'status': 200,
-#             'message': "Inventory Report Summary fetched successfully.",
-#             'page_items': sorted_data,
-#         })
-
-#     except Exception as e:
-#         context.update({
-#             'status': 500,
-#             'message': "Internal Server Error: " + str(e),
-#         })
-
-#     return JsonResponse(context)
-
-
-
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def reportInventorySummary(request):
@@ -9567,99 +9806,101 @@ def reportInventorySummary(request):
     from_date = request.POST.get('from_date')
     to_date = request.POST.get('to_date')
     store_id = request.POST.get('store_id')
-    vendor_id = request.POST.get('vendor_id', None)
-
+    vendor_id = request.POST.get('vendor_id',None)
+    data = []
+    total_stockOut = 0.00
+    total_stockIn = 0.00
+    
     try:
-        # Determine the base queryset based on the request method
+        # Determine the queryset based on the request method
         if request.method == 'GET':
+            
             store_items = models.Store_Transaction_Detail.objects.filter(
                 status=1,
                 deleted=0
             ).filter(
-                Q(store_transaction_header__transaction_type__name__in=['MIS', 'GRN'])
-            ).select_related(
-                'store_transaction_header',
-                'item__item_type__item_category',
-                'item__uom',
-                'store_transaction_header__vendor'
+                Q(store_transaction_header__transaction_type__name='MIS') |
+                Q(store_transaction_header__transaction_type__name='GRN')
             ).order_by('store_transaction_header__transaction_date')
         else:
-            store_items = models.Store_Item.objects.filter(store_id=store_id).prefetch_related(
-                Prefetch(
-                    'store_transaction_details',
-                    queryset=models.Store_Transaction_Detail.objects.filter(
-                        store_transaction_header__status=1,
-                        store_transaction_header__deleted=0,
-                        store_transaction_header__transaction_date__range=(from_date, to_date),
-                    ).select_related('store_transaction_header', 'item')
-                )
-            )
+            store_items = models.Store_Item.objects.filter(store_id=store_id)
 
-        # Precompute stock in and stock out using aggregation
-        aggregated_data = models.Store_Transaction_Detail.objects.filter(
-            store_id=store_id,
-            store_transaction_header__transaction_date__range=(from_date, to_date),
-            store_transaction_header__status=1,
-            store_transaction_header__deleted=0,
-        ).values(
-            'item_id',
-            'store_transaction_header__transaction_type__name'
-        ).annotate(
-            total_quantity=Sum('quantity')
-        )
-
-        # Prepare a dictionary for quick lookups
-        stock_data = {}
-        for entry in aggregated_data:
-            item_id = entry['item_id']
-            transaction_type = entry['store_transaction_header__transaction_type__name']
-            if item_id not in stock_data:
-                stock_data[item_id] = {'MIS': 0, 'GRN': 0}
-            stock_data[item_id][transaction_type] += entry['total_quantity']
-
-        # Prepare the final data
-        data = []
         for each in store_items:
-            item_id = each.item_id
-            item_stock = stock_data.get(item_id, {'MIS': 0, 'GRN': 0})
-            total_stockOut = item_stock['MIS']
-            total_stockIn = item_stock['GRN']
-
-            # Add stock out data
-            if total_stockOut > 0:
-                data.append({
-                    'item': each.item.name,
-                    'item_category': each.item.item_type.item_category.name,
-                    'quantity_order': '---',  # Assuming orderQuantity logic is removed for optimization
-                    'date': each.store_transaction_header.transaction_date,
-                    'transaction_number': each.store_transaction_header.transaction_number,
-                    'vendor': each.store_transaction_header.vendor.name if each.store_transaction_header.vendor_id else 'self',
-                    'previous_onHand_Quantity': float(each.on_hand_qty) + float(total_stockOut),
-                    'uom': each.item.uom.name,
-                    'stock_in': '---',
-                    'stock_in_upto': '---',
-                    'stock_out': total_stockOut,
-                    'stock_out_upto': total_stockOut,
-                    'onHand_quantity': each.on_hand_qty,
-                })
-
-            # Add stock in data
-            if total_stockIn > 0:
-                data.append({
-                    'item': each.item.name,
-                    'item_category': each.item.item_type.item_category.name,
-                    'quantity_order': '---',  # Assuming orderQuantity logic is removed for optimization
-                    'date': each.store_transaction_header.transaction_date,
-                    'transaction_number': each.store_transaction_header.transaction_number,
-                    'vendor': each.store_transaction_header.vendor.name if each.store_transaction_header.vendor_id else 'self',
-                    'previous_onHand_Quantity': float(each.on_hand_qty) - float(total_stockIn),
-                    'uom': each.item.uom.name,
-                    'stock_in': total_stockIn,
-                    'stock_in_upto': total_stockIn,
-                    'stock_out': '---',
-                    'stock_out_upto': '---',
-                    'onHand_quantity': each.on_hand_qty,
-                })
+            # Filter transactions by item and date range
+            store_transactions_MIS = models.Store_Transaction_Detail.objects.filter(
+                store_id=store_id,
+                item_id=each.item_id,
+                store_transaction_header__status = 1,
+                store_transaction_header__deleted = 0,
+                store_transaction_header__transaction_type__name='MIS',
+                store_transaction_header__transaction_date__range=(from_date, to_date)
+            ).order_by('item_id')
+            
+            store_transactions_GRN = models.Store_Transaction_Detail.objects.filter(
+                store_id=store_id,
+                item_id=each.item_id,
+                store_transaction_header__status = 1,
+                store_transaction_header__deleted = 0,
+                store_transaction_header__transaction_type__name='GRN',
+                store_transaction_header__transaction_date__range=(from_date, to_date)
+            ).order_by('item_id')
+            # Process stock out transactions
+            if(store_transactions_MIS):
+                for store_transaction in store_transactions_MIS:
+                    total_stockOut += float(store_transaction.quantity)
+                    orderQuantity = models.Job_Order_Detail.objects.filter(
+                        item_id=each.item_id,
+                        direction='outgoing',
+                        job_order_header_id=store_transaction.store_transaction_header.job_order_id
+                    ).first()
+                    data.append({
+                        'item': each.item.name,
+                        'item_category': each.item.item_type.item_category.name,
+                        'quantity_order': str(orderQuantity.quantity) if orderQuantity else '---',
+                        'date': store_transaction.store_transaction_header.transaction_date,
+                        'transaction_number': store_transaction.store_transaction_header.transaction_number,
+                        'vendor': store_transaction.store_transaction_header.vendor.name if store_transaction.store_transaction_header.vendor_id else 'self' ,
+                        'previous_onHand_Quantity': float(each.on_hand_qty) + float(store_transaction.quantity),
+                        'uom': each.item.uom.name,
+                        'stock_in': '---',
+                        'stock_in_upto': '---',
+                        'stock_out': store_transaction.quantity,
+                        'stock_out_upto': total_stockOut,
+                        'onHand_quantity': each.on_hand_qty
+                    })
+            # # # # # print(data ,"aaaa")
+            # Process stock in transactions
+            if(store_transactions_GRN):
+                for store_transaction in store_transactions_GRN:
+                    total_stockIn += float(store_transaction.quantity)
+                    orderQuantity = None
+                    if store_transaction.store_transaction_header.job_order_id:
+                        orderQuantity = models.Job_Order_Detail.objects.filter(
+                            item_id=each.item_id,
+                            direction='incoming',
+                            job_order_header_id=store_transaction.store_transaction_header.job_order_id
+                        ).first()
+                    else:
+                        orderQuantity = models.Purchase_Order_Detail.objects.filter(
+                            item_id=each.item_id,
+                            purchase_order_header_id=store_transaction.store_transaction_header.purchase_order_header_id
+                        ).first()
+                    
+                    data.append({
+                        'item': each.item.name,
+                        'item_category': each.item.item_type.item_category.name,
+                        'quantity_order': str(orderQuantity.quantity) if orderQuantity else '---',
+                        'date': store_transaction.store_transaction_header.transaction_date,
+                        'transaction_number': store_transaction.store_transaction_header.transaction_number,
+                        'vendor': store_transaction.store_transaction_header.vendor.name if store_transaction.store_transaction_header.vendor_id else 'self',
+                        'previous_onHand_Quantity': float(each.on_hand_qty) - float(store_transaction.quantity),
+                        'uom': each.item.uom.name,
+                        'stock_in': store_transaction.quantity ,
+                        'stock_in_upto': total_stockIn ,
+                        'stock_out': '---', 
+                        'stock_out_upto': '---',
+                        'onHand_quantity': each.on_hand_qty
+                    })
 
         # Sort and prepare final context response
         sorted_data = sorted(data, key=lambda x: (x['item'], x['date']))
@@ -9672,10 +9913,129 @@ def reportInventorySummary(request):
     except Exception as e:
         context.update({
             'status': 500,
-            'message': f"Internal Server Error: {str(e)}",
+            'message': "Internal Server Error: " + str(e),
         })
 
     return JsonResponse(context)
+
+
+
+# @api_view(['GET', 'POST'])
+# @permission_classes([IsAuthenticated])
+# def reportInventorySummary(request):
+#     context = {}
+#     from_date = request.POST.get('from_date')
+#     to_date = request.POST.get('to_date')
+#     store_id = request.POST.get('store_id')
+#     vendor_id = request.POST.get('vendor_id', None)
+
+#     try:
+#         # Determine the base queryset based on the request method
+#         if request.method == 'GET':
+#             store_items = models.Store_Transaction_Detail.objects.filter(
+#                 status=1,
+#                 deleted=0
+#             ).filter(
+#                 Q(store_transaction_header__transaction_type__name__in=['MIS', 'GRN'])
+#             ).select_related(
+#                 'store_transaction_header',
+#                 'item__item_type__item_category',
+#                 'item__uom',
+#                 'store_transaction_header__vendor'
+#             ).order_by('store_transaction_header__transaction_date')
+#         else:
+#             store_items = models.Store_Item.objects.filter(store_id=store_id).prefetch_related(
+#                 Prefetch(
+#                     queryset=models.Store_Transaction_Detail.objects.filter(
+#                         store_transaction_header__status=1,
+#                         store_transaction_header__deleted=0,
+#                         store_transaction_header__transaction_date__range=(from_date, to_date),
+#                         store_transaction_header__transaction_type__name__in=['MIS', 'GRN']
+#                     ).select_related('store_transaction_header', 'item')
+#                 )
+#             )
+
+#         # Precompute stock in and stock out using aggregation
+#         aggregated_data = models.Store_Transaction_Detail.objects.filter(
+#             store_id=store_id,
+#             store_transaction_header__transaction_date__range=(from_date, to_date),
+#             store_transaction_header__status=1,
+#             store_transaction_header__deleted=0,
+#         ).values(
+#             'item_id',
+#             'store_transaction_header__transaction_type__name'
+#         ).annotate(
+#             total_quantity=Sum('quantity')
+#         )
+
+#         # Prepare a dictionary for quick lookups
+#         stock_data = {}
+#         for entry in aggregated_data:
+#             item_id = entry['item_id']
+#             transaction_type = entry['store_transaction_header__transaction_type__name']
+#             if item_id not in stock_data:
+#                 stock_data[item_id] = {'MIS': 0, 'GRN': 0}
+#             stock_data[item_id][transaction_type] += entry['total_quantity']
+
+#         # Prepare the final data
+#         data = []
+#         for each in store_items:
+#             item_id = each.item_id
+#             item_stock = stock_data.get(item_id, {'MIS': 0, 'GRN': 0})
+#             total_stockOut = item_stock['MIS']
+#             total_stockIn = item_stock['GRN']
+
+#             # Add stock out data
+#             if total_stockOut > 0:
+#                 data.append({
+#                     'item': each.item.name,
+#                     'item_category': each.item.item_type.item_category.name,
+#                     'quantity_order': '---',  # Assuming orderQuantity logic is removed for optimization
+#                     'date': each.store_transaction_header.transaction_date,
+#                     'transaction_number': each.store_transaction_header.transaction_number,
+#                     'vendor': each.store_transaction_header.vendor.name if each.store_transaction_header.vendor_id else 'self',
+#                     'previous_onHand_Quantity': float(each.on_hand_qty) + float(total_stockOut),
+#                     'uom': each.item.uom.name,
+#                     'stock_in': '---',
+#                     'stock_in_upto': '---',
+#                     'stock_out': total_stockOut,
+#                     'stock_out_upto': total_stockOut,
+#                     'onHand_quantity': each.on_hand_qty,
+#                 })
+
+#             # Add stock in data
+#             if total_stockIn > 0:
+#                 data.append({
+#                     'item': each.item.name,
+#                     'item_category': each.item.item_type.item_category.name,
+#                     'quantity_order': '---',  # Assuming orderQuantity logic is removed for optimization
+#                     'date': each.store_transaction_header.transaction_date,
+#                     'transaction_number': each.store_transaction_header.transaction_number,
+#                     'vendor': each.store_transaction_header.vendor.name if each.store_transaction_header.vendor_id else 'self',
+#                     'previous_onHand_Quantity': float(each.on_hand_qty) - float(total_stockIn),
+#                     'uom': each.item.uom.name,
+#                     'stock_in': total_stockIn,
+#                     'stock_in_upto': total_stockIn,
+#                     'stock_out': '---',
+#                     'stock_out_upto': '---',
+#                     'onHand_quantity': each.on_hand_qty,
+#                 })
+
+#         # Sort and prepare final context response
+#         sorted_data = sorted(data, key=lambda x: (x['item'], x['date']))
+#         context.update({
+#             'status': 200,
+#             'message': "Inventory Report Summary fetched successfully.",
+#             'page_items': sorted_data,
+#         })
+
+#     except Exception as e:
+#         context.update({
+#             'status': 500,
+#             'message': f"Internal Server Error: {str(e)}",
+#         })
+
+#     return JsonResponse(context)
 
 
 # @api_view(['GET','POST'])

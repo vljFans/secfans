@@ -107,6 +107,7 @@
                                     <th>On hand quantity</th>
                                     <th>Closing quantity</th>
                                     <th>Transaction Number</th>
+                                    <th>Note</th>
                                 </tr>
                             </thead>
                             <tbody id="table-body">
@@ -151,7 +152,8 @@
                                 <td>${parseFloat(element.opening_qty)}</td>
                                 <td>${parseFloat(element.on_hand_qty)}</td>
                                 <td>${parseFloat(element.closing_qty)}</td>
-                                <td>${element.store_transaction__transaction_number}</td>
+                                <td>${element.store_transaction__transaction_number ? element.store_transaction__transaction_number : ""}</td>
+                                <td>${element.quantity_Transfer ? element.quantity_Transfer : ""}</td>
                                 
                             </tr>`;
                     }
