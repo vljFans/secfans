@@ -4419,7 +4419,7 @@ def storeItemImport(request):
 #         })
 
 def store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity):
-    print(4221)
+    # print(4221)
     # Fetch the last transaction_date less than the given_date
     given_date = transaction_date
 
@@ -4431,7 +4431,9 @@ def store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quant
             models.Store_Item_Current.objects.filter(
                 transaction_date__gt=given_date, 
                 store_id=store_id, 
-                item_id=item_id
+                item_id=item_id,
+                status= 1,
+                deleted = 0
             ).update(
                 opening_qty=F('opening_qty') + Decimal(quantity),
                 closing_qty=F('closing_qty') + Decimal(quantity),
@@ -4443,7 +4445,9 @@ def store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quant
             models.Store_Item_Current.objects.filter(
                 transaction_date__gt=given_date, 
                 store_id=store_id, 
-                item_id=item_id
+                item_id=item_id,
+                status= 1,
+                deleted = 0
             ).update(
                 opening_qty=F('opening_qty') - Decimal(quantity),
                 closing_qty=F('closing_qty') - Decimal(quantity),
@@ -10973,9 +10977,10 @@ def handle_transaction_detail(detail, transact_type_name):
 @api_view(['POST'])
 def storeItemCurrentMigrate(request):
     context = {}
+    print("processing ....")
     try:
         # Debugging: Print POST data
-        print(request.POST)
+        # print(request.POST)
 
         # Get the transaction date and convert to datetime with max time
         given_date_str = request.POST['transaction_date']
@@ -11005,12 +11010,14 @@ def storeItemCurrentMigrate(request):
             )
 
             # Debugging: Print the details of fetched store transactions
-            print(store_transaction_details)
+            # print(store_transaction_details)
 
             # Process each transaction detail
             for detail in store_transaction_details:
+                print(f"Working Start on {detail.store_transaction_header.transaction_number}...")
                 handle_transaction_detail(detail, transact_type_name.name)
-
+                print(f"Working Complete on {detail.store_transaction_header.transaction_number}")
+        transaction.commit()
         # Return success response
         context.update({
             'status': 200,
@@ -11022,4 +11029,5 @@ def storeItemCurrentMigrate(request):
             'status': 500,
             'message': f"An error occurred: {str(e)}"
         })
+        transaction.rollback()
     return JsonResponse(context)
