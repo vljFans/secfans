@@ -990,10 +990,16 @@ def storeTransactionView(request, id):
 def storeTransactionPrint(request, id):
     configList = models.Configuration_User.objects.first()
     storeTransaction = models.Store_Transaction.objects.prefetch_related('store_transaction_detail_set').get(pk=id)
+    storeTransactionDetail = models.Store_Transaction_Detail.objects.filter(store_transaction_header=id,logical_grn_store=1).first()
+    storeTransactionDetailsumAmoutnt = sum(item.amount for item in storeTransaction.store_transaction_detail_set.filter(logical_grn_store=1))
+    storeTransactionDetailsumGstAmoutnt = sum(item.amount_with_gst for item in storeTransaction.store_transaction_detail_set.filter(logical_grn_store=1))
     context.update({
-        'material_return': material_return,
+        'config': configList,
         'storeTransaction': storeTransaction,
-        'page_title': "Store Transaction ",
+        'storeTransactionDetailsumAmoutnt': storeTransactionDetailsumAmoutnt,
+        'storeTransactionDetailsumGstAmoutnt': storeTransactionDetailsumGstAmoutnt,
+        'storeTransactionDetail':storeTransactionDetail,
+        'page_title': "Logical GRN Transaction Challan ",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}]
     })
     return render(request, 'portal/Store Transaction/print.html', context)

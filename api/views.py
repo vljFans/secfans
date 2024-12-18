@@ -4526,6 +4526,7 @@ def storeTransactionAdd(request):
     test =""
     check2 = 0
     logicalgrnSore = 0
+    userId = request.COOKIES.get('userId', None)
     # exit()
     if not request.POST['vendor_id'] or not request.POST['transaction_date'] or not request.POST['total_amount']:
         context.update({
@@ -4552,6 +4553,7 @@ def storeTransactionAdd(request):
             return JsonResponse(context)
 
     try:
+
         # print("3130")
         inspect = request.POST.getlist('inspect')
         # if "1" in inspect:
@@ -4668,7 +4670,7 @@ def storeTransactionAdd(request):
                             store_item_instance.save()
                         else:
                             message = "canot possible item not present in the store "
-                            x=10/0
+                            raise ValueError(message)
                         moutQuantity = (jobOrderDetails[index].quantity_result if not boMHeadDetailsExist else Decimal(BomQuantity*incoming_item_quantity)) 
                         store_item_curreEdit(store.id,jobOrderDetails[index].item_id,given_date,'mout',moutQuantity) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
                         # print(resultant_quantity_result.quantity_result , jobOrderDetails[index].item.name)
@@ -4793,6 +4795,7 @@ def storeTransactionAdd(request):
                 store_transaction_count = models.Store_Transaction.objects.all().count()
                 storeTransactionHeader = models.Store_Transaction()
                 storeTransactionHeader.vendor_id = request.POST['vendor_id']
+                storeTransactionHeader.creator_id = userId
                 # storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
                 transaction_type = models.Transaction_Type.objects.get(name='GRN')
                 storeTransactionHeader.transaction_type = transaction_type
@@ -4999,7 +5002,7 @@ def storeTransactionAdd(request):
                             
                             else:
                                 message = "canot possible manufacture item is missing on vendor store how will you deducted"
-                                x=10/0
+                                raise ValueError(message)
                             store_item_curreEdit(store.id,elem,given_date,'mout', request.POST.getlist('item_quantity')[index]) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
                             #closed job order
                             if (material_reciept_all == 1):
@@ -5057,7 +5060,7 @@ def storeTransactionAdd(request):
                     purchaseOrderHeader.updated_at = datetime.now()
                     purchaseOrderHeader.save()
                 # # # # # print('4348') 
-            userId = request.COOKIES.get('userId', None)
+            
             user_log_details_add(userId,'Store Transaction Add')
         transaction.commit()
         context.update({
@@ -5086,7 +5089,7 @@ def storeTransactionEdit(request):
     check1 = 0
     test =""
     check2 = 0
-    
+    userId = request.COOKIES.get('userId', None)
     inspect = 1 if '1' in request.POST.getlist('itemInspect') else 0
 
     inspectZero = 1 if '0' in  request.POST.getlist('itemInspect') else 0
@@ -5416,6 +5419,7 @@ def storeTransactionEdit(request):
                     storeTransactionHeader.vendor_id = request.POST['vendor_id']
                 storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
                 storeTransactionHeader.invoice_challan = request.POST['invoice_challan']
+                storeTransactionHeader.creator_id = userId
                 # # # # # print("3182")
                 if(request.POST.get('purchase_order_header_id',None) and int(request.POST['with_purchase_job_order']) == 1): # it is purchase order reciept
                     storeTransactionHeader.purchase_order_header_id = request.POST[
@@ -5799,7 +5803,7 @@ def storeTransactionEdit(request):
                     jobOrderHeader.save()
         transaction.commit()    
         
-        userId = request.COOKIES.get('userId', None)
+       
         text = f'Store Transaction Edit old Transaction no = {storeTranasctionHeaderOld.transaction_number} and  new transaction no = {new_transaction_no}'
         user_log_details_add(userId,text)
         # # # print(4725)
@@ -7578,8 +7582,8 @@ def materialIssueAdd(request):
                         store_item_instance.save()
                         
                     else:
-                        message = "canot possible"
-                        x=10/0
+                        message = "canot possible item found in this strore"
+                        raise ValueError(message)
                     store_item_curreEdit(in_house_store.id,elem,given_date,'mout', request.POST.getlist('quantity_sent')[index]) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
                     # # # # print(5825)
             # # print(5818)
@@ -7832,6 +7836,7 @@ def getGrnInspectionTransactionDetail(request):
 @permission_classes([IsAuthenticated])
 def addGrnDetailisInsTransaction(request):
     context = {}
+    userId = request.COOKIES.get('userId', None)
     ins_completed = 0 if not all(request.POST.getlist('accp_quantity')) else 1 #if ins_completed is 0 means all item is not inspected may be inspection happened paritally
     try:
         if any(request.POST.getlist('accp_quantity')):
@@ -7855,6 +7860,7 @@ def addGrnDetailisInsTransaction(request):
                     store_transaction_count = models.Store_Transaction.objects.all().count()
                     storeTransactionHeader = models.Store_Transaction()
                     storeTransactionHeader.vendor_id = request.POST['vendor_id']
+                    storeTransactionHeader.creator_id = userId
                     # storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
                     transaction_type = models.Transaction_Type.objects.get(name='GRN')
                     storeTransactionHeader.transaction_type = transaction_type
@@ -8046,7 +8052,7 @@ def addGrnDetailisInsTransaction(request):
                         purchaseOrderHeader.delivery_status = 2
                     purchaseOrderHeader.updated_at = datetime.now()
                     purchaseOrderHeader.save()  
-                userId = request.COOKIES.get('userId', None)
+               
                 user_log_details_add(userId,'GRN INspection Add')
             transaction.commit()
             context ={
@@ -10936,7 +10942,7 @@ def handle_transaction_detail(detail, transact_type_name):
         last_record = last_record.last()
         # Set values based on the last record
         store_item_instance.opening_qty = last_record.closing_qty
-        if transact_type_name == 'GRN' or  transact_type_name == 'GRNT' or  transact_type_name == 'MIN' :
+        if transact_type_name == 'GRN' or  transact_type_name == 'GRNT' or  transact_type_name == 'MIN' or  transact_type_name == 'SP' :
             store_item_instance.on_hand_qty = last_record.closing_qty + Decimal(detail.quantity)
             store_item_instance.closing_qty = last_record.closing_qty + Decimal(detail.quantity)
         else:  # For other transaction types
@@ -10944,7 +10950,7 @@ def handle_transaction_detail(detail, transact_type_name):
             store_item_instance.closing_qty = last_record.closing_qty - Decimal(detail.quantity)
     else:
         # Set default values if no prior record exists
-        if transact_type_name == 'GRN' or  transact_type_name == 'GRNT' or  transact_type_name == 'MIN':
+        if transact_type_name == 'GRN' or  transact_type_name == 'GRNT' or  transact_type_name == 'MIN' or  transact_type_name == 'SP':
             store_item_instance.opening_qty = Decimal(0.00)
             store_item_instance.on_hand_qty = Decimal(detail.quantity)
             store_item_instance.closing_qty = Decimal(detail.quantity)
@@ -10959,7 +10965,7 @@ def handle_transaction_detail(detail, transact_type_name):
     store_item_instance.save()
 
     # Update stock tracking
-    if transact_type_name == 'GRN' or  transact_type_name == 'GRNT' or  transact_type_name == 'MIN':
+    if transact_type_name == 'GRN' or  transact_type_name == 'GRNT' or  transact_type_name == 'MIN' or  transact_type_name == 'SP':
         store_item_curreEdit(detail.store.id, detail.item.id, detail.store_transaction_header.transaction_date, 'min', detail.quantity)
     else:
         store_item_curreEdit(detail.store.id, detail.item.id, detail.store_transaction_header.transaction_date, 'mout', detail.quantity)
