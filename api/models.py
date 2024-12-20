@@ -1117,7 +1117,7 @@ class Store_Item_Current(models.Model):
     closing_qty = models.DecimalField(max_digits=15, decimal_places=5, default=0)
     opening_qty = models.DecimalField(max_digits=15, decimal_places=5, default=0)
     on_hand_qty = models.DecimalField(max_digits=15, decimal_places=5, default=0)
-    quantity_Transfer =  models.CharField(max_length=50, blank=True, null=True)
+    quantity_Transfer =  models.CharField(max_length=100, blank=True, null=True)
     store_transaction =  models.ForeignKey(Store_Transaction, on_delete=models.CASCADE, blank=True, null=True)
     transaction_date = models.DateField(blank=True, null=True)
     status = models.SmallIntegerField(default=1)

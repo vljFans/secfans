@@ -78,6 +78,10 @@
                                     {% endfor %}
                                 </select>
                             </div>
+                            <div class="col-md-6 mb-3 checkBx">
+                               
+                            </div>
+                           
                            
                         </div>
                         {% if request.user.is_superuser == 1 or 'add_store_item'|get_session_permission:request is not None %}
@@ -119,8 +123,28 @@
     });
 
     $(document).ready(function () {
-    
+        $('.checkBx').empty()
     })
+    
+    // $(document).on('change', '#transaction_type_id', function () {
+    //     console.log(129);
+
+    //     let newHtml = `
+    //         <label for="with_job_order_inspect">With JobOrder</label><br>
+    //         <input type="hidden" name="with_job_order" class="with_job_order" value="0">
+    //         <input type="checkbox" onclick="this.previousSibling.value=1-this.previousSibling.value" style="transform: scale(2); margin-top: 12px;">
+    //     `;
+    //     let trancTypeId = $('#transaction_type_id').val(); // Correct selector
+    //     let trancTypetext = $('#transaction_type_id option:selected').text()
+    //     console.log(trancTypetext);
+        
+    //     if (trancTypeId == 2 || trancTypeId == 13) {
+    //         $('.checkBx').html(newHtml);
+    //     } else {
+    //         $('.checkBx').empty();
+    //     }
+    // });
+
 
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
