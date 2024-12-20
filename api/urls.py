@@ -108,6 +108,7 @@ urlpatterns = [
     path('transaction-type-delete', views.transactionTypeDelete, name='transactionTypeDelete'),
 
     path('store-item-list', views.storeItemList, name='storeItemList'),
+    path('store-item-tracking-list', views.storeItemTrackingList, name='storeItemTrackingList'),
     path('store-item-add', views.storeItemAdd, name='storeItemAdd'),
     path('store-item-edit', views.storeItemEdit, name='storeItemEdit'),
     path('store-item-delete', views.storeItemDelete, name='storeItemDelete'),
@@ -185,4 +186,6 @@ urlpatterns = [
     path('corn-job-store-item-quantity-update', views.cornJobStoreItemQuantityUpdate, name='cornJobStoreItemQuantityUpdate'),
 
     path('extract-data-from-xlsx', views.extractDataFromXlsx, name='extractDataFromXlsx'),
+
+    path('store-item-current-migrate',views.storeItemCurrentMigrate, name='storeItemCurrentMigrate'),
 ]

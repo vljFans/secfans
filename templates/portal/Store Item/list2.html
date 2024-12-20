@@ -26,7 +26,6 @@
                 </div>
             </div>
         </div>
-        
     </div>
     <!--/ Breadcrumb End -->
     <!--================================-->
@@ -39,13 +38,9 @@
         </label>
         <input type="text" id="search" name="search" style="width: 180px; height: 30px;" value="{{request.GET.keyword}}"
             placeholder="" />
+        <a href="/store-item-current-migrate" class="btn btn-primary float-right mr-3">Current Stock Migration</a>  
     </div>
-    <div class="col-md-6">
-        <div class="float-end d-flex justify-content-end" style="padding-top: 10px;">
-            <button type="button" file_type="pdf" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">PDF</button>
-            <button type="button" file_type="xlsx" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">Excel</button>
-        </div>
-    </div>
+
     <!--/ Search box End -->
     <!--================================-->
     <!-- Form Element Start -->
@@ -69,8 +64,11 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
-                                <a href="{% url 'superuser:storeTransactionAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
+                                {% if request.user.is_superuser == 1 or 'add_store_item'|get_session_permission:request is not None %}
+                                <a href="{% url 'superuser:storeItemAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'view_store_item'|get_session_permission:request is not None %}
+                                <a href="javascript:void(0);" url="{% url 'api:storeItemExport' %}?&keyword={{request.GET.keyword}}" class="mr-3 excel_download"><i class="fa fa-download"></i></a>
                                 {% endif %}
                                 <a href="" class="mr-3"><i class="ti-reload"></i></a>
                                 <!-- <div class="dropdown" data-toggle="dropdown">
@@ -102,12 +100,14 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Vendor</th>
+                                    <th>Trasaction Date</th>
+                                    <th>Store</th>
+                                    <th>Item</th>
+                                    <th>Opening quantity</th>
+                                    <th>On hand quantity</th>
+                                    <th>Closing quantity</th>
                                     <th>Transaction Number</th>
-                                    <th>Invoice/Challan</th>
-                                    <th>Transaction Date</th>
-                                    <th>Total Price</th>
-                                    <th>Action</th>
+                                    <th>Note</th>
                                 </tr>
                             </thead>
                             <tbody id="table-body">
@@ -127,17 +127,12 @@
 {% endblock %}
 
 {% block js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
 <script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
-    
-    function getStoreTransactionList(keyword) {
+    function getStoreItemList(keyword) {
         $.ajax({
             type: "GET",
-            url: "{% url 'api:storeTransactionList' %}?keyword="+keyword+"&transaction_type=GRN",
+            url: "{% url 'api:storeItemTrackingList' %}?keyword=" + keyword,
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -145,38 +140,22 @@
             success: function (response) {
                 $('.error-msg-txt').text("");
                 if (response.status == 200) {
-                    view_url = "{% url 'superuser:storeTransactionView' 1 %}";
-                    edit_url = "{% url 'superuser:storeTransactionEdit' 1 %}";
-                    print_url = "{% url 'superuser:storeTransactionPrint' 1 %}";
-                    
                     page_items = response.page_items;
-                    // console.log(page_items)
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index];
                         tbody_text += `<tr>
                                 <td>${((response.current_page - 1) * response.per_page) +  index + 1}</td>
-                                <td>${element.vendor__name ? element.vendor__name : 'Self'}</td>
-                                <td>${element.transaction_number}</td>
-                                <td>${element.invoice_challan}</td>
-                                <td>${element.transaction_date}</td>
-                                <td>₹${element.total_amount}</td>
-                                <td>
-                                {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
-                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'change_store_transaction'|get_session_permission:request is not None %}
-                                <a  href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'delete_store_transaction'|get_session_permission:request is not None %}
-                                <a hidden id="delete-btn" data-id="${element.pk}" data-name="${element.transaction_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'change_store_transaction'|get_session_permission:request is not None %}
-                                ${element.is_logical_grn_store == 1 ? `<a href="${print_url.replace('1', element.pk)}" class="table-action mg-r-10" target="_blank"> <i class="fa fa-print"></i> </a>` : ''}
-                                {% endif %}
-                                </td>
+                                <td>${(element.transaction_date)}</td>
+                                <td>${element.store__name}</td>
+                                <td>${element.item__name}</td>
+                                <td>${parseFloat(element.opening_qty)}</td>
+                                <td>${parseFloat(element.on_hand_qty)}</td>
+                                <td>${parseFloat(element.closing_qty)}</td>
+                                <td>${element.store_transaction__transaction_number ? element.store_transaction__transaction_number : ""}</td>
+                                <td>${element.quantity_Transfer ? element.quantity_Transfer : ""}</td>
+                                
                             </tr>`;
-                    
                     }
                     // pagination_text = ``;
                     // if (response.total_pages > 1) {
@@ -201,12 +180,12 @@
     }
     
     $(document).ready(function () {
-        getStoreTransactionList(keyword)
+        getStoreItemList(keyword)
     });
 
     $(document).on('keyup', '#search', function () {
         keyword = $(this).val();
-        getStoreTransactionList(keyword)
+        getStoreItemList(keyword)
     })
 
     $(document).on('click', '#delete-btn', function () {
@@ -215,14 +194,14 @@
         if (window.confirm('Are you sure to delete ' + name + '?')) {
             $.ajax({
                 type: "POST",
-                url: "{% url 'api:storeTransactionDelete' %}",
+                url: "{% url 'api:storeItemDelete' %}",
                 data: ({ id: id }),
                 headers: {
                     'Authorization': getCookieValue("accessToken"),
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:storeTransactionList' %}");
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:storeItemList' %}");
                     } else {
                         alert(response.message);
                     }
@@ -236,73 +215,5 @@
             });
         }
     });
-    $(document).on('click', '.generate_and_download', function (e) {
-        e.preventDefault();
-
-        var fileType = $(this).attr('file_type');
-        var filename = "Material Receipt all transaction";
-        var table = $('.table');
-
-
-        // Generate and download Excel or PDF file only
-        if (fileType === 'xlsx') {
-            var wb = XLSX.utils.book_new();
-            var ws_data = [[]];
-
-            // Add table headers
-            var headerRow = [];
-            table.find('thead th').each(function() {
-                headerRow.push($(this).text());
-            });
-            ws_data.push(headerRow);
-
-            // Add table body rows
-            table.find('tbody tr').each(function() {
-                var row_data = [];
-                $(this).find('td').each(function() {
-                    row_data.push($(this).text());
-                });
-                ws_data.push(row_data);
-            });
-
-            // Generate worksheet and download Excel file
-            var ws = XLSX.utils.aoa_to_sheet(ws_data);
-            XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-            XLSX.writeFile(wb, filename + '.xlsx');
-        }
-        else if (fileType === 'pdf') {
-            const { jsPDF } = window.jspdf;
-            var doc = new jsPDF();
-
-            // Add header text at the top of the PDF
-            doc.setFontSize(10); // Optional: Set a smaller font size for the table content
-
-             // Extract headers
-            var headers = [];
-            table.find('thead th').each(function() {
-                headers.push($(this).text());
-            });
-            // Extract table rows
-            var data = [];
-            table.find('tbody tr').each(function() {
-                var row = [];
-                $(this).find('td').each(function() {
-                    row.push($(this).text().replace('₹', ''));
-                });
-                data.push(row);
-            });
-
-            // Extract footer row with total amount
-            // Generate PDF table with header, body, and footer
-            doc.autoTable({
-                head: [headers],
-                body: data,
-                startY: 20, // Start table below the header text
-                margin: { top: 10 }
-            });
-            doc.save(filename + '.pdf');
-        }
-    });s
-
 </script>
 {% endblock %}
