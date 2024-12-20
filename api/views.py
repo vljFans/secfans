@@ -4071,7 +4071,11 @@ def stockTransfer(request):
                 store_item_instance.opening_qty = record.closing_qty
                 store_item_instance.on_hand_qty = record.closing_qty - Decimal(request.POST["quantity"])
                 store_item_instance.closing_qty = record.closing_qty -  Decimal(request.POST["quantity"])
-                store_item_instance.quantity_Transfer = f"{request.POST["quantity"]} get transafer from {request.POST["from_item_id"]} to { request.POST["to_item_id"]} "
+                quant = request.POST["quantity"]
+                SoucestoreId = request.POST["from_item_id"]
+                destiStore = request.POST["to_item_id"]
+
+                store_item_instance.quantity_Transfer = f"{quant} get transafer from {SoucestoreId} to { destiStore} "
             
 
                 # Set other fields for the new transaction
@@ -4132,7 +4136,10 @@ def stockTransfer(request):
                 store_item_instance.closing_qty = Decimal(request.POST["quantity"])
 
             # Set other fields for the new transaction
-            store_item_instance.quantity_Transfer = f"{request.POST["quantity"]} get transafer from {request.POST["from_item_id"]} to { request.POST["to_item_id"]} "
+            itemId = request.POST["from_item_id"]
+            storeId = request.POST["to_item_id"]
+            quant = request.POST["quantity"]
+            store_item_instance.quantity_Transfer = f"{quant} get transafer from {itemId} to { storeId} "
             store_item_instance.transaction_date = given_date
             store_item_instance.item_id = request.POST["to_item_id"]
             store_item_instance.store_id = request.POST["store_id"]
