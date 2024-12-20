@@ -98,6 +98,7 @@ urlpatterns = [
     path('transaction-type-edit/<int:id>', views.transactionTypeEdit, name='transactionTypeEdit'),
 
     path('store-item-list', views.storeItemList, name='storeItemList'),
+    path('store-item-tracking-list', views.storeItemTrackingList, name='storeItemTrackingList'),
     path('store-item-add', views.storeItemAdd, name='storeItemAdd'),
     path('store-item-edit/<int:id>', views.storeItemEdit, name='storeItemEdit'),
     path('stock-transfer', views.stockTransfer, name='stockTransfer'),
@@ -106,6 +107,7 @@ urlpatterns = [
     path('store-transaction-add', views.storeTransactionAdd, name='storeTransactionAdd'),
     path('store-transaction-edit/<int:id>', views.storeTransactionEdit, name='storeTransactionEdit'),
     path('store-transaction-view/<int:id>', views.storeTransactionView, name='storeTransactionView'),
+    path('store-transaction-print/<int:id>', views.storeTransactionPrint, name='storeTransactionPrint'),
     
 
     path('job-order-list', views.jobOrderList, name='jobOrderList'),
@@ -175,4 +177,7 @@ urlpatterns = [
     path('report-production-transaction-view/<int:id>', views.reportProductionView, name='reportProductionView'),
 
     path('invoice-store-transaction-maigration',views.invoiceStoreTransactionMaigration, name='invoiceStoreTransactionMaigration'),
+    
+    path('store-item-current-migrate',views.storeItemCurrentMigrate, name='storeItemCurrentMigrate'),
+
 ]

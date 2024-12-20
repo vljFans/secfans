@@ -332,6 +332,7 @@
         callback()
         let store_type=$(this).val()
         $(".actual_quantity").val('')
+        $('.actual_quantity_on_that_date').val('')
         $.ajax({
             url: "{% url 'api:storeList' %}?store_type="+ encodeURIComponent(store_type),
             type: 'GET',
@@ -381,15 +382,19 @@
         //// console.log(selected_item_pk);
         let store_id =  $('select#store_id option:selected').val()
         let actual_quantity = $(this).closest('.content_parent').find('.actual_quantity')
+        let actual_quantity_on_that_date = $(this).closest('.content_parent').find('.actual_quantity_on_that_date')
         let quantity_sent = $(this).closest('.content_parent').find('.quantity_sent')
         let rate =  $(this).closest('.content_parent').find('.rate')
+        let transaction_date = $('#issue_date').val()
         // // console.log(quantity_sents.html());
         $.ajax({
             url: "{% url 'api:getActualQuantity' %}?",
             type: 'GET',
             data: ({
                 'item_id':selected_item_pk,
-                'store_id':store_id
+                'store_id':store_id,
+                'transaction_date':transaction_date
+
             }),
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -397,7 +402,10 @@
             success: function (response) {
                 if (response.status == 200) {
                     actual_quantity.val(+response.actual_quantity)
+                    actual_quantity_on_that_date.val(+response.actual_quantity_On_that_date)
                     quantity_sent.attr('max',+response.actual_quantity)
+
+                    
                     rate.val(response.item_price)
                 } 
                 else {
@@ -438,6 +446,13 @@
                                         <input type="text" 
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="actual_quantity" min="0.01" class="form-control actual_quantity"
+                                            placeholder="0" readonly>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>Quantity On That date <span class="required-indicator">*</span></label>
+                                        <input type="text" 
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="actual_quantity_on_that_date" min="0.01" class="form-control actual_quantity_on_that_date"
                                             placeholder="0" readonly>
                                     </div>
 
@@ -543,6 +558,13 @@
                                                 name="actual_quantity" min="0.01" class="form-control actual_quantity"
                                                 placeholder="0" readonly>
                                         </div>
+                                         <div class="col-md-2 mb-3">
+                                            <label>Quantity On That date <span class="required-indicator">*</span></label>
+                                            <input type="text" 
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="actual_quantity_on_that_date" min="0.01" class="form-control actual_quantity_on_that_date"
+                                                placeholder="0" readonly>
+                                        </div>
                                         <div class="col-md-2 mb-3">
                                             <label>Job quantity <span class="required-indicator">*</span></label>
                                             <input type="text" 
@@ -612,6 +634,13 @@
                                         <input type="text" 
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="actual_quantity" min="0.01" class="form-control actual_quantity"
+                                            placeholder="0" readonly>
+                                    </div>
+                                     <div class="col-md-2 mb-3">
+                                        <labelQuantity On That date <span class="required-indicator">*</span></label>
+                                        <input type="text" 
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="actual_quantity_on_that_date" min="0.01" class="form-control actual_quantity_on_that_date"
                                             placeholder="0" readonly>
                                     </div>
 
@@ -717,6 +746,13 @@
                                         <input type="text" 
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="actual_quantity" min="0.01" class="form-control actual_quantity"
+                                            placeholder="0" readonly>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label> Quantity On That date <span class="required-indicator">*</span></label>
+                                        <input type="text" 
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="actual_quantity_on_that_date" min="0.01" class="form-control actual_quantity_on_that_date"
                                             placeholder="0" readonly>
                                     </div>
                                     <div class="col-md-2 mb-3">
@@ -839,8 +875,11 @@
         $("#table_form").children(".content_parent").each(function(){
             let actual_quantity_element=$(this).find(".actual_quantity")
             let quantity_sent_element = $(this).find('.quantity_sent')
+            let transaction_date = $('#issue_date').val() 
             let item_id=$(this).find(".item_id").val()
             let parenttHtml = $(this).find(".item_id").parent().closest('.content_parent') 
+            let actual_quantity_on_that_date = $(this).closest('.content_parent').find('.actual_quantity_on_that_date')
+
             
             if(item_id && store_id){
                 $.ajax({
@@ -848,20 +887,25 @@
                     type: 'GET',
                     data: ({
                         'item_id':item_id,
-                        'store_id':store_id
+                        'store_id':store_id,
+                        'transaction_date' : transaction_date
                     }),
                     headers: {
                         'Authorization': getCookieValue("accessToken")
                     },
                     success: function (response) {
+                        console.log(item_id);
+                        console.log(response)
+                        
                         if (response.status == 200) {      
-                            if(response.actual_quantity == 0) {
+                            if(response.actual_quantity == 0 || response.on_hand_qty_res ==0 ) {
                                 parenttHtml.remove()
                                 
                             }
                             else{
 
                                 actual_quantity_element.val(+response.actual_quantity);
+                                actual_quantity_on_that_date.val(+response.actual_quantity_On_that_date)
                                 quantity_sent_element.attr('max',+response.actual_quantity)
                             }    
 
@@ -901,6 +945,10 @@
         
         if(parseFloat($(element).val())>parseFloat($(element).closest('.content_parent').find('.required_quantity').val())){
             alert('Sent quantity is more than required job quantity')
+            $(element).val("")
+        }
+        if(parseFloat($(element).val())>parseFloat($(element).closest('.content_parent').find('.actual_quantity_on_that_date').val())){
+            alert('Sent quantity is more than required on that date in hand quantity')
             $(element).val("")
         }
     }
