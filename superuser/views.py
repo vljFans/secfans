@@ -880,6 +880,13 @@ def storeItemList(request):
     })
     return render(request, 'portal/Store Item/list.html', context)
 
+@login_required
+def storeItemTrackingList(request):
+    context.update({
+        'page_title': "Store Item Tracking List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Item", 'url': reverse('superuser:storeItemList')}, {'name': "Tracking List"}]
+    })
+    return render(request, 'portal/Store Item/list2.html', context)
 
 @login_required
 def storeItemAdd(request):
@@ -979,6 +986,23 @@ def storeTransactionView(request, id):
     })
     return render(request, 'portal/Store Transaction/view.html', context)
 
+@login_required
+def storeTransactionPrint(request, id):
+    configList = models.Configuration_User.objects.first()
+    storeTransaction = models.Store_Transaction.objects.prefetch_related('store_transaction_detail_set').get(pk=id)
+    storeTransactionDetail = models.Store_Transaction_Detail.objects.filter(store_transaction_header=id,logical_grn_store=1).first()
+    storeTransactionDetailsumAmoutnt = sum(item.amount for item in storeTransaction.store_transaction_detail_set.filter(logical_grn_store=1))
+    storeTransactionDetailsumGstAmoutnt = sum(item.amount_with_gst for item in storeTransaction.store_transaction_detail_set.filter(logical_grn_store=1))
+    context.update({
+        'config': configList,
+        'storeTransaction': storeTransaction,
+        'storeTransactionDetailsumAmoutnt': storeTransactionDetailsumAmoutnt,
+        'storeTransactionDetailsumGstAmoutnt': storeTransactionDetailsumGstAmoutnt,
+        'storeTransactionDetail':storeTransactionDetail,
+        'page_title': "Logical GRN Transaction Challan ",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}]
+    })
+    return render(request, 'portal/Store Transaction/print.html', context)
 
 @login_required
 def jobOrderList(request):
@@ -1709,3 +1733,13 @@ def reportProductionView(request,id):
     })
     return render(request, 'portal/Report/Production/view.html', context)
 
+@login_required
+def storeItemCurrentMigrate(request):
+    transaction_type = models.Transaction_Type.objects.filter(status=1, deleted=0)
+    print(transaction_type)
+    context.update({
+        'transaction_types': transaction_type,
+        'page_title': "Current Store Item Migration",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "store ItemCurrent Tracking",'url': reverse('superuser:storeItemTrackingList')}, {'name': "Migration"}]
+    })
+    return render(request, 'portal/Store Item/stockMigration.html', context)

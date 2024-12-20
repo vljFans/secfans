@@ -1,0 +1,262 @@
+{% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+    <title>{{page_title}}</title>
+    <style type="text/css">
+        body {
+            position: absolute;
+            top: 2%;
+            left: 2%;
+            right: 2%;
+        }
+
+        table,
+        th,
+        tr,
+        td {
+            border: 1px solid rgb(195, 195, 195);
+        }
+
+        tr,
+        th,
+        td {
+            font-family: sans-serif;
+            font-size: 12px;
+            padding: 7px;
+            text-align: left;
+        }
+
+        .fs-16 {
+            font-size: 16px;
+            
+        }
+
+        .fs-10 {
+            font-size: 10px;
+            
+        }
+        .fs-8 {
+            font-size: 8px;
+            
+        }
+
+        .fs-11 {
+            font-size: 11px;
+        }
+
+        .upperTab{
+            margin-left: 0px;
+            margin-right:0px;
+            padding: 0px;
+           }
+    </style>
+</head>
+
+<body >
+    <div style="text-align: center; width: 100%; padding: 0;">
+        <table style="border-width: 0px; border-spacing: 0px; width: 100%;">
+            <tr>
+                <!-- Page title in the center -->
+                <td style="border: white; text-align: center; padding: 0;" colspan="4">
+                    <strong style="font-size: 16px;">{{ page_title|upper }}</strong>
+                </td>
+            </tr>
+            <tr>
+                <!-- Empty cells for alignment -->
+                <td style="border: white;" colspan="2"></td>
+                <!-- "ORIGINAL FOR RECIPIENT" aligned to the right -->
+                <td style="border: white; text-align: right;" colspan="2">
+                    <p style="margin: 0;">(ORIGINAL FOR RECIPIENT)</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    
+    <div style="border: 1px solid black;">
+        
+            <div style="width: 100%; border-color: 1px solid black;">
+                <table style="border-width:0px; border-spacing:0px; width: 100%;">
+                <tr>
+                    <td style="width:60%; margin-top: -10px;">
+                        <Strong>{{config.client_name}}</Strong><br>
+                        
+                            {{config.client_address}}<br>
+                            Ph. – {{config.client_contact}}<br>
+                            Works – {{config.client_work_address}}<br>
+                            GST - {{config.client_gst}}
+                    
+                    </td>
+                    <td colspan="10" rowspan="12" style="width:40%; padding: 0px;">
+                        <table style=" width: 100%;" >
+                            <tr>
+                                <td>Challan No.<br>
+                                <strong>{{storeTransaction.transaction_number}}</strong>
+                                </td>
+                                <td>Date. <br>
+                                <strong>{{storeTransaction.transaction_date}}</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>
+                                    Mode/Terms of Payment <br>
+                                    <strong></strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td> Reference No. <br>
+                                <strong>{{storeTransaction.invoice_challan}} </strong>
+                                </td>
+                                <td> Other References
+        
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Dispatch Doc No.</td>
+                                <td></td>
+                            </tr>
+                        
+                            <tr>
+                                <td>Dispatched through.
+                                    <br>
+                                    {% if storeTransaction.vehicle != null %}
+                                    <strong>
+                                        VEHICLE
+                                    </strong>
+                                    {% endif %}
+                                </td>
+                                <td>Destination
+                                    <br>
+                                    <strong></strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Bill of Lading/LR-RR No.
+                                    <br>
+                                    <strong></strong>
+                                </td>
+                                <td>Motor Vehicle No.
+                                    <br>
+                                    {% if storeTransaction.vehicle != null %}
+                                    <strong>
+                                        {{storeTransaction.vehicle}}
+                                    </strong>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        
+                            
+                        </table>
+                    </td>
+                    
+                <tr>
+                    <td>Dispatch From <br>
+                        <strong>{{storeTransaction.vendor.name}}</strong>
+                        <p style="margin-top: 0px;">{{storeTransaction.vendor.address}}</p>
+                        <p style="margin-top: -5px;"> {{storeTransaction.vendor.country.name}} &nbsp; {{storeTransaction.vendor.state.name}} &nbsp; {{storeTransaction.vendor.state.city.name}}</p>
+                        <p style="margin-top: -5px;"> {{storeTransaction.vendor.state.pin}}</p>
+                        
+                    </td>
+                </tr>
+                <tr>
+                    <td>Party <br>
+                        {% if storeTransactionDetail.store.vendor %}
+                        <strong>{{storeTransactionDetail.store.vendor.name}}</strong>
+                        <p style="margin-top: 0px;">{{storeTransactionDetail.store.vendor.address}}</p>
+                        <p style="margin-top: -5px;"> {{storeTransactionDetail.store.vendor.country.name}} &nbsp; {{storeTransactionDetail.store.vendor.state.name}} &nbsp; {{storeTransactionDetail.store.vendor.city.name}}</p>
+                        <p style="margin-top: -5px;"> {{storeTransactionDetail.store.vendor.pin}}</p>
+                        {% else %}
+                        <strong>self</strong>
+                        {% endif %}
+                    </td>
+                    
+                </tr>
+                </table>
+                
+                <table style="border-width:0px; border-spacing:0px; width: 100%;">
+                <tr>
+                    <th>Sl No</th>
+                    <th>Description of Goods</th>
+                    <th>HSN/SAC</th>
+                    <th>Quantity</th>
+                    <th>Rate</th>
+                    <th>per</th>
+                    <th>Amount(₹)</th>
+                    <th>Gst</th>
+                    <th>Amount With GST(₹ )</th>
+                </tr>
+                
+                {% for storeTransactionDet in storeTransaction.store_transaction_detail_set|filter_logicalGrnStore %}
+                <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td>{{storeTransactionDet.item.name}}</td>
+                    <td>{{storeTransactionDet.item.hsn_code}}</td>
+                    <td>{{storeTransactionDet.quantity}}</td>
+                    <td>{{storeTransactionDet.rate}}</td>
+                    <td>{{storeTransactionDet.item.uom.name}}</td>
+                    <td>{{storeTransactionDet.amount}}</td>
+                    <td>{{storeTransactionDet.gst_percentage}}</td>
+                    <td>{{storeTransactionDet.amount_with_gst}}</td>
+                </tr>
+                {% endfor %}
+                
+                </table>
+            </div>
+            
+            <div>
+                <table style="border-width:0px; border-spacing:0px; width:100%; padding-top: 10px; ">
+                <tr>
+                    <td><span style="font-weight: bold;">Total Amount : </span> ₹{{storeTransactionDetailsumAmoutnt}} 
+                        ({{storeTransactionDetailsumAmoutnt|number_to_words}})
+                        </td>
+                    
+                    <td> <span style="font-weight: bold;" >Total Amount With Gst:</span> &nbsp; ₹ {{storeTransactionDetailsumGstAmoutnt}} 
+                    ({{storeTransactionDetailsumGstAmoutnt|number_to_words}})
+                    </td>
+                </tr>
+                </table>
+            </div> 
+        
+        <div>
+        
+            <table style="border-width:0px; border-spacing:0px; width:50%; padding-top: 200px; padding-left: 80px; margin-left: 346px;">
+                <tr>
+                    <td  colspan="2" style="text-align: center;"><p style="float: right; margin-top: 0px">for {{config.client_name}}</p>
+                    <br>
+                    {% if storeTransaction.creator.user_sign is not None  %}
+                    <img src="{{storeTransaction.creator.user_sign}}" class="img-responsive" width="145" height="40" ><br><span >({{storeTransaction.creator.name}})</span><br>
+                    {% endif %}
+                    <br>
+                    <p style="text-align: center;"> Authorised Signatory</p>
+                    </td>
+                </tr>
+             </table>
+        </div>
+    </div>
+</body>
+<footer>
+    <div>
+        <table style=" border-width:0px; border-spacing:0px; width:50%; padding-left: 80px; margin-left: 80px;">
+           <tr>
+               <td rowspan="10" style="text-align: center; border: white;"> SUBJECT TO KOLKATA JURISDICTION <br>
+                   This is a Computer Generated Document
+               </td>
+           </tr>
+        </table>
+    </div>
+     
+</footer>
+
+
+</html>
+
+<script>
+    $(document).ready(function () {
+        window.print();
+    });
+</script>
