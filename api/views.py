@@ -9432,7 +9432,7 @@ def purchaseBillDetailsExport(request):
             'purchase_bill_header__transaction_number',
             'purchase_bill_header__transaction_date',
             'purchase_bill_header__round_off_price',
-            'purchase_bill_header__roundof_total_amount'
+            'purchase_bill_header__roundof_total_amount',
         ).annotate(
             gst_0=Sum(Case(
                 When(gst_percentage=0, then='gst_amount'),
@@ -9471,8 +9471,8 @@ def purchaseBillDetailsExport(request):
         wb = Workbook()
         ws = wb.active
 
-        # Add headers 
-        ws['A1'] ="Tran Type"
+       # Add headers
+        ws['A1'] = "Tran Type"
         ws['B1'] = "DSDVchNo : $_2"
         ws['C1'] = "Inv Date1"
         ws['D1'] = "Act Code4"
@@ -9481,23 +9481,24 @@ def purchaseBillDetailsExport(request):
         ws['G1'] = "Add2"
         ws['H1'] = "Gst No7"
         ws['I1'] = "TKGimpPartyState 15"
-        ws['J1'] ="Reference"
+        ws['J1'] = "Reference"
         ws['K1'] = "Ref Dt"
-        ws['L1'] = "GST@ 0%"
-        ws['M1'] = "GST@ 05%"
-        ws['N1'] = "GST@ 12%"
-        ws['O1'] = "GST@ 18%"
-        ws['P1'] = "GST@ 28%"
-        ws['Q1'] = "Output Igst Amt"
-        ws['R1'] = "Output Cgst Amt"
-        ws['S1'] = "Output Sgst Amt"
-        ws['T1'] ="Gst Cess Amt"
-        ws['U1'] = "LESS DISCOUNT"
-        ws['V1'] = "TCS PAYBLE"
-        ws['W1'] ="TDS RECEIVABLE"
-        ws['X1'] = "RoundOffAmt :$_11"
-        ws['Y1'] = "Tran Total"
-        ws['Z1'] = "VchNarration : $_13"
+        ws['L1'] = "Accessable Value"
+        ws['M1'] = "GST@ 0%"
+        ws['N1'] = "GST@ 05%"
+        ws['O1'] = "GST@ 12%"
+        ws['P1'] = "GST@ 18%"
+        ws['Q1'] = "GST@ 28%"
+        ws['R1'] = "Output Igst Amt"
+        ws['S1'] = "Output Cgst Amt"
+        ws['T1'] = "Output Sgst Amt"
+        ws['U1'] = "Gst Cess Amt"
+        ws['V1'] = "LESS DISCOUNT"
+        ws['W1'] = "TCS PAYBLE"
+        ws['X1'] = "TDS RECEIVABLE"
+        ws['Y1'] = "RoundOffAmt :$_11"
+        ws['Z1'] = "Tran Total"
+        ws['AA1'] = "VchNarration : $_13"
 
 
         # ws['A1'] = "Vendor Name"
@@ -9532,6 +9533,7 @@ def purchaseBillDetailsExport(request):
                 each['purchase_bill_header__vendor__state__name'],
                 each['purchase_bill_header__invoice_no'],
                 " ",
+                each['purchase_bill_header__total_amount'],
                 each['gst_0'],
                 each['gst_5'],
                 each['gst_12'],
