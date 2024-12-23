@@ -103,7 +103,7 @@
 
                             </div>
                             <div class="col-md-12 mb-3 items_div"></div>
-                            <div class="col-md-12 mb-3 items_div">
+                            <div class="col-md-12 mb-3 ">
                                 <label>Note</label>
                                 <textarea name="note" class="form-control note" placeholder="note" required></textarea>
                             </div>
@@ -256,9 +256,8 @@
                     $('.grn_inspection_no').val( response.page_items[0].grn_inspection_transaction_header_id)
                     
                     
-                    
                     for (const x of response.page_items){
-                     
+                        
                         items_div+=`
                         <div class="form-row">
                             
