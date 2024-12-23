@@ -6814,7 +6814,66 @@ def selfJobOrderReciept(request):
                     storeItem.on_hand_qty = Decimal(request.POST['incoming_quantity'])
                     storeItem.closing_qty =Decimal(request.POST['incoming_quantity'])
                     storeItem.save()
-                
+
+                    # change in storeItemCurrent min
+                    # Fetch the last transaction_date less than the given_date
+                    given_date = request.POST['transaction_date']
+                    
+                    
+                    # Check for the last record on the given_date
+                    record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id']).last()
+
+                    if not record:
+                        # If no record is found for the given_date, look for the last record before that date
+                        last_transaction_date = models.Store_Item_Current.objects.filter(
+                            transaction_date__lt=given_date,item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id']
+                        ).aggregate(Max('transaction_date'))['transaction_date__max']
+
+                        
+
+                        if last_transaction_date:
+                            # Fetch the record for the last_transaction_date
+                            record = models.Store_Item_Current.objects.filter(
+                                transaction_date=last_transaction_date,item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id']
+                            ).last()
+
+                    # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
+                    
+                    
+                    store_item_instance = models.Store_Item_Current()
+
+                    if record:
+                        # Set values based on the last record found
+                        store_item_instance.opening_qty = record.closing_qty
+                        store_item_instance.on_hand_qty = record.closing_qty + Decimal(
+                           request.POST['incoming_quantity']
+                        )
+                        store_item_instance.closing_qty = record.closing_qty + Decimal(
+                            request.POST['incoming_quantity']
+                        )
+                    else:
+                        # Set values based on the current transaction if no prior record exists
+                        store_item_instance.opening_qty = Decimal(
+                           0.00
+                        )
+                        store_item_instance.on_hand_qty = Decimal(
+                            request.POST['incoming_quantity']
+                        )
+                        store_item_instance.closing_qty = Decimal(
+                            request.POST['incoming_quantity']
+                        )
+
+                    # Set other fields for the new transaction
+                    store_item_instance.store_transaction_id = storeTransactionHeader.id
+                    store_item_instance.transaction_date = given_date
+                    store_item_instance.item_id = jobOrderDetails[index].item_id
+                    store_item_instance.store_id = request.POST['store_id']
+
+                    # Save the instance to the database
+                    store_item_instance.save()
+                    
+                    store_item_curreEdit(request.POST['store_id'],jobOrderDetails[index].item_id,given_date,'min',request.POST['incoming_quantity']) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
+
             models.Store_Transaction_Detail.objects.bulk_create(orderDetails)
             # full material recived closing job order task 
             if(material_reciept_all == True):
