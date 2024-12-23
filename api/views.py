@@ -6814,6 +6814,7 @@ def selfJobOrderReciept(request):
                     storeItem.on_hand_qty = Decimal(request.POST['incoming_quantity'])
                     storeItem.closing_qty =Decimal(request.POST['incoming_quantity'])
                     storeItem.save()
+                
             models.Store_Transaction_Detail.objects.bulk_create(orderDetails)
             # full material recived closing job order task 
             if(material_reciept_all == True):
