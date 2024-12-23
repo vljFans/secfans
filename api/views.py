@@ -6814,6 +6814,66 @@ def selfJobOrderReciept(request):
                     storeItem.on_hand_qty = Decimal(request.POST['incoming_quantity'])
                     storeItem.closing_qty =Decimal(request.POST['incoming_quantity'])
                     storeItem.save()
+
+                    # change in storeItemCurrent min
+                    # Fetch the last transaction_date less than the given_date
+                    given_date = request.POST['transaction_date']
+                    
+                    
+                    # Check for the last record on the given_date
+                    record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id']).last()
+
+                    if not record:
+                        # If no record is found for the given_date, look for the last record before that date
+                        last_transaction_date = models.Store_Item_Current.objects.filter(
+                            transaction_date__lt=given_date,item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id']
+                        ).aggregate(Max('transaction_date'))['transaction_date__max']
+
+                        
+
+                        if last_transaction_date:
+                            # Fetch the record for the last_transaction_date
+                            record = models.Store_Item_Current.objects.filter(
+                                transaction_date=last_transaction_date,item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id']
+                            ).last()
+
+                    # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
+                    
+                    
+                    store_item_instance = models.Store_Item_Current()
+
+                    if record:
+                        # Set values based on the last record found
+                        store_item_instance.opening_qty = record.closing_qty
+                        store_item_instance.on_hand_qty = record.closing_qty + Decimal(
+                           request.POST['incoming_quantity']
+                        )
+                        store_item_instance.closing_qty = record.closing_qty + Decimal(
+                            request.POST['incoming_quantity']
+                        )
+                    else:
+                        # Set values based on the current transaction if no prior record exists
+                        store_item_instance.opening_qty = Decimal(
+                           0.00
+                        )
+                        store_item_instance.on_hand_qty = Decimal(
+                            request.POST['incoming_quantity']
+                        )
+                        store_item_instance.closing_qty = Decimal(
+                            request.POST['incoming_quantity']
+                        )
+
+                    # Set other fields for the new transaction
+                    store_item_instance.store_transaction_id = storeTransactionHeader.id
+                    store_item_instance.transaction_date = given_date
+                    store_item_instance.item_id = jobOrderDetails[index].item_id
+                    store_item_instance.store_id = request.POST['store_id']
+
+                    # Save the instance to the database
+                    store_item_instance.save()
+                    
+                    store_item_curreEdit(request.POST['store_id'],jobOrderDetails[index].item_id,given_date,'min',request.POST['incoming_quantity']) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
+
             models.Store_Transaction_Detail.objects.bulk_create(orderDetails)
             # full material recived closing job order task 
             if(material_reciept_all == True):
@@ -9595,15 +9655,19 @@ def reportItemTrackingReport(request):
     from_date = request.POST.get('from_date', None)
     to_date = request.POST.get('to_date', None)
 
+   
     # Parse from_date and to_date strings to DateTime objects
     from_date = datetime.strptime(from_date, '%Y-%m-%d').date()
     to_date = datetime.strptime(to_date, '%Y-%m-%d').date()
 
     item = models.Item.objects.filter(pk=item_id)
-    store = models.Store.objects.filter(pk=store_id)
+    IsVendor = models.Store.objects.filter(pk=store_id).first()
     total_quantity = Decimal(0.00)
     total_reciept = Decimal(0.00)
+    total_reciept_by_job_order = Decimal(0.00)
     total_out = Decimal(0.00)
+    total_out_by_job_order = Decimal(0.00)
+    
     data = []
     # if item.exists():
     #     item = item.first()
@@ -9659,16 +9723,32 @@ def reportItemTrackingReport(request):
             rate = item.first().price
             amount = Decimal(0.00)
             reciept_quantity = Decimal(0.00)
+            reciept_ByJobOrder = Decimal(0.00)
+            utilised_by_jobOrder = Decimal(0.00)
             out_quantity = Decimal(0.00)
+            reciept_ByGRN = Decimal(0.00)
+            issued_ByJobOrder = Decimal(0.00)
             if store_item_current.store_transaction_id:
                 store_transaction_detail = models.Store_Transaction_Detail.objects.filter(store_id=store_id,
                     item_id=item_id, store_transaction_header_id = store_item_current.store_transaction_id).first()
                 if store_item_current.store_transaction.transaction_type.name == "MIS" or store_item_current.store_transaction.transaction_type.name == "MOUT" or store_item_current.store_transaction.transaction_type.name == "MIST" or store_item_current.store_transaction.transaction_type.name == "MIV":
                     out_quantity = store_transaction_detail.quantity
-                    total_reciept += out_quantity
+                    if store_item_current.store_transaction.transaction_type.name == "MIS" or store_item_current.store_transaction.transaction_type.name == "MOUT" :
+                        issued_ByJobOrder = store_transaction_detail.quantity
+                    if store_item_current.store_transaction.transaction_type.name == "MIST" :
+                        utilised_by_jobOrder = store_transaction_detail.quantity
+
+                    total_out += issued_ByJobOrder
+                    total_out_by_job_order += utilised_by_jobOrder
                 if  store_item_current.store_transaction.transaction_type.name == "GRN" or store_item_current.store_transaction.transaction_type.name == "GRNT" or store_item_current.store_transaction.transaction_type.name == "MIN" or store_item_current.store_transaction.transaction_type.name == "SP":
+                    if store_item_current.store_transaction.transaction_type.name == "GRN" or store_item_current.store_transaction.transaction_type.name == "MIN" or store_item_current.store_transaction.transaction_type.name == "SP":
+                        reciept_ByGRN = store_transaction_detail.quantity
+                    if store_item_current.store_transaction.transaction_type.name == "GRNT":
+                        reciept_ByJobOrder = store_transaction_detail.quantity
+
                     reciept_quantity = store_transaction_detail.quantity
-                    total_reciept += reciept_quantity
+                    total_reciept += reciept_ByGRN
+                    total_reciept_by_job_order += reciept_ByJobOrder
                 rate = store_transaction_detail.rate
                 amount = store_transaction_detail.amount
                 data.append({
@@ -9706,17 +9786,29 @@ def reportItemTrackingReport(request):
                     'closing_qty': store_item_current.closing_qty,
                     'notes': store_item_current.quantity_Transfer if store_item_current.quantity_Transfer else '---'
                 })
-                
-
-
-    context.update({
-        'status': 200,
-        'message': "Items Fetched Successfully.",
-        'total_reciept': total_reciept,
-        'total_out' : total_out,
-        'page_items': data
+        if IsVendor and IsVendor.vendor is not None:
+            context.update({
+            'status': 200,
+            'types': 'vendor',
+            'message': "Items Fetched Successfully.",
+            'total_reciept': total_reciept,
+            'total_out' : total_out,
+            'total_reciept_by_job_order': total_reciept_by_job_order,
+            'total_out_by_job_order': total_out_by_job_order,
+            'page_items': data
+            
+        })
+        else:
+           context.update({
+            'status': 200,
+            'types': 'InHouse',
+            'message': "Items Fetched Successfully.",
+            'total_reciept': total_reciept,
+            'total_out' : total_out,
+            'page_items': data
+            
+        })
         
-    })
     return JsonResponse(context)
 
 

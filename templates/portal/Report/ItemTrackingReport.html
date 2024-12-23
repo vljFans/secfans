@@ -112,7 +112,7 @@
                         </div>
                         <div class="text-right">
                             <div class="d-flex">
-                                <h6 class="card-header-title tx-13 mb-0" > <Span><strong>Total Recieved: </strong></Span>  <span class="tota_recieved"></span> ; <span><strong>Total Issue/Out: </strong></span> <span class="tota_out"></span>; </h6>
+                                <h6 class="card-header-title tx-13 mb-0 headerTotal" > <Span><strong>Total Recieved: </strong></Span>  <span class="tota_recieved"></span> ; <span><strong>Total Issue/Out: </strong></span> <span class="tota_out"></span>; </h6>
                             </div>
                         </div>
                     </div>
@@ -263,6 +263,17 @@
                     $('.tota_out').html(+response.total_out);
                     var tbody_html = ``;
                     view_url ="{% url 'superuser:storeTransactionView' 1 %}";
+                    $('.headerTotal').html(``);
+                    console.log(response.types);
+                    if (response.types === 'InHouse') {
+                        $('.headerTotal').html(`<Span><strong>Total Recieved[GRN/MIN]: </strong></Span>  <span class="tota_recieved">${+response.total_reciept}</span> ; <span><strong>Total Issue/Out[MIS/MOUT]: </strong></span> <span class="tota_out">${+response.total_out}</span>; `);
+                    }
+                    else{
+                        $('.headerTotal').html(`<Span><strong>Total Recieved(Logical GRN)[GRN]: </strong></Span>  <span class="tota_recieved">${+response.total_reciept}</span> ; <span><strong>Total Issue/Out(Logical MIS)[MIS]: </strong></span> <span class="tota_out">${+response.total_out}</span>; <br>
+                        <span><strong>Utlised/Manufactured Against any Job Order[MIST]: </strong></span> <span class="tota_out">${+response.total_out_by_job_order}</span>; 
+                        <span><strong>Recived Against any Job Order[GRNT]: </strong></span> <span class="tota_out">${+response.total_reciept_by_job_order}</span>;
+                        `);
+                    }
                     $.each(response.page_items, function (index, transaction) {
                         tbody_html += `
                             <tr>
