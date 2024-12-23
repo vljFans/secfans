@@ -254,9 +254,14 @@
                     $('.invoice_challan_no').removeAttr('hidden')
                     $('.invoice_challan_no').val(response.page_items[0].grn_inspection_transaction_header__invoice_challan)
                     $('.grn_inspection_no').val( response.page_items[0].grn_inspection_transaction_header_id)
+                    
+                    
+                    
                     for (const x of response.page_items){
+                     
                         items_div+=`
                         <div class="form-row">
+                            
                             <div class="col-md-6 mb-3">
                                 <label>Item<span class="required-indicator">*</span></label>
                                 <input type="hidden" class="store_id" name="store_id" value="${x.store_id}">
@@ -278,6 +283,7 @@
                         </div>
                         `
                     }
+                    
                     $(".items_div").html(items_div)
                     
                 }
