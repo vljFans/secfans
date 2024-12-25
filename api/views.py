@@ -6877,9 +6877,6 @@ def selfJobOrderReciept(request):
                     
                     raise ValueError('This is a test exception')
 
-                else:
-                    print(storeInstanceexist.first().id)
-                
                 store_item_curreEdit(request.POST['store_id'],jobOrderDetails[index].item_id,given_date,'min',request.POST['incoming_quantity']) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
 
             models.Store_Transaction_Detail.objects.bulk_create(orderDetails)
