@@ -11067,7 +11067,7 @@ def handle_transaction_detail(detail, transact_type_name):
             store_item_instance.on_hand_qty = Decimal(detail.quantity)
             store_item_instance.closing_qty = Decimal(detail.quantity)
         else:
-            raise ValueError(f"Cannot process transaction {detail.store_transaction_header.transaction_number}: No prior record found for item. of Transaction date.{detail.store_transaction_header.transaction_date}, item_name:{detail.item.name} ")
+            raise ValueError(f"Cannot process transaction {detail.store_transaction_header.transaction_number}: No prior record found for item. of Transaction date.{detail.store_transaction_header.transaction_date}, item_name:{detail.item.name} of store {detail.store.name} ")
 
     # Set common fields
     store_item_instance.store_transaction_id = detail.store_transaction_header.id
@@ -11095,6 +11095,9 @@ def storeItemCurrentMigrate(request):
         given_date = datetime.strptime(given_date_str, '%Y-%m-%d').date()
         given_date = datetime.combine(given_date, datetime.max.time())  # Combine with max time for end of day
 
+        # item_id = request.POST['item_id']
+
+        # store_id = request.POST['store_id']
         # Get the transaction type ID
         transaction_type_id = request.POST['transaction_type_id']
 
@@ -11139,3 +11142,5 @@ def storeItemCurrentMigrate(request):
         })
         transaction.rollback()
     return JsonResponse(context)
+
+
