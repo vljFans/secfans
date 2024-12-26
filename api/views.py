@@ -4676,6 +4676,8 @@ def storeTransactionAdd(request):
                                 jobOrderDetails[index].quantity_result) if not boMHeadDetailsExist else Decimal(BomQuantity*incoming_item_quantity))
                             # Set other fields for the new transaction
                             store_item_instance.store_transaction_id = storeTransactionVhead.id
+                            if(store_item_instance.on_hand_qty<0):
+                                raise ValueError(f"out quantity is more than available quantity")
                             store_item_instance.transaction_date = given_date
                             store_item_instance.item_id = jobOrderDetails[index].item_id
                             store_item_instance.store_id = store.id
@@ -4928,6 +4930,8 @@ def storeTransactionAdd(request):
                             store_item_instance.closing_qty = Decimal(
                                 request.POST.getlist('item_quantity')[index]
                             )
+                        if(store_item_instance.on_hand_qty<0):
+                            raise ValueError(f"onhand  quantity can not be negative")
                         # Set other fields for the new transaction
                         store_item_instance.store_transaction_id = storeTransactionHeader.id
                         store_item_instance.transaction_date = given_date
@@ -5004,7 +5008,8 @@ def storeTransactionAdd(request):
                                 store_item_instance.on_hand_qty = record.closing_qty - Decimal(request.POST.getlist('item_quantity')[index])
                                 store_item_instance.closing_qty = record.closing_qty - Decimal(request.POST.getlist('item_quantity')[index])
                             
-
+                                if(store_item_instance.on_hand_qty<0):
+                                    raise ValueError(f"out quantity is more than available quantity")
                                 # Set other fields for the new transaction
                                 store_item_instance.store_transaction_id = storeTransactionVhead.id
                                 store_item_instance.transaction_date = given_date
@@ -5225,7 +5230,15 @@ def storeTransactionEdit(request):
                         storeItem.closing_qty += transact.quantity
                         storeItem.updated_at = datetime.now()
                         storeItem.save()
-
+                    else:
+                        storeItem = models.Store_Item()
+                        storeItem.opening_qty = Decimal(transact.quantity)
+                        storeItem.on_hand_qty = Decimal(transact.quantity)
+                        storeItem.closing_qty = Decimal(transact.quantity)
+                        storeItem.item_id = transact.item_id    
+                        storeItem.store_id = store.id
+                        storeItem.save()
+                     
                     # change in storeItemCurrent min
                     # Fetch the last transaction_date less than the given_date
                     given_date = storeTranasctionHeaderOld.transaction_date
@@ -5266,6 +5279,8 @@ def storeTransactionEdit(request):
                         store_item_instance.on_hand_qty = transact.quantity
                         store_item_instance.closing_qty = transact.quantity
 
+                    if(store_item_instance.on_hand_qty<0):
+                        raise ValueError(f"onhand quantity can not be negative")
                     # Set other fields for the new transaction
                     store_item_instance.quantity_Transfer = f"{transact.quantity} get transfer to vendor stock due to editing of {storeTranasctionHeaderOld.transaction_number} of date {given_date}"
                     # print(5261)
@@ -5302,6 +5317,15 @@ def storeTransactionEdit(request):
                             storeItem.closing_qty +=  (bomDetails.quantity * transact.quantity)
                             storeItem.updated_at = datetime.now()
                             storeItem.save()  
+                        else:
+                            storeItem = models.Store_Item()
+                            storeItem.opening_qty = Decimal(bomDetails.quantity * transact.quantity)
+                            storeItem.on_hand_qty = Decimal(bomDetails.quantity * transact.quantity)
+                            storeItem.closing_qty = Decimal(bomDetails.quantity * transact.quantity)
+                            storeItem.item_id = detail.item_id
+                            storeItem.store_id = store.id
+                            storeItem.save()
+                        
                          # change in storeItemCurrent min
                         # Fetch the last transaction_date less than the given_date
                         given_date = storeTranasctionHeaderOld.transaction_date
@@ -5341,6 +5365,8 @@ def storeTransactionEdit(request):
                             )
                             store_item_instance.on_hand_qty = (bomDetails.quantity * transact.quantity)
                             store_item_instance.closing_qty = (bomDetails.quantity * transact.quantity)
+                        if(store_item_instance.on_hand_qty<0):
+                            raise ValueError(f"ohhand quantity can not be negative")
                         # print(5334)
                         # Set other fields for the new transaction
                         store_item_instance.quantity_Transfer = f"{(bomDetails.quantity * transact.quantity)} get transfer to vendor stock due to editing of {storeTranasctionHeaderOld.transaction_number} of date {given_date}"
@@ -5547,7 +5573,8 @@ def storeTransactionEdit(request):
                             store_item_instance.closing_qty = Decimal(
                                 request.POST.getlist('item_quantity')[index]
                             )
-
+                        if(store_item_instance.on_hand_qty<0):
+                            raise ValueError(f"onhand quantity can not be negative")
                         # Set other fields for the new transaction
                         store_item_instance.store_transaction_id = storeTransactionHeader.id
                         store_item_instance.transaction_date = given_date
@@ -5692,7 +5719,8 @@ def storeTransactionEdit(request):
                             store_item_instance.on_hand_qty = record.closing_qty - Decimal(request.POST.getlist('item_quantity')[index]) 
                             store_item_instance.closing_qty = record.closing_qty - Decimal(request.POST.getlist('item_quantity')[index]) 
                         
-
+                            if(store_item_instance.on_hand_qty<0):
+                                raise ValueError(f"out quantity is more than available quantity")
                             # Set other fields for the new transaction
                             store_item_instance.store_transaction_id = storeTransactionVhead.id
                             store_item_instance.transaction_date = given_date
@@ -5779,7 +5807,8 @@ def storeTransactionEdit(request):
                         store_item_instance.opening_qty = record.closing_qty
                         store_item_instance.on_hand_qty = record.closing_qty - (bomDetails.quantity * Decimal(request.POST.getlist('item_quantity')[0]))
                         store_item_instance.closing_qty = record.closing_qty - (bomDetails.quantity * Decimal(request.POST.getlist('item_quantity')[0]))
-                    
+                        if(store_item_instance.on_hand_qty<0):
+                            raise ValueError(f"out quantity is more than available quantity")
 
                         # Set other fields for the new transaction
                         store_item_instance.store_transaction_id = storeTransactionVhead.id
@@ -6377,7 +6406,8 @@ def selfJobOrderReciept(request):
                     store_item_instance.closing_qty = Decimal(
                         request.POST['incoming_quantity']
                     )
-
+                if(store_item_instance.on_hand_qty<0):
+                    raise ValueError(f"ohnand quantity is less than 0")
                 # Set other fields for the new transaction
                 store_item_instance.store_transaction_id = storeTransactionHeader.id
                 store_item_instance.transaction_date = given_date
@@ -6723,7 +6753,7 @@ def getActualQuantity(request):
     try:
         actual_quantity = models.Store_Item.objects.filter(store_id=int(store_id), item_id=int(item_id))
         print( actual_quantity.first().on_hand_qty,6628)
-        actual_quantity_On_that_date = models.Store_Item_Current.objects.filter(store_id=int(store_id), item_id=int(item_id),transaction_date=transaction_date).last()
+        actual_quantity_On_that_date = models.Store_Item_Current.objects.filter(store_id=int(store_id), item_id=int(item_id),transaction_date=transaction_date).order_by('transaction_date','created_at').last()
         if not actual_quantity_On_that_date :
             print(6629)
             actual_quantity_On_that_date = (
@@ -6732,8 +6762,8 @@ def getActualQuantity(request):
                     item_id=int(item_id),
                     transaction_date__lt=transaction_date  # Only dates less than the given date
                 )
-                .order_by('-transaction_date')  # Order by transaction_date in descending order
-                .first()  # Fetch the first (most recent) entry
+                .order_by('transaction_date','created_at')  # Order by transaction_date in descending order
+                .last()  # Fetch the first (most recent) entry
             )
         print(6641,item_id)
         context.update({
@@ -6971,7 +7001,8 @@ def materialIssueAdd(request):
                             store_item_instance.opening_qty = Decimal(0.00)
                             store_item_instance.on_hand_qty = Decimal(thirdPartyInQuantity)
                             store_item_instance.closing_qty = Decimal(thirdPartyInQuantity)
-
+                        if(store_item_instance.on_hand_qty<0):
+                             raise ValueError(f"ohnand quantity is less than 0")
                         # Set other fields for the new transaction
                         store_item_instance.store_transaction_id = storeTransactionHeaderIn.id
                         store_item_instance.transaction_date = given_date
@@ -6983,8 +7014,7 @@ def materialIssueAdd(request):
                         
                         store_item_curreEdit(vendor_store.id,itemInThrdParty,given_date,'min', thirdPartyInQuantity) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
 
-                    else:
-                        pass
+                   
                  #material issue issued for job order
             
                 if store_transaction_details and store_items_add:
@@ -7098,7 +7128,7 @@ def materialIssueAdd(request):
                     else:
                         # Set values based on the current transaction if no prior record exists
                         store_item_instance.opening_qty = Decimal(
-                            request.POST.getlist('quantity_sent')[index]
+                            0.00
                         )
                         store_item_instance.on_hand_qty = Decimal(
                            request.POST.getlist('quantity_sent')[index]
@@ -7106,7 +7136,8 @@ def materialIssueAdd(request):
                         store_item_instance.closing_qty = Decimal(
                             request.POST.getlist('quantity_sent')[index]
                         )
-
+                    if(store_item_instance.on_hand_qty<0):
+                        raise ValueError(f"onhand quantity is less than 0")
                     # Set other fields for the new transaction
                     store_item_instance.store_transaction_id = storeTransactionHeaderIn.id
                     store_item_instance.transaction_date = given_date
@@ -7166,7 +7197,8 @@ def materialIssueAdd(request):
                         store_item_instance.on_hand_qty = record.closing_qty - Decimal(request.POST.getlist('quantity_sent')[index])
                         store_item_instance.closing_qty = record.closing_qty -Decimal(request.POST.getlist('quantity_sent')[index])
                     
-
+                        if(store_item_instance.on_hand_qty<0):
+                            raise ValueError(f"out quantity is more than available quantity")
                         # Set other fields for the new transaction
                         store_item_instance.store_transaction_id = storeTransactionHeader.id
                         store_item_instance.transaction_date = given_date
@@ -7567,7 +7599,8 @@ def addGrnDetailisInsTransaction(request):
                             store_item_instance.closing_qty = Decimal(
                                 request.POST.getlist('accp_quantity')[index]
                             )
-
+                        if(store_item_instance.on_hand_qty<0):
+                            raise ValueError(f"onhand quantity is less than 0")
                         # Set other fields for the new transaction
                         store_item_instance.store_transaction_id = storeTransactionHeader.id
                         store_item_instance.transaction_date = given_date
@@ -8028,7 +8061,9 @@ def materialOutDetailsAdd(request):
                     store_item_instance.opening_qty = record.closing_qty
                     store_item_instance.on_hand_qty = record.closing_qty - Decimal(request.POST.getlist('quantity_sent')[index])
                     store_item_instance.closing_qty = record.closing_qty - Decimal(request.POST.getlist('quantity_sent')[index])
-                
+
+                    if(store_item_instance.on_hand_qty<0):
+                        raise ValueError(f"out quantity is more than available quantity")
 
                     # Set other fields for the new transaction
                     store_item_instance.store_transaction_id = storeTransactionHeader.id
@@ -8426,6 +8461,8 @@ def materialInDetailsAdd(request):
                     )
                     store_item_instance.on_hand_qty =Decimal(request.POST.getlist('quantity_recieved')[index])
                     store_item_instance.closing_qty =Decimal(request.POST.getlist('quantity_recieved')[index])
+                if(store_item_instance.on_hand_qty<0):
+                    raise ValueError(f"on hand quantity is less than 0")
                 # Set other fields for the new transaction
                 store_item_instance.store_transaction_id = storeTransactionHeader.id
                 store_item_instance.transaction_date = given_date
@@ -9232,7 +9269,7 @@ def reportItemTrackingReport(request):
     #         })
     #     data.sort(key=lambda x: (x['transaction_date'], x['transaction_number']))
     if item.exists():
-        print(store_id,item_id)
+        
         store_item_currents = models.Store_Item_Current.objects.filter(
             status = 1,
             deleted = 0,
@@ -9242,7 +9279,7 @@ def reportItemTrackingReport(request):
         ).order_by('transaction_date', 'created_at')
         
         for store_item_current in store_item_currents:
-            print(store_item_current.id)
+           
             rate = item.first().price
             amount = Decimal(0.00)
             reciept_quantity = Decimal(0.00)
@@ -9278,6 +9315,8 @@ def reportItemTrackingReport(request):
                     'reciept_quantity': reciept_quantity ,
                     'out_quantity' : out_quantity,
                     'rate':rate,
+                    'job_order_no': store_transaction_detail.store_transaction_header.job_order.order_number if store_transaction_detail.store_transaction_header.job_order_id else '---',
+                    'purchase_order_no': store_transaction_detail.store_transaction_header.purchase_order_header.order_number if store_transaction_detail.store_transaction_header.purchase_order_header_id else '---',
                     'amount': store_transaction_detail.amount,
                     'gst_percentage': store_transaction_detail.gst_percentage,
                     'amount_with_gst': store_transaction_detail.amount_with_gst,
@@ -9297,6 +9336,8 @@ def reportItemTrackingReport(request):
                     'out_quantity' : out_quantity,
                     'rate':rate,
                     'amount': '--',
+                    'job_order_no': store_transaction_detail.store_transaction_header.job_order.order_number if store_transaction_detail.store_transaction_header.job_order_id else '---',
+                    'purchase_order_no': store_transaction_detail.store_transaction_header.purchase_order_header.order_number if store_transaction_detail.store_transaction_header.purchase_order_header_id else '---',
                     'gst_percentage': '---',
                     'amount_with_gst': '---',
                     'transaction_number':'--',
@@ -10379,7 +10420,8 @@ def invoice_store_migration(store_id,user_id):
                     store_item_instance.on_hand_qty = record.closing_qty - Decimal(invoice_detail.quantity)
                     store_item_instance.closing_qty = record.closing_qty - Decimal(invoice_detail.quantity)
                 
-
+                    if(store_item_instance.on_hand_qty<0):
+                        raise ValueError(f"out quantity is more than available quantity")
                     # Set other fields for the new transaction
                     store_item_instance.store_transaction_id = storeTransactionHeader.id
                     store_item_instance.transaction_date = given_date
@@ -10390,7 +10432,7 @@ def invoice_store_migration(store_id,user_id):
                     store_item_instance.save()
                     
                 else:
-                    message = "canot possible"
+                    message = "canot possible no  item of this store present"
                     raise ValueError(message)
                 store_item_curreEdit(store_id,invoice_detail.item_id,given_date,'mout',invoice_detail.quantity) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
             # Update page items
@@ -10591,7 +10633,8 @@ def handle_transaction_detail(detail, transact_type_name):
             store_item_instance.closing_qty = Decimal(detail.quantity)
         else:
             raise ValueError(f"Cannot process transaction {detail.store_transaction_header.transaction_number}: No prior record found for item. of Transaction date.{detail.store_transaction_header.transaction_date}, item_name:{detail.item.name} of store {detail.store.name} ")
-
+    if(store_item_instance.on_hand_qty<0):
+        raise ValueError(f"onhand quantity is less than 0")
     # Set common fields
     store_item_instance.store_transaction_id = detail.store_transaction_header.id
     store_item_instance.transaction_date = detail.store_transaction_header.transaction_date

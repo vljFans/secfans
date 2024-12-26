@@ -363,6 +363,7 @@
     })
 
     $(document).on('change','#store_id' , function(){
+        
         $("#table_form").empty();
         callMaterialIssue()
         callback()
@@ -370,6 +371,24 @@
             fill_up_actual_quantity()
         }
     })
+
+    $(document).on('change', '#issue_date', function() {
+        // Perform the desired actions when the issue date changes
+        console.log("Issue Date changed to:", $(this).val());
+
+        // Example: Clear a related table or perform an update
+        $("#table_form").empty();
+
+        // Example: Call related functions
+        callMaterialIssue();
+        callback();
+
+        // Check if a specific condition is met
+        if ($('#job_order_id').val() !== "") {
+            fill_up_actual_quantity();
+        }
+    });
+
 
     $(document).on('change','#job_order_id',function(){
         $("#table_form").empty();
