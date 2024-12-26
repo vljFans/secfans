@@ -102,43 +102,39 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td></td>
                                 <td>
-                                    Mode/Terms of Payment <br>
-                                    <strong></strong>
+                                    Eway Bill No. 
+                                    {% if storeTransaction.eway_bill != null %}
+                                    <br>
+                                    <strong>{{ storeTransaction.eway_bill}}</strong>
+                                    {% endif %}
+                                </td>
+                                <td> Supplier Invoice No. <br>
+                                    <strong>{{storeTransaction.invoice_challan}} </strong>
                                 </td>
                             </tr>
                             <tr>
-                                <td> Reference No. <br>
-                                <strong>{{storeTransaction.invoice_challan}} </strong>
+                                <td>Dispatch Doc No.
+                                    {% if storeTransaction.dispatch_no != null %}
+                                    <br>
+                                    <strong>{{storeTransaction.dispatch_no}}</strong>
+                                    {% endif %}
                                 </td>
-                                <td> Other References
-        
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Dispatch Doc No.</td>
-                                <td></td>
-                            </tr>
-                        
-                            <tr>
                                 <td>Dispatched through.
                                     <br>
                                     {% if storeTransaction.vehicle != null %}
                                     <strong>
-                                        VEHICLE
+                                        {{storeTransaction.dispatch_through}}
                                     </strong>
                                     {% endif %}
                                 </td>
-                                <td>Destination
-                                    <br>
-                                    <strong></strong>
-                                </td>
                             </tr>
-                            <tr>
-                                <td>Bill of Lading/LR-RR No.
+                            <tr>  
+                                <td>Destination
+                                    {% if storeTransaction.destination != null %}
                                     <br>
-                                    <strong></strong>
+                                    <strong>{{ storeTransaction.destination}}</strong>
+                                    {% endif %}
                                 </td>
                                 <td>Motor Vehicle No.
                                     <br>
@@ -149,8 +145,16 @@
                                     {% endif %}
                                 </td>
                             </tr>
-                        
+                            <tr>
+                                <td colspan="2">Notes <br>
+                                    {% if storeTransaction.notes != null %}
+                                    <strong>{{storeTransaction.notes}}</strong>
+                                    {% endif %}
+                                </td>
+                                
+                            </tr>
                             
+
                         </table>
                     </td>
                     
@@ -160,6 +164,7 @@
                         <p style="margin-top: 0px;">{{storeTransaction.vendor.address}}</p>
                         <p style="margin-top: -5px;"> {{storeTransaction.vendor.country.name}} &nbsp; {{storeTransaction.vendor.state.name}} &nbsp; {{storeTransaction.vendor.state.city.name}}</p>
                         <p style="margin-top: -5px;"> {{storeTransaction.vendor.state.pin}}</p>
+                        <p style="margin-top: -5px;"><span>GST: </span> {{storeTransaction.vendor.gst_no}}</p>
                         
                     </td>
                 </tr>
@@ -170,6 +175,7 @@
                         <p style="margin-top: 0px;">{{storeTransactionDetail.store.vendor.address}}</p>
                         <p style="margin-top: -5px;"> {{storeTransactionDetail.store.vendor.country.name}} &nbsp; {{storeTransactionDetail.store.vendor.state.name}} &nbsp; {{storeTransactionDetail.store.vendor.city.name}}</p>
                         <p style="margin-top: -5px;"> {{storeTransactionDetail.store.vendor.pin}}</p>
+                        <p style="margin-top: -5px;"><span>GST: </span> {{storeTransactionDetail.store.vendor.gst_no}}</p>
                         {% else %}
                         <strong>self</strong>
                         {% endif %}
