@@ -6016,9 +6016,8 @@ def jobOrderNo(request):
     context ={}
     manufacturing_type= request.GET.get('keyword',None)
     jobOrderlast = models.Job_Order.objects.filter(manufacturing_type=manufacturing_type).last()
-    jobOrderCount_match = re.search(r'SEC/TPM/(\d{3})/', jobOrderlast.order_number)  # Assuming order_number is the field name
+    jobOrderCount_match = re.search(r'SEC/(?:TPM|SLF)/(\d{3})/', jobOrderlast.order_number)  # Assuming order_number is the field name
     jobOrderCount = int(jobOrderCount_match.group(1)) if jobOrderCount_match else 0
-    print(jobOrderCount)
     vendorShort = 'SLF' if manufacturing_type == 'Self' else 'TPM'
     jobOrderNumber =  env("JOB_ORDER_NUMBER_SEQ").replace("${VENDOR_SHORT}", vendorShort).replace(
                 "${AI_DIGIT_3}", str(jobOrderCount + 1).zfill(3)).replace("${FINANCE_YEAR}", datetime.today().strftime('%y') + "-" + (datetime(datetime.today().year + 1, 1, 1).strftime('%y')))
