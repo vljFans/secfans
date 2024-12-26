@@ -123,6 +123,7 @@ urlpatterns = [
     path('store-transaction-edit', views.storeTransactionEdit, name='storeTransactionEdit'),
     path('store-transaction-delete', views.storeTransactionDelete, name='storeTransactionDelete'),
     path('store-transaction-details', views.storeTransactionDetails, name='storeTransactionDetails'),
+    path('store-transaction-logical-grn-edit', views.storeTransactionLogicalGrnEdit, name='storeTransactionLogicalGrnEdit'),
 
     path('job-order-list', views.jobOrderList, name='jobOrderList'),
     path('job-order-add', views.jobOrderAdd, name='jobOrderAdd'),

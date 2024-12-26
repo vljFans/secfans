@@ -1,0 +1,181 @@
+{% extends 'portal/base.html' %}
+{% load static %}
+{% load template_func %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<div class="wrapper">
+    <!--================================-->
+    <!-- Breadcrumb Start -->
+    <!--================================-->
+    <div class="pageheader pd-t-25 pd-b-35">
+        <div class="d-flex justify-content-between">
+            <div class="clearfix">
+                <div class="pd-t-5 pd-b-5">
+                    <h1 class="pd-0 mg-0 tx-20 tx-dark">{{parent_page_title}} {{page_title}}</h1>
+                </div>
+                <div class="breadcrumb pd-0 mg-0">
+                    {% for breadcrumb in breadcrumbs %}
+                    {% if forloop.counter != breadcrumbs|length %}
+                    <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                    {% else %}
+                    <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Breadcrumb End -->
+    <!--================================-->
+    <!-- Form Element Start -->
+    <!--================================-->
+    <div class="row row-xs clearfix">
+        <div class="col-md-12 col-lg-12">
+            {% if messages %}
+            {% for message in messages %}
+            {% if forloop.counter == messages|length %}
+            <div class="{{ message.tags }} success-msg-txt" style="height: 30px; text-align: center;">{{ message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            <div class="error-msg-txt" style="height: 30px; text-align: center;"></div>
+            <div class="card mg-b-30">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-header-title tx-13 mb-0">{{parent_page_title}} {{page_title}}</h6>
+                        </div>
+                        <div class="text-right">
+                            <div class="d-flex">
+                                <a href="{% url 'superuser:storeTransactionList' %}" class="mr-3"><i
+                                        class="fa fa-step-backward"></i></a>
+                                <a href="" class="mr-3"><i class="ti-reload"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
+                        <div class="form-row">
+                            <div class="col-md-6 mb-3">
+                                <input type="hidden" name="pk" class="form-control pk"
+                                value="{{storeTransaction.id}}" required>
+                                <label>Dispatch Doc No.<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" name="dispatch_no" class="form-control dispatch_no"
+                                    placeholder="dispatch no" required {% if storeTransaction.dispatch_no %} value="{{storeTransaction.dispatch_no}}" {% endif %}>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Dispatch Throuh<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" name="dispatch_through" class="form-control dispatch_through"
+                                    placeholder="dispatch through" required {% if storeTransaction.dispatch_through %} value="{{storeTransaction.dispatch_through}}" {% endif %}>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Eway bill No<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" name="eway_bill" class="form-control eway_bill"
+                                    placeholder="eway bill" required {% if storeTransaction.eway_bill %} value="{{storeTransaction.eway_bill}}" {% endif %}>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Destination<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" name="destination" class="form-control destination"
+                                    placeholder="destination" required {% if storeTransaction.destination %} value="{{storeTransaction.destination}}" {% endif %}>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Motor Vehicle No.<span class="required-indicator">*</span></label>
+                                <input type="text" name="vehicle" class="form-control vehicle"
+                                    placeholder="vehicle" required {% if storeTransaction.vehicle %} value="{{storeTransaction.vehicle}}" {% endif %}>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Notes<span class="required-indicator">*</span></label>
+                                <textarea name="notes" rows="5" class="form-control" placeholder="Note">{% if storeTransaction.notes %} {{storeTransaction.notes}} {% endif %}</textarea>
+                            </div>
+                        </div>
+                        {% if request.user.is_superuser == 1 or 'edit_store_transaction'|get_session_permission:request is not None %}
+                        <button class="btn btn-success submit-btn" type="submit">Submit</button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Form Element End -->
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+<script>
+    $('.selectpicker').select2({
+        placeholder: ''
+    });
+
+    $(document).ready(function () {
+    });
+
+    $(document).on('submit', '#create_form', function (e) {
+        e.preventDefault();
+        $('.submit-btn').text('Submitting...');
+        $('.submit-btn').prop('disabled', true);
+        var formData = new FormData(create_form);
+        $.ajax({
+            type: "POST",
+            evalScripts: true,
+            contentType: false,
+            processData: false,
+            url: "{% url 'api:storeTransactionLogicalGrnEdit' %}",
+            data: formData,
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', false);
+                if (response.status == 200) {
+                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:storeTransactionList' %}");
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', false);
+                // locationAfterMessageStore(error.responseJSON.detail, 'error');
+                $('.success-msg-txt').text("");
+                $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
+                $('.error-msg-txt').addClass('text-danger');
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    });
+</script>
+{% endblock %}

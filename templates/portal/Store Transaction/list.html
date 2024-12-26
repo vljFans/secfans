@@ -148,6 +148,7 @@
                     view_url = "{% url 'superuser:storeTransactionView' 1 %}";
                     edit_url = "{% url 'superuser:storeTransactionEdit' 1 %}";
                     print_url = "{% url 'superuser:storeTransactionPrint' 1 %}";
+                    logicalGrn_url = "{% url 'superuser:storeTransactionLogicalGrnEdit' 1 %}";
                     
                     page_items = response.page_items;
                     // console.log(page_items)
@@ -173,6 +174,9 @@
                                 {% endif %}
                                 {% if request.user.is_superuser == 1 or 'change_store_transaction'|get_session_permission:request is not None %}
                                 ${element.is_logical_grn_store == 1 ? `<a href="${print_url.replace('1', element.pk)}" class="table-action mg-r-10" target="_blank"> <i class="fa fa-print"></i> </a>` : ''}
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'change_store_transaction'|get_session_permission:request is not None %}
+                                ${element.is_logical_grn_store == 1 ? `<a href="${logicalGrn_url.replace('1', element.pk)}" class="table-action mg-r-10" > <i class="fa fa-truck"></i> </a>` : ''}
                                 {% endif %}
                                 </td>
                             </tr>`;
