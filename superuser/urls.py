@@ -107,7 +107,8 @@ urlpatterns = [
     path('store-transaction-add', views.storeTransactionAdd, name='storeTransactionAdd'),
     path('store-transaction-edit/<int:id>', views.storeTransactionEdit, name='storeTransactionEdit'),
     path('store-transaction-view/<int:id>', views.storeTransactionView, name='storeTransactionView'),
-    path('store-transaction-print/<int:id>', views.storeTransactionPrint, name='storeTransactionPrint'),
+    path('store-transaction-print/<int:id>', views.storeTransactionPrint, name='storeTransactionPrint'), 
+    path('store-transaction-logical-grn-edit/<int:id>', views.storeTransactionLogicalGrnEdit, name='storeTransactionLogicalGrnEdit'),
     
 
     path('job-order-list', views.jobOrderList, name='jobOrderList'),

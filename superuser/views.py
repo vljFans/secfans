@@ -999,10 +999,22 @@ def storeTransactionPrint(request, id):
         'storeTransactionDetailsumAmoutnt': storeTransactionDetailsumAmoutnt,
         'storeTransactionDetailsumGstAmoutnt': storeTransactionDetailsumGstAmoutnt,
         'storeTransactionDetail':storeTransactionDetail,
-        'page_title': "Logical GRN Transaction Challan ",
+        'page_title': "Material Out Challan Print",
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}]
     })
     return render(request, 'portal/Store Transaction/print.html', context)
+
+@login_required
+def storeTransactionLogicalGrnEdit(request, id):
+    storeTransaction = models.Store_Transaction.objects.prefetch_related('store_transaction_detail_set').get(pk=id)
+    context.update({
+        
+        'storeTransaction': storeTransaction,
+        'page_title': "Logical Grn delivery Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Store Transaction", 'url': reverse('superuser:storeTransactionList')}]
+    })
+    return render(request, 'portal/Store Transaction/logicalGrnEdit.html', context)
+
 
 @login_required
 def jobOrderList(request):
