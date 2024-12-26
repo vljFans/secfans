@@ -9,6 +9,7 @@ from api import models
 import environ
 import json
 import os
+import re
 from sec import settings
 from num2words import num2words
 from datetime import datetime, timedelta
@@ -1037,7 +1038,9 @@ def jobOrderAdd(request):
         id = request.GET.get('id', None)
         # print(id)
         jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
-        jobOrderCount = models.Job_Order.objects.filter(manufacturing_type=jobOrder.manufacturing_type).count()
+        jobOrderlast = models.Job_Order.objects.filter(manufacturing_type=jobOrder.manufacturing_type).last()
+        jobOrderCount_match = re.search(r'SEC/(?:TPM|SLF)/(\d{3})/', jobOrderlast.order_number)  # Assuming order_number is the field name
+        jobOrderCount = int(jobOrderCount_match.group(1)) if jobOrderCount_match else 0
         vendorShort = 'SLF' if jobOrder.manufacturing_type == 'Self' else 'TPM'
         jobOrderNumber =  env("JOB_ORDER_NUMBER_SEQ").replace("${VENDOR_SHORT}", vendorShort).replace(
                 "${AI_DIGIT_3}", str(jobOrderCount + 1).zfill(3)).replace("${FINANCE_YEAR}", datetime.today().strftime('%y') + "-" + (datetime(datetime.today().year + 1, 1, 1).strftime('%y')))
