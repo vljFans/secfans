@@ -4071,6 +4071,8 @@ def stockTransfer(request):
                 store_item_instance.opening_qty = record.closing_qty
                 store_item_instance.on_hand_qty = record.closing_qty - Decimal(request.POST["quantity"])
                 store_item_instance.closing_qty = record.closing_qty -  Decimal(request.POST["quantity"])
+                if(store_item_instance.on_hand_qty<0):
+                    raise ValueError(f"out quantity is more than available quantity")
                 quant = request.POST["quantity"]
                 SoucestoreId = request.POST["from_item_id"]
                 destiStore = request.POST["to_item_id"]
@@ -4129,6 +4131,8 @@ def stockTransfer(request):
                 store_item_instance.opening_qty = record.closing_qty
                 store_item_instance.on_hand_qty = record.closing_qty + Decimal(request.POST["quantity"])
                 store_item_instance.closing_qty = record.closing_qty + Decimal(request.POST["quantity"])
+                if(store_item_instance.on_hand_qty<0):
+                    raise ValueError(f"on_hand_qty quantity is less than 0")
             else:
                 # Set values based on the current transaction if no prior record exists
                 store_item_instance.opening_qty = Decimal(0.00)
@@ -4154,10 +4158,10 @@ def stockTransfer(request):
             'status': 200,
             'message': "Store Transfer completed Successfully."
         })
-    except Exception:
+    except Exception as e:
         context.update({
             'status': 588,
-            'message': "Something Went Wrong. Please Try Again."
+            'message': f"Something Went Wrong. Please Try Again.{e}"
         })
         transaction.rollback()
     return JsonResponse(context)
@@ -4663,7 +4667,6 @@ def storeTransactionAdd(request):
                        
                         
                         store_item_instance = models.Store_Item_Current()
-                        print(4450)
                         if record:
                             # Set values based on the last record found
                             store_item_instance.opening_qty = record.closing_qty
@@ -6501,8 +6504,10 @@ def jobOrderList(request):
 def jobOrderNo(request):
     context ={}
     manufacturing_type= request.GET.get('keyword',None)
-    jobOrderCount = models.Job_Order.objects.filter(manufacturing_type=manufacturing_type).count()
-    # # # # # print(jobOrderCount)
+    jobOrderlast = models.Job_Order.objects.filter(manufacturing_type=manufacturing_type).last()
+    jobOrderCount_match = re.search(r'SEC/TPM/(\d{3})/', jobOrderlast.order_number)  # Assuming order_number is the field name
+    jobOrderCount = int(jobOrderCount_match.group(1)) if jobOrderCount_match else 0
+    print(jobOrderCount)
     vendorShort = 'SLF' if manufacturing_type == 'Self' else 'TPM'
     jobOrderNumber =  env("JOB_ORDER_NUMBER_SEQ").replace("${VENDOR_SHORT}", vendorShort).replace(
                 "${AI_DIGIT_3}", str(jobOrderCount + 1).zfill(3)).replace("${FINANCE_YEAR}", datetime.today().strftime('%y') + "-" + (datetime(datetime.today().year + 1, 1, 1).strftime('%y')))
