@@ -126,6 +126,8 @@
                                     <th>Transaction Date</th>
                                     <th>Last update</th>
                                     <th>Transaction Number</th>
+                                    <th>Job Order No</th>
+                                    <th>Purchase order No</th>
                                     <th>Transaction Type</th>
                                     <th>Invoice/Challan No</th>
                                     <th>Rate</th>
@@ -283,6 +285,8 @@
                                 <td>
                                 ${transaction.transaction_id !== '---' ? `<a href="${view_url.replace('1', transaction.transaction_id)}" target="_blank">${transaction.transaction_number}</a>` : '---'}
                                 </td>
+                                <td>${transaction.job_order_no}</td>
+                                <td>${transaction.purchase_order_no}</td>
                                 <td>${transaction.transaction_type}</td>
                                 <td>${transaction.invoice_challan_no}</td>
                                 <td>${transaction.rate}</td>
@@ -318,13 +322,135 @@
         });
     });
     
+    // $(document).on('click', '.generate_and_download', function (e) {
+    //     e.preventDefault();
+
+    //     // Get the file type from the clicked button's attribute
+    //     var fileType = $(this).attr('file_type');
+
+    //     var filename = "Inventory Storewise";
+
+    //     // Generate and download Excel or CSV file
+    //     if (fileType === 'xlsx') {
+    //         // Create workbook for Excel file
+    //         var wb = XLSX.utils.book_new();
+
+    //         // Loop through each table and add it as a separate sheet in the Excel file
+    //         $('.table').each(function(index) {
+    //             var ws_data = [[]];
+    //             var sheet_name = $(this).prev('h5').text();
+
+    //             // Extract table data
+    //             $(this).find('thead th').each(function() {
+    //                 ws_data[0].push($(this).text());
+    //             });
+
+    //             $(this).find('tbody tr').each(function() {
+    //                 var row_data = [];
+    //                 $(this).find('td').each(function() {
+    //                     row_data.push($(this).text());
+    //                 });
+    //                 ws_data.push(row_data);
+    //             });
+
+    //             // Add worksheet to workbook
+    //             var ws = XLSX.utils.aoa_to_sheet(ws_data);
+    //             XLSX.utils.book_append_sheet(wb, ws, sheet_name);
+    //         });
+
+    //         // Download Excel file
+    //         XLSX.writeFile(wb, filename + '.xlsx');
+    //     } 
+        
+    //     else if (fileType === 'csv') {
+    //     // Initialize CSV content
+    //     var csvContent = '';
+
+    //     // Loop through each table and generate CSV content for each
+    //     $('.table').each(function(index) {
+    //         var sheet_name = $(this).prev('h5').text();
+
+    //         // Append sheet name to CSV content
+    //         csvContent += sheet_name + '\n';
+
+    //         // Extract table data and append to CSV content
+    //         $(this).find('thead th').each(function() {
+    //             csvContent += '"' + $(this).text().replace(/"/g, '""') + '",'; // Surround with double quotes and escape existing quotes
+    //         });
+    //         csvContent = csvContent.slice(0, -1); // Remove trailing comma
+    //         csvContent += '\n';
+
+    //         $(this).find('tbody tr').each(function() {
+    //             $(this).find('td').each(function() {
+    //                 csvContent += '"' + $(this).text().replace(/"/g, '""') + '",'; // Surround with double quotes and escape existing quotes
+    //             });
+    //             csvContent = csvContent.slice(0, -1); // Remove trailing comma
+    //             csvContent += '\n';
+    //         });
+
+    //         // Add sheet separator
+    //         csvContent += '\n';
+    //     });
+
+    //     // Create Blob and download CSV file
+    //     var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+    //     saveAs(blob, filename + '.csv');
+    // }        
+    //     else if (fileType === 'pdf') {
+    //         window.jsPDF = window.jspdf.jsPDF
+    //         // Initialize jsPDF
+    //         var doc = new jsPDF();
+
+    //         // Loop through each table and generate PDF content for each
+    //         $('.table').each(function(index) {
+    //             // Extract store name
+    //             var tableName = $(this).prev('h5').text();
+
+    //             // Add store name as heading
+    //             doc.text(tableName, 10, 10);
+
+    //             // Extract table data
+    //             var headers = [];
+    //             var data = [];
+
+    //             $(this).find('thead th').each(function() {
+    //                 headers.push($(this).text());
+    //             });
+
+    //             $(this).find('tbody tr').each(function() {
+    //                 var row = [];
+    //                 $(this).find('td').each(function() {
+    //                     row.push($(this).text());
+    //                 });
+    //                 data.push(row);
+    //             });
+
+    //             // Generate PDF table
+    //             doc.autoTable({
+    //                 head: [headers],
+    //                 body: data,
+    //                 startY: 20 // Start table below heading
+    //             });
+
+    //             // Add page break if not the last table
+    //             if (index < $('.table').length - 1) {
+    //                 doc.addPage();
+    //             }
+    //         });
+
+    //         // Download PDF file
+    //         doc.save(filename + '.pdf');
+    //     }
+    // });
+   
+   
     $(document).on('click', '.generate_and_download', function (e) {
         e.preventDefault();
 
         // Get the file type from the clicked button's attribute
         var fileType = $(this).attr('file_type');
 
-        var filename = "Inventory Storewise";
+        var filename = "Item Tracking Report";
 
         // Generate and download Excel or CSV file
         if (fileType === 'xlsx') {
@@ -332,19 +458,19 @@
             var wb = XLSX.utils.book_new();
 
             // Loop through each table and add it as a separate sheet in the Excel file
-            $('.table').each(function(index) {
+            $('.table').each(function (index) {
                 var ws_data = [[]];
-                var sheet_name = $(this).prev('h5').text();
+                var sheet_name = $(this).prev('h5').text().trim() || `Sheet${index + 1}`;
 
                 // Extract table data
-                $(this).find('thead th').each(function() {
-                    ws_data[0].push($(this).text());
+                $(this).find('thead th').each(function () {
+                    ws_data[0].push($(this).text().trim());
                 });
 
-                $(this).find('tbody tr').each(function() {
+                $(this).find('tbody tr').each(function () {
                     var row_data = [];
-                    $(this).find('td').each(function() {
-                        row_data.push($(this).text());
+                    $(this).find('td').each(function () {
+                        row_data.push($(this).text().trim());
                     });
                     ws_data.push(row_data);
                 });
@@ -355,77 +481,96 @@
             });
 
             // Download Excel file
-            XLSX.writeFile(wb, filename + '.xlsx');
-        } 
-        
-        else if (fileType === 'csv') {
-        // Initialize CSV content
-        var csvContent = '';
+            XLSX.writeFile(wb, `${filename}.xlsx`);
+        } else if (fileType === 'csv') {
+            // Initialize CSV content
+            var csvContent = '';
 
-        // Loop through each table and generate CSV content for each
-        $('.table').each(function(index) {
-            var sheet_name = $(this).prev('h5').text();
+            // Loop through each table and generate CSV content for each
+            $('.table').each(function (index) {
+                var sheet_name = $(this).prev('h5').text().trim() || `Sheet${index + 1}`;
 
-            // Append sheet name to CSV content
-            csvContent += sheet_name + '\n';
+                // Append sheet name to CSV content
+                csvContent += sheet_name + '\n';
 
-            // Extract table data and append to CSV content
-            $(this).find('thead th').each(function() {
-                csvContent += '"' + $(this).text().replace(/"/g, '""') + '",'; // Surround with double quotes and escape existing quotes
-            });
-            csvContent = csvContent.slice(0, -1); // Remove trailing comma
-            csvContent += '\n';
-
-            $(this).find('tbody tr').each(function() {
-                $(this).find('td').each(function() {
-                    csvContent += '"' + $(this).text().replace(/"/g, '""') + '",'; // Surround with double quotes and escape existing quotes
+                // Extract table data and append to CSV content
+                $(this).find('thead th').each(function () {
+                    csvContent += '"' + $(this).text().trim().replace(/"/g, '""') + '",';
                 });
                 csvContent = csvContent.slice(0, -1); // Remove trailing comma
                 csvContent += '\n';
+
+                $(this).find('tbody tr').each(function () {
+                    $(this).find('td').each(function () {
+                        csvContent += '"' + $(this).text().trim().replace(/"/g, '""') + '",';
+                    });
+                    csvContent = csvContent.slice(0, -1); // Remove trailing comma
+                    csvContent += '\n';
+                });
+
+                // Add sheet separator
+                csvContent += '\n';
             });
 
-            // Add sheet separator
-            csvContent += '\n';
-        });
+            // Create Blob and download CSV file
+            var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+            saveAs(blob, `${filename}.csv`);
+        } else if (fileType === 'pdf') {
+            window.jsPDF = window.jspdf.jsPDF;
 
-        // Create Blob and download CSV file
-        var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-        saveAs(blob, filename + '.csv');
-    }        
-        else if (fileType === 'pdf') {
-            window.jsPDF = window.jspdf.jsPDF
-            // Initialize jsPDF
-            var doc = new jsPDF();
+            // Initialize jsPDF with larger page size
+            var doc = new jsPDF({ orientation: 'landscape', format: [197, 490] }); // A5 size
 
             // Loop through each table and generate PDF content for each
-            $('.table').each(function(index) {
+            $('.table').each(function (index) {
                 // Extract store name
-                var tableName = $(this).prev('h5').text();
+                var tableName = $(this).prev('h5').text().trim() || `Sheet${index + 1}`;
 
                 // Add store name as heading
-                doc.text(tableName, 10, 10);
+                doc.text(tableName, 14, 10);
 
                 // Extract table data
                 var headers = [];
                 var data = [];
 
-                $(this).find('thead th').each(function() {
-                    headers.push($(this).text());
+                $(this).find('thead th').each(function () {
+                    headers.push($(this).text().trim());
                 });
 
-                $(this).find('tbody tr').each(function() {
+                $(this).find('tbody tr').each(function () {
                     var row = [];
-                    $(this).find('td').each(function() {
-                        row.push($(this).text());
+                    $(this).find('td').each(function () {
+                        row.push($(this).text().trim());
                     });
                     data.push(row);
                 });
 
-                // Generate PDF table
+                // Generate PDF table with adjusted column widths and full headers
                 doc.autoTable({
                     head: [headers],
                     body: data,
-                    startY: 20 // Start table below heading
+                    startY: doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : 20, // Start table below previous content
+                    margin: { top: 20 },
+                    styles: { fontSize: 8 },
+                    columnStyles: {
+                        0: { cellWidth: 10 },
+                        1: { cellWidth: 30 },
+                        2: { cellWidth: 30 },
+                        3: { cellWidth: 40 },
+                        4: { cellWidth: 30 },
+                        5: { cellWidth: 30 },
+                        6: { cellWidth: 30 },
+                        7: { cellWidth: 40 },
+                        8: { cellWidth: 20 },
+                        9: { cellWidth: 20 },
+                        10: { cellWidth: 20 },
+                        11: { cellWidth: 20 },
+                        12: { cellWidth: 20 },
+                        13: { cellWidth: 25 },
+                        14: { cellWidth: 20 },
+                        15: { cellWidth: 30 },
+                        16: { cellWidth: 30 }
+                    }
                 });
 
                 // Add page break if not the last table
@@ -435,9 +580,12 @@
             });
 
             // Download PDF file
-            doc.save(filename + '.pdf');
+            doc.save(`${filename}.pdf`);
         }
     });
+
+
+
 
     $(document).on('change','.day_month',function(){
         let from_date
