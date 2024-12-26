@@ -6723,7 +6723,7 @@ def getActualQuantity(request):
     try:
         actual_quantity = models.Store_Item.objects.filter(store_id=int(store_id), item_id=int(item_id))
         print( actual_quantity.first().on_hand_qty,6628)
-        actual_quantity_On_that_date = models.Store_Item_Current.objects.filter(store_id=int(store_id), item_id=int(item_id),transaction_date=transaction_date).last()
+        actual_quantity_On_that_date = models.Store_Item_Current.objects.filter(store_id=int(store_id), item_id=int(item_id),transaction_date=transaction_date).order_by('transaction_date','created_at').last()
         if not actual_quantity_On_that_date :
             print(6629)
             actual_quantity_On_that_date = (
@@ -6732,8 +6732,8 @@ def getActualQuantity(request):
                     item_id=int(item_id),
                     transaction_date__lt=transaction_date  # Only dates less than the given date
                 )
-                .order_by('-transaction_date')  # Order by transaction_date in descending order
-                .first()  # Fetch the first (most recent) entry
+                .order_by('transaction_date','created_at')  # Order by transaction_date in descending order
+                .last()  # Fetch the first (most recent) entry
             )
         print(6641,item_id)
         context.update({
