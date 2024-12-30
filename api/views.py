@@ -4677,7 +4677,7 @@ def storeTransactionAdd(request):
                             # Set other fields for the new transaction
                             store_item_instance.store_transaction_id = storeTransactionVhead.id
                             if(store_item_instance.on_hand_qty<0):
-                                raise ValueError(f"out quantity is more than available quantity")
+                                raise ValueError(f"out quantity is more than available quantity {store.name} {jobOrderDetails[index].item.name}")
                             store_item_instance.transaction_date = given_date
                             store_item_instance.item_id = jobOrderDetails[index].item_id
                             store_item_instance.store_id = store.id
@@ -4781,6 +4781,52 @@ def storeTransactionAdd(request):
                             storeItem.closing_qty -= Decimal(request.POST.getlist('item_quantity')[index])
                             storeItem.updated_at = datetime.now()
                             storeItem.save()
+                            given_date = request.POST['transaction_date']
+                        
+                        
+                            # Check for the last record on the given_date
+                            record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id = elem , store_id = store.id ).last()
+
+                            if not record:
+                                # If no record is found for the given_date, look for the last record before that date
+                                last_transaction_date = models.Store_Item_Current.objects.filter(
+                                    transaction_date__lt=given_date ,item_id = elem , store_id = store.id
+                                ).aggregate(Max('transaction_date'))['transaction_date__max']
+
+                                
+
+                                if last_transaction_date:
+                                    # Fetch the record for the last_transaction_date
+                                    record = models.Store_Item_Current.objects.filter(
+                                        transaction_date=last_transaction_date ,item_id = elem , store_id = store.id
+                                    ).last()
+
+                            # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
+                        
+                            
+                            store_item_instance = models.Store_Item_Current()
+                            if record:
+                                # Set values based on the last record found
+                                store_item_instance.opening_qty = record.closing_qty
+                                store_item_instance.on_hand_qty = record.closing_qty - (Decimal(request.POST.getlist('item_quantity')[index]))
+                                store_item_instance.closing_qty = record.closing_qty - (Decimal(request.POST.getlist('item_quantity')[index]))
+                                # Set other fields for the new transaction
+                                store_item_instance.store_transaction_id = storeTransactionVhead.id
+                                if(store_item_instance.on_hand_qty<0):
+                                    raise ValueError(f"out quantity is more than available quantity {store.name} , {elem}")
+                                store_item_instance.transaction_date = given_date
+                                store_item_instance.item_id = elem
+                                store_item_instance.store_id = store.id
+                                
+                                # Save the instance to the database
+                                store_item_instance.save()
+                            else:
+                                message = "canot possible item not present in the store "
+                                raise ValueError(message)
+                            moutQuantity =(Decimal(request.POST.getlist('item_quantity')[index]))
+                            store_item_curreEdit(store.id,elem,given_date,'mout',moutQuantity) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
+                            # print(resultant_quantity_result.quantity_result , jobOrderDetails[index].item.name)
+
                             material_reciept_all = 0 if float(job_order_details.quantity_result)>0.00 else 1
                         #     # # # # print('3634') 
 
@@ -4931,7 +4977,7 @@ def storeTransactionAdd(request):
                                 request.POST.getlist('item_quantity')[index]
                             )
                         if(store_item_instance.on_hand_qty<0):
-                            raise ValueError(f"onhand  quantity can not be negative")
+                            raise ValueError(f"onhand  quantity can not be negative {request.POST.getlist('store_id')[index]} {elem}")
                         # Set other fields for the new transaction
                         store_item_instance.store_transaction_id = storeTransactionHeader.id
                         store_item_instance.transaction_date = given_date
@@ -5009,7 +5055,7 @@ def storeTransactionAdd(request):
                                 store_item_instance.closing_qty = record.closing_qty - Decimal(request.POST.getlist('item_quantity')[index])
                             
                                 if(store_item_instance.on_hand_qty<0):
-                                    raise ValueError(f"out quantity is more than available quantity")
+                                    raise ValueError(f"out quantity is more than available quantity {store.name} , {elem}")
                                 # Set other fields for the new transaction
                                 store_item_instance.store_transaction_id = storeTransactionVhead.id
                                 store_item_instance.transaction_date = given_date
@@ -9269,7 +9315,7 @@ def reportItemTrackingReport(request):
     #         })
     #     data.sort(key=lambda x: (x['transaction_date'], x['transaction_number']))
     if item.exists():
-        
+        print("item exists")
         store_item_currents = models.Store_Item_Current.objects.filter(
             status = 1,
             deleted = 0,
@@ -9279,7 +9325,7 @@ def reportItemTrackingReport(request):
         ).order_by('transaction_date', 'created_at')
         
         for store_item_current in store_item_currents:
-           
+            print(store_item_current)
             rate = item.first().price
             amount = Decimal(0.00)
             reciept_quantity = Decimal(0.00)
@@ -9289,8 +9335,10 @@ def reportItemTrackingReport(request):
             reciept_ByGRN = Decimal(0.00)
             issued_ByJobOrder = Decimal(0.00)
             if store_item_current.store_transaction_id:
+                
                 store_transaction_detail = models.Store_Transaction_Detail.objects.filter(store_id=store_id,
                     item_id=item_id, store_transaction_header_id = store_item_current.store_transaction_id).first()
+                # print(store_transaction_detail,store_item_current.store_transaction_id,store_id,item_id)
                 if store_item_current.store_transaction.transaction_type.name == "MIS" or store_item_current.store_transaction.transaction_type.name == "MOUT" or store_item_current.store_transaction.transaction_type.name == "MIST" or store_item_current.store_transaction.transaction_type.name == "MIV":
                     out_quantity = store_transaction_detail.quantity
                     if store_item_current.store_transaction.transaction_type.name == "MIS" or store_item_current.store_transaction.transaction_type.name == "MOUT" :
@@ -9336,8 +9384,8 @@ def reportItemTrackingReport(request):
                     'out_quantity' : out_quantity,
                     'rate':rate,
                     'amount': '--',
-                    'job_order_no': store_transaction_detail.store_transaction_header.job_order.order_number if store_transaction_detail.store_transaction_header.job_order_id else '---',
-                    'purchase_order_no': store_transaction_detail.store_transaction_header.purchase_order_header.order_number if store_transaction_detail.store_transaction_header.purchase_order_header_id else '---',
+                    'job_order_no':  '---',
+                    'purchase_order_no': '---',
                     'gst_percentage': '---',
                     'amount_with_gst': '---',
                     'transaction_number':'--',
