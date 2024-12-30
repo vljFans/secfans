@@ -1621,6 +1621,19 @@ def purchaseBillTallyReport(request):
 
     return render(request, 'portal/process/tally.html', context)
 
+@login_required
+def fgMigrationTallyReport(request):
+    store = models.Store.objects.filter(vendor_id__isnull=True).distinct()
+    context.update({
+        'stores': store,
+        'page_title': "Finished goods Migration To Tally",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},
+                        {'name': "Finished goods Migration To Tally", 'url': reverse('superuser:fgMigrationTallyReport')},
+                        {'name': "Process"}]
+    })
+
+    return render(request, 'portal/process/fgTally.html', context)
+
 
 @login_required
 def reportItemTrackingReport(request):
