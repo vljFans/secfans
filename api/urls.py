@@ -189,4 +189,6 @@ urlpatterns = [
     path('extract-data-from-xlsx', views.extractDataFromXlsx, name='extractDataFromXlsx'),
 
     path('store-item-current-migrate',views.storeItemCurrentMigrate, name='storeItemCurrentMigrate'),
+
+    path('fg-raw-details-export', views.fgRawDetailsExport, name='fgRawDetailsExport'),
 ]
