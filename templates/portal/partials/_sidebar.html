@@ -133,19 +133,24 @@
         </li>
         {% endif %}
 
-        {% if request.user.is_superuser == 1 or 'view_purchase_bill,view_invoice'|get_session_permission:request is not None %}
+        {% if request.user.is_superuser == 1 or 'view_purchase_bill,view_invoice,view_store_transaction'|get_session_permission:request is not None %}
         <li
-          class="{% if request.path == '/purchase-bill-to-tally' or request.path == '/invoice-store-transaction-maigration' %}open active{% endif %}">
+          class="{% if request.path == '/purchase-bill-to-tally' or request.path == '/invoice-store-transaction-maigration' or request.path == '/finished-good-bill-to-tally'  %}open active{% endif %}">
           <a href="javascript:void(0)">
             <i data-feather="repeat"></i>
             <span>Process</span><i class="accordion-icon fa fa-angle-left"></i>
           </a>
           <ul class="sub-menu"
-            style="display: {% if request.path == '/purchase-bill-to-tally' or request.path == '/invoice-store-transaction-maigration' %}block{% else %}none{% endif %};">
+            style="display: {% if request.path == '/purchase-bill-to-tally' or request.path == '/invoice-store-transaction-maigration' or request.path == '/finished-good-bill-to-tally'  %}block{% else %}none{% endif %};">
             
             {% if request.user.is_superuser == 1 or 'view_purchase_bill'|get_session_permission:request is not None %}
             <li class="{% if request.path == '/purchase-bill-to-tally' %}open active{% endif %}">
               <a href="{% url 'superuser:purchaseBillTallyReport' %}">Purchase Bill To Tally</a>
+            </li>
+            {% endif %}
+            {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
+            <li class="{% if request.path == '/finished-good-bill-to-tally'  %}open active{% endif %}">
+              <a href="{% url 'superuser:fgMigrationTallyReport' %}">Finished/Raw Material To Tally</a>
             </li>
             {% endif %}
             {% if request.user.is_superuser == 1 or 'view_invoice'|get_session_permission:request is not None %}

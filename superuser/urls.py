@@ -181,4 +181,6 @@ urlpatterns = [
     
     path('store-item-current-migrate',views.storeItemCurrentMigrate, name='storeItemCurrentMigrate'),
 
+     path('finished-good-bill-to-tally',views.fgMigrationTallyReport, name='fgMigrationTallyReport'),
+
 ]

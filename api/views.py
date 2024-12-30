@@ -9083,6 +9083,55 @@ def purchaseBillDetailsExport(request):
         # LIMIT 0, 25;
         #         Filtered data with aggregations`)
         #------sql-----
+        # filtered_data = models.Purchase_Bill_Details.objects.filter(
+        #     purchase_bill_header__purchase_tally_report=0
+        # ).values(
+        #     'purchase_bill_header_id',
+        #     'purchase_bill_header__vendor__name',
+        #     'purchase_bill_header__vendor__address',
+        #     'purchase_bill_header__vendor__gst_no',
+        #     'purchase_bill_header__vendor__state__name',
+        #     'purchase_bill_header__invoice_no',
+        #     'purchase_bill_header__total_amount',
+        #     'purchase_bill_header__total_igst',
+        #     'purchase_bill_header__total_cgst',
+        #     'purchase_bill_header__total_sgst',
+        #     'purchase_bill_header__total_gst_amount',
+        #     'purchase_bill_header__total_discount_amount',
+        #     'purchase_bill_header__tds_deduction',
+        #     'purchase_bill_header__tcs_deduction',
+        #     'purchase_bill_header__transaction_number',
+        #     'purchase_bill_header__transaction_date',
+        #     'purchase_bill_header__round_off_price',
+        #     'purchase_bill_header__roundof_total_amount',
+        # ).annotate(
+        #     gst_0=Sum(Case(
+        #         When(gst_percentage=0, then='gst_amount'),
+        #         default=0,
+        #         output_field=DecimalField()
+        #     )),
+        #     gst_5=Sum(Case(
+        #         When(gst_percentage=5, then='gst_amount'),
+        #         default=0,
+        #         output_field=DecimalField()
+        #     )),
+        #     gst_12=Sum(Case(
+        #         When(gst_percentage=12, then='gst_amount'),
+        #         default=0,
+        #         output_field=DecimalField()
+        #     )),
+        #     gst_28=Sum(Case(
+        #         When(gst_percentage=28, then='gst_amount'),
+        #         default=0,
+        #         output_field=DecimalField()
+        #     )),
+        #     gst_18=Sum(Case(
+        #         When(gst_percentage=18, then='gst_amount'),
+        #         default=0,
+        #         output_field=DecimalField()
+        #     ))
+        # ).order_by('purchase_bill_header_id')
+
         filtered_data = models.Purchase_Bill_Details.objects.filter(
             purchase_bill_header__purchase_tally_report=0
         ).values(
@@ -9106,27 +9155,27 @@ def purchaseBillDetailsExport(request):
             'purchase_bill_header__roundof_total_amount',
         ).annotate(
             gst_0=Sum(Case(
-                When(gst_percentage=0, then='gst_amount'),
+                When(gst_percentage=0, then='amount'),
                 default=0,
                 output_field=DecimalField()
             )),
             gst_5=Sum(Case(
-                When(gst_percentage=5, then='gst_amount'),
+                When(gst_percentage=5, then='amount'),
                 default=0,
                 output_field=DecimalField()
             )),
             gst_12=Sum(Case(
-                When(gst_percentage=12, then='gst_amount'),
+                When(gst_percentage=12, then='amount'),
                 default=0,
                 output_field=DecimalField()
             )),
             gst_28=Sum(Case(
-                When(gst_percentage=28, then='gst_amount'),
+                When(gst_percentage=28, then='amount'),
                 default=0,
                 output_field=DecimalField()
             )),
             gst_18=Sum(Case(
-                When(gst_percentage=18, then='gst_amount'),
+                When(gst_percentage=18, then='amount'),
                 default=0,
                 output_field=DecimalField()
             ))
@@ -9249,6 +9298,111 @@ def purchaseBillDetailsExport(request):
             'message': "Something went wrong. Please try again."
         })
     return JsonResponse(context)
+
+@api_view(['POST'])
+def fgRawDetailsExport(request):
+    context = {}
+    try:
+        page_items = models.Store_Transaction_Detail.objects.filter(store_transaction_header__tally_sync=0,status=1,deleted=0)
+        page_items = page_items.filter(store_id =request.POST['store_id']) 
+        page_items_exist = page_items.exists()
+    
+        # If no page items exist, return a response indicating no transactions left
+        if not page_items_exist:
+            return JsonResponse({
+                'status': 404,
+                'message': 'Tally report of all transactions already generated. No transactions left.'
+            })
+        with transaction.atomic():
+            filtered_data = models.Store_Transaction_Detail.objects.filter(store_transaction_header__tally_sync=0,status=1,deleted=0)
+            filtered_data = filtered_data.filter(store_id =request.POST['store_id'] )
+            # Create directory if not exists
+            directory_path = settings.MEDIA_ROOT + '/fg_raw_tansition_tally/'
+            path = Path(directory_path)
+            path.mkdir(parents=True, exist_ok=True)
+
+            # Create a new Excel file
+            tmpname = "fgRawreport_" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".xlsx"
+            wb = Workbook()
+            ws = wb.active
+
+        # Add headers
+            ws['A1'] = "Vch No"
+            ws['B1'] = "Date"
+            ws['C1'] = "Name of Item"
+            ws['D1'] = "Unit"
+            ws['E1'] = "Location"
+            ws['F1'] = "HSN Code"
+            ws['G1'] = "IGSt Rate"
+            ws['H1'] = "CGST Rate"
+            ws['I1'] = "SGST Rate"
+            ws['J1'] = "Cess Rate"
+            ws['K1'] = "Quantity"
+            ws['L1'] = "Unit"
+            ws['M1'] = "Rate"
+            ws['N1'] = "Amount"
+            ws['O1'] = "Remarks"
+            
+
+
+        
+
+            # Append data rows
+            for each in filtered_data:
+                # print(each)
+                rate = each.rate if each.rate else each.item.price
+                ws.append([
+                    each.store_transaction_header.transaction_number,
+                    each.store_transaction_header.transaction_date.strftime("%d-%m-%Y"), 
+                    each.item.name,
+                    each.item.uom.name,
+                    each.store.name,
+                    each.item.hsn_code,
+                    each.item.item_type.gst_percentage,
+                    ((each.item.item_type.gst_percentage)/Decimal(2.0)),
+                    ((each.item.item_type.gst_percentage)/Decimal(2.0)),
+                    '0.00',
+                    each.quantity,
+                    each.item.uom.name,
+                    rate,
+                    (each.quantity * rate),
+                    ''
+                ])
+            print(8058)
+            # Save the file
+            file_path = os.path.join(directory_path, tmpname)
+            
+        # Save the file to the server
+            wb.save(file_path)
+
+            # os.chmod(settings.MEDIA_ROOT + '/purchase_transition_tally/' + tmpname, 0o777)
+
+            os.chmod(file_path, 0o777)
+
+            # Update page items
+            for page_item in page_items:
+                storeTranasctionHeader = models.Store_Transaction.objects.get(pk=page_item.store_transaction_header_id)
+                storeTranasctionHeader.tally_sync = 1
+                storeTranasctionHeader.updated_at = datetime.now()
+                storeTranasctionHeader.save()
+
+            filename = settings.MEDIA_URL + 'fg_raw_tansition_tally/' + tmpname
+
+            context.update({
+                'status': 200,
+                'message': 'File generated successfully in server Media :' + filename,
+                'file_url': filename
+            })
+        transaction
+    except Exception as e:
+        print(f'error{e}')
+        context.update({
+            'status': 546.1,
+            'message': "Something went wrong. Please try again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

@@ -739,6 +739,7 @@ class Store_Transaction(models.Model):
     reference_id = models.SmallIntegerField(default=0)
     destination =  models.CharField(max_length=25, blank=True, null=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE,blank=True, null=True)
+    tally_sync = models.SmallIntegerField(default=0)
 
 
     def __str__(self):
