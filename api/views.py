@@ -5145,6 +5145,66 @@ def storeTransactionAdd(request):
         transaction.rollback()
     return JsonResponse(context)
 
+def dataRevertivefromTransaction(storeTrId, item_id, store_id,quantity,retrivaltype):
+    storeTransactionHead = models.Store_Transaction.objects.filter(store_transaction_id=storeTrId,item_id=item_id,store_id=store_id,status=1 , deleted=0).values('transaction_date', 'created_at')[:1]
+    storeItemCurrentGt = models.Store_Item_Current.objects.filter(
+                                store_id=store_id,
+                                item_id = item_id,
+                                status=1 , deleted=0
+                            ).exclude(store_transaction_id=storeTrId).filter(
+                                # Check if the transaction_date is greater, or if it's the same, then check created_at
+                                transaction_date__gt=storeTransactionHead[0]['transaction_date']
+                            ).filter(
+                                # Include rows with the same transaction_date but a later created_at
+                                transaction_date=storeTransactionHead[0]['transaction_date'],
+                                created_at__gt=storeTransactionHead[0]['created_at']
+                            ).order_by('transaction_date', 'created_at')
+    if retrivaltype == 'out':
+        # Update the records
+        for item in storeItemCurrentGt:
+            item.closing_qty -= Decimal(quantity)
+            item.opening_qty -= Decimal(quantity)
+            item.on_hand_qty -= Decimal(quantity)
+            item.updated_at = datetime.now()
+            item.save()
+    else:
+        # Update the records
+        for item in storeItemCurrentGt:
+            item.closing_qty += Decimal(quantity)
+            item.opening_qty += Decimal(quantity)
+            item.on_hand_qty += Decimal(quantity)
+            item.updated_at = datetime.now()
+            item.save()
+
+def jobOrderStoreTranasctionRetrive(storeTranscationOld):
+    invoice_no = storeTranscationOld.invoice_challan
+    store_transaction_MisT_head = models.Store_Transaction.objects.filter(invoice_challan=invoice_no ,transaction_type__name = 'MIST',deleted= 0, status=1)
+    store_transaction_MisT_head.status = 0 
+    store_transaction_MisT_head.invoice_challan =''
+    store_transaction_MisT_head.updated_at = datetime.now()
+    store_transaction_MisT_head.save()
+    # Check if any records exist
+    if store_transaction_MisT_head.exists():
+        store_transaction_MisT_head = store_transaction_MisT_head.first()
+        store_transaction_details = models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = store_transaction_MisT_head.id)
+        for store_transaction_detail in store_transaction_details:
+            dataRevertivefromTransaction(store_transaction_MisT_head.id, store_transaction_detail.item_id,store_transaction_detail.store_id,store_transaction_detail.quantity,'out')
+            store_items = models.Store_Item.objects.filter(item_id = store_transaction_detail.item_id, store_id = store_transaction_detail.store_id).first() 
+            store_items.closing_qty -= Decimal(store_transaction_detail.quantity)
+            store_items.on_hand_qty -= Decimal(store_transaction_detail.quantity)
+            store_items.updated_at = datetime.now()
+            store_items.save()
+            store_item_current = models.Store_Item_Current.objects.filter(store_transaction_id = store_transaction_MisT_head.id)
+            if store_item_current.exists():
+                store_item_current = store_item_current.first()
+                store_item_current.on_hand_qty -= Decimal(store_transaction_detail.quantity)
+                store_item_current.closing_qty -= Decimal(store_transaction_detail.quantity)
+                store_item_current.status = 0
+                store_item_current.updated_at = datetime.now()
+                store_item_current.save()
+        
+    else:
+        raise ValueError('No transaction present in vendor store')
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -5163,7 +5223,7 @@ def storeTransactionEdit(request):
     try:
         with transaction.atomic():
             # print(4645)
-            storeTranasctionHeaderOld = models.Store_Transaction.objects.get(pk = request.POST['id'])
+            storeTranasctionHeaderOld = models.Store_Transaction.objects.get(pk = request.POST['id'], status=1, deleted=0)
             storeTranasctionDetOld = list(models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = request.POST['id']))
 
             #setting new transaction number from old transaction number
@@ -5186,7 +5246,7 @@ def storeTransactionEdit(request):
                         storeItem.closing_qty -= transact.quantity
                         storeItem.updated_at = datetime.now()
                         storeItem.save()
-                    storeItemCurrent = models.Store_Item_Current.objects.filter(store_transaction_id = storeTranasctionHeaderOld.id ,transaction_date = storeTranasctionHeaderOld.transaction_date,store_id=transact.store_id,item_id = transact.item_id)
+                    storeItemCurrent = models.Store_Item_Current.objects.filter(store_transaction_id = storeTranasctionHeaderOld.id ,transaction_date = storeTranasctionHeaderOld.transaction_date,store_id=transact.store_id,item_id = transact.item_id , status=1, deleted=0)
                     if storeItemCurrent.exists():
                         storeItemCurrent = storeItemCurrent.first()
                         storeItemCurrent.on_hand_qty -= Decimal(transact.quantity)
@@ -5194,18 +5254,9 @@ def storeTransactionEdit(request):
                         storeItemCurrent.status = 0
                         storeItemCurrent.updated_at = datetime.now()
                         storeItemCurrent.save()
-                        storeItemCurrentGt = models.Store_Item_Current.objects.filter(
-                            store_id=transact.store_id,item_id = transact.item_id,
-                            store_transaction_id__gt=storeTranasctionHeaderOld.id
-                        ).order_by('transaction_date', 'created_at', 'item_id')
 
-                        # Update the records
-                        for item in storeItemCurrentGt:
-                            item.closing_qty -= Decimal(transact.quantity)
-                            item.opening_qty -= Decimal(transact.quantity)
-                            item.on_hand_qty -= Decimal(transact.quantity)
-                            item.updated_at = datetime.now()
-                            item.save()
+                        dataRevertivefromTransaction(storeTranasctionHeaderOld.id,transact.store_id,transact.item_id,transact.quantity,'out')
+                       
 
                     if int(request.POST['with_purchase_job_order']) == 1: #with purchase order
                         purchaseOrderDetExist = models.Purchase_Order_Detail.objects.filter(purchase_order_header_id =request.POST['purchase_job_order_header_id'],item_id = transact.item_id).exists()
@@ -5234,218 +5285,15 @@ def storeTransactionEdit(request):
                         purchaseOrderHeader.delivery_status = 2
                         purchaseOrderHeader.updated_at = datetime.now()
                         purchaseOrderHeader.save()
-            else: # it is a job order
-            
-                for transact in storeTranasctionDetOld:
-                    #incoming quantity
-                    #from self store 
-                    storeItemExists = models.Store_Item.objects.filter(store_id=transact.store_id,item_id = transact.item_id).exists()
-                    if storeItemExists:
-                        storeItem = models.Store_Item.objects.get(store_id=transact.store_id,item_id = transact.item_id)
-                        storeItem.on_hand_qty -= transact.quantity
-                        storeItem.closing_qty -= transact.quantity
-                        # print(4707)
-                        storeItem.updated_at = datetime.now()
-                        storeItem.save()
-                        storeItemCurrent = models.Store_Item_Current.objects.filter(store_transaction_id = storeTranasctionHeaderOld.id ,transaction_date = storeTranasctionHeaderOld.transaction_date,store_id=transact.store_id,item_id = transact.item_id)
-                        if storeItemCurrent.exists():
-                            storeItemCurrent = storeItemCurrent.first()
-                            storeItemCurrent.on_hand_qty -= Decimal(transact.quantity)
-                            storeItemCurrent.closing_qty -= Decimal(transact.quantity)
-                            storeItemCurrent.status = 0
-                            storeItemCurrent.updated_at = datetime.now()
-                            storeItemCurrent.save()
-                            storeItemCurrentGt = models.Store_Item_Current.objects.filter(
-                                store_id=transact.store_id,item_id = transact.item_id,
-                                store_transaction_id__gt=storeTranasctionHeaderOld.id
-                            ).order_by('transaction_date', 'created_at', 'item_id')
-
-                            # Update the records
-                            for item in storeItemCurrentGt:
-                                item.closing_qty -= Decimal(transact.quantity)
-                                item.opening_qty -= Decimal(transact.quantity)
-                                item.on_hand_qty -= Decimal(transact.quantity)
-                                item.updated_at = datetime.now()
-                                item.save()
-                    # from vendor store recieved quantity
-                    store = models.Store.objects.get(vendor_id = storeTranasctionHeaderOld.vendor_id)
-                    storeItemExists = models.Store_Item.objects.filter(store_id=store.id,item_id = transact.item_id).exists()
-                    if storeItemExists:
-                        storeItem = models.Store_Item.objects.get(store_id=store.id,item_id = transact.item_id)
-                        storeItem.on_hand_qty += transact.quantity
-                        storeItem.closing_qty += transact.quantity
-                        storeItem.updated_at = datetime.now()
-                        storeItem.save()
-                    else:
-                        storeItem = models.Store_Item()
-                        storeItem.opening_qty = Decimal(transact.quantity)
-                        storeItem.on_hand_qty = Decimal(transact.quantity)
-                        storeItem.closing_qty = Decimal(transact.quantity)
-                        storeItem.item_id = transact.item_id    
-                        storeItem.store_id = store.id
-                        storeItem.save()
-                     
-                    # change in storeItemCurrent min
-                    # Fetch the last transaction_date less than the given_date
-                    given_date = storeTranasctionHeaderOld.transaction_date
-                    print(5222)
-                    
-                    # Check for the last record on the given_date
-                    record = models.Store_Item_Current.objects.filter(transaction_date=given_date,store_id=transact.store_id,item_id = transact.item_id).last()
-                    # print('aaaaaaaa')
-                    if not record:
-                        # If no record is found for the given_date, look for the last record before that date
-                        last_transaction_date = models.Store_Item_Current.objects.filter(
-                            transaction_date__lt=given_date,store_id=transact.store_id,item_id = transact.item_id
-                        ).aggregate(Max('transaction_date'))['transaction_date__max']
-
-                        
-
-                        if last_transaction_date:
-                            # Fetch the record for the last_transaction_date
-                            record = models.Store_Item_Current.objects.filter(
-                                transaction_date=last_transaction_date,store_id=transact.store_id,item_id = transact.item_id
-                            ).last()
-
-                    # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
-                    
-                    # print(5243)
-                    store_item_instance = models.Store_Item_Current()
-
-                    if record:
-                        # Set values based on the last record found
-                        store_item_instance.opening_qty = record.closing_qty
-                        store_item_instance.on_hand_qty = record.closing_qty + transact.quantity
-                        store_item_instance.closing_qty = record.closing_qty + transact.quantity
-                    else:
-                        # Set values based on the current transaction if no prior record exists
-                        store_item_instance.opening_qty = Decimal(
-                            0.00
-                        )
-                        store_item_instance.on_hand_qty = transact.quantity
-                        store_item_instance.closing_qty = transact.quantity
-
-                    if(store_item_instance.on_hand_qty<0):
-                        raise ValueError(f"onhand quantity can not be negative")
-                    # Set other fields for the new transaction
-                    store_item_instance.quantity_Transfer = f"{transact.quantity} get transfer to vendor stock due to editing of {storeTranasctionHeaderOld.transaction_number} of date {given_date}"
-                    # print(5261)
-                    store_item_instance.transaction_date = given_date
-                    store_item_instance.item_id = transact.item_id
-                    store_item_instance.store_id = transact.store_id
-                    # Save the instance to the database
-                    store_item_instance.save()
-                    
-                    store_item_curreEdit(transact.store_id,transact.item_id,given_date,'min', transact.quantity) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
-                    
-                    # changes in job order detail
-                    jobOrderDetExist = models.Job_Order_Detail.objects.filter(item_id = transact.item_id , job_order_header_id = request.POST['job_order_header_id'] , direction ='incoming')
-                    
-                    # print(5273)
-                    if jobOrderDetExist:
-                        jobOrderDet = models.Job_Order_Detail.objects.get(item_id = transact.item_id , job_order_header_id = request.POST['job_order_header_id'], direction ='incoming' )
-                        jobOrderDet.quantity_result += transact.quantity
-                        jobOrderDet.updated_at = datetime.now()
-                        jobOrderDet.save()
-                    jobOrderHeader = models.Job_Order.objects.get(pk = request.POST['job_order_header_id'])
-                    jobOrderDetails = models.Job_Order_Detail.objects.filter(job_order_header_id = request.POST['job_order_header_id'],direction ='outgoing')
-                    #out going quantity which utilised to make specific incoming quantity also adjusted to vendor store
-                    for detail in jobOrderDetails:
-                        bomDetails = models.Bill_Of_Material_Detail.objects.filter(bill_of_material_header_id = jobOrderHeader.bom_type_head_id , item_id = detail.item_id).first()
-                        jobOrderDetailsNew = models.Job_Order_Detail.objects.filter(job_order_header_id = request.POST['job_order_header_id'],direction ='outgoing',item_id = detail.item_id).first()
-                        
-                        jobOrderDetailsNew.quantity_result +=  (bomDetails.quantity * transact.quantity)
-                        store = models.Store.objects.get(vendor_id = storeTranasctionHeaderOld.vendor_id)
-                        storeItemExists = models.Store_Item.objects.filter(store_id=store.id,item_id = detail.item_id).exists()
-                        if storeItemExists:
-                            storeItem = models.Store_Item.objects.get(store_id=store.id,item_id = detail.item_id)
-                            storeItem.on_hand_qty += (bomDetails.quantity * transact.quantity)
-                            storeItem.closing_qty +=  (bomDetails.quantity * transact.quantity)
-                            storeItem.updated_at = datetime.now()
-                            storeItem.save()  
-                        else:
-                            storeItem = models.Store_Item()
-                            storeItem.opening_qty = Decimal(bomDetails.quantity * transact.quantity)
-                            storeItem.on_hand_qty = Decimal(bomDetails.quantity * transact.quantity)
-                            storeItem.closing_qty = Decimal(bomDetails.quantity * transact.quantity)
-                            storeItem.item_id = detail.item_id
-                            storeItem.store_id = store.id
-                            storeItem.save()
-                        
-                         # change in storeItemCurrent min
-                        # Fetch the last transaction_date less than the given_date
-                        given_date = storeTranasctionHeaderOld.transaction_date
-                        
-                        # print(5299)
-                        # Check for the last record on the given_date
-                        record = models.Store_Item_Current.objects.filter(transaction_date=given_date,store_id=store.id,item_id = detail.item_id).last()
-
-                        if not record:
-                            # If no record is found for the given_date, look for the last record before that date
-                            last_transaction_date = models.Store_Item_Current.objects.filter(
-                                transaction_date__lt=given_date,store_id=store.id,item_id = detail.item_id
-                            ).aggregate(Max('transaction_date'))['transaction_date__max']
-
-                            
-
-                            if last_transaction_date:
-                                # Fetch the record for the last_transaction_date
-                                record = models.Store_Item_Current.objects.filter(
-                                    transaction_date=last_transaction_date,store_id=store.id,item_id = detail.item_id
-                                ).last()
-
-                        # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
-                        
-                        
-                        store_item_instance = models.Store_Item_Current()
-
-                        if record:
-                            # Set values based on the last record found
-                            store_item_instance.opening_qty = record.closing_qty
-                            store_item_instance.on_hand_qty = record.closing_qty +(bomDetails.quantity * transact.quantity)
-                            store_item_instance.closing_qty = record.closing_qty + (bomDetails.quantity * transact.quantity)
-                        else:
-                            # Set values based on the current transaction if no prior record exists
-                            store_item_instance.opening_qty = Decimal(
-                                0.00
-                            )
-                            store_item_instance.on_hand_qty = (bomDetails.quantity * transact.quantity)
-                            store_item_instance.closing_qty = (bomDetails.quantity * transact.quantity)
-                        if(store_item_instance.on_hand_qty<0):
-                            raise ValueError(f"ohhand quantity can not be negative")
-                        # print(5334)
-                        # Set other fields for the new transaction
-                        store_item_instance.quantity_Transfer = f"{(bomDetails.quantity * transact.quantity)} get transfer to vendor stock due to editing of {storeTranasctionHeaderOld.transaction_number} of date {given_date}"
-                        store_item_instance.transaction_date = given_date
-                        # print(5338)
-                        store_item_instance.item_id = detail.item_id
-                        store_item_instance.store_id = store.id
-                        # Save the instance to the database
-                        store_item_instance.save()
-                        
-                        store_item_curreEdit(store.id,detail.item_id,given_date,'min', (bomDetails.quantity * transact.quantity)) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
-
-                        jobOrderDetailsNew.updated_at = datetime.now()
-                        jobOrderDetailsNew.save()
-                        print(5347)
-                # job order status change
-                all_material_recieved =  models.Job_Order_Detail.objects.filter(
-                                            job_order_header_id=request.POST['job_order_header_id'],
-                                            direction='incoming',
-                                            quantity_result=0.00
-                                        ).exists()
-                print(5353)
-                # all material not recieved
-                if not all_material_recieved:
-                    jobOrderHeader.material_reciept = 0 
-                    jobOrderHeader.actual_time_take = ''
-                    jobOrderHeader.job_status = 1
-                    jobOrderHeader.updated_at = datetime.now()
-                    jobOrderHeader.save()
-            
+            else:
+                jobOrderStoreTranasctionRetrive(storeTranasctionHeaderOld)
             # ---end retruving old data----
 
             # adding actual data 
+
+            storeTranasctionHeaderOld.invoice_challan = ''
+            storeTranasctionHeaderOld.save()
+            # print(4503)
 
             # if some data are in inspect
             if inspect == 1 : 
@@ -5893,6 +5741,7 @@ def storeTransactionEdit(request):
                     jobOrderHeader.job_status = 2
                     jobOrderHeader.updated_at = datetime.now()
                     jobOrderHeader.save()
+        
         transaction.commit()    
         
        
@@ -5913,7 +5762,6 @@ def storeTransactionEdit(request):
         transaction.rollback()     
 
     return JsonResponse(context)
-
 
 
 @api_view(['POST'])
