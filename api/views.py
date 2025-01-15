@@ -9479,7 +9479,8 @@ def reportItemTrackingReport(request):
         ).order_by('transaction_date', 'created_at')
         
         for store_item_current in store_item_currents:
-            print(store_item_current)
+            print(9482,store_item_current.store_transaction.id)
+            # print(store_item_current)
             rate = item.first().price
             amount = Decimal(0.00)
             reciept_quantity = Decimal(0.00)
@@ -9502,6 +9503,7 @@ def reportItemTrackingReport(request):
 
                     total_out += issued_ByJobOrder
                     total_out_by_job_order += utilised_by_jobOrder
+                print(store_transaction_detail.store_transaction_header.id)
                 if  store_item_current.store_transaction.transaction_type.name == "GRN" or store_item_current.store_transaction.transaction_type.name == "GRNT" or store_item_current.store_transaction.transaction_type.name == "MIN" or store_item_current.store_transaction.transaction_type.name == "SP":
                     if store_item_current.store_transaction.transaction_type.name == "GRN" or store_item_current.store_transaction.transaction_type.name == "MIN" or store_item_current.store_transaction.transaction_type.name == "SP":
                         reciept_ByGRN = store_transaction_detail.quantity
