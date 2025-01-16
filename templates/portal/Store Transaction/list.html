@@ -170,7 +170,7 @@
                                 <a  href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
                                 {% endif %}
                                 {% if request.user.is_superuser == 1 or 'delete_store_transaction'|get_session_permission:request is not None %}
-                                <a hidden id="delete-btn" data-id="${element.pk}" data-name="${element.transaction_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
+                                <a  id="delete-btn" data-id="${element.pk}" data-name="${element.transaction_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
                                 {% endif %}
                                 {% if request.user.is_superuser == 1 or 'change_store_transaction'|get_session_permission:request is not None %}
                                 ${element.is_logical_grn_store == 1 ? `<a href="${print_url.replace('1', element.pk)}" class="table-action mg-r-10" target="_blank"> <i class="fa fa-print"></i> </a>` : ''}
