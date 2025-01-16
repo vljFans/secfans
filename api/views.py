@@ -2062,6 +2062,7 @@ def itemColorList(request):
             itemColors = list(models.Item_Color.objects.filter(
                 status=1, deleted=0).values('pk', 'name', 'color_code'))
         if find_all is not None and int(find_all) == 1:
+            # ok 
             context.update({
                 'status': 200,
                 'message': "Item Colors Fetched Successfully.",
