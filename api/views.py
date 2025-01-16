@@ -7078,7 +7078,7 @@ def materialIssueAdd(request):
                    
                  #material issue issued for job order
                 
-                if store_transaction_details or store_items_add:
+                if (store_transaction_details or store_items_add) and (job_order_income_detalis[index].required_quantity!=0 and (jobOrderEdits.job_status == 0)) :
                     models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
                     models.Store_Item.objects.bulk_create(store_items_add)
                 else :
