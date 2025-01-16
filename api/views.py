@@ -7073,14 +7073,18 @@ def materialIssueAdd(request):
                         store_item_instance.save()
                         
                         store_item_curreEdit(vendor_store.id,itemInThrdParty,given_date,'min', thirdPartyInQuantity) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
-
+                        print(itemInThrdParty,vendor_store.name,thirdPartyInQuantity)
+                        
                    
                  #material issue issued for job order
-            
-                if store_transaction_details and store_items_add:
+                
+                if store_transaction_details or store_items_add:
                     models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
                     models.Store_Item.objects.bulk_create(store_items_add)
-            # # #print(5744)
+                else :
+                    raise ValueError('error comes on 7082')
+            
+
             #job satatus change
             jobOrderDetailsExist = models.Job_Order_Detail.objects.filter(job_order_header_id = request.POST['job_order_id'],direction='outgoing',required_quantity = 0.00).exists()
             # # #print(6223)
@@ -7305,7 +7309,8 @@ def materialIssueAdd(request):
             'message': "Material Issue Created Successfully."
         })
 
-    except Exception:
+    except Exception as e:
+        print(e)
         context.update({
             'status': 595,
             'message': message
