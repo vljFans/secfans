@@ -26,7 +26,7 @@ import math
 import environ
 import csv
 from fpdf import FPDF
-from django.db.models import Avg, Count, Min, Sum , Case, When, DecimalField, Q, F, IntegerField, Max, Func
+from django.db.models import Avg, Count, Min, Sum , Case, When, DecimalField, Q, F, IntegerField, Max, Func, Subquery
 from django.db.models.functions import Substr, Cast, StrIndex, Length
 from fractions import Fraction
 import pandas as pd
@@ -64,7 +64,7 @@ class CustomPaginator:
 #     ).aggregate(max_value=Max('num_part'))['max_value'] or 0) ).zfill(5)
 
 def ai_digit_5():
-    return str((models.Store_Transaction.objects.annotate(
+    return str((models.Store_Transaction.objects.filter(status=1, deleted=0).annotate(
         num_part=Cast(Substr('transaction_number', Length('transaction_number') - 4,5), IntegerField())
     ).aggregate(max_value=Max('num_part'))['max_value'] or 0) + 1).zfill(5)
 
@@ -106,7 +106,7 @@ def user_log_details_add(user,task_name):
             user_log_details.save()
        
     except Exception as e:
-        print(f'Something went wrong: {e}')
+        #print(f'Something went wrong: {e}')
         transaction.rollback()
 
 
@@ -1013,11 +1013,11 @@ def configUserEdit(request):
            userConfigadd.udyam_no = request.POST['udyam_no']
            userConfigadd.mail_id = request.POST['email']
            userConfigadd.website = request.POST['website']
-        #    # # # # print('812')
+        #    # # # # #print('812')
            if 'photo' in request.FILES.keys():
             photo = request.FILES['photo']
             directory_path = settings.MEDIA_ROOT + "/" + env("CLIENT_MEDIA_COMPANY_LOGO") + "/photo/"
-            # # # # # print(directory_path)
+            # # # # # #print(directory_path)
             path = Path(directory_path)
             path.mkdir(parents=True, exist_ok=True)
             fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + env("CLIENT_MEDIA_COMPANY_LOGO") + "/photo/")
@@ -1889,7 +1889,7 @@ def itemTypeList(request):
     elif itemCatId is not None and itemCatId != "":
         itemType = list(models.Item_Type.objects.filter(item_category_id=itemCatId).values(
             'pk', 'name', 'item_category__name', 'gst_percentage'))
-        # # # # # print(itemType)
+        # # # # # #print(itemType)
         context.update({
             'status': 200,
             'message': "Item Type Fetched Successfully.",
@@ -1928,7 +1928,7 @@ def itemTypeList(request):
             'current_page': int(current_page),
             'button_to_show': int(button_to_show),
         })
-    # # # # # print(context,'\n')
+    # # # # # #print(context,'\n')
     return JsonResponse(context)
 
 
@@ -2248,7 +2248,7 @@ def gstList(request):
 @permission_classes([IsAuthenticated])
 def gstAdd(request):
     context ={}
-    # print(request.POST)
+    # #print(request.POST)
     try:
         with transaction.atomic():
             gstHeader = models.Gst()
@@ -2278,7 +2278,7 @@ def gstAdd(request):
 @permission_classes([IsAuthenticated])
 def itemList(request):
     context = {}
-    # # # # # print(request.GET)
+    # # # # # #print(request.GET)
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
@@ -2624,7 +2624,7 @@ def itemImport(request):
                                         price=price,
                                         hsn_code=hsn_code
                                     )
-                                    # # # # # print(obj.__dict__) 
+                                    # # # # # #print(obj.__dict__) 
                                     obj.save()
                                     
                                     userId = request.COOKIES.get('userId', None)
@@ -2820,14 +2820,14 @@ def storeEdit(request):
             store.state_id = request.POST['state_id']
             store.city_id = request.POST['city_id']
             store.pin = request.POST['pin']
-            # # # # print(2727)
+            # # # # #print(2727)
             store.contact_name = request.POST['contact_name']
             store.contact_no = request.POST['contact_no']
             store.contact_email = request.POST['contact_email']
             store.manager_name = request.POST['manager_name']
             if  request.POST['store_type1'] == 1:
                 store.vendor_id = request.POST['vendor_id']
-            # # # # print(2734)
+            # # # # #print(2734)
             store.store_type = request.POST.get('store_type2', 'r')
             store.updated_at = datetime.now()
             store.save()
@@ -2941,7 +2941,7 @@ def billOfMaterialMasterList(request):
         })
         return JsonResponse(context)
     if keyword is not None and keyword != "":
-        # print(2937)
+        # #print(2937)
         billOfMaterialMaster = models.Bill_Of_Material_Master.objects.filter(
             Q(item__name__icontains=keyword) | Q(item__uom__name__icontains=keyword)).filter(status=1, deleted=0)
     else:
@@ -2956,7 +2956,7 @@ def billOfMaterialMasterList(request):
             'page_items': billOfMaterialMaster,
         })
         return JsonResponse(context)
-    # print(billOfMaterialMaster)
+    # #print(billOfMaterialMaster)
     per_page = int(env("PER_PAGE_DATA"))
     button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
     current_page = request.GET.get('current_page', 1)
@@ -3055,7 +3055,7 @@ def billOfMaterialList(request):
 @permission_classes([IsAuthenticated])
 def billOfMaterialAdd(request):
     context = {}
-    # print(2988)
+    # #print(2988)
     if not request.POST['bom_item_id'] or not request.POST['uom_id'] or not request.POST['total_amount'] or not request.POST['level']:
         context.update({
             'status': 573,
@@ -3077,10 +3077,10 @@ def billOfMaterialAdd(request):
     #         'message': "Bill Of Material with this item as BOM and level already exists.",
     #     })
     #     return JsonResponse(context)
-    # print(3003)
+    # #print(3003)
     try:
         with transaction.atomic():
-            # print(3005)
+            # #print(3005)
             billOfMaterialMasterHeaderExist = models.Bill_Of_Material_Master.objects.filter(item_id = request.POST['bom_item_id']).exists()
             
             if not billOfMaterialMasterHeaderExist:
@@ -3088,7 +3088,7 @@ def billOfMaterialAdd(request):
                 billOfMaterialHeaderMaster.item_id = request.POST['bom_item_id']
                 billOfMaterialHeaderMaster.save()
             else:
-                # print(request.POST['bom_item_id'])
+                # #print(request.POST['bom_item_id'])
                 billOfMaterialHeaderMaster = models.Bill_Of_Material_Master.objects.filter(item_id = request.POST['bom_item_id']).first()
                 # billOfMaterialHeaderMaster = models.Bill_Of_Material_Master.objects.get(item_id = int(request.POST['bom_item_id']))
             billOfMaterialHeader = models.Bill_Of_Material()
@@ -3097,7 +3097,7 @@ def billOfMaterialAdd(request):
             billOfMaterialHeader.quantity = 1
             billOfMaterialHeader.bom_master_id = billOfMaterialHeaderMaster.id
             billOfMaterialHeader.bom_type = request.POST['type_bom']
-            # print(3029)
+            # #print(3029)
             billOfMaterialHeader.price = request.POST['total_amount']
             billOfMaterialHeader.level = request.POST['level']
             billOfMaterialHeader.save()
@@ -3254,7 +3254,7 @@ def getStructureOfBOM(bom_id):
             each_child_structure['bom'] = getStructureOfBOM(
                 childDetail.bom_level_id)
         structure.append(each_child_structure)
-    # print(billOfMaterial)
+    # #print(billOfMaterial)
     billOfMaterial['structure'] = structure
     return billOfMaterial
 
@@ -3302,7 +3302,7 @@ def jobOrderBomDetails(request):
                         "uom_name" : bom_item.uom.name,  # Fetch the uom_id from the bom_item
                         "quantity" : detail.quantity
                     })
-        # print(result)
+        # #print(result)
         context.update({
             'status': 200,
             'message': "Bill Of Material- items Fetched Successfully.",
@@ -3735,10 +3735,10 @@ def storeItemList(request):
     elif storeId is not None and storeId != "":
         if itemTypeId is not None and itemTypeId != "" :
             if itemCatId is not None and itemCatId != "" :
-                # # # # # print("2890")
+                # # # # # #print("2890")
                 storeItems = list(models.Store_Item.objects.filter(store_id = storeId ,item__item_type_id = itemTypeId , item__item_type__item_category_id = itemCatId).values(
                     'pk', 'store__name','item_id','item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','item__price','item__item_type_id'))
-                # # # # # print(storeItems)
+                # # # # # #print(storeItems)
                 per_page = int(env("PER_PAGE_DATA"))
                 button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
                 current_page = request.GET.get('current_page', 1)
@@ -3836,10 +3836,10 @@ def storeItemTrackingList(request):
     elif storeId is not None and storeId != "":
         if itemTypeId is not None and itemTypeId != "" :
             if itemCatId is not None and itemCatId != "" :
-                # # # # # print("2890")
-                storeItems = list(models.Store_Item_Current.objects.filter(store_id = storeId ,item__item_type_id = itemTypeId , item__item_type__item_category_id = itemCatId).values(
+                # # # # # #print("2890")
+                storeItems = list(models.Store_Item_Current.objects.filter(store_id = storeId ,item__item_type_id = itemTypeId , item__item_type__item_category_id = itemCatId,status=1, deleted=0).values(
                     'pk', 'store__name','item_id','item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','item__price','item__item_type_id','transaction_date','store_transaction_id','store_transaction__transaction_number').order_by('transaction_date', 'created_at', 'item_id'))
-                # # # # # print(storeItems)
+                # # # # # #print(storeItems)
                 per_page = int(env("PER_PAGE_DATA"))
                 button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
                 current_page = request.GET.get('current_page', 1)
@@ -3858,7 +3858,7 @@ def storeItemTrackingList(request):
                     'button_to_show': int(button_to_show),
                 })
         elif itemId is not None and itemId != "" :
-            storeItem = list(models.Store_Item_Current.objects.filter(store_id = storeId ,item_id = itemId)[:1].values(
+            storeItem = list(models.Store_Item_Current.objects.filter(store_id = storeId ,item_id = itemId,status=1, deleted=0)[:1].values(
                     'pk', 'store__name','item_id','item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','item__price','item__item_type_id','transaction_date','store_transaction_id','store_transaction__transaction_number','quantity_Transfer').order_by('transaction_date', 'created_at', 'item_id'))
             context.update({
                 'status': 200,
@@ -4045,12 +4045,12 @@ def stockTransfer(request):
             
             
             # Check for the last record on the given_date
-            record = models.Store_Item_Current.objects.filter(transaction_date=given_date,store_id=request.POST["store_id"], item_id=request.POST["from_item_id"] ).last()
+            record = models.Store_Item_Current.objects.filter(transaction_date=given_date,store_id=request.POST["store_id"], item_id=request.POST["from_item_id"],status=1, deleted=0 ).last()
 
             if not record:
                 # If no record is found for the given_date, look for the last record before that date
                 last_transaction_date = models.Store_Item_Current.objects.filter(
-                    transaction_date__lt=given_date ,store_id=request.POST["store_id"], item_id=request.POST["from_item_id"]
+                    transaction_date__lt=given_date ,store_id=request.POST["store_id"], item_id=request.POST["from_item_id"],status=1, deleted=0
                 ).aggregate(Max('transaction_date'))['transaction_date__max']
 
                 
@@ -4058,7 +4058,7 @@ def stockTransfer(request):
                 if last_transaction_date:
                     # Fetch the record for the last_transaction_date
                     record = models.Store_Item_Current.objects.filter(
-                        transaction_date=last_transaction_date ,store_id=request.POST["store_id"], item_id=request.POST["from_item_id"]
+                        transaction_date=last_transaction_date ,store_id=request.POST["store_id"], item_id=request.POST["from_item_id"],status=1, deleted=0
                     ).last()
 
             # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
@@ -4105,12 +4105,12 @@ def stockTransfer(request):
             
             
             # Check for the last record on the given_date
-            record = models.Store_Item_Current.objects.filter(transaction_date=given_date,store_id=request.POST["store_id"], item_id=request.POST["to_item_id"]).last()
+            record = models.Store_Item_Current.objects.filter(transaction_date=given_date,store_id=request.POST["store_id"], item_id=request.POST["to_item_id"],status=1, deleted=0).last()
 
             if not record:
                 # If no record is found for the given_date, look for the last record before that date
                 last_transaction_date = models.Store_Item_Current.objects.filter(
-                    transaction_date__lt=given_date,store_id=request.POST["store_id"], item_id=request.POST["to_item_id"]
+                    transaction_date__lt=given_date,store_id=request.POST["store_id"], item_id=request.POST["to_item_id"],status=1, deleted=0
                 ).aggregate(Max('transaction_date'))['transaction_date__max']
 
                 
@@ -4118,7 +4118,7 @@ def stockTransfer(request):
                 if last_transaction_date:
                     # Fetch the record for the last_transaction_date
                     record = models.Store_Item_Current.objects.filter(
-                        transaction_date=last_transaction_date,store_id=request.POST["store_id"], item_id=request.POST["to_item_id"]
+                        transaction_date=last_transaction_date,store_id=request.POST["store_id"], item_id=request.POST["to_item_id"],status=1, deleted=0
                     ).last()
 
             # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
@@ -4293,23 +4293,23 @@ def storeItemImport(request):
 
 # @api_view(['GET'])
 # def storeItemReportExport(request):
-#     # # # # # print(request.GET)
+#     # # # # # #print(request.GET)
 #     keyword = request.GET.get('keyword')
 #     file_type=request.GET.get('file_type')
-#     # # # # # print(keyword)
-#     # # # # # print("3314")
+#     # # # # # #print(keyword)
+#     # # # # # #print("3314")
 #     # return JsonResponse({})
 #     if keyword is not None and keyword != "":
-#         # # # # # print("3316")
+#         # # # # # #print("3316")
 #         page_items = models.Store_Item.objects.filter(item__item_type__item_category_id=keyword,status =1 , deleted=0).order_by('store_id','item_id')
         
 #     else:
 #         page_items = models.Store_Item.objects.filter(status=1 , deleted = 0 ).order_by('store_id','store_id')
 #         # page_items = models.Store_Item.objects.raw("SELECT * FROM store_items GROUP BY store_id ,item_id ")    
 #     # for p in page_items:
-#     #     # # # # print(p.item_id)
+#     #     # # # # #print(p.item_id)
 #     # return JsonResponse({})
-#     # # # # # print(page_items)
+#     # # # # # #print(page_items)
 #     if file_type=="xlsx":
 #         directory_path = settings.MEDIA_ROOT + '/reports/'
 #         path = Path(directory_path)
@@ -4378,7 +4378,7 @@ def storeItemImport(request):
 #         })
 
 #     elif file_type == "pdf":
-#         # # # # # print("3395")
+#         # # # # # #print("3395")
 #         # Create a new PDF document with smaller margins
 #         pdf = FPDF(orientation='P', unit='mm', format='A4')  # Adjust unit and format if needed
 #         pdf.set_left_margin(5)
@@ -4422,7 +4422,7 @@ def storeItemImport(request):
 #         tmpname = "Store_Item_Report.pdf"
 #         pdf.output(os.path.join(directory_path, tmpname))
 #         os.chmod(os.path.join(directory_path, tmpname), 0o777)
-#         # # # # # print("3439")
+#         # # # # # #print("3439")
 #         return JsonResponse({
 #             'code': 200,
 #             'filename': settings.MEDIA_URL + 'reports/' + tmpname,
@@ -4430,12 +4430,12 @@ def storeItemImport(request):
 #         })
 
 def store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity):
-    # print(4221)
+    # #print(4221)
     # Fetch the last transaction_date less than the given_date
     given_date = transaction_date
 
     # Check for the last record on the given_date
-    record =  models.Store_Item_Current.objects.filter(transaction_date__gt=given_date,store_id=store_id,item_id=item_id)
+    record =  models.Store_Item_Current.objects.filter(transaction_date__gt=given_date,store_id=store_id,item_id=item_id,status=1, deleted=0)
 
     if record:
         if transact_type == 'min':
@@ -4543,6 +4543,13 @@ def storeTransactionAdd(request):
     logicalgrnSore = 0
     userId = request.COOKIES.get('userId', None)
     # exit()
+    invoice_challan_exist = models.Store_Transaction.objects.filter(invoice_challan=  request.POST['invoice_challan'],status=1, deleted=0 )
+    if invoice_challan_exist.exists():
+        context.update({
+            'status': 586,
+            'message': "invoice/challan number already exist",
+        })
+        return JsonResponse(context)
     if not request.POST['vendor_id'] or not request.POST['transaction_date'] or not request.POST['total_amount']:
         context.update({
             'status': 586,
@@ -4559,7 +4566,7 @@ def storeTransactionAdd(request):
         all_same = len(set(filtered_store_list)) == 1
         if all_same :
            logicalgrnSore = 1
-           print(4309)
+           #print(4309)
         else:
             context.update({
                 'status': 586,
@@ -4569,13 +4576,13 @@ def storeTransactionAdd(request):
 
     try:
 
-        # print("3130")
+        # #print("3130")
         inspect = request.POST.getlist('inspect')
         # if "1" in inspect:
-        #     # # # # # print("SAswata")
+        #     # # # # # #print("SAswata")
         #     pass
         with transaction.atomic():
-            # # # # # print("3481")
+            # # # # # #print("3481")
 
             #-------for job order present with_purchase_job_order ==2 means joborder---------
 
@@ -4604,7 +4611,7 @@ def storeTransactionAdd(request):
                 storeTransactionVhead.invoice_challan = request.POST['invoice_challan']
                 storeTransactionVhead.notes = request.POST['notes']
                 storeTransactionVhead.save()
-                # print(4083)
+                # #print(4083)
                 amount_total = float( request.POST['total_amount'])
                 #outgoing material utilised store transaction by vendor
                 for index in range(0, len(jobOrderDetails)):
@@ -4628,7 +4635,7 @@ def storeTransactionAdd(request):
                         )
                         amount_total += float(jobOrderDetails[index].quantity_result) if not boMHeadDetailsExist else (BomQuantity*incoming_item_quantity)
                       
-                        # print(4098)
+                        # #print(4098)
                         store = models.Store.objects.get(vendor_id=request.POST['vendor_id'])
                         storeItem = models.Store_Item.objects.filter(item_id=jobOrderDetails[index].item_id, store=store).first()
                         storeItem.on_hand_qty -= Decimal(
@@ -4640,27 +4647,28 @@ def storeTransactionAdd(request):
                         resultant_quantity_result =  models.Job_Order_Detail.objects.filter(item_id = jobOrderDetails[index].item_id,job_order_header_id=request.POST['purchase_job_order_header_id']).first()
                         resultant_quantity_result.quantity_result = 0.0  if not boMHeadDetailsExist else (resultant_quantity_result.quantity_result - Decimal(BomQuantity*incoming_item_quantity))
                         resultant_quantity_result.save()
-                        print(4423)
+                        # #print(4423)
                         # change in storeItemCurrent
                         # Fetch the last transaction_date less than the given_date if mout
                         given_date = request.POST['transaction_date']
                         
                         
                         # Check for the last record on the given_date
-                        record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=jobOrderDetails[index].item_id, store=store ).last()
-
+                        record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=jobOrderDetails[index].item_id, store=store ,status=1, deleted=0).last()
+                        #print(f'record: {record},given date:{given_date}')
                         if not record:
                             # If no record is found for the given_date, look for the last record before that date
                             last_transaction_date = models.Store_Item_Current.objects.filter(
-                                transaction_date__lt=given_date ,item_id=jobOrderDetails[index].item_id, store=store
+                                transaction_date__lt=given_date ,item_id=jobOrderDetails[index].item_id, store_id=store.id,status=1, deleted=0
                             ).aggregate(Max('transaction_date'))['transaction_date__max']
+                            
 
                             
 
                             if last_transaction_date:
                                 # Fetch the record for the last_transaction_date
                                 record = models.Store_Item_Current.objects.filter(
-                                    transaction_date=last_transaction_date ,item_id=jobOrderDetails[index].item_id, store=store
+                                    transaction_date=last_transaction_date ,item_id=jobOrderDetails[index].item_id, store_id=store.id, status=1, deleted=0
                                 ).last()
 
                         # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
@@ -4685,11 +4693,11 @@ def storeTransactionAdd(request):
                             # Save the instance to the database
                             store_item_instance.save()
                         else:
-                            message = "canot possible item not present in the store "
+                            message = f"canot possible item not present in the store{store.name} "
                             raise ValueError(message)
                         moutQuantity = (jobOrderDetails[index].quantity_result if not boMHeadDetailsExist else Decimal(BomQuantity*incoming_item_quantity)) 
                         store_item_curreEdit(store.id,jobOrderDetails[index].item_id,given_date,'mout',moutQuantity) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
-                        # print(resultant_quantity_result.quantity_result , jobOrderDetails[index].item.name)
+                        # #print(resultant_quantity_result.quantity_result , jobOrderDetails[index].item.name)
                 if storeTransactionDetail:
                     models.Store_Transaction_Detail.objects.bulk_create(storeTransactionDetail)
                 storeTransactionVhead.total_amount = amount_total
@@ -4698,7 +4706,7 @@ def storeTransactionAdd(request):
             storeTransactionDetail =[]
             
             if "1" in inspect:
-                # print("313s4")
+                # #print("313s4")
                 grn_inspection_transaction_count = models.Grn_Inspection_Transaction.objects.all().count()
                 grnTransactionheader = models.Grn_Inspection_Transaction()
                 grnTransactionheader.vendor_id = request.POST['vendor_id']
@@ -4706,33 +4714,33 @@ def storeTransactionAdd(request):
                 grnTransactionheader.invoice_challan = request.POST['invoice_challan']
                 grnTransactionheader.transaction_number = env("GRN_TRANSACTION_INSPECTION_SEQ").replace(
                     "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(5))
-                # # # # # print("3143")
+                # # # # # #print("3143")
                 if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) != 2):
                     grnTransactionheader.purchase_order_header_id = request.POST[
                         'purchase_job_order_header_id']
-                # # # # # print("3147")
+                # # # # # #print("3147")
                 if(int(request.POST['with_purchase_job_order']) == 2):
                     grnTransactionheader.job_order_id =  request.POST[
                         'purchase_job_order_header_id']
                 grnTransactionheader.transaction_date = request.POST['transaction_date']
-                # # # # # print("3149")
+                # # # # # #print("3149")
                 grnTransactionheader.total_amount = request.POST['total_amount']
-                # # # # # print("3151")
+                # # # # # #print("3151")
                 grnTransactionheader.notes = request.POST['notes']
 
                 grnTransactionheader.is_logical_grn_store = logicalgrnSore
-                # # # # # print("3153")
+                # # # # # #print("3153")
                 grnTransactionheader.save()
-                # # # # # print("3148")
+                # # # # # #print("3148")
                
                 order_details = []
                 total_amounts = 0 
                 material_reciept_all = 0
                 for index, elem in enumerate(request.POST.getlist('item_id')):
-                    # print('3605')
+                    # #print('3605')
                     if inspect[index] == "1":
                         check1 +=1
-                        # # # # # print( request.POST.getlist(
+                        # # # # # #print( request.POST.getlist(
                         #             'amount_with_gst')[index])
                        
                         
@@ -4757,12 +4765,12 @@ def storeTransactionAdd(request):
                         )
                         #incoming material exported by vendor to comapany ---- for grn
                         if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) == 2):
-                            # # # # # print('3627')
+                            # # # # # #print('3627')
                             job_order_details= models.Job_Order_Detail.objects.filter(item_id=elem, 
                                                 job_order_header_id= request.POST['purchase_job_order_header_id'],direction='incoming').get()
-                            # # # # # print(job_order_details.quantity_result - Decimal(request.POST.getlist('item_quantity')[index]))
+                            # # # # # #print(job_order_details.quantity_result - Decimal(request.POST.getlist('item_quantity')[index]))
                             job_order_details.quantity_result -= Decimal(request.POST.getlist('item_quantity')[index]) 
-                            # # # # # print('3632')
+                            # # # # # #print('3632')
                             job_order_details.updated_at = datetime.now()
                             job_order_details.save()
                             storeTransactionDetail.append(
@@ -4785,12 +4793,12 @@ def storeTransactionAdd(request):
                         
                         
                             # Check for the last record on the given_date
-                            record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id = elem , store_id = store.id ).last()
+                            record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id = elem , store_id = store.id,status=1, deleted=0 ).last()
 
                             if not record:
                                 # If no record is found for the given_date, look for the last record before that date
                                 last_transaction_date = models.Store_Item_Current.objects.filter(
-                                    transaction_date__lt=given_date ,item_id = elem , store_id = store.id
+                                    transaction_date__lt=given_date ,item_id = elem , store_id = store.id,status=1, deleted=0
                                 ).aggregate(Max('transaction_date'))['transaction_date__max']
 
                                 
@@ -4798,7 +4806,7 @@ def storeTransactionAdd(request):
                                 if last_transaction_date:
                                     # Fetch the record for the last_transaction_date
                                     record = models.Store_Item_Current.objects.filter(
-                                        transaction_date=last_transaction_date ,item_id = elem , store_id = store.id
+                                        transaction_date=last_transaction_date ,item_id = elem , store_id = store.id,status=1, deleted=0
                                     ).last()
 
                             # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
@@ -4825,16 +4833,16 @@ def storeTransactionAdd(request):
                                 raise ValueError(message)
                             moutQuantity =(Decimal(request.POST.getlist('item_quantity')[index]))
                             store_item_curreEdit(store.id,elem,given_date,'mout',moutQuantity) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
-                            # print(resultant_quantity_result.quantity_result , jobOrderDetails[index].item.name)
+                            # #print(resultant_quantity_result.quantity_result , jobOrderDetails[index].item.name)
 
                             material_reciept_all = 0 if float(job_order_details.quantity_result)>0.00 else 1
-                        #     # # # # print('3634') 
+                        #     # # # # #print('3634') 
 
                             #closed job order
                             if (material_reciept_all == 1):
                                 job_order = models.Job_Order.objects.filter(pk=request.POST[
                                     'purchase_job_order_header_id']).get() 
-                                # # # # # print(job_order)
+                                # # # # # #print(job_order)
                                 job_order.material_reciept = 1
                                 job_order.job_status = 2
                                 current_time = datetime.now(timezone.utc)
@@ -4843,17 +4851,17 @@ def storeTransactionAdd(request):
                                 job_order.actual_time_take = str(round(total_hours, 3)) + 'hr'
                                 job_order.updated_at = datetime.now()   
                                 job_order.save()
-                        # # # # # print("3170")
+                        # # # # # #print("3170")
                 if storeTransactionDetail:
                     models.Store_Transaction_Detail.objects.bulk_create(storeTransactionDetail)
                 models.Grn_Inspection_Transaction_Detail.objects.bulk_create(order_details)
                 grnTransactionheader.total_amount = total_amounts
                 grnTransactionheader.save()
-                # # # # # print("3166")
+                # # # # # #print("3166")
                 
 
             if "0" in inspect:
-                # # print(4214)
+                # # #print(4214)
                 store_transaction_count = models.Store_Transaction.objects.all().count()
                 storeTransactionHeader = models.Store_Transaction()
                 storeTransactionHeader.vendor_id = request.POST['vendor_id']
@@ -4862,11 +4870,11 @@ def storeTransactionAdd(request):
                 transaction_type = models.Transaction_Type.objects.get(name='GRN')
                 storeTransactionHeader.transaction_type = transaction_type
                 storeTransactionHeader.invoice_challan = request.POST['invoice_challan']
-                # # # # # print("3182")
+                # # # # # #print("3182")
                 if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) != 2):
                     storeTransactionHeader.purchase_order_header_id = request.POST[
                         'purchase_job_order_header_id']
-                # # # # print("3186")
+                # # # # #print("3186")
                 if(int(request.POST['with_purchase_job_order']) == 2):
                     storeTransactionHeader.job_order_id =  request.POST[
                         'purchase_job_order_header_id']
@@ -4881,7 +4889,7 @@ def storeTransactionAdd(request):
                 storeTransactionHeader.is_logical_grn_store = logicalgrnSore
                 storeTransactionHeader.save()
 
-                # # print('3549')
+                # # #print('3549')
                 order_details = []
                 total_amounts = 0 
                 material_reciept_all = 0
@@ -4906,12 +4914,12 @@ def storeTransactionAdd(request):
                         )
                         total_amounts += float(request.POST.getlist(
                                     'amount_with_gst')[index])
-                        # # # # # print('3569')
+                        # # # # # #print('3569')
                         storeItem = models.Store_Item.objects.filter(
                             item_id=elem, store_id=request.POST.getlist('store_id')[index]).first()
-                        # # print(storeItem)
+                        # # #print(storeItem)
                         if storeItem is None:
-                            # # print(4484)
+                            # # #print(4484)
                             storeItem = models.Store_Item()
                             storeItem.opening_qty = Decimal(
                                 request.POST.getlist('item_quantity')[index])
@@ -4923,27 +4931,27 @@ def storeTransactionAdd(request):
                             storeItem.store_id = request.POST.getlist('store_id')[
                                 index]
                             storeItem.save()
-                            # # print(4496)
+                            # # #print(4496)
                         else:
-                            # # print(4498)
+                            # # #print(4498)
                             storeItem.on_hand_qty += Decimal(
                                 request.POST.getlist('item_quantity')[index])
-                            # # print(4501)
+                            # # #print(4501)
                             storeItem.closing_qty += Decimal(
                                 request.POST.getlist('item_quantity')[index])  
                             storeItem.updated_at = datetime.now()
-                            # # print(storeItem.closing_qty)
+                            # # #print(storeItem.closing_qty)
                             storeItem.save()
 
                         # change in storeItemCurrent
                         # Fetch the last transaction_date less than the given_date
                         given_date = request.POST['transaction_date']   
                         # Check for the last record on the given_date
-                        record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=elem, store_id=request.POST.getlist('store_id')[index]).last()
+                        record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=elem, store_id=request.POST.getlist('store_id')[index],status=1, deleted=0).last()
                         if not record:
                             # If no record is found for the given_date, look for the last record before that date
                             last_transaction_date = models.Store_Item_Current.objects.filter(
-                                transaction_date__lt=given_date,item_id=elem, store_id=request.POST.getlist('store_id')[index]
+                                transaction_date__lt=given_date,item_id=elem, store_id=request.POST.getlist('store_id')[index],status=1, deleted=0
                             ).aggregate(Max('transaction_date'))['transaction_date__max']
 
                             
@@ -4951,7 +4959,7 @@ def storeTransactionAdd(request):
                             if last_transaction_date:
                                 # Fetch the record for the last_transaction_date
                                 record = models.Store_Item_Current.objects.filter(
-                                    transaction_date=last_transaction_date,item_id=elem, store_id=request.POST.getlist('store_id')[index]
+                                    transaction_date=last_transaction_date,item_id=elem, store_id=request.POST.getlist('store_id')[index], status=1, deleted=0
                                 ).last()
 
                         # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
@@ -4989,16 +4997,16 @@ def storeTransactionAdd(request):
 
                         # incoming material exported by vendor to company
                         if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) == 2): #it is a job order
-                            # # # # # print('3641')
+                            # # # # # #print('3641')
                             job_order_details= models.Job_Order_Detail.objects.filter(item_id=elem, 
                                                 job_order_header_id= request.POST['purchase_job_order_header_id'],direction='incoming').get()
-                            # # # # # print(request.POST.getlist('item_quantity')[index])
+                            # # # # # #print(request.POST.getlist('item_quantity')[index])
                             job_order_details.quantity_result -=  Decimal(request.POST.getlist('item_quantity')[index]) 
-                            # # # # # print('3646')
+                            # # # # # #print('3646')
                             job_order_details.updated_at = datetime.now()
                             job_order_details.save()
                             material_reciept_all = 0 if float(job_order_details.quantity_result)>0.00 else 1 
-                            # # # # print("3170")
+                            # # # # #print("3170")
                             storeTransactionDetail.append(
                                 models.Store_Transaction_Detail(
                                     store_transaction_header_id=storeTransactionVhead.id,
@@ -5010,10 +5018,10 @@ def storeTransactionAdd(request):
                                 )    
                             )
                             store = models.Store.objects.get(vendor_id=request.POST['vendor_id'])
-                            # # # # print(store.id, request.POST.getlist('item_id')[index])
+                            # # # # #print(store.id, request.POST.getlist('item_id')[index])
                             if models.Store_Item.objects.filter(item_id = request.POST.getlist('item_id')[index] , store_id = store.id).exists():
                                 storeItem = models.Store_Item.objects.filter(item_id = elem , store = store).first()
-                                # # # # print( models.Store_Item.objects.filter(item_id = request.POST.getlist('item_id')[index] , store_id = store.id).exists())
+                                # # # # #print( models.Store_Item.objects.filter(item_id = request.POST.getlist('item_id')[index] , store_id = store.id).exists())
                                 storeItem.on_hand_qty -= Decimal(
                                 request.POST.getlist('item_quantity')[index])
                                 storeItem.closing_qty -= Decimal(
@@ -5027,12 +5035,12 @@ def storeTransactionAdd(request):
                             
                             
                             # Check for the last record on the given_date
-                            record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=elem, store_id=store.id ).last()
+                            record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=elem, store_id=store.id,status=1, deleted=0 ).last()
 
                             if not record:
                                 # If no record is found for the given_date, look for the last record before that date
                                 last_transaction_date = models.Store_Item_Current.objects.filter(
-                                    transaction_date__lt=given_date ,item_id=elem, store=store.id 
+                                    transaction_date__lt=given_date ,item_id=elem, store=store.id,status=1, deleted=0 
                                 ).aggregate(Max('transaction_date'))['transaction_date__max']
 
                                 
@@ -5040,7 +5048,7 @@ def storeTransactionAdd(request):
                                 if last_transaction_date:
                                     # Fetch the record for the last_transaction_date
                                     record = models.Store_Item_Current.objects.filter(
-                                        transaction_date=last_transaction_date ,item_id=elem, store_id=store.id
+                                        transaction_date=last_transaction_date ,item_id=elem, store_id=store.id,status=1, deleted=0
                                     ).last()
 
                             # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
@@ -5073,7 +5081,7 @@ def storeTransactionAdd(request):
                             if (material_reciept_all == 1):
                                 job_order = models.Job_Order.objects.filter(pk=request.POST[
                                 'purchase_job_order_header_id']).get() 
-                                    # # # # # print(job_order)
+                                    # # # # # #print(job_order)
                                 job_order.material_reciept = 1
                                 job_order.job_status = 2
                                 current_time = datetime.now(timezone.utc)
@@ -5082,15 +5090,15 @@ def storeTransactionAdd(request):
                                 job_order.actual_time_take = str(round(total_hours, 3)) + 'hr'
                                 job_order.updated_at = datetime.now()   
                                 job_order.save()
-                # print(4548)
+                # #print(4548)
                 if storeTransactionDetail:
                     models.Store_Transaction_Detail.objects.bulk_create(storeTransactionDetail)
                 models.Store_Transaction_Detail.objects.bulk_create(order_details)
                 storeTransactionHeader.total_amount = total_amounts
                 storeTransactionHeader.save()
-                # # # # print(order_details)
+                # # # # #print(order_details)
                 
-                # # # # # print('3589')
+                # # # # # #print('3589')
                 if request.POST['with_purchase_job_order'] != "" and int(request.POST['with_purchase_job_order']) != 0 and int(request.POST['with_purchase_job_order']) != 2 :
                     for index, elem in enumerate(request.POST.getlist('detail_id')):
                         purchaseOrderItem = models.Purchase_Order_Detail.objects.get(
@@ -5108,7 +5116,7 @@ def storeTransactionAdd(request):
                             request.POST.getlist('amount_with_gst')[index])
                         purchaseOrderItem.updated_at = datetime.now()
                         purchaseOrderItem.save()
-                    # # # # # print(request.POST['purchase_job_order_header_id'])
+                    # # # # # #print(request.POST['purchase_job_order_header_id'])
                     purchaseOrderHeader = models.Purchase_Order.objects.prefetch_related(
                         'purchase_order_detail_set').get(pk=request.POST['purchase_job_order_header_id'])
                     
@@ -5124,7 +5132,7 @@ def storeTransactionAdd(request):
                         purchaseOrderHeader.delivery_status = 2
                     purchaseOrderHeader.updated_at = datetime.now()
                     purchaseOrderHeader.save()
-                # # # # # print('4348') 
+                # # # # # #print('4348') 
             
             user_log_details_add(userId,'Store Transaction Add')
         transaction.commit()
@@ -5133,11 +5141,11 @@ def storeTransactionAdd(request):
             'message': "Store Transaction Created Successfully."
         })
     except Exception as e:
-        print(f"error is {e}")
+        #print(f"error is {e}")
         # tb = traceback.format_exc() 
         # exc_type, exc_value, exc_tb = e.__traceback__.tb_frame.f_globals['__builtins__']["sys"].exc_info()
         # line_number = exc_tb.tb_lineno
-        # print(f"Error occurred on line {line_number}")
+        # #print(f"Error occurred on line {line_number}")
         context.update({
             'status': 588,
             'message': message
@@ -5146,11 +5154,119 @@ def storeTransactionAdd(request):
     return JsonResponse(context)
 
 
+def data_revertive_from_transaction(storeTrId, itemId, storeId, quantity, retrivaltype):
+    #print('Inside data_revertive_from_transaction')
+    try:
+        # Subqueries to fetch transaction_date and created_at for the specific transaction
+        subquery_transaction_date = models.Store_Item_Current.objects.filter(
+            store_transaction_id=storeTrId, status=1, deleted=0
+        ).values('transaction_date')[:1]
+
+        subquery_created_at = models.Store_Item_Current.objects.filter(
+            store_transaction_id=storeTrId, status=1, deleted=0
+        ).values('created_at')[:1]
+
+
+        # Determine the adjustment factor based on retrieval type
+        adjustment = Decimal(quantity) if retrivaltype == 'in' else -(Decimal(quantity))
+
+        # Filter and update matching records in bulk
+        updated_count = models.Store_Item_Current.objects.filter(
+            item_id=itemId,
+            store_id=storeId,
+            status=1,
+            deleted=0,
+        ).filter(
+            Q(
+                Q(
+                    transaction_date=Subquery(subquery_transaction_date),
+                    created_at__gte=Subquery(subquery_created_at)
+                ) |
+                Q(transaction_date__gt=Subquery(subquery_transaction_date))
+            )
+        ).update(
+            closing_qty=F('closing_qty') + adjustment,
+            on_hand_qty=F('on_hand_qty') + adjustment,
+            opening_qty=F('opening_qty') + adjustment,
+            updated_at=datetime.now()
+        )
+
+        # Log the result of the update
+        if updated_count == 0:
+            raise ValueError('No data found for the given criteria.')
+
+    except Exception as e:
+        raise ValueError(f"An error occurred: {e}")
+
+def jobOrderStoreTranasctionRetriveVendor(storeTranscationOld):
+    #data deducted from vendor store
+    invoice_no = storeTranscationOld.invoice_challan
+    store_transaction_MisT_head = models.Store_Transaction.objects.filter(invoice_challan=invoice_no ,transaction_type__name = 'MIST',deleted= 0, status=1)
+    
+    # Check if any records exist
+    if store_transaction_MisT_head.exists():
+        store_transaction_MisT_head = store_transaction_MisT_head.first()
+        store_transaction_MisT_head.status = 0 
+        store_transaction_MisT_head.invoice_challan =''
+        store_transaction_MisT_head.updated_at = datetime.now()
+        store_transaction_MisT_head.save()
+        store_transaction_details = models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = store_transaction_MisT_head.id)
+        for store_transaction_detail in store_transaction_details:
+            data_revertive_from_transaction(store_transaction_MisT_head.id, store_transaction_detail.item_id,store_transaction_detail.store_id,store_transaction_detail.quantity,'in')
+            store_items = models.Store_Item.objects.filter(item_id = store_transaction_detail.item_id, store_id = store_transaction_detail.store_id).first() 
+            store_items.closing_qty += Decimal(store_transaction_detail.quantity)
+            store_items.on_hand_qty += Decimal(store_transaction_detail.quantity)
+            store_items.updated_at = datetime.now()
+            store_items.save()
+            store_item_current = models.Store_Item_Current.objects.filter(store_transaction_id = store_transaction_MisT_head.id,status=1, deleted=0)
+           
+            if store_item_current.exists():
+                store_item_current = store_item_current.first()
+                store_item_current.on_hand_qty += Decimal(store_transaction_detail.quantity)
+                store_item_current.closing_qty += Decimal(store_transaction_detail.quantity)
+                store_item_current.status = 0
+                store_item_current.updated_at = datetime.now()
+                store_item_current.save()
+        
+            joborderDet = models.Job_Order_Detail.objects.filter(job_order_header_id = storeTranscationOld.job_order.id, item_id = store_transaction_detail.item_id)
+            if joborderDet.exists():
+                joborderDet = joborderDet.first()
+                joborderDet.quantity_result += Decimal(store_transaction_detail.quantity)
+                joborderDet.updated_at = datetime.now()
+                joborderDet.save()
+
+    else:
+        raise ValueError('No transaction present in vendor store')
+
+def jobOrderStoreTranasctionRetriveInHouse(storeTranscationOld):
+    #print('inside jobOrderStoreTranasctionRetriveInHouse')
+    storeTransactionDets = models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = storeTranscationOld.id)
+
+    for storeTransactionDet in storeTransactionDets:
+        data_revertive_from_transaction(storeTranscationOld.id,
+                                        storeTransactionDet.item_id,
+                                        storeTransactionDet.store_id,
+                                        storeTransactionDet.quantity,'out')
+        store_items = models.Store_Item.objects.filter(item_id = storeTransactionDet.item_id, store_id = storeTransactionDet.store_id).first() 
+        store_items.closing_qty -= Decimal(storeTransactionDet.quantity)
+        store_items.on_hand_qty -= Decimal(storeTransactionDet.quantity)
+        store_items.updated_at = datetime.now()
+        store_items.save()
+        store_item_current = models.Store_Item_Current.objects.filter(store_transaction_id = storeTranscationOld.id,status=1, deleted=0)
+        if store_item_current.exists():
+            store_item_current = store_item_current.first()
+            store_item_current.on_hand_qty -= Decimal(storeTransactionDet.quantity)
+            store_item_current.closing_qty -= Decimal(storeTransactionDet.quantity)
+            store_item_current.status = 0
+            store_item_current.updated_at = datetime.now()
+            store_item_current.save()
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def storeTransactionEdit(request):
     context = {}
-    # # print(request.POST)
+    # # #print(request.POST)
     check1 = 0
     test =""
     check2 = 0
@@ -5158,12 +5274,35 @@ def storeTransactionEdit(request):
     inspect = 1 if '1' in request.POST.getlist('itemInspect') else 0
 
     inspectZero = 1 if '0' in  request.POST.getlist('itemInspect') else 0
-
-    # print(inspect,inspectZero)
+    #print(models.Store_Transaction.objects.filter(invoice_challan=request.POST['invoice_challan']))
+    invoice_challan_exist = models.Store_Transaction.objects.filter(invoice_challan=request.POST['invoice_challan'],status=1, deleted=0 ,transaction_type__name='GRN').exclude(pk = request.POST['id'])
+    if invoice_challan_exist.exists():
+        context.update({
+            'status': 591.1,
+            'message': "invoice/challan number already exist",
+        })
+        return JsonResponse(context)
+    # logical_grn_values = request.POST.getlist('logical_grn')
+    # if logical_grn_values and ('1' in logical_grn_values) :
+    #     logical_grn_values = request.POST.getlist('logical_grn') 
+    #     storeList = request.POST.getlist('store_id') 
+    #     filtered_store_list = [storeList[i] for i in range(len(storeList)) if logical_grn_values[i] == '1']
+    #     all_same = len(set(filtered_store_list)) == 1
+    #     if all_same :
+    #        logicalgrnSore = 1
+    #        #print(4309)
+    #     else:
+    #         context.update({
+    #             'status': 586,
+    #             'message': "all logical grn vendor store must be same "
+    #         })
+    #         return JsonResponse(context)
+         
+    # #print(inspect,inspectZero)
     try:
         with transaction.atomic():
-            # print(4645)
-            storeTranasctionHeaderOld = models.Store_Transaction.objects.get(pk = request.POST['id'])
+            # #print(4645)
+            storeTranasctionHeaderOld = models.Store_Transaction.objects.get(pk = request.POST['id'], status=1, deleted=0)
             storeTranasctionDetOld = list(models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = request.POST['id']))
 
             #setting new transaction number from old transaction number
@@ -5174,10 +5313,10 @@ def storeTransactionEdit(request):
             storeTranasctionHeaderOld.status = 0 
             storeTranasctionHeaderOld.updated_at = datetime.now()
             storeTranasctionHeaderOld.save()
-            # print(4503)
+            # #print(4503)
             #retriving orginal data to in house store
             if int(request.POST['with_purchase_job_order']) != 2: #it is a purchase(with/without) 
-                
+                #print(5305)
                 for transact in storeTranasctionDetOld:
                     storeItemExists = models.Store_Item.objects.filter(store_id=transact.store_id,item_id = transact.item_id).exists()
                     if storeItemExists:
@@ -5186,7 +5325,8 @@ def storeTransactionEdit(request):
                         storeItem.closing_qty -= transact.quantity
                         storeItem.updated_at = datetime.now()
                         storeItem.save()
-                    storeItemCurrent = models.Store_Item_Current.objects.filter(store_transaction_id = storeTranasctionHeaderOld.id ,transaction_date = storeTranasctionHeaderOld.transaction_date,store_id=transact.store_id,item_id = transact.item_id)
+                    data_revertive_from_transaction(storeTranasctionHeaderOld.id,transact.item_id,transact.store_id,transact.quantity,'out')
+                    storeItemCurrent = models.Store_Item_Current.objects.filter(store_transaction_id = storeTranasctionHeaderOld.id ,transaction_date = storeTranasctionHeaderOld.transaction_date,store_id=transact.store_id,item_id = transact.item_id , status=1, deleted=0)
                     if storeItemCurrent.exists():
                         storeItemCurrent = storeItemCurrent.first()
                         storeItemCurrent.on_hand_qty -= Decimal(transact.quantity)
@@ -5194,18 +5334,13 @@ def storeTransactionEdit(request):
                         storeItemCurrent.status = 0
                         storeItemCurrent.updated_at = datetime.now()
                         storeItemCurrent.save()
-                        storeItemCurrentGt = models.Store_Item_Current.objects.filter(
-                            store_id=transact.store_id,item_id = transact.item_id,
-                            store_transaction_id__gt=storeTranasctionHeaderOld.id
-                        ).order_by('transaction_date', 'created_at', 'item_id')
-
-                        # Update the records
-                        for item in storeItemCurrentGt:
-                            item.closing_qty -= Decimal(transact.quantity)
-                            item.opening_qty -= Decimal(transact.quantity)
-                            item.on_hand_qty -= Decimal(transact.quantity)
-                            item.updated_at = datetime.now()
-                            item.save()
+                    
+                    storecurrent = models.Store_Item_Current.objects.filter(store_id=transact.store_id,item_id = transact.item_id , status=1, deleted=0).order_by('transaction_date','created_at')
+                    if storecurrent.exists():
+                        storecurrent = storecurrent.last()
+                        #print(storecurrent.closing_qty,storecurrent.on_hand_qty,storecurrent.transaction_date)
+                    
+                       
 
                     if int(request.POST['with_purchase_job_order']) == 1: #with purchase order
                         purchaseOrderDetExist = models.Purchase_Order_Detail.objects.filter(purchase_order_header_id =request.POST['purchase_job_order_header_id'],item_id = transact.item_id).exists()
@@ -5234,218 +5369,34 @@ def storeTransactionEdit(request):
                         purchaseOrderHeader.delivery_status = 2
                         purchaseOrderHeader.updated_at = datetime.now()
                         purchaseOrderHeader.save()
-            else: # it is a job order
-            
-                for transact in storeTranasctionDetOld:
-                    #incoming quantity
-                    #from self store 
-                    storeItemExists = models.Store_Item.objects.filter(store_id=transact.store_id,item_id = transact.item_id).exists()
-                    if storeItemExists:
-                        storeItem = models.Store_Item.objects.get(store_id=transact.store_id,item_id = transact.item_id)
-                        storeItem.on_hand_qty -= transact.quantity
-                        storeItem.closing_qty -= transact.quantity
-                        # print(4707)
-                        storeItem.updated_at = datetime.now()
-                        storeItem.save()
-                        storeItemCurrent = models.Store_Item_Current.objects.filter(store_transaction_id = storeTranasctionHeaderOld.id ,transaction_date = storeTranasctionHeaderOld.transaction_date,store_id=transact.store_id,item_id = transact.item_id)
-                        if storeItemCurrent.exists():
-                            storeItemCurrent = storeItemCurrent.first()
-                            storeItemCurrent.on_hand_qty -= Decimal(transact.quantity)
-                            storeItemCurrent.closing_qty -= Decimal(transact.quantity)
-                            storeItemCurrent.status = 0
-                            storeItemCurrent.updated_at = datetime.now()
-                            storeItemCurrent.save()
-                            storeItemCurrentGt = models.Store_Item_Current.objects.filter(
-                                store_id=transact.store_id,item_id = transact.item_id,
-                                store_transaction_id__gt=storeTranasctionHeaderOld.id
-                            ).order_by('transaction_date', 'created_at', 'item_id')
-
-                            # Update the records
-                            for item in storeItemCurrentGt:
-                                item.closing_qty -= Decimal(transact.quantity)
-                                item.opening_qty -= Decimal(transact.quantity)
-                                item.on_hand_qty -= Decimal(transact.quantity)
-                                item.updated_at = datetime.now()
-                                item.save()
-                    # from vendor store recieved quantity
-                    store = models.Store.objects.get(vendor_id = storeTranasctionHeaderOld.vendor_id)
-                    storeItemExists = models.Store_Item.objects.filter(store_id=store.id,item_id = transact.item_id).exists()
-                    if storeItemExists:
-                        storeItem = models.Store_Item.objects.get(store_id=store.id,item_id = transact.item_id)
-                        storeItem.on_hand_qty += transact.quantity
-                        storeItem.closing_qty += transact.quantity
-                        storeItem.updated_at = datetime.now()
-                        storeItem.save()
-                    else:
-                        storeItem = models.Store_Item()
-                        storeItem.opening_qty = Decimal(transact.quantity)
-                        storeItem.on_hand_qty = Decimal(transact.quantity)
-                        storeItem.closing_qty = Decimal(transact.quantity)
-                        storeItem.item_id = transact.item_id    
-                        storeItem.store_id = store.id
-                        storeItem.save()
-                     
-                    # change in storeItemCurrent min
-                    # Fetch the last transaction_date less than the given_date
-                    given_date = storeTranasctionHeaderOld.transaction_date
-                    print(5222)
-                    
-                    # Check for the last record on the given_date
-                    record = models.Store_Item_Current.objects.filter(transaction_date=given_date,store_id=transact.store_id,item_id = transact.item_id).last()
-                    # print('aaaaaaaa')
-                    if not record:
-                        # If no record is found for the given_date, look for the last record before that date
-                        last_transaction_date = models.Store_Item_Current.objects.filter(
-                            transaction_date__lt=given_date,store_id=transact.store_id,item_id = transact.item_id
-                        ).aggregate(Max('transaction_date'))['transaction_date__max']
-
-                        
-
-                        if last_transaction_date:
-                            # Fetch the record for the last_transaction_date
-                            record = models.Store_Item_Current.objects.filter(
-                                transaction_date=last_transaction_date,store_id=transact.store_id,item_id = transact.item_id
-                            ).last()
-
-                    # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
-                    
-                    # print(5243)
-                    store_item_instance = models.Store_Item_Current()
-
-                    if record:
-                        # Set values based on the last record found
-                        store_item_instance.opening_qty = record.closing_qty
-                        store_item_instance.on_hand_qty = record.closing_qty + transact.quantity
-                        store_item_instance.closing_qty = record.closing_qty + transact.quantity
-                    else:
-                        # Set values based on the current transaction if no prior record exists
-                        store_item_instance.opening_qty = Decimal(
-                            0.00
-                        )
-                        store_item_instance.on_hand_qty = transact.quantity
-                        store_item_instance.closing_qty = transact.quantity
-
-                    if(store_item_instance.on_hand_qty<0):
-                        raise ValueError(f"onhand quantity can not be negative")
-                    # Set other fields for the new transaction
-                    store_item_instance.quantity_Transfer = f"{transact.quantity} get transfer to vendor stock due to editing of {storeTranasctionHeaderOld.transaction_number} of date {given_date}"
-                    # print(5261)
-                    store_item_instance.transaction_date = given_date
-                    store_item_instance.item_id = transact.item_id
-                    store_item_instance.store_id = transact.store_id
-                    # Save the instance to the database
-                    store_item_instance.save()
-                    
-                    store_item_curreEdit(transact.store_id,transact.item_id,given_date,'min', transact.quantity) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
-                    
-                    # changes in job order detail
-                    jobOrderDetExist = models.Job_Order_Detail.objects.filter(item_id = transact.item_id , job_order_header_id = request.POST['job_order_header_id'] , direction ='incoming')
-                    
-                    # print(5273)
-                    if jobOrderDetExist:
-                        jobOrderDet = models.Job_Order_Detail.objects.get(item_id = transact.item_id , job_order_header_id = request.POST['job_order_header_id'], direction ='incoming' )
-                        jobOrderDet.quantity_result += transact.quantity
-                        jobOrderDet.updated_at = datetime.now()
-                        jobOrderDet.save()
-                    jobOrderHeader = models.Job_Order.objects.get(pk = request.POST['job_order_header_id'])
-                    jobOrderDetails = models.Job_Order_Detail.objects.filter(job_order_header_id = request.POST['job_order_header_id'],direction ='outgoing')
-                    #out going quantity which utilised to make specific incoming quantity also adjusted to vendor store
-                    for detail in jobOrderDetails:
-                        bomDetails = models.Bill_Of_Material_Detail.objects.filter(bill_of_material_header_id = jobOrderHeader.bom_type_head_id , item_id = detail.item_id).first()
-                        jobOrderDetailsNew = models.Job_Order_Detail.objects.filter(job_order_header_id = request.POST['job_order_header_id'],direction ='outgoing',item_id = detail.item_id).first()
-                        
-                        jobOrderDetailsNew.quantity_result +=  (bomDetails.quantity * transact.quantity)
-                        store = models.Store.objects.get(vendor_id = storeTranasctionHeaderOld.vendor_id)
-                        storeItemExists = models.Store_Item.objects.filter(store_id=store.id,item_id = detail.item_id).exists()
-                        if storeItemExists:
-                            storeItem = models.Store_Item.objects.get(store_id=store.id,item_id = detail.item_id)
-                            storeItem.on_hand_qty += (bomDetails.quantity * transact.quantity)
-                            storeItem.closing_qty +=  (bomDetails.quantity * transact.quantity)
-                            storeItem.updated_at = datetime.now()
-                            storeItem.save()  
-                        else:
-                            storeItem = models.Store_Item()
-                            storeItem.opening_qty = Decimal(bomDetails.quantity * transact.quantity)
-                            storeItem.on_hand_qty = Decimal(bomDetails.quantity * transact.quantity)
-                            storeItem.closing_qty = Decimal(bomDetails.quantity * transact.quantity)
-                            storeItem.item_id = detail.item_id
-                            storeItem.store_id = store.id
-                            storeItem.save()
-                        
-                         # change in storeItemCurrent min
-                        # Fetch the last transaction_date less than the given_date
-                        given_date = storeTranasctionHeaderOld.transaction_date
-                        
-                        # print(5299)
-                        # Check for the last record on the given_date
-                        record = models.Store_Item_Current.objects.filter(transaction_date=given_date,store_id=store.id,item_id = detail.item_id).last()
-
-                        if not record:
-                            # If no record is found for the given_date, look for the last record before that date
-                            last_transaction_date = models.Store_Item_Current.objects.filter(
-                                transaction_date__lt=given_date,store_id=store.id,item_id = detail.item_id
-                            ).aggregate(Max('transaction_date'))['transaction_date__max']
-
-                            
-
-                            if last_transaction_date:
-                                # Fetch the record for the last_transaction_date
-                                record = models.Store_Item_Current.objects.filter(
-                                    transaction_date=last_transaction_date,store_id=store.id,item_id = detail.item_id
-                                ).last()
-
-                        # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
-                        
-                        
-                        store_item_instance = models.Store_Item_Current()
-
-                        if record:
-                            # Set values based on the last record found
-                            store_item_instance.opening_qty = record.closing_qty
-                            store_item_instance.on_hand_qty = record.closing_qty +(bomDetails.quantity * transact.quantity)
-                            store_item_instance.closing_qty = record.closing_qty + (bomDetails.quantity * transact.quantity)
-                        else:
-                            # Set values based on the current transaction if no prior record exists
-                            store_item_instance.opening_qty = Decimal(
-                                0.00
-                            )
-                            store_item_instance.on_hand_qty = (bomDetails.quantity * transact.quantity)
-                            store_item_instance.closing_qty = (bomDetails.quantity * transact.quantity)
-                        if(store_item_instance.on_hand_qty<0):
-                            raise ValueError(f"ohhand quantity can not be negative")
-                        # print(5334)
-                        # Set other fields for the new transaction
-                        store_item_instance.quantity_Transfer = f"{(bomDetails.quantity * transact.quantity)} get transfer to vendor stock due to editing of {storeTranasctionHeaderOld.transaction_number} of date {given_date}"
-                        store_item_instance.transaction_date = given_date
-                        # print(5338)
-                        store_item_instance.item_id = detail.item_id
-                        store_item_instance.store_id = store.id
-                        # Save the instance to the database
-                        store_item_instance.save()
-                        
-                        store_item_curreEdit(store.id,detail.item_id,given_date,'min', (bomDetails.quantity * transact.quantity)) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
-
-                        jobOrderDetailsNew.updated_at = datetime.now()
-                        jobOrderDetailsNew.save()
-                        print(5347)
-                # job order status change
+            else:
+                
+                jobOrderStoreTranasctionRetriveVendor(storeTranasctionHeaderOld)
+                jobOrderStoreTranasctionRetriveInHouse(storeTranasctionHeaderOld)
+               
+                
+                jobOrderHeader = models.Job_Order.objects.get(pk = storeTranasctionHeaderOld.job_order.id)
                 all_material_recieved =  models.Job_Order_Detail.objects.filter(
-                                            job_order_header_id=request.POST['job_order_header_id'],
+                                            job_order_header_id=storeTranasctionHeaderOld.job_order.id,
                                             direction='incoming',
                                             quantity_result=0.00
                                         ).exists()
-                print(5353)
-                # all material not recieved
+
+                # all material not  recieved
                 if not all_material_recieved:
-                    jobOrderHeader.material_reciept = 0 
+                    jobOrderHeader.material_reciept = 0
                     jobOrderHeader.actual_time_take = ''
                     jobOrderHeader.job_status = 1
                     jobOrderHeader.updated_at = datetime.now()
                     jobOrderHeader.save()
-            
+
             # ---end retruving old data----
 
             # adding actual data 
+
+            storeTranasctionHeaderOld.invoice_challan = ''
+            storeTranasctionHeaderOld.save()
+            # #print(4503)
 
             # if some data are in inspect
             if inspect == 1 : 
@@ -5475,7 +5426,7 @@ def storeTransactionEdit(request):
                 
                 # Grn details
                 for index, elem in enumerate(request.POST.getlist('item_id')):
-                    # # # # # print('3605
+                    # # # # # #print('3605
                     if int(request.POST.getlist('itemInspect')[index]) == 1:
                         check1 +=1
                         total_amounts = float(request.POST.getlist(
@@ -5501,19 +5452,20 @@ def storeTransactionEdit(request):
             # if some data not in inspect
             if inspectZero == 1 :
                 
-                print(5420)
+                
                 # storeTransaction Header
                 storeTransactionHeader = models.Store_Transaction()
+                #print(5429)
                 if (request.POST.get('vendor_id',None)):
                     storeTransactionHeader.vendor_id = request.POST['vendor_id']
                 storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
                 storeTransactionHeader.invoice_challan = request.POST['invoice_challan']
                 storeTransactionHeader.creator_id = userId
-                # # # # # print("3182")
+                # # # # # #print("3182")
                 if(request.POST.get('purchase_order_header_id',None) and int(request.POST['with_purchase_job_order']) == 1): # it is purchase order reciept
                     storeTransactionHeader.purchase_order_header_id = request.POST[
                         'purchase_order_header_id']
-                # # # # print("3186")
+                # # # # #print("3186")
                 if (request.POST.get('job_order_header_id',None) and int(request.POST['with_purchase_job_order']) == 2): # it is job order reciept
                     storeTransactionHeader.job_order_id =  request.POST[
                         'job_order_header_id']
@@ -5522,8 +5474,8 @@ def storeTransactionEdit(request):
                 storeTransactionHeader.total_amount = request.POST['total_amount']
                 storeTransactionHeader.notes = request.POST['notes']
                 storeTransactionHeader.save()
-
-                # # # # print('3549')
+                
+                # # # # #print('3549')
                 order_details = []
                 total_amounts = 0.00 
                 material_reciept_all = 0
@@ -5548,7 +5500,7 @@ def storeTransactionEdit(request):
                         )
                         total_amounts += float(request.POST.getlist(
                                     'amount_with_gst')[index])
-                        # # # # print('3569')
+                        # #print('3569')
 
                         #adding data to my store
                         storeItem = models.Store_Item.objects.filter(
@@ -5575,15 +5527,15 @@ def storeTransactionEdit(request):
                         # change in storeItemCurrent min
                         # Fetch the last transaction_date less than the given_date
                         given_date = request.POST['transaction_date']
-                        
+                        # #print(5564)
                         
                         # Check for the last record on the given_date
-                        record = models.Store_Item_Current.objects.filter(transaction_date=given_date, item_id=elem, store_id=request.POST.getlist('store_id')[index]).last()
+                        record = models.Store_Item_Current.objects.filter(transaction_date=given_date, item_id=elem, store_id=request.POST.getlist('store_id')[index], status=1, deleted=0).last()
 
                         if not record:
                             # If no record is found for the given_date, look for the last record before that date
                             last_transaction_date = models.Store_Item_Current.objects.filter(
-                                transaction_date__lt=given_date, item_id=elem, store_id=request.POST.getlist('store_id')[index]
+                                transaction_date__lt=given_date, item_id=elem, store_id=request.POST.getlist('store_id')[index],status=1, deleted=0
                             ).aggregate(Max('transaction_date'))['transaction_date__max']
 
                             
@@ -5591,7 +5543,7 @@ def storeTransactionEdit(request):
                             if last_transaction_date:
                                 # Fetch the record for the last_transaction_date
                                 record = models.Store_Item_Current.objects.filter(
-                                    transaction_date=last_transaction_date, item_id=elem, store_id=request.POST.getlist('store_id')[index]
+                                    transaction_date=last_transaction_date, item_id=elem, store_id=request.POST.getlist('store_id')[index],status=1, deleted=0
                                 ).last()
 
                         # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
@@ -5600,6 +5552,7 @@ def storeTransactionEdit(request):
                         store_item_instance = models.Store_Item_Current()
 
                         if record:
+                           
                             # Set values based on the last record found
                             store_item_instance.opening_qty = record.closing_qty
                             store_item_instance.on_hand_qty = record.closing_qty + Decimal(
@@ -5631,12 +5584,12 @@ def storeTransactionEdit(request):
                         store_item_instance.save()
                         
                         store_item_curreEdit(request.POST.getlist('store_id')[index],elem,given_date,'min', request.POST.getlist('item_quantity')[index]) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
-
+                # #print(5620)
                 models.Store_Transaction_Detail.objects.bulk_create(order_details)
                 storeTransactionHeader.total_amount = total_amounts
                 
                 storeTransactionHeader.save()
-                # # # # print(4607)
+                # #print(4607)
                 if(int(request.POST['with_purchase_job_order']) == 1 and request.POST.get('purchase_order_header_id',None)): #it is a purchase order
                     
                     for index, elem in enumerate(request.POST.getlist('item_id')):
@@ -5675,36 +5628,38 @@ def storeTransactionEdit(request):
             if (request.POST.get('job_order_header_id',None) and int(request.POST['with_purchase_job_order']) == 2): #it is a job order
                 jobOrderHeader = models.Job_Order.objects.get(pk = request.POST['job_order_header_id'] )  
             
-                # # # # print('4648')
+                # #print('4648')
                 #vendor job order transaction
-                storeTransactionVHead_count= models.Store_Transaction.objects.all().count()
-                storeTransactionVhead= models.Store_Transaction.objects.get(invoice_challan=request.POST['invoice_challan_old'],transaction_type__name = 'MIST', job_order_id = request.POST[
-                        'job_order_header_id'] )
-
+                # storeTransactionVHead_count= models.Store_Transaction.objects.all().count()
+                storeTransactionVhead = models.Store_Transaction()
                 transaction_type = models.Transaction_Type.objects.get(name='MIST')
                 storeTransactionVhead.transaction_type = transaction_type
+                storeTransactionVhead.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+                    "${CURRENT_YEAR}", current_year).replace(
+                    "${AI_DIGIT_5}", ai_digit_5()).replace(
+                    "${transaction_type_id}", str(transaction_type.id).zfill(2))
                 storeTransactionVhead.invoice_challan = request.POST['invoice_challan']
                 if request.POST.get('vendor_id',None):
                     storeTransactionVhead.vendor_from_id = request.POST['vendor_id']
                 if(int(request.POST['with_purchase_job_order']) == 2):
                     storeTransactionVhead.job_order_id =  request.POST[
                         'job_order_header_id']
-                print(4663)
+                #print(4663)
                 storeTransactionVhead.transaction_date = request.POST['transaction_date']
                 storeTransactionVhead.total_amount = request.POST['total_amount']
                 storeTransactionVhead.notes = request.POST['notes']
                 storeTransactionVhead.save()
                 models.Store_Transaction_Detail.objects.filter(store_transaction_header_id=storeTransactionVhead.id).delete()
-                # # # print(4666)
+                # # # #print(4666)
                 order_details = []
                 store = models.Store.objects.get(vendor_id = request.POST['vendor_id'])
                 amount_total = Decimal(request.POST['total_amount'])
                 #incoming material exported by vendor to company
                 for index, elem in enumerate(request.POST.getlist('item_id')):
-                    # # # print(4674)
-                    # # # print(request.POST)
+                    # # # #print(4674)
+                    # # # #print(request.POST)
                     if int(request.POST.getlist('itemInspect')[index]) == 0:
-                        # # # print(4675)
+                        # # # #print(4675)
                         order_details.append(
                             models.Store_Transaction_Detail(
                                 store_transaction_header_id=storeTransactionVhead.id,
@@ -5721,7 +5676,7 @@ def storeTransactionEdit(request):
                                 
                             )
                         )
-                        # # # print(4691)
+                        # # # #print(4691)
                         #vendor store substraction
                         storeItem = models.Store_Item.objects.filter(
                         item_id=elem, store_id=store.id).first()
@@ -5738,12 +5693,12 @@ def storeTransactionEdit(request):
                         
                         
                         # Check for the last record on the given_date
-                        record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=elem, store_id=store.id).last()
+                        record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=elem, store_id=store.id,status=1, deleted=0).last()
 
                         if not record:
                             # If no record is found for the given_date, look for the last record before that date
                             last_transaction_date = models.Store_Item_Current.objects.filter(
-                                transaction_date__lt=given_date ,item_id=elem, store_id=store.id
+                                transaction_date__lt=given_date ,item_id=elem, store_id=store.id,status=1, deleted=0
                             ).aggregate(Max('transaction_date'))['transaction_date__max']
 
                             
@@ -5751,7 +5706,7 @@ def storeTransactionEdit(request):
                             if last_transaction_date:
                                 # Fetch the record for the last_transaction_date
                                 record = models.Store_Item_Current.objects.filter(
-                                    transaction_date=last_transaction_date ,item_id=elem, store_id=store.id
+                                    transaction_date=last_transaction_date ,item_id=elem, store_id=store.id,status=1, deleted=0
                                 ).last()
 
                         # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
@@ -5783,15 +5738,15 @@ def storeTransactionEdit(request):
 
 
                     jobOrderDetailsExist  =  models.Job_Order_Detail.objects.filter(job_order_header_id =  request.POST['job_order_header_id'] ,direction='incoming').exists()
-                    # # # print(jobOrderDetailsExist)
+                    # # # #print(jobOrderDetailsExist)
                     if jobOrderDetailsExist:
                         jobOrderDetails =  models.Job_Order_Detail.objects.get(job_order_header_id =  request.POST['job_order_header_id'] ,direction='incoming')
-                        # # # print(jobOrderDetails.quantity_result)
+                        # # # #print(jobOrderDetails.quantity_result)
                         jobOrderDetails.quantity_result -=  Decimal(request.POST.getlist('item_quantity')[index])
-                        # # # print(4708)
+                        # # # #print(4708)
                         jobOrderDetails.updated_at = datetime.now()
                         jobOrderDetails.save()
-                    # # # print(4709)
+                    # # # #print(4709)
                 
                 
                 jobOrderHeader = models.Job_Order.objects.get(pk = request.POST['job_order_header_id'])
@@ -5828,19 +5783,19 @@ def storeTransactionEdit(request):
                     
                     
                     # Check for the last record on the given_date
-                    record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=detail.item_id, store_id=store.id ).last()
+                    record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=detail.item_id, store_id=store.id ,status=1, deleted=0).last()
 
                     if not record:
                         # If no record is found for the given_date, look for the last record before that date
                         last_transaction_date = models.Store_Item_Current.objects.filter(
-                            transaction_date__lt=given_date ,item_id=detail.item_id, store_id=store.id
+                            transaction_date__lt=given_date ,item_id=detail.item_id, store_id=store.id,status=1, deleted=0
                         ).aggregate(Max('transaction_date'))['transaction_date__max']
                         
 
                         if last_transaction_date:
                             # Fetch the record for the last_transaction_date
                             record = models.Store_Item_Current.objects.filter(
-                                transaction_date=last_transaction_date ,item_id=detail.item_id, store_id=store.id
+                                transaction_date=last_transaction_date ,item_id=detail.item_id, store_id=store.id,status=1, deleted=0
                             ).last()
 
                     # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
@@ -5893,19 +5848,20 @@ def storeTransactionEdit(request):
                     jobOrderHeader.job_status = 2
                     jobOrderHeader.updated_at = datetime.now()
                     jobOrderHeader.save()
+        
         transaction.commit()    
         
        
         text = f'Store Transaction Edit old Transaction no = {storeTranasctionHeaderOld.transaction_number} and  new transaction no = {new_transaction_no}'
         user_log_details_add(userId,text)
-        # # # print(4725)
+        # # # #print(4725)
         context.update({
             'status': 200,
             'message': "Store Transaction updated Successfully."
         }) 
 
     except Exception as e :
-        print(f" error is {e}")
+        #print(f" error is {e}")
         context.update({
             'status': 591.1,
             'message': "internal error",
@@ -5915,13 +5871,13 @@ def storeTransactionEdit(request):
     return JsonResponse(context)
 
 
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def storeTransactionDelete(request):
     context = {}
     storeTransaction = models.Store_Transaction.objects.prefetch_related('store_transaction_detail_set').get(
         pk=request.POST['id'])
+    storeTranasctionHeaderOld =  models.Store_Transaction.objects.get(pk = request.POST['id'], status=1, deleted=0)
     try:
         with transaction.atomic():
             if storeTransaction.purchase_order_header_id is not None:
@@ -5937,6 +5893,16 @@ def storeTransactionDelete(request):
                         purchaseOrderDetail.updated_at = datetime.now()
                         purchaseOrderDetail.save()
                 for storeTransactionDetail in storeTransaction.store_transaction_detail_set.all():
+                    data_revertive_from_transaction(storeTranasctionHeaderOld.id, storeTransactionDetail.item_id, storeTransactionDetail.store_id, storeTransactionDetail.quantity, 'out')
+                    store_item_current = models.Store_Item_Current.objects.filter(store_transaction_id = storeTranasctionHeaderOld.id,status=1, deleted=0)
+                    if store_item_current.exists():
+                        store_item_current = store_item_current.first()
+                        store_item_current.on_hand_qty -= Decimal(storeTransactionDetail.quantity)
+                        store_item_current.closing_qty -= Decimal(storeTransactionDetail.quantity)
+                        store_item_current.status = 0
+                        store_item_current.deleted = 1
+                        store_item_current.updated_at = datetime.now()
+                        store_item_current.save()
                     storeItem = models.Store_Item.objects.filter(item_id=storeTransactionDetail.item_id,
                                                                  store_id=storeTransactionDetail.store_id).first()
                     if storeItem is not None:
@@ -5948,7 +5914,53 @@ def storeTransactionDelete(request):
                         storeItem.save()
                 purchaseOrderHeader.delivery_status = 1
                 purchaseOrderHeader.save()
-            storeTransaction.delete()
+            if (storeTransaction.job_order_id is  None) and (storeTransaction.purchase_order_header_id is  None) :
+                for storeTransactionDetail in storeTransaction.store_transaction_detail_set.all():
+                    storeItem = models.Store_Item.objects.filter(item_id=storeTransactionDetail.item_id,
+                                                                 store_id=storeTransactionDetail.store_id).first()
+                    
+                    data_revertive_from_transaction(storeTranasctionHeaderOld.id, storeTransactionDetail.item_id, storeTransactionDetail.store_id, storeTransactionDetail.quantity, 'out')
+                    store_item_current = models.Store_Item_Current.objects.filter(store_transaction_id = storeTranasctionHeaderOld.id,status=1, deleted=0)
+                    if store_item_current.exists():
+                        store_item_current = store_item_current.first()
+                        store_item_current.on_hand_qty -= Decimal(storeTransactionDetail.quantity)
+                        store_item_current.closing_qty -= Decimal(storeTransactionDetail.quantity)
+                        store_item_current.status = 0
+                        store_item_current.deleted = 1
+                        store_item_current.updated_at = datetime.now()
+                        store_item_current.save()
+                    if storeItem is not None:
+                        storeItem.on_hand_qty -= Decimal(
+                            storeTransactionDetail.quantity)
+                        storeItem.closing_qty -= Decimal(
+                            storeTransactionDetail.quantity)
+                        storeItem.updated_at = datetime.now()
+                        storeItem.save()
+                
+                
+            if storeTransaction.job_order_id is not None:
+                jobOrderStoreTranasctionRetriveVendor(storeTranasctionHeaderOld)
+                jobOrderStoreTranasctionRetriveInHouse(storeTranasctionHeaderOld)
+               
+                
+                jobOrderHeader = models.Job_Order.objects.get(pk = storeTranasctionHeaderOld.job_order.id)
+                all_material_recieved =  models.Job_Order_Detail.objects.filter(
+                                            job_order_header_id=storeTranasctionHeaderOld.job_order.id,
+                                            direction='incoming',
+                                            quantity_result=0.00
+                                        ).exists()
+                
+                if not all_material_recieved:
+                    jobOrderHeader.material_reciept = 0
+                    jobOrderHeader.actual_time_take = ''
+                    jobOrderHeader.job_status = 1
+                    jobOrderHeader.updated_at = datetime.now()
+                    jobOrderHeader.save()
+
+            storeTransaction.status = 0
+            storeTransaction.deleted = 1
+            storeTransaction.save()
+            # storeTransaction.delete()
             userId = request.COOKIES.get('userId', None)
             user_log_details_add(userId,'Store Transaction Delete')
         transaction.commit()
@@ -5956,7 +5968,8 @@ def storeTransactionDelete(request):
             'status': 200,
             'message': "Store Transaction Deleted Successfully."
         })
-    except Exception:
+    except Exception as e:
+        #print(f"error{e}")
         context.update({
             'status': 592,
             'message': "Something Went Wrong. Please Try Again."
@@ -5992,7 +6005,7 @@ def storeTransactionDetails(request):
 @permission_classes([IsAuthenticated])
 def storeTransactionLogicalGrnEdit(request):
     context = {}
-    print(request.POST)
+    #print(request.POST)
     storeTransactionHeader = models.Store_Transaction.objects.get(pk=request.POST['pk'])
     try:
         with transaction.atomic():
@@ -6058,7 +6071,7 @@ def jobOrderList(request):
             jobOrders = jobOrders.filter(material_issue__in=material_issue_list ).filter(status=1, deleted=0)
         jobOrders = list(jobOrders.values('pk', 'order_number', 'order_date', 'manufacturing_type', 'vendor_id', 'vendor__name', 'with_item', 'notes','material_issue','job_status','estimated_time_day','material_reciept','manufacturing_material_type'))
         if find_all is not None and int(find_all) == 1:
-            # print(jobOrders)
+            # #print(jobOrders)
             context.update({
                 'status': 200,
                 'message': "Job Orders Fetched Successfully.",
@@ -6096,7 +6109,7 @@ def jobOrderNo(request):
     vendorShort = 'SLF' if manufacturing_type == 'Self' else 'TPM'
     jobOrderNumber =  env("JOB_ORDER_NUMBER_SEQ").replace("${VENDOR_SHORT}", vendorShort).replace(
                 "${AI_DIGIT_3}", str(jobOrderCount + 1).zfill(3)).replace("${FINANCE_YEAR}", datetime.today().strftime('%y') + "-" + (datetime(datetime.today().year + 1, 1, 1).strftime('%y')))
-    # # # # print(jobOrderNumber)
+    # # # # #print(jobOrderNumber)
     context.update({
         'status':200,
         'joborderNo': jobOrderNumber
@@ -6107,7 +6120,7 @@ def jobOrderNo(request):
 @permission_classes([IsAuthenticated])
 def jobOrderAdd(request):
     context = {}
-    # print(request.POST)
+    # #print(request.POST)
     bomNeeded = request.POST.get('bomNeeded',None)
     if not request.POST['order_number'] or not request.POST['order_date'] or not request.POST['manufacturing_type'] or not request.POST['notes']:
         context.update({
@@ -6117,33 +6130,33 @@ def jobOrderAdd(request):
         return JsonResponse(context)
     try:
         with transaction.atomic():
-            # print('5055')
+            # #print('5055')
             jobOrderHeader = models.Job_Order()
             jobOrderHeader.order_number = request.POST['order_number']
             jobOrderHeader.order_date = request.POST['order_date']
             jobOrderHeader.manufacturing_type = request.POST['manufacturing_type']
             jobOrderHeader.manufacturing_material_type = request.POST['manufacturing_material_type']
-            # print(5757)
+            # #print(5757)
             if 'vendor_id' in request.POST:
                 jobOrderHeader.vendor_id = request.POST['vendor_id']
             if 'with_item' in request.POST:
                 jobOrderHeader.with_item = eval(request.POST['with_item'])
-            # print(5762)
+            # #print(5762)
             jobOrderHeader.notes = request.POST['notes']
             if request.POST.get('bom_type_id',None):
-                # print(request.POST['bom_type_id'],'aaaaaaaaa')
+                # #print(request.POST['bom_type_id'],'aaaaaaaaa')
                 jobOrderHeader.bom_type_head_id = int(request.POST['bom_type_id'])
             jobOrderHeader.estimated_time_day =  request.POST['hr_day'] + request.POST['timeSpan']
-            # print(5767)
+            # #print(5767)
             jobOrderHeader.save()
-            # print(5769)
+            # #print(5769)
             job_order_details = []
             bom_material_details = []
             bom_head = None 
             bom_head_exit = None
-            # print('5065')
+            # #print('5065')
             if (request.POST.getlist('incoming_item_id')) and (request.POST.getlist('outgoing_item_id')) and ('with_item' in request.POST):
-                # print('5050')
+                # #print('5050')
                 outgoingIncommingratioHeadCount = models.Outgoing_Incoming_Ratio.objects.all().count() 
                 outgoingIncommingratioHead = models.Outgoing_Incoming_Ratio()
                 outgoingIncommingratioHead.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
@@ -6156,18 +6169,18 @@ def jobOrderAdd(request):
                     outgoingIncommingratioHead.vendor_id = request.POST['vendor_id']
                 outgoingIncommingratioHead.job_order = jobOrderHeader
                 outgoingIncommingratioHead.save()
-                # # # # # print('5061')
+                # # # # # #print('5061')
                 outInDetailRatio = []
                 for item_id,quantity in zip( request.POST.getlist('outgoing_item_id'),request.POST.getlist('outgoing_quantity') ):
                     
-                    # # # # # print(int(float(request.POST.getlist('incoming_quantity')[0])))
+                    # # # # # #print(int(float(request.POST.getlist('incoming_quantity')[0])))
                     ratio = Fraction(int(float((quantity))) , int(float(request.POST.getlist('incoming_quantity')[0]))) #ratio = outgoing : income
-                    # # # # # print(ratio)
-                    # # # # # print('id',outgoingIncommingratioHead.id)
-                    # # # # # print('item',int(request.POST.getlist('incoming_item_id')[0]))
-                    # # # # # print('neu', ratio.numerator)
-                    # # # # # print('deno', ratio.denominator)
-                    # # # # # print('eato',str(ratio) )
+                    # # # # # #print(ratio)
+                    # # # # # #print('id',outgoingIncommingratioHead.id)
+                    # # # # # #print('item',int(request.POST.getlist('incoming_item_id')[0]))
+                    # # # # # #print('neu', ratio.numerator)
+                    # # # # # #print('deno', ratio.denominator)
+                    # # # # # #print('eato',str(ratio) )
                     outInDetailRatio.append(
                         models.Outgoing_Incoming_Ratio_Details(
                             outgoing_incoming_ratio_header_id = outgoingIncommingratioHead.id,
@@ -6179,7 +6192,7 @@ def jobOrderAdd(request):
 
                         )
                     )
-                # # # # # print('4995')
+                # # # # # #print('4995')
                 models.Outgoing_Incoming_Ratio_Details.objects.bulk_create(outInDetailRatio)
             
             #for incomming quantity 
@@ -6204,7 +6217,7 @@ def jobOrderAdd(request):
                     bom_head_exit = models.Bill_Of_Material.objects.filter(bom_item_id = incomming_item_id, status=1, deleted=0).first()
                     jobOrderHeader.bom_type_head_id = bom_head_exit.id
                 else: 
-                    # # # # print(5145)
+                    # # # # #print(5145)
                     billOfMaterialMasterHeaderExist = models.Bill_Of_Material_Master.objects.filter(item_id = incomming_item_id).exists()
                     if not billOfMaterialMasterHeaderExist:
                         
@@ -6214,7 +6227,7 @@ def jobOrderAdd(request):
                         billOfMaterialHeaderMaster.save()
                        
                     else:
-                        # # print(request.POST['bom_item_id'])
+                        # # #print(request.POST['bom_item_id'])
                         billOfMaterialHeaderMaster = models.Bill_Of_Material_Master.objects.filter(item_id = request.POST['bom_item_id']).first()
                     bom_head = models.Bill_Of_Material()
                     bom_head.bom_item_id = incomming_item_id
@@ -6229,7 +6242,7 @@ def jobOrderAdd(request):
             bomLevel = 1
             #for Outgoing Quantity
             for item_id, quantity in zip(request.POST.getlist('outgoing_item_id'),request.POST.getlist('outgoing_quantity')):
-                # # print(5154)
+                # # #print(5154)
                 job_order_details.append(
                     models.Job_Order_Detail(
                         job_order_header_id=jobOrderHeader.id,
@@ -6243,14 +6256,14 @@ def jobOrderAdd(request):
               
                 if (request.POST.get('bomNeeded',None) and int(bomNeeded) == 1) and  bom_head  :
                     bomExist = models.Bill_Of_Material_Master.objects.filter(item_id = item_id).exists()
-                    # print(bomExist,'sssssssss',item_id)
+                    # #print(bomExist,'sssssssss',item_id)
                     if bomExist :
                         bomHead =  models.Bill_Of_Material.objects.filter(bom_item_id = item_id).first()
                         x = bomHead.level
                         bomHeadId = bomHead.id
-                        # print(type(bomLevel) == type(bomHead.level))
+                        # #print(type(bomLevel) == type(bomHead.level))
                         bomLevel += x
-                        # print(bom_head.id)
+                        # #print(bom_head.id)
                     bom_material_details.append(
                         models.Bill_Of_Material_Detail(
                             bill_of_material_header_id=bom_head.id,
@@ -6261,7 +6274,7 @@ def jobOrderAdd(request):
                         )
                     )
           
-                # # print(5822)
+                # # #print(5822)
                 if(request.POST.get('bomNeeded',None) and int(bomNeeded) == 1) and bom_head_exit :
                     models.Bill_Of_Material_Detail.objects.filter(bill_of_material_header_id = bom_head_exit.id).delete()
                     bomExist = models.models.Bill_Of_Material_Master.objects.filter(item_id = item_id).exists()
@@ -6280,13 +6293,13 @@ def jobOrderAdd(request):
                         )
                     )
                 
-            # # print(5843)
+            # # #print(5843)
             if bom_material_details:
                 models.Bill_Of_Material_Detail.objects.bulk_create(bom_material_details)
                 bom_head.level = int(bomLevel)
                 bom_head.save() 
             models.Job_Order_Detail.objects.bulk_create(job_order_details)
-            # # # # # print('4271')
+            # # # # # #print('4271')
             userId = request.COOKIES.get('userId', None)
             user_log_details_add(userId,'Job Order Add')
         transaction.commit()
@@ -6295,7 +6308,7 @@ def jobOrderAdd(request):
             'message': "Job Order Created Successfully."
         })
     except Exception as e:
-        print(f"An error occurred: {e}")
+        #print(f"An error occurred: {e}")
         context.update({
             'status': 590,
             'message': "Something Went Wrong. Please Try Again."
@@ -6411,12 +6424,12 @@ def selfJobOrderReciept(request):
                 given_date = request.POST['transaction_date']
                 
                 # Check for the last record on the given_date
-                record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id']).last()
+                record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id'],status=1, deleted=0).last()
 
                 if not record:
                     # If no record is found for the given_date, look for the last record before that date
                     last_transaction_date = models.Store_Item_Current.objects.filter(
-                        transaction_date__lt=given_date,item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id']
+                        transaction_date__lt=given_date,item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id'],status=1, deleted=0
                     ).aggregate(Max('transaction_date'))['transaction_date__max']
 
                     
@@ -6424,7 +6437,7 @@ def selfJobOrderReciept(request):
                     if last_transaction_date:
                         # Fetch the record for the last_transaction_date
                         record = models.Store_Item_Current.objects.filter(
-                            transaction_date=last_transaction_date,item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id']
+                            transaction_date=last_transaction_date,item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id'],status=1, deleted=0
                         ).last()
 
                 # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
@@ -6462,7 +6475,7 @@ def selfJobOrderReciept(request):
                 # Save the instance to the database
                 store_item_instance.save()
                
-                storeInstanceexist = models.Store_Item_Current.objects.filter(item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id'],transaction_date = given_date,store_transaction_id= storeTransactionHeader.id)
+                storeInstanceexist = models.Store_Item_Current.objects.filter(item_id = jobOrderDetails[index].item_id,store_id = request.POST['store_id'],transaction_date = given_date,store_transaction_id= storeTransactionHeader.id,status=1, deleted=0)
                 
                 if(not storeInstanceexist.exists()):
                     
@@ -6486,7 +6499,7 @@ def selfJobOrderReciept(request):
                 'message': text
             })
     except Exception as e:
-        print(f'issue: {e}')
+        #print(f'issue: {e}')
         context.update({
             'status': 593,
             'message': "Something Went Wrong. Please Try Again."
@@ -6510,7 +6523,7 @@ def jobOrderEdit(request):
         with transaction.atomic():
             jobOrderHeader = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=request.POST['id'])
             jobOrderHeader.order_number = request.POST['order_number']
-            # print(request.POST)
+            # #print(request.POST)
             jobOrderHeader.order_date = request.POST['order_date']
             # jobOrderHeader.manufacturing_type = request.POST['manufacturing_type']
             if 'vendor_id' in request.POST:
@@ -6524,9 +6537,9 @@ def jobOrderEdit(request):
             jobOrderHeader.notes = request.POST['notes']
             if request.POST.get('bom_type_id',None):
                 jobOrderHeader.bom_type_head_id = request.POST['bom_type_id']
-            # print(models.Bill_Of_Material.objects.filter(pk=request.POST['bom_type_id']).exists())
+            # #print(models.Bill_Of_Material.objects.filter(pk=request.POST['bom_type_id']).exists())
             jobOrderHeader.updated_at = now()
-            # print(6068)
+            # #print(6068)
             jobOrderHeader.save()
             if jobOrderHeader.material_issue == 0:
                 jobOrderHeader.job_order_detail_set.all().delete()
@@ -6535,7 +6548,7 @@ def jobOrderEdit(request):
             bom_material_details = []
             bom_head = None 
             bom_head_exit = None
-            # print(6076)
+            # #print(6076)
             # out going incomming ratio table updation
             if (request.POST.getlist('incoming_item_id')) and (request.POST.getlist('outgoing_item_id')) and ('with_item' in request.POST):
                 
@@ -6579,7 +6592,7 @@ def jobOrderEdit(request):
                     )
                 incomming_item_id = int(item_id)
                 incomming_item_quantity = float(quantity)
-            # # print(5299,'aaaaaaaaaaa')
+            # # #print(5299,'aaaaaaaaaaa')
             # bill of material add
 
             #outgoing
@@ -6604,14 +6617,14 @@ def jobOrderEdit(request):
                 else: 
                     billOfMaterialMasterHeaderExist = models.Bill_Of_Material_Master.objects.filter(item_id = incomming_item_id).exists()
                     if not billOfMaterialMasterHeaderExist:
-                        # # print(6011,'aaaaaaaaaaa')
+                        # # #print(6011,'aaaaaaaaaaa')
                         billOfMaterialHeaderMaster = models.Bill_Of_Material_Master()
-                        # # print('11111111')
+                        # # #print('11111111')
                         billOfMaterialHeaderMaster.item_id = incomming_item_id
-                        # # print(6040)
+                        # # #print(6040)
                         billOfMaterialHeaderMaster.save()
                     else:
-                        # # print(request.POST['bom_item_id'])
+                        # # #print(request.POST['bom_item_id'])
                         billOfMaterialHeaderMaster = models.Bill_Of_Material_Master.objects.filter(item_id = request.POST['bom_item_id']).first()
   
                     bom_head = models.Bill_Of_Material()
@@ -6645,7 +6658,7 @@ def jobOrderEdit(request):
                             )
                         )
                 if (request.POST.get('bomNeeded',None) and int(bomNeeded) == 1) and  bom_head :
-                    # # # # print(5165)
+                    # # # # #print(5165)
                     bomExist = models.Bill_Of_Material_Master.objects.filter(item_id = item_id).exists()
                     if bomExist :
                         bomHead =   models.Bill_Of_Material.objects.filter(bom_item_id = item_id).first()
@@ -6696,8 +6709,8 @@ def jobOrderEdit(request):
             'message': "Job Order Updated Successfully."
         })
     except Exception as e :
-        # print(type(e))
-        print(f"error is {e}")
+        # #print(type(e))
+        #print(f"error is {e}")
         context.update({
             'status': 592,
             'message': "Something Went Wrong. Please Try Again."
@@ -6734,7 +6747,7 @@ def jobOrderDelete(request):
 @permission_classes([IsAuthenticated])
 def jobOrderDetails(request):
     context = {}
-    # # # print(5493)
+    # # # #print(5493)
     header_id = request.GET.get('header_id', None)
     direction = request.GET.get('direction', None)
     materialReciept = request.GET.get('materialReciept', None)
@@ -6748,7 +6761,7 @@ def jobOrderDetails(request):
             
         else:
             orderDetails = list(models.Job_Order_Detail.objects.filter(job_order_header_id=header_id).values('pk', 'job_order_header_id', 'job_order_header__order_number','item_id', 'quantity', 'required_quantity','item__name','item__price', 'direction','item__item_type__gst_percentage','quantity_result'))
-        # # # # print(orderDetails)
+        # # # # #print(orderDetails)
         context.update({
             'status': 200,
             'message': "Job Order Details Fetched Successfully.",
@@ -6793,32 +6806,32 @@ def getActualQuantity(request):
     item_id = request.GET.get('item_id',None)
     store_id = request.GET.get('store_id',None)
     transaction_date =  request.GET.get('transaction_date',None)
-    print(item_id,store_id,transaction_date)
+    #print(item_id,store_id,transaction_date)
     item =  models.Item.objects.get( pk=int(item_id))
     
     try:
         actual_quantity = models.Store_Item.objects.filter(store_id=int(store_id), item_id=int(item_id))
-        print( actual_quantity.first().on_hand_qty,6628)
-        actual_quantity_On_that_date = models.Store_Item_Current.objects.filter(store_id=int(store_id), item_id=int(item_id),transaction_date=transaction_date).order_by('transaction_date','created_at').last()
+        #print( actual_quantity.first().on_hand_qty,6628)
+        actual_quantity_On_that_date = models.Store_Item_Current.objects.filter(store_id=int(store_id), item_id=int(item_id),transaction_date=transaction_date,status=1, deleted=0).order_by('transaction_date','created_at').last()
         if not actual_quantity_On_that_date :
-            print(6629)
+            
             actual_quantity_On_that_date = (
                     models.Store_Item_Current.objects.filter(
                     store_id=int(store_id),
                     item_id=int(item_id),
-                    transaction_date__lt=transaction_date  # Only dates less than the given date
+                    transaction_date__lt=transaction_date ,status=1, deleted=0 # Only dates less than the given date
                 )
                 .order_by('transaction_date','created_at')  # Order by transaction_date in descending order
                 .last()  # Fetch the first (most recent) entry
             )
-        print(6641,item_id)
+       
         context.update({
             'status': 200,
             'actual_quantity': actual_quantity.first().on_hand_qty if actual_quantity else 0,
             'actual_quantity_On_that_date' : actual_quantity_On_that_date.closing_qty if actual_quantity_On_that_date else 0,
             'item_price' : item.price
         })
-        print(context)
+        #print(context)
     except:
         context.update({
             'status': 200,
@@ -6893,7 +6906,7 @@ def materialIssueAdd(request):
         with transaction.atomic():
             job_order_income_detalis = list(models.Job_Order_Detail.objects.filter(job_order_header_id = request.POST['job_order_id'] , direction = 'incoming' ))
             #vendor store exist  for third party stock add 
-            # # # # print(5620)
+            # # # # #print(5620)
             if request.POST['vendor_id'] :
                 venStoreExist = models.Store.objects.filter(vendor_id =request.POST['vendor_id']).exists()
                 if((len(job_order_income_detalis) > 0) and (venStoreExist is False)):
@@ -6935,7 +6948,7 @@ def materialIssueAdd(request):
             # for incoming material virtual transaction
             thirdPartyInQuantity = 0.00
             itemInThrdParty = ''
-            # # print(5662)
+            # # #print(5662)
             if request.POST['vendor_id'] and len(job_order_income_detalis) > 0 :
 
                 # store transaction of virtual incomming material on thrid party stock
@@ -6945,7 +6958,7 @@ def materialIssueAdd(request):
                 
                 storeTransactionHeaderIn.vendor_id = request.POST['vendor_id']
                 
-                # # # # # print(models.Transaction_Type.objects.get(name = 'MIS'))
+                # # # # # #print(models.Transaction_Type.objects.get(name = 'MIS'))
                 # storeTransactionHeaderIn.transaction_type = models.Transaction_Type.objects.get(name = 'GRNT')
                 transaction_type = models.Transaction_Type.objects.get(name='GRNT')
                 storeTransactionHeaderIn.transaction_type = transaction_type
@@ -6961,15 +6974,15 @@ def materialIssueAdd(request):
 
                 store_transaction_details = []
                 store_items_add=[]
-                # print(job_order_income_detalis)
+                # #print(job_order_income_detalis)
                # incomming material will be assigned only one time no parial
                 for index in range(0, len(job_order_income_detalis)):
-                    # # # # print(jobOrderEdits.job_status )
+                    # # # # #print(jobOrderEdits.job_status )
                     if job_order_income_detalis[index].required_quantity!=0 and (jobOrderEdits.job_status == 0):
-                        # # # # print(5517)
+                        # # # # #print(5517)
                         thirdPartyInQuantity = float(job_order_income_detalis[index].quantity)
                         itemInThrdParty = job_order_income_detalis[index].item_id
-                        # # # # # print(job_order_income_detalis[index].item.price)
+                        # # # # # #print(job_order_income_detalis[index].item.price)
                         job_order_income_detalis[index].required_quantity=float(job_order_income_detalis[index].required_quantity)-thirdPartyInQuantity
                         try:
                             job_order_income_det = models.Job_Order_Detail.objects.filter(job_order_header_id=request.POST['job_order_id'],item_id = itemInThrdParty,direction ='incoming').first() 
@@ -6991,7 +7004,7 @@ def materialIssueAdd(request):
                    
                         # virual added incomming material in thrid party stock
                         if models.Store_Item.objects.filter(store=vendor_store, item_id=job_order_income_detalis[index].item_id).exists():
-                            # # # # print(5538)
+                            # # # # #print(5538)
                             store_item=models.Store_Item.objects.get(store=vendor_store, item_id=job_order_income_detalis[index].item_id)
                             store_item.on_hand_qty+=Decimal(thirdPartyInQuantity)
                             store_item.closing_qty+= Decimal(thirdPartyInQuantity)
@@ -7000,7 +7013,7 @@ def materialIssueAdd(request):
 
                         # If the item does not exist in vendor store so new store item is being created
                         else:
-                            # # # # print(5547)
+                            # # # # #print(5547)
                             store_items_add.append(
                                 models.Store_Item(
                                     store=vendor_store,
@@ -7016,12 +7029,12 @@ def materialIssueAdd(request):
                         
                         
                         # Check for the last record on the given_date
-                        record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=itemInThrdParty, store_id=vendor_store.id).last()
+                        record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=itemInThrdParty, store_id=vendor_store.id,status=1, deleted=0).last()
 
                         if not record:
                             # If no record is found for the given_date, look for the last record before that date
                             last_transaction_date = models.Store_Item_Current.objects.filter(
-                                transaction_date__lt=given_date,item_id=itemInThrdParty, store_id=vendor_store.id
+                                transaction_date__lt=given_date,item_id=itemInThrdParty, store_id=vendor_store.id,status=1, deleted=0
                             ).aggregate(Max('transaction_date'))['transaction_date__max']
 
                             
@@ -7029,7 +7042,7 @@ def materialIssueAdd(request):
                             if last_transaction_date:
                                 # Fetch the record for the last_transaction_date
                                 record = models.Store_Item_Current.objects.filter(
-                                    transaction_date=last_transaction_date,item_id=itemInThrdParty, store_id=vendor_store.id
+                                    transaction_date=last_transaction_date,item_id=itemInThrdParty, store_id=vendor_store.id,status=1, deleted=0
                                 ).last()
 
                         # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
@@ -7066,10 +7079,10 @@ def materialIssueAdd(request):
                 if store_transaction_details and store_items_add:
                     models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
                     models.Store_Item.objects.bulk_create(store_items_add)
-            # # print(5744)
+            # # #print(5744)
             #job satatus change
             jobOrderDetailsExist = models.Job_Order_Detail.objects.filter(job_order_header_id = request.POST['job_order_id'],direction='outgoing',required_quantity = 0.00).exists()
-            # # print(6223)
+            # # #print(6223)
             jobOrderEdits.job_status = 1  # 0 for 'active' 1 for in 'pogress' 2 for in 'complete'
             jobOrderEdits.updated_at = datetime.now()
             jobOrderEdits.save()
@@ -7079,7 +7092,7 @@ def materialIssueAdd(request):
             outgoing_incomming_details = []
             # material issue for godown
             all_material_issued=True
-            # # print(5755)
+            # # #print(5755)
             for index, elem in enumerate(request.POST.getlist('item_id')):
                 sentQuantity = float(request.POST.getlist('quantity_sent')[index])
                 requiredQuantity = float(request.POST.getlist('required_quantity')[index])
@@ -7091,7 +7104,7 @@ def materialIssueAdd(request):
                     joDetail.save()
                 except:
                     pass
-                # # print(5767)
+                # # #print(5767)
                 store_transaction_details.append(
                     models.Store_Transaction_Detail(
                         store_transaction_header=storeTransactionHeader,
@@ -7102,7 +7115,7 @@ def materialIssueAdd(request):
                         amount = float(request.POST.getlist('amount')[index])
                     )
                 )
-                # print(5778)
+                # #print(5778)
                 if request.POST['vendor_id']:
 
                     # third party grn transaction for out going material
@@ -7117,7 +7130,7 @@ def materialIssueAdd(request):
                         )
                     )
                     # If the item exists in vendor store
-                    # # # # print(5793)
+                    # # # # #print(5793)
                     if models.Store_Item.objects.filter(store=vendor_store, item_id=elem).exists():
                         store_item=models.Store_Item.objects.get(store=vendor_store, item_id=elem)
                         store_item.on_hand_qty+=Decimal(request.POST.getlist('quantity_sent')[index])
@@ -7141,12 +7154,12 @@ def materialIssueAdd(request):
                     given_date =request.POST['issue_date']
                    
                     # Check for the last record on the given_date
-                    record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=elem, store_id=vendor_store.id).last()
+                    record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=elem, store_id=vendor_store.id,status=1, deleted=0).last()
 
                     if not record:
                         # If no record is found for the given_date, look for the last record before that date
                         last_transaction_date = models.Store_Item_Current.objects.filter(
-                            transaction_date__lt=given_date,item_id=elem, store_id=vendor_store.id
+                            transaction_date__lt=given_date,item_id=elem, store_id=vendor_store.id,status=1, deleted=0
                         ).aggregate(Max('transaction_date'))['transaction_date__max']
 
                         
@@ -7154,7 +7167,7 @@ def materialIssueAdd(request):
                         if last_transaction_date:
                             # Fetch the record for the last_transaction_date
                             record = models.Store_Item_Current.objects.filter(
-                                transaction_date=last_transaction_date,item_id=elem, store_id=vendor_store.id
+                                transaction_date=last_transaction_date,item_id=elem, store_id=vendor_store.id,status=1, deleted=0
                             ).last()
 
                     # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
@@ -7195,17 +7208,17 @@ def materialIssueAdd(request):
                     
                     store_item_curreEdit(vendor_store.id,elem,given_date,'min', request.POST.getlist('quantity_sent')[index]) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
 
-                # # # # print(5811)    
+                # # # # #print(5811)    
                 # In house store items being reduced
-                # # # # # print(models.Store.objects.filter(id=request.POST['store_id']).exists())
+                # # # # # #print(models.Store.objects.filter(id=request.POST['store_id']).exists())
                 if models.Store.objects.filter(id=request.POST['store_id']).exists():
                     in_house_store=models.Store.objects.get(id=request.POST['store_id'])
-                    # # # # print('AAAAA',in_house_store.id,elem)
-                    # # # # print(models.Store_Item.objects.filter(store_id=in_house_store.id, item_id=elem).exists())
+                    # # # # #print('AAAAA',in_house_store.id,elem)
+                    # # # # #print(models.Store_Item.objects.filter(store_id=in_house_store.id, item_id=elem).exists())
                     if  models.Store_Item.objects.filter(store_id=in_house_store.id,item_id=elem).exists():
-                        # # # # print(5818)
+                        # # # # #print(5818)
                         store_item = models.Store_Item.objects.get(store_id=in_house_store.id, item_id=elem)
-                        # # # # print(5815)
+                        # # # # #print(5815)
                         store_item.on_hand_qty -= Decimal(request.POST.getlist('quantity_sent')[index])
                         store_item.closing_qty -= Decimal(request.POST.getlist('quantity_sent')[index])
                         store_item.updated_at = datetime.now()
@@ -7216,12 +7229,12 @@ def materialIssueAdd(request):
                     
                     
                     # Check for the last record on the given_date
-                    record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=elem, store=in_house_store.id ).last()
+                    record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=elem, store=in_house_store.id,status=1, deleted=0 ).last()
 
                     if not record:
                         # If no record is found for the given_date, look for the last record before that date
                         last_transaction_date = models.Store_Item_Current.objects.filter(
-                            transaction_date__lt=given_date ,item_id=elem, store_id=in_house_store.id
+                            transaction_date__lt=given_date ,item_id=elem, store_id=in_house_store.id,status=1, deleted=0
                         ).aggregate(Max('transaction_date'))['transaction_date__max']
 
                         
@@ -7229,7 +7242,7 @@ def materialIssueAdd(request):
                         if last_transaction_date:
                             # Fetch the record for the last_transaction_date
                             record = models.Store_Item_Current.objects.filter(
-                                transaction_date=last_transaction_date ,item_id=elem, store_id=in_house_store.id
+                                transaction_date=last_transaction_date ,item_id=elem, store_id=in_house_store.id,status=1, deleted=0
                             ).last()
 
                     # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
@@ -7258,24 +7271,24 @@ def materialIssueAdd(request):
                         message = "canot possible item found in this strore"
                         raise ValueError(message)
                     store_item_curreEdit(in_house_store.id,elem,given_date,'mout', request.POST.getlist('quantity_sent')[index]) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
-                    # # # # print(5825)
-            # # print(5818)
+                    # # # # #print(5825)
+            # # #print(5818)
             jobOrderEditsdetails = not models.Job_Order_Detail.objects.filter(direction='outgoing',
             job_order_header_id=jobOrderEdits.id).exclude(required_quantity=0.00).exists()
-            # # print(6308,'AAAAAAAa')
+            # # #print(6308,'AAAAAAAa')
             all_material_issued = True if jobOrderEditsdetails else False
             
             if all_material_issued:
                 jobOrderEdits.material_issue = 3
             else:
-                # print(6314,"bbbbbbbb")
+                # #print(6314,"bbbbbbbb")
                 jobOrderEditsdetails = models.Job_Order_Detail.objects.filter(
                     direction='outgoing',
                     job_order_header_id=jobOrderEdits.id,
                     quantity=F('required_quantity')
                 ).exists()
 
-                # print(jobOrderEditsdetails)
+                # #print(jobOrderEditsdetails)
                 jobOrderEdits.material_issue = 1 if jobOrderEditsdetails else 2
             jobOrderEdits.save()
               
@@ -7383,7 +7396,7 @@ def grnInspectionHeaderList(request):
             })
         else:
             if keyword is not None and keyword != "":
-                # # # # # print("4244",request.GET)
+                # # # # # #print("4244",request.GET)
                 grnInspection = list(
                     models.Grn_Inspection_Transaction.objects.filter(
                         Q(vendor__name__icontains=keyword) | Q(transaction_number__icontains=keyword) 
@@ -7520,7 +7533,7 @@ def addGrnDetailisInsTransaction(request):
                 grn_ins_head.ins_completed = ins_completed
                 grn_ins_head.updated_at = datetime.now()
                 grn_ins_head.save()
-                # # # # print('5179')
+                # # # # #print('5179')
                 storeTranscHeadPresent = models.Store_Transaction.objects.filter(grn_inspection_id = request.POST['insTraId']).first()
                 if storeTranscHeadPresent is not None:
                     storeTransactionHeader = storeTranscHeadPresent
@@ -7529,7 +7542,7 @@ def addGrnDetailisInsTransaction(request):
                     storeTransactionHeader.updated_at = datetime.now()
                     storeTransactionHeader.save()
                 else:
-                    # # # # print(6073)
+                    # # # # #print(6073)
                     store_transaction_count = models.Store_Transaction.objects.all().count()
                     storeTransactionHeader = models.Store_Transaction()
                     storeTransactionHeader.vendor_id = request.POST['vendor_id']
@@ -7553,7 +7566,7 @@ def addGrnDetailisInsTransaction(request):
                     storeTransactionHeader.grn_inspection_id = request.POST['insTraId']
                     storeTransactionHeader.notes = grn_ins_head.notes
                     storeTransactionHeader.save()
-                # # # # print(6091)
+                # # # # #print(6091)
                 order_details =[]
                 material_reciept_all = 0
                 for index in  range(0,len(request.POST.getlist('accp_quantity'))):
@@ -7568,7 +7581,7 @@ def addGrnDetailisInsTransaction(request):
                                     'actualPrice')[index]
                         grn_ins_det.updated_at = datetime.now()
                         grn_ins_det.save()
-                        # # # # # print('5219')
+                        # # # # # #print('5219')
                         order_details.append(
                             models.Store_Transaction_Detail(
                                 store_transaction_header_id=storeTransactionHeader.id,
@@ -7585,7 +7598,7 @@ def addGrnDetailisInsTransaction(request):
                         
                         storeItem = models.Store_Item.objects.filter(
                             item_id=request.POST.getlist('item_id')[index], store_id=request.POST.getlist('store_id')[index]).first()
-                        # # # # # print('5235')
+                        # # # # # #print('5235')
                         if storeItem is None:
                             storeItem = models.Store_Item()
                             storeItem.opening_qty = Decimal(request.POST.getlist('accp_quantity')[index])
@@ -7606,12 +7619,12 @@ def addGrnDetailisInsTransaction(request):
                         
                         
                         # Check for the last record on the given_date
-                        record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=request.POST.getlist('item_id')[index], store_id=request.POST.getlist('store_id')[index]).last()
+                        record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=request.POST.getlist('item_id')[index], store_id=request.POST.getlist('store_id')[index],status=1, deleted=0).last()
 
                         if not record:
                             # If no record is found for the given_date, look for the last record before that date
                             last_transaction_date = models.Store_Item_Current.objects.filter(
-                                transaction_date__lt=given_date,item_id=request.POST.getlist('item_id')[index], store_id=request.POST.getlist('store_id')[index]
+                                transaction_date__lt=given_date,item_id=request.POST.getlist('item_id')[index], store_id=request.POST.getlist('store_id')[index],status=1, deleted=0
                             ).aggregate(Max('transaction_date'))['transaction_date__max']
 
                             
@@ -7619,7 +7632,7 @@ def addGrnDetailisInsTransaction(request):
                             if last_transaction_date:
                                 # Fetch the record for the last_transaction_date
                                 record = models.Store_Item_Current.objects.filter(
-                                    transaction_date=last_transaction_date,item_id=request.POST.getlist('item_id')[index], store_id=request.POST.getlist('store_id')[index]
+                                    transaction_date=last_transaction_date,item_id=request.POST.getlist('item_id')[index], store_id=request.POST.getlist('store_id')[index],status=1, deleted=0
                                 ).last()
 
                         # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
@@ -7659,12 +7672,12 @@ def addGrnDetailisInsTransaction(request):
                         store_item_curreEdit(request.POST.getlist('store_id')[index], request.POST.getlist('item_id')[index],given_date,'min', request.POST.getlist('accp_quantity')[index]) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
 
 
-                        # # # # # print('5249')
+                        # # # # # #print('5249')
                         if (request.POST.get('job_order_header_id',None) and request.POST['job_order_header_id']!=""):
-                            # # # # # print('5251')
+                            # # # # # #print('5251')
                             job_order_details= models.Job_Order_Detail.objects.filter(item_id=request.POST.getlist('item_id')[index], 
                                                 job_order_header_id=request.POST['job_order_header_id']).first()
-                            # # # # # print(job_order_details.quantity_result)
+                            # # # # # #print(job_order_details.quantity_result)
                             job_order_details.quantity_result += Decimal(request.POST.getlist('rej_quantity')[index] )
                             job_order_details.updated_at = datetime.now()
                             job_order_details.save()
@@ -7675,14 +7688,14 @@ def addGrnDetailisInsTransaction(request):
                             storeItem.closing_qty += Decimal(request.POST.getlist('rej_quantity')[index])
                             storeItem.updated_at = datetime.now()
                             storeItem.save()
-                            # # # # # print('5257')
+                            # # # # # #print('5257')
                             material_reciept_all = 0 if float(job_order_details.quantity_result)>0.00 else 1 
 
                             #closed or re open job order
                             if (material_reciept_all == 1):
-                                # # # # # print('5871')
+                                # # # # # #print('5871')
                                 job_order = models.Job_Order.objects.filter(pk=request.POST['job_order_header_id']).get() 
-                                # # # # # print(job_order)
+                                # # # # # #print(job_order)
                                 job_order.material_reciept = 1
                                 job_order.job_status = 2
                                 current_time = datetime.now(timezone.utc)
@@ -7691,16 +7704,16 @@ def addGrnDetailisInsTransaction(request):
                                 job_order.actual_time_take = str(round(total_hours, 3)) + 'hr'
                                 job_order.updated_at = datetime.now()  
                             else :
-                                # # # # # print('5877')
+                                # # # # # #print('5877')
                                 job_order = models.Job_Order.objects.filter(pk=request.POST['job_order_header_id']).get() 
                                 job_order.material_reciept = 0
                                 job_order.job_status = 1
                                 job_order.actual_time_take =""
                                 job_order.updated_at = datetime.now()
                             job_order.save()
-                        # # # # # print('5257')
+                        # # # # # #print('5257')
                 models.Store_Transaction_Detail.objects.bulk_create(order_details)
-                # # # # # print('5879')
+                # # # # # #print('5879')
                 if request.POST['purchase_order_header_id'] != "" and (request.POST['purchase_order_header_id']) != 0:
                     for index, elem in enumerate(request.POST.getlist('item_id')):
                         if request.POST.getlist('accp_quantity')[index] != '':
@@ -7866,7 +7879,7 @@ def materialReturnAdd(request):
 @permission_classes([IsAuthenticated])
 def getOnTransitTransactionHeadersList(request):
     context = {}
-    # # # # # print("4679",request.GET)
+    # # # # # #print("4679",request.GET)
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
@@ -7882,7 +7895,7 @@ def getOnTransitTransactionHeadersList(request):
             })
         elif flag is not None and flag != "":
             if keyword is not None and keyword != "":
-                # # # # # print("4244",request.GET)
+                # # # # # #print("4244",request.GET)
                 onTransitTransactionHeader = list(
                     models.On_Transit_Transaction.objects.filter(
                         Q(transaction_number__icontains=keyword) 
@@ -7891,10 +7904,10 @@ def getOnTransitTransactionHeadersList(request):
                 )
 
             else:
-                # # # # # print("4263",request.GET)   
+                # # # # # #print("4263",request.GET)   
                 onTransitTransactionHeader = list(models.On_Transit_Transaction.objects.filter(status=1, deleted=0,flag=1).values(
                     'pk', 'transaction_number', 'transaction_date','transaction_in_date', 'source_store_id','source_store__name' ,'destination_store_id','destination_store__name'))
-                # # # # # print(onTransitTransactionHeader)
+                # # # # # #print(onTransitTransactionHeader)
             if find_all is not None and int(find_all) == 1:
                 context.update({
                     'status': 200,
@@ -7972,7 +7985,7 @@ def getOnTransitTransactionHeadersList(request):
 @permission_classes([IsAuthenticated])
 def getOnTransitTransactionDetalisList(request):
     context = {}
-    # # # # # print(request.GET)
+    # # # # # #print(request.GET)
     id = request.GET.get('transactionNumber',None)
     try:
         if id is not None and id !="":
@@ -8007,7 +8020,7 @@ def getOnTransitTransactionDetalisList(request):
 @permission_classes([IsAuthenticated])
 def materialOutDetailsAdd(request):
     context = {}
-    # # # # # print(request.POST['sourceStore'])
+    # # # # # #print(request.POST['sourceStore'])
     try:
         with transaction.atomic():
 
@@ -8081,12 +8094,12 @@ def materialOutDetailsAdd(request):
                 
                 
                 # Check for the last record on the given_date
-                record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=request.POST.getlist('item_id')[index], store_id= request.POST['sourceStore']).last()
+                record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=request.POST.getlist('item_id')[index], store_id= request.POST['sourceStore'],status=1, deleted=0).last()
 
                 if not record:
                     # If no record is found for the given_date, look for the last record before that date
                     last_transaction_date = models.Store_Item_Current.objects.filter(
-                        transaction_date__lt=given_date ,item_id=request.POST.getlist('item_id')[index], store_id= request.POST['sourceStore']
+                        transaction_date__lt=given_date ,item_id=request.POST.getlist('item_id')[index], store_id= request.POST['sourceStore'],status=1, deleted=0
                     ).aggregate(Max('transaction_date'))['transaction_date__max']
 
                     
@@ -8094,7 +8107,7 @@ def materialOutDetailsAdd(request):
                     if last_transaction_date:
                         # Fetch the record for the last_transaction_date
                         record = models.Store_Item_Current.objects.filter(
-                            transaction_date=last_transaction_date ,item_id=request.POST.getlist('item_id')[index], store_id= request.POST['sourceStore']
+                            transaction_date=last_transaction_date ,item_id=request.POST.getlist('item_id')[index], store_id= request.POST['sourceStore'],status=1, deleted=0
                         ).last()
 
                 # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
@@ -8149,7 +8162,7 @@ def materialOutDetailsAdd(request):
 @permission_classes([IsAuthenticated])
 def materialOutDetailsDelete(request):
     context = {}
-    # # # # # print(request.POST)
+    # # # # # #print(request.POST)
     try:
         materialOut = models.On_Transit_Transaction.objects.get(pk=request.POST['id'])
         materialOutDetails = list(models.On_Transit_Transaction_Details.objects.filter(on_transit_transaction_header_id = request.POST['id']).values('pk','item_id','quantity'))
@@ -8162,7 +8175,7 @@ def materialOutDetailsDelete(request):
 
             # item added to  source store
             for index in materialOutDetails:
-                # # # # # print(index['item_id'])
+                # # # # # #print(index['item_id'])
                 storeItem = models.Store_Item.objects.filter(
                     item_id=index['item_id'], store_id=store_id).first()
 
@@ -8192,9 +8205,9 @@ def materialOutDetailsDelete(request):
 @permission_classes([IsAuthenticated])
 def materialOutDetailsEdit(request):
     context = {}
-    # # # # # print(request.POST)
+    # # # # # #print(request.POST)
     try:
-        # # # # # print(request.POST)
+        # # # # # #print(request.POST)
         with transaction.atomic():
 
             # on transit transaction for material out header save
@@ -8222,24 +8235,24 @@ def materialOutDetailsEdit(request):
 
 # @api_view(['GET'])
 # def storeTransferReportExport(request):
-#     # # # # # print(request.GET)
+#     # # # # # #print(request.GET)
 #     from_date = request.GET.get('form_date')
 #     to_date = request.GET.get('to_date')
 #     file_type=request.GET.get('file_type')
-#     # # # # # print(from_date)
-#     # # # # # print("3314")
+#     # # # # # #print(from_date)
+#     # # # # # #print("3314")
 #     # return JsonResponse({})
 #     if from_date is not None and from_date != "" and to_date is not None and to_date != "" :
-#         # # # # # print("3316")
+#         # # # # # #print("3316")
 #         page_items = models.On_Transit_Transaction_Details.objects.filter(on_transit_transaction_header__transaction_date__range=(from_date,to_date),status =1 , deleted=0).order_by('on_transit_transaction_header__transaction_number')
         
 #     else:
 #         page_items = models.On_Transit_Transaction_Details.objects.filter(status=1 , deleted = 0 ).order_by('on_transit_transaction_header__transaction_number')
 #         # page_items = models.Store_Item.objects.raw("SELECT * FROM store_items GROUP BY store_id ,item_id ")    
 #     # for p in page_items:
-#     #     # # # # print(p.item_id)
+#     #     # # # # #print(p.item_id)
 #     # return JsonResponse({})
-#     # # # # # print(page_items)
+#     # # # # # #print(page_items)
 #     # return JsonResponse({})
 #     if file_type=="xlsx":
 #         directory_path = settings.MEDIA_ROOT + '/reports/'
@@ -8271,7 +8284,7 @@ def materialOutDetailsEdit(request):
 
 #         # Rows can also be appended
 #         for each in page_items:
-#             # # # # # print(each.on_transit_transaction_header.transaction_date)
+#             # # # # # #print(each.on_transit_transaction_header.transaction_date)
             
 #             mat_in_date= each.on_transit_transaction_header.transaction_in_date if each.on_transit_transaction_header.transaction_in_date != None else ""
 #             mat_in_quantity = str(each.recieved_quntity) if float(each.recieved_quntity)!= 0.00 else ""
@@ -8339,7 +8352,7 @@ def materialOutDetailsEdit(request):
 #         })
 
 #     elif file_type == "pdf":
-#         # # # # # print("3395")
+#         # # # # # #print("3395")
 #         # Create a new PDF document with smaller margins
 #         pdf = FPDF(orientation='P', unit='mm', format='A3')  # Adjust unit and format if needed
 #         pdf.set_left_margin(5)
@@ -8388,7 +8401,7 @@ def materialOutDetailsEdit(request):
 #         tmpname = "Stock_Transfer_Report.pdf"
 #         pdf.output(os.path.join(directory_path, tmpname))
 #         os.chmod(os.path.join(directory_path, tmpname), 0o777)
-#         # # # # # print("3439")
+#         # # # # # #print("3439")
 #         return JsonResponse({
 #             'code': 200,
 #             'filename': settings.MEDIA_URL + 'reports/' + tmpname,
@@ -8400,14 +8413,14 @@ def materialOutDetailsEdit(request):
 @permission_classes([IsAuthenticated])
 def materialInDetailsAdd(request):
     context = {}
-    # # # # # print(request.POST)
+    # # # # # #print(request.POST)
     try:
         # pass
-        print(8734)
+        #print(8734)
         with transaction.atomic():
             #material added on on transit transaction heder flag be 1 
             transitTransactionHeader = models.On_Transit_Transaction.objects.get(pk=request.POST['transactionNumber'])
-            # # # # # print(transitTransactionHeader.id)
+            # # # # # #print(transitTransactionHeader.id)
             transitTransactionHeader.flag = 1
             transitTransactionHeader.transaction_in_date = request.POST['issue_date']
             transitTransactionHeader.updated_at = datetime.now()
@@ -8426,13 +8439,13 @@ def materialInDetailsAdd(request):
             storeTransactionHeader.transaction_date = request.POST['issue_date']
             storeTransactionHeader.reference_id =  int(transitTransactionHeader.id)
             storeTransactionHeader.save()
-            # # # # # print("4987")
+            # # # # # #print("4987")
            
             order_details = []
             for index in range(0,len(request.POST.getlist('item_id'))):
                 #on transit transaction details for material in changed
                 transitTransactionDetails = models.On_Transit_Transaction_Details.objects.get(pk=request.POST.getlist('details_id')[index])
-                # # # # # print(transitTransactionDetails)
+                # # # # # #print(transitTransactionDetails)
                 transitTransactionDetails.recieved_quntity = request.POST.getlist('quantity_recieved')[index]
                 transitTransactionDetails.reject_quantity = request.POST.getlist('quantity_reject')[index]
                 transitTransactionDetails.amount = request.POST.getlist('amount')[index]
@@ -8472,14 +8485,14 @@ def materialInDetailsAdd(request):
                 # Fetch the last transaction_date less than the given_date
                 given_date = request.POST['issue_date']
                 
-                print(8806)
+               
                 # Check for the last record on the given_date
-                record = models.Store_Item_Current.objects.filter(transaction_date=given_date, item_id=request.POST.getlist('item_id')[index], store_id=request.POST['destination_store_id']).last()
-                print('AAAA')
+                record = models.Store_Item_Current.objects.filter(transaction_date=given_date, item_id=request.POST.getlist('item_id')[index], store_id=request.POST['destination_store_id'],status=1, deleted=0).last()
+                
                 if not record:
                     # If no record is found for the given_date, look for the last record before that date
                     last_transaction_date = models.Store_Item_Current.objects.filter(
-                        transaction_date__lt=given_date, item_id=request.POST.getlist('item_id')[index], store_id=request.POST['destination_store_id']
+                        transaction_date__lt=given_date, item_id=request.POST.getlist('item_id')[index], store_id=request.POST['destination_store_id'],status=1, deleted=0
                     ).aggregate(Max('transaction_date'))['transaction_date__max']
 
                     
@@ -8487,9 +8500,9 @@ def materialInDetailsAdd(request):
                     if last_transaction_date:
                         # Fetch the record for the last_transaction_date
                         record = models.Store_Item_Current.objects.filter(
-                            transaction_date=last_transaction_date, item_id=request.POST.getlist('item_id')[index], store_id=request.POST['destination_store_id']
+                            transaction_date=last_transaction_date, item_id=request.POST.getlist('item_id')[index], store_id=request.POST['destination_store_id'],status=1, deleted=0
                         ).last()
-                print(record)
+                #print(record)
                 # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
                 
                 
@@ -8530,7 +8543,7 @@ def materialInDetailsAdd(request):
         })
 
     except Exception as e:
-        print(e)
+        #print(e)
         context.update({
             'status': 539,
             'message': "Something Went Wrong. Please Try Again."
@@ -8548,7 +8561,7 @@ def getPhysicalInspectionHeadersList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    # # # # # print(request.GET)
+    # # # # # #print(request.GET)
     try:
         if id is not None and id != "":
             phyInspectHeader = list(models.Physical_Inspection.objects.filter(pk=id)[:1].values('pk','transaction_number',
@@ -8567,7 +8580,7 @@ def getPhysicalInspectionHeadersList(request):
         })
 
         else:
-            # # # # # print('5128')
+            # # # # # #print('5128')
             if keyword is not None and keyword != "":
                 phyInspectHeader = list(models.Physical_Inspection.objects.filter(Q(transaction_number__icontains=keyword) | 
                 Q(store__name__icontains=keyword) |
@@ -8634,7 +8647,7 @@ def getPhysicalInspectionHeadersList(request):
 @permission_classes([IsAuthenticated])
 def physicalInspectionDetailsAdd(request):
     context ={}
-    # # # # # print(request.POST)
+    # # # # # #print(request.POST)
     try:
         with transaction.atomic():
 
@@ -8716,7 +8729,7 @@ def getPurchaseBillHeadersList(request):
     id = request.GET.get('id', None)
     find_all = request.GET.get('find_all', None)
     keyword = request.GET.get('keyword', None)
-    # # # # # print(request.GET)
+    # # # # # #print(request.GET)
     try:
         if id is not None and id != "":
             purchaseBill = list(models.Purchase_Bill.objects.filter(pk=id)[:1].values('pk','transaction_number',
@@ -8819,14 +8832,14 @@ def getPurchaseBillHeadersList(request):
 @permission_classes([IsAuthenticated])
 def purchaseBillDetailsAdd(request):
     context = {}
-    # print(request.POST)
+    # #print(request.POST)
    
     # exit()
     try:
         with transaction.atomic():
             purchase_bill_head_count = models.Purchase_Bill.objects.all().count()
             purcahse_bill_header = models.Purchase_Bill()
-            # # # # # print("5283")
+            # # # # # #print("5283")
             purcahse_bill_header.transaction_number = env("PURCHASE_BILL_TRANSACTION_SEQ").replace(
             "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(purchase_bill_head_count + 1).zfill(5))
             purcahse_bill_header.transaction_date = request.POST['issue_date']
@@ -8848,9 +8861,9 @@ def purchaseBillDetailsAdd(request):
             purcahse_bill_header.notes = request.POST['notes']
             purcahse_bill_header.total_amount_exclude_discount = Decimal(request.POST['total_acc'])
             purcahse_bill_header.total_discount = Decimal(request.POST['total_discount'])
-            # print(8100)
+            # #print(8100)
             purcahse_bill_header.total_discount_amount = Decimal(request.POST['total_discount_amount'])
-            # print((request.POST['tds_percentage']))
+            # #print((request.POST['tds_percentage']))
             if request.POST.get('tds_percentage',None):
                 purcahse_bill_header.tds_percentage = Decimal(request.POST['tds_percentage']) 
             purcahse_bill_header.tds_deduction = Decimal(request.POST['tds_deduction'])
@@ -8859,8 +8872,8 @@ def purchaseBillDetailsAdd(request):
             purcahse_bill_header.tcs_deduction = Decimal(request.POST['tcs_decuction'])
             purcahse_bill_header.accet_amount_tax_deduc =Decimal(request.POST['accet_tds_tcs_de_amount'])
             purcahse_bill_header.roundof_total_amount =  Decimal(request.POST['roundof_amount'])
-            # print(8106)
-            # print(Decimal(request.POST['accet_tds_tcs_de_amount']))
+            # #print(8106)
+            # #print(Decimal(request.POST['accet_tds_tcs_de_amount']))
             # x= 10/0
             purcahse_bill_header.round_off_price = Decimal('0.' + (request.POST['accet_tds_tcs_de_amount'].split('.')[1]))
             purcahse_bill_header.total_gst_amount = Decimal(request.POST['total_amount_with_gst'])
@@ -8895,7 +8908,7 @@ def purchaseBillDetailsAdd(request):
                 models.Purchase_Bill_Details.objects.bulk_create(bill_details)
                 
             else:
-                # # # # # print("5325")
+                # # # # # #print("5325")
                 bill_details = []
                 for index in range(0,len(request.POST.getlist('item_id'))):
                     uom_id = models.Uom.objects.get(name = request.POST.getlist('uom')[index])
@@ -8930,7 +8943,7 @@ def purchaseBillDetailsAdd(request):
             'message': "purchase bill added succesfully"
         })
     except Exception as e:
-        print(f"error as {e}")
+        #print(f"error as {e}")
         context.update({
             'status': 544,
             'message': "Something Went Wrong. Please Try Again."
@@ -8943,13 +8956,13 @@ def purchaseBillDetailsAdd(request):
 @permission_classes([IsAuthenticated])
 def purchaseBillDetailsEdit(request):
     context={}
-    # # # # # print(request.POST)
+    # # # # # #print(request.POST)
     try:
         with transaction.atomic():
 
             purcahse_bill_header_update = models.Purchase_Bill.objects.get(pk = request.POST['headerPk'])
             purcahse_bill_header_update.invoice_no =  request.POST['invoice']
-            # # # # # print("5288")
+            # # # # # #print("5288")
             purcahse_bill_header_update.e_way_no = request.POST['e_way']
             
             purcahse_bill_header_update.e_way_date = request.POST['e_way_date']
@@ -9002,7 +9015,7 @@ def purchaseBillDetailsEdit(request):
                 
                 purcahse_bill_details_update.updated_at = datetime.now()
                 purcahse_bill_details_update.save()
-                # # # # # print("5510")
+                # # # # # #print("5510")
             userId = request.COOKIES.get('userId', None)
             user_log_details_add(userId,'Purchase bill edit')
         transaction.commit()
@@ -9012,7 +9025,7 @@ def purchaseBillDetailsEdit(request):
         })
     
     except Exception as e:
-        print(f"error is {e}")
+        #print(f"error is {e}")
         context.update({
             'status': 545,
             'message': "Something Went Wrong. Please Try Again."
@@ -9240,7 +9253,7 @@ def purchaseBillDetailsExport(request):
 
         # Append data rows
         for each in filtered_data:
-            # print(each)
+            # #print(each)
             ws.append([
                 "P",
                 each['purchase_bill_header__transaction_number'],
@@ -9270,7 +9283,7 @@ def purchaseBillDetailsExport(request):
                 each['purchase_bill_header__roundof_total_amount'],
                 " "
             ])
-        print(8058)
+        #print(8058)
         # Save the file
         file_path = os.path.join(directory_path, tmpname)
         
@@ -9292,7 +9305,7 @@ def purchaseBillDetailsExport(request):
             'file_url': filename
         })
     except Exception as e:
-        print(f'error{e}')
+        #print(f'error{e}')
         context.update({
             'status': 546.1,
             'message': "Something went wrong. Please try again."
@@ -9349,7 +9362,7 @@ def fgRawDetailsExport(request):
 
             # Append data rows
             for each in filtered_data:
-                # print(each)
+                # #print(each)
                 rate = each.rate if each.rate else each.item.price
                 ws.append([
                     each.store_transaction_header.transaction_number,
@@ -9368,7 +9381,7 @@ def fgRawDetailsExport(request):
                     (each.quantity * rate),
                     ''
                 ])
-            print(8058)
+            #print(8058)
             # Save the file
             file_path = os.path.join(directory_path, tmpname)
             
@@ -9395,7 +9408,7 @@ def fgRawDetailsExport(request):
             })
         transaction
     except Exception as e:
-        print(f'error{e}')
+        #print(f'error{e}')
         context.update({
             'status': 546.1,
             'message': "Something went wrong. Please try again."
@@ -9469,7 +9482,7 @@ def reportItemTrackingReport(request):
     #         })
     #     data.sort(key=lambda x: (x['transaction_date'], x['transaction_number']))
     if item.exists():
-        print("item exists")
+        #print("item exists")
         store_item_currents = models.Store_Item_Current.objects.filter(
             status = 1,
             deleted = 0,
@@ -9479,8 +9492,7 @@ def reportItemTrackingReport(request):
         ).order_by('transaction_date', 'created_at')
         
         for store_item_current in store_item_currents:
-            print(9482,store_item_current.store_transaction.id)
-            # print(store_item_current)
+            #print(store_item_current)
             rate = item.first().price
             amount = Decimal(0.00)
             reciept_quantity = Decimal(0.00)
@@ -9491,9 +9503,21 @@ def reportItemTrackingReport(request):
             issued_ByJobOrder = Decimal(0.00)
             if store_item_current.store_transaction_id:
                 
+                
+
                 store_transaction_detail = models.Store_Transaction_Detail.objects.filter(store_id=store_id,
                     item_id=item_id, store_transaction_header_id = store_item_current.store_transaction_id).first()
-                # print(store_transaction_detail,store_item_current.store_transaction_id,store_id,item_id)
+                # #print(store_transaction_detail,store_item_current.store_transaction_id,store_id,item_id)
+                if not  store_transaction_detail  :
+                    #print(f"store tr id : {store_item_current.store_transaction_id}") 
+                    context.update({
+                        'status': 501.1,
+                        'types': 'InHouse',
+                        'message': f"problem in store tr id : {store_item_current.store_transaction_id}",
+                        
+                        
+                    })
+                    return  JsonResponse(context)
                 if store_item_current.store_transaction.transaction_type.name == "MIS" or store_item_current.store_transaction.transaction_type.name == "MOUT" or store_item_current.store_transaction.transaction_type.name == "MIST" or store_item_current.store_transaction.transaction_type.name == "MIV":
                     out_quantity = store_transaction_detail.quantity
                     if store_item_current.store_transaction.transaction_type.name == "MIS" or store_item_current.store_transaction.transaction_type.name == "MOUT" :
@@ -9584,7 +9608,7 @@ def reportItemTrackingReport(request):
 # @permission_classes([IsAuthenticated])
 # def reportInventorySummary(request):
 #     context = {}
-#     # # # # # print(request.POST)
+#     # # # # # #print(request.POST)
 #     from_date = request.POST.get('from_date', None)
 #     to_date = request.POST.get('to_date', None)
 #     store_id = request.POST.get('store_id', None)
@@ -9596,7 +9620,7 @@ def reportItemTrackingReport(request):
      
 #     try:
 #         if request.method == 'GET':
-#             # # # # # print('4277')
+#             # # # # # #print('4277')
 #             store_Item = models.Store_Transaction_Detail.objects.filter(status=1,
 #             deleted=0
 #             ).filter(Q(store_transaction_header__transaction_type__name='MIS') | Q(store_transaction_header__transaction_type__name='GRN')).order_by('store_transaction_header__transaction_date')
@@ -9611,7 +9635,7 @@ def reportItemTrackingReport(request):
 #                 for store_transaction in store_transactions_MIS:
 #                     total_stockOut += float(store_transaction.quantity)
 #                     orderQuantity = models.Job_Order_Detail.objects.filter(item_id = each.item_id ,direction='outgoing' , job_order_header_id = store_transaction.store_transaction_header.job_order_id).first()
-#                     # # # # print(7416)
+#                     # # # # #print(7416)
 #                     data.append({
 #                                 'item':each.item.name,
 #                                 'item_category': each.item.item_type.item_category.name,
@@ -9627,7 +9651,7 @@ def reportItemTrackingReport(request):
 #                                 'stock_out_upto': total_stockOut,
 #                                 'onHand_quantity' : each.on_hand_qty
 #                             })
-#                     # # # # print(data)
+#                     # # # # #print(data)
 #             #stock in
 #             if store_transactions_GRN :
 #                 for store_transaction in store_transactions_GRN:
@@ -9667,7 +9691,7 @@ def reportItemTrackingReport(request):
 #                                 'stock_out_upto': total_stockOut,
 #                                 'onHand_quantity' : each.on_hand_qty
 #                             })
-#         # # # # print(data)
+#         # # # # #print(data)
 #         sorted_data = sorted(data, key=lambda x: (x['item'], x['date']))               
 #         context.update({
 #             'status': 200,
@@ -9751,7 +9775,7 @@ def reportInventorySummary(request):
                         'stock_out_upto': total_stockOut,
                         'onHand_quantity': each.on_hand_qty
                     })
-            # # # # # print(data ,"aaaa")
+            # # # # # #print(data ,"aaaa")
             # Process stock in transactions
             if(store_transactions_GRN):
                 for store_transaction in store_transactions_GRN:
@@ -9925,7 +9949,7 @@ def reportInventorySummary(request):
 # @permission_classes([IsAuthenticated])
 # def reportInventoryStorewise(request):
 #     context = {}
-#     # print(request.POST)
+#     # #print(request.POST)
 #     item_cat_id = request.POST.get('item_cat_id', None)
 #     store_type = request.POST.get('store_type', None)
 #     data ={}
@@ -9960,16 +9984,16 @@ def reportInventorySummary(request):
 #                     'value' : float(store_item[index]['on_hand_qty']) * float(store_item[index]['item__price']),
 #                 })
 #             else:
-#                 # print(8618)
+#                 # #print(8618)
 #                 if models.Job_Order_Detail.objects.filter(item_id = store_item[index]['item_id'],job_order_header__job_status =1).exists() :
 #                     jobOrderDetails = models.Job_Order_Detail.objects.filter(item_id = store_item[index]['item_id'],job_order_header__job_status =1)
 #                     for jobdet in jobOrderDetails:
-#                         # print(8622)
+#                         # #print(8622)
 #                         total_material_issue += float(jobdet.quantity - jobdet.required_quantity) if (jobdet.job_order_header.material_issue == 2 and jobdet.required_quantity > 0) else 0.00
-#                         # print(jobdet.quantity_result if (jobdet.job_order_header.material_issue > 1 and jobdet.quantity_result > 0) else 0.00  )
+#                         # #print(jobdet.quantity_result if (jobdet.job_order_header.material_issue > 1 and jobdet.quantity_result > 0) else 0.00  )
 
 #                         total_material_receipt += float(jobdet.quantity_result) if (jobdet.job_order_header.material_issue > 1 and jobdet.quantity_result > 0) else 0.00
-#                         # print(8626)
+#                         # #print(8626)
 #                 data[store_item[index]['store__name']].append({
 #                     'pk':store_item[index]['pk'],
 #                     'on_hand_qty' : store_item[index]['on_hand_qty'],
@@ -10057,7 +10081,7 @@ def reportInventoryStorewise(request):
 
         # Process store items
         for store_item in store_items:
-            print(8896)
+            # #print(8896)
             total_material_issue = Decimal('0.00')
             total_material_receipt = Decimal('0.00')
             blocked_quantity = Decimal('0.00')
@@ -10076,7 +10100,7 @@ def reportInventoryStorewise(request):
                 })
             else:
                 # Vendor store processing
-                # print(total_material_issue)
+                # #print(total_material_issue)
                 if models.Job_Order_Detail.objects.filter(
                     item_id=store_item['item_id'], job_order_header__job_status=1,job_order_header__vendor__store__name = store_item['store__name']
                 ).exists():
@@ -10103,7 +10127,7 @@ def reportInventoryStorewise(request):
                         total_material_receipt += jobdet.quantity_result if jobdet.job_order_header.material_issue > 1 and jobdet.direction == 'incoming' else Decimal('0.00')
 
                         
-                # # print(total_material_issue,total_material_receipt)
+                # # #print(total_material_issue,total_material_receipt)
                 # Append vendor data
                 data[store_name].append({
                     'pk': store_item['pk'],
@@ -10116,7 +10140,7 @@ def reportInventoryStorewise(request):
                     'item_category': store_item['item__item_type__item_category__name'],
                     'value': round((float(store_item['on_hand_qty']) * float(store_item['item__price'])),2),
                 })
-        # # print(data)
+        # # #print(data)
 
         # Update context with data
         context.update({
@@ -10127,7 +10151,7 @@ def reportInventoryStorewise(request):
 
     except Exception as e:
         # Log the exception for debugging purposes
-        print(f"Error: {e}")
+        #print(f"Error: {e}")
 
         # Return internal server error
         context.update({
@@ -10142,7 +10166,7 @@ def reportInventoryStorewise(request):
 @permission_classes([IsAuthenticated])
 def reportStockTransfer(request):
     context = {}
-    # # # # # print(request.POST)
+    # # # # # #print(request.POST)
     from_date = request.POST.get('from_date', None)
     to_date = request.POST.get('to_date', None)
     data ={}
@@ -10160,7 +10184,7 @@ def reportStockTransfer(request):
             
             ))
         else:
-            # # # # # print("5041")
+            # # # # # #print("5041")
             on_transit_details = list(models.On_Transit_Transaction_Details.objects.filter(on_transit_transaction_header__transaction_date__range=(from_date,to_date)).values(
             'pk','item__name','on_transit_transaction_header__transaction_number',
             'on_transit_transaction_header__transaction_date',
@@ -10170,7 +10194,7 @@ def reportStockTransfer(request):
             'quantity',
             'recieved_quntity',
             ))    
-        # # # # # print(on_transit_details)
+        # # # # # #print(on_transit_details)
         if(len(on_transit_details) == 0):
             context.update({
                 'status': 200,
@@ -10192,7 +10216,7 @@ def reportStockTransfer(request):
                 'material_out_date' : on_transit_details[index]['on_transit_transaction_header__transaction_date'],
                 'material_in_date' : on_transit_details[index]['on_transit_transaction_header__transaction_in_date'] if on_transit_details[index]['on_transit_transaction_header__transaction_in_date'] != None else "---"  ,
             })
-        # # # # # print(data)
+        # # # # # #print(data)
         context.update({
             'status': 200,
             'message': "stock Transfer report fetch Successfully.",
@@ -10316,7 +10340,7 @@ def reportActivePurchaseOrder(request):
 @permission_classes([IsAuthenticated])
 def cornJobStoreItemQuantityUpdate(request):
     context ={}
-    # # # # # print('inside cornjob')
+    # # # # # #print('inside cornjob')
     # start_date = '2024-01-01' #for testing 
     end_date = datetime.now().date()
     start_date = end_date.replace(day=1)
@@ -10445,7 +10469,7 @@ def reportPurchaseMaterailIssue(request):
                 closing_qty = (closing_qty) + (storeTransactionDetails[index].quantity) 
             else:
                 closing_qty = (closing_qty) - (storeTransactionDetails[index].quantity) 
-            # # # # # print(closing_qty)
+            # # # # # #print(closing_qty)
             data.append({
                 'item_name': storeTransactionDetails[index].item.name,
                 'transaction_date' :  storeTransactionDetails[index].store_transaction_header.transaction_date,
@@ -10577,7 +10601,7 @@ def invoice_store_migration(store_id,user_id):
                         rate=invoice_detail.rate,
                         amount=invoice_detail.value,
                     )
-                # # # # # print(obj.__dict__) 
+                # # # # # #print(obj.__dict__) 
                 obj.save()
 
                 storeItem = models.Store_Item.objects.filter(
@@ -10597,12 +10621,12 @@ def invoice_store_migration(store_id,user_id):
                 
                 
                 # Check for the last record on the given_date
-                record = models.Store_Item_Current.objects.filter(transaction_date=given_date,  item_id=invoice_detail.item_id, store_id=store_id ).last()
+                record = models.Store_Item_Current.objects.filter(transaction_date=given_date,  item_id=invoice_detail.item_id, store_id=store_id,status=1, deleted=0 ).last()
 
                 if not record:
                     # If no record is found for the given_date, look for the last record before that date
                     last_transaction_date = models.Store_Item_Current.objects.filter(
-                        transaction_date__lt=given_date ,item_id=invoice_detail.item_id, store_id=store_id
+                        transaction_date__lt=given_date ,item_id=invoice_detail.item_id, store_id=store_id,status=1, deleted=0
                     ).aggregate(Max('transaction_date'))['transaction_date__max']
 
                     
@@ -10610,7 +10634,7 @@ def invoice_store_migration(store_id,user_id):
                     if last_transaction_date:
                         # Fetch the record for the last_transaction_date
                         record = models.Store_Item_Current.objects.filter(
-                            transaction_date=last_transaction_date ,item_id=invoice_detail.item_id, store_id=store_id
+                            transaction_date=last_transaction_date ,item_id=invoice_detail.item_id, store_id=store_id,status=1, deleted=0
                         ).last()
 
                 # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
@@ -10805,13 +10829,13 @@ def handle_transaction_detail(detail, transact_type_name):
     last_record =models.Store_Item_Current.objects.filter(
             transaction_date=detail.store_transaction_header.transaction_date,
             item_id=detail.item.id,
-            store_id=detail.store.id
+            store_id=detail.store.id,status=1, deleted=0
         ).order_by('transaction_date', 'created_at','id')
     if not last_record:
         last_record =models.Store_Item_Current.objects.filter(
             transaction_date__lt=detail.store_transaction_header.transaction_date,
             item_id=detail.item.id,
-            store_id=detail.store.id
+            store_id=detail.store.id,status=1, deleted=0
         ).order_by('transaction_date', 'created_at','id')
 
     # Create a new Store_Item_Current instance
@@ -10827,7 +10851,7 @@ def handle_transaction_detail(detail, transact_type_name):
             store_item_instance.on_hand_qty = last_record.closing_qty - Decimal(detail.quantity)
             store_item_instance.closing_qty = last_record.closing_qty - Decimal(detail.quantity)
             if (store_item_instance.closing_qty < Decimal(0.00) ) or (last_record.closing_qty < Decimal(0.00)):
-                print(last_record.closing_qty)
+                # #print(last_record.closing_qty)
                 raise ValueError(f"Negetive stock come on item{detail.item.name} of store {detail.store.name} of date {detail.store_transaction_header.transaction_date} last record {last_record.closing_qty}")
     else:
         # Set default values if no prior record exists
@@ -10855,10 +10879,10 @@ def handle_transaction_detail(detail, transact_type_name):
 @api_view(['POST'])
 def storeItemCurrentMigrate(request):
     context = {}
-    print("processing ....")
+    #print("processing ....")
     try:
         # Debugging: Print POST data
-        # print(request.POST)
+        # #print(request.POST)
 
         # Get the transaction date and convert to datetime with max time
         given_date_str = request.POST['transaction_date']
@@ -10891,13 +10915,13 @@ def storeItemCurrentMigrate(request):
             )
 
             # Debugging: Print the details of fetched store transactions
-            # print(store_transaction_details)
+            # #print(store_transaction_details)
 
             # Process each transaction detail
             for detail in store_transaction_details:
-                print(f"Working Start on {detail.store_transaction_header.transaction_number}...")
+                #print(f"Working Start on {detail.store_transaction_header.transaction_number}...")
                 handle_transaction_detail(detail, transact_type_name.name)
-                print(f"Working Complete on {detail.store_transaction_header.transaction_number}")
+                #print(f"Working Complete on {detail.store_transaction_header.transaction_number}")
         transaction.commit()
         # Return success response
         context.update({
