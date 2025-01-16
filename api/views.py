@@ -7865,10 +7865,10 @@ def materialReturnAdd(request):
             'status': 200,
             'message': "Material Return Created Successfully."
         })
-    except Exception:
+    except Exception as e:
         context.update({
             'status': 533,
-            'message': "Something Went Wrong. Please Try Again."
+            'message': f"Something Went Wrong. Please Try Again.{e}"
         })
         transaction.rollback()
     return JsonResponse(context)
