@@ -6977,6 +6977,7 @@ def materialIssueAdd(request):
                 store_items_add=[]
                 # #print(job_order_income_detalis)
                # incomming material will be assigned only one time no parial
+                incomeMaterialInsertPossible = False
                 for index in range(0, len(job_order_income_detalis)):
                     # # # # #print(jobOrderEdits.job_status )
                     if job_order_income_detalis[index].required_quantity!=0 and (jobOrderEdits.job_status == 0):
@@ -7074,10 +7075,10 @@ def materialIssueAdd(request):
                         
                         store_item_curreEdit(vendor_store.id,itemInThrdParty,given_date,'min', thirdPartyInQuantity) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
                         print(itemInThrdParty,vendor_store.name,thirdPartyInQuantity)
-                        
+                        incomeMaterialInsertPossible= True
                    
                  #material issue issued for job order
-                if((job_order_income_detalis[index].required_quantity!=0 and (jobOrderEdits.job_status == 0))):
+                if((incomeMaterialInsertPossible == True) and (jobOrderEdits.job_status == 0)):
                     if (store_transaction_details or store_items_add)  :
                         models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
                         models.Store_Item.objects.bulk_create(store_items_add)
