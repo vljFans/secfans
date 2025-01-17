@@ -110,6 +110,51 @@ def user_log_details_add(user,task_name):
         transaction.rollback()
 
 
+def data_revertive_from_transaction(storeTrId, itemId, storeId, quantity, retrivaltype):
+    #print('Inside data_revertive_from_transaction')
+    try:
+        # Subqueries to fetch transaction_date and created_at for the specific transaction
+        subquery_transaction_date = models.Store_Item_Current.objects.filter(
+            store_transaction_id=storeTrId, status=1, deleted=0
+        ).values('transaction_date')[:1]
+
+        subquery_created_at = models.Store_Item_Current.objects.filter(
+            store_transaction_id=storeTrId, status=1, deleted=0
+        ).values('created_at')[:1]
+
+
+        # Determine the adjustment factor based on retrieval type
+        adjustment = Decimal(quantity) if retrivaltype == 'in' else -(Decimal(quantity))
+
+        # Filter and update matching records in bulk
+        updated_count = models.Store_Item_Current.objects.filter(
+            item_id=itemId,
+            store_id=storeId,
+            status=1,
+            deleted=0,
+        ).filter(
+            Q(
+                Q(
+                    transaction_date=Subquery(subquery_transaction_date),
+                    created_at__gt=Subquery(subquery_created_at)
+                ) |
+                Q(transaction_date__gt=Subquery(subquery_transaction_date))
+            )
+        ).update(
+            closing_qty=F('closing_qty') + adjustment,
+            on_hand_qty=F('on_hand_qty') + adjustment,
+            opening_qty=F('opening_qty') + adjustment,
+            updated_at=datetime.now()
+        )
+
+        # Log the result of the update
+        if updated_count == 0:
+            raise ValueError('No data found for the given criteria.')
+
+    except Exception as e:
+        raise ValueError(f"An error occurred: {e}")
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def loginUser(request):
@@ -5155,49 +5200,6 @@ def storeTransactionAdd(request):
     return JsonResponse(context)
 
 
-def data_revertive_from_transaction(storeTrId, itemId, storeId, quantity, retrivaltype):
-    #print('Inside data_revertive_from_transaction')
-    try:
-        # Subqueries to fetch transaction_date and created_at for the specific transaction
-        subquery_transaction_date = models.Store_Item_Current.objects.filter(
-            store_transaction_id=storeTrId, status=1, deleted=0
-        ).values('transaction_date')[:1]
-
-        subquery_created_at = models.Store_Item_Current.objects.filter(
-            store_transaction_id=storeTrId, status=1, deleted=0
-        ).values('created_at')[:1]
-
-
-        # Determine the adjustment factor based on retrieval type
-        adjustment = Decimal(quantity) if retrivaltype == 'in' else -(Decimal(quantity))
-
-        # Filter and update matching records in bulk
-        updated_count = models.Store_Item_Current.objects.filter(
-            item_id=itemId,
-            store_id=storeId,
-            status=1,
-            deleted=0,
-        ).filter(
-            Q(
-                Q(
-                    transaction_date=Subquery(subquery_transaction_date),
-                    created_at__gte=Subquery(subquery_created_at)
-                ) |
-                Q(transaction_date__gt=Subquery(subquery_transaction_date))
-            )
-        ).update(
-            closing_qty=F('closing_qty') + adjustment,
-            on_hand_qty=F('on_hand_qty') + adjustment,
-            opening_qty=F('opening_qty') + adjustment,
-            updated_at=datetime.now()
-        )
-
-        # Log the result of the update
-        if updated_count == 0:
-            raise ValueError('No data found for the given criteria.')
-
-    except Exception as e:
-        raise ValueError(f"An error occurred: {e}")
 
 def jobOrderStoreTranasctionRetriveVendor(storeTranscationOld):
     #data deducted from vendor store
@@ -6889,6 +6891,29 @@ def materialIssueDetails(request):
         })
     return JsonResponse(context)
 
+def calculate_income_job_quantity_recieved(set1, set2, created_quantity):
+    """
+    Calculate how many quantities of itemC1 can be created using set2 based on set1 ratios.
+
+    Args:
+        set1 (dict): Ratios of items required to create 1 quantity of itemC1.
+        set2 (dict): Available quantities of items.
+        created_quantity (int): Quantity of itemC1 that can be created with set1.
+
+    Returns:
+        int: Maximum quantity of itemC1 that can be created using set2.
+    """
+    # Calculate the total requirement of each item in set2 for 1 quantity of itemC1
+    requirements_per_unit = {item: qty / created_quantity for item, qty in set1.items()}
+
+    # Calculate how many itemC1 can be created for each item in set2
+    max_possible = []
+    for item, available_qty in set2.items():
+        if item in requirements_per_unit:
+            max_possible.append(available_qty // requirements_per_unit[item])
+
+    # The limiting factor will be the minimum of these values
+    return int(min(max_possible)) if max_possible else 0
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -8177,12 +8202,17 @@ def materialOutDetailsDelete(request):
         storeTransaction = models.Store_Transaction.objects.get(reference_id =request.POST['id'],transaction_type_id= 6 )
         
         with transaction.atomic():
-            materialOut.delete()
-            storeTransaction.delete()
-
-            # item added to  source store
+              # item added to  source store
             for index in materialOutDetails:
                 # # # # # #print(index['item_id'])
+                data_revertive_from_transaction(storeTransaction.id,index['item_id'],store_id,(index['quantity']),'in')
+                storeItemCurrent =  models.Store_Item_Current.objects.filter(store_transaction_id = storeTransaction.id ).first()
+                storeItemCurrent.on_hand_qty += Decimal(index['quantity'])
+                storeItemCurrent.closing_qty += Decimal(index['quantity'])
+                storeItemCurrent.updated_at = datetime.now()
+                storeItemCurrent.status = 0
+                storeItemCurrent.deleted = 1
+                storeItemCurrent.save()
                 storeItem = models.Store_Item.objects.filter(
                     item_id=index['item_id'], store_id=store_id).first()
 
@@ -8191,6 +8221,10 @@ def materialOutDetailsDelete(request):
                 storeItem.updated_at = datetime.now()
                 
                 storeItem.save()
+            
+            materialOut.delete()
+            storeTransaction.delete()
+            
             userId = request.COOKIES.get('userId', None)
             user_log_details_add(userId,'Material Out Delete')
         transaction.commit()
@@ -8238,182 +8272,6 @@ def materialOutDetailsEdit(request):
         })
         transaction.rollback()
     return JsonResponse(context)
-
-
-# @api_view(['GET'])
-# def storeTransferReportExport(request):
-#     # # # # # #print(request.GET)
-#     from_date = request.GET.get('form_date')
-#     to_date = request.GET.get('to_date')
-#     file_type=request.GET.get('file_type')
-#     # # # # # #print(from_date)
-#     # # # # # #print("3314")
-#     # return JsonResponse({})
-#     if from_date is not None and from_date != "" and to_date is not None and to_date != "" :
-#         # # # # # #print("3316")
-#         page_items = models.On_Transit_Transaction_Details.objects.filter(on_transit_transaction_header__transaction_date__range=(from_date,to_date),status =1 , deleted=0).order_by('on_transit_transaction_header__transaction_number')
-        
-#     else:
-#         page_items = models.On_Transit_Transaction_Details.objects.filter(status=1 , deleted = 0 ).order_by('on_transit_transaction_header__transaction_number')
-#         # page_items = models.Store_Item.objects.raw("SELECT * FROM store_items GROUP BY store_id ,item_id ")    
-#     # for p in page_items:
-#     #     # # # # #print(p.item_id)
-#     # return JsonResponse({})
-#     # # # # # #print(page_items)
-#     # return JsonResponse({})
-#     if file_type=="xlsx":
-#         directory_path = settings.MEDIA_ROOT + '/reports/'
-#         path = Path(directory_path)
-#         path.mkdir(parents=True, exist_ok=True)
-
-#         for f in os.listdir(settings.MEDIA_ROOT + '/reports/'):
-#             if not f.endswith(".xlsx"):
-#                 continue
-#             os.remove(os.path.join(settings.MEDIA_ROOT + '/reports/', f))
-
-#         # tmpname = str(datetime.now().microsecond) + ".xlsx"
-#         tmpname = "Stock Transfer Report" + ".xlsx"
-#         wb = Workbook()
-
-#         # grab the active worksheet
-#         ws = wb.active
-
-#         # Data can be assigned directly to cells
-#         ws['A1'] = "Transaction number"
-#         ws['B1'] = "Item"
-#         ws['C1'] = "Source"
-#         ws['D1'] = "Destination"
-#         ws['E1'] = "Material Out Date"
-#         ws['F1'] = "Material Out Quantity"
-#         ws['G1'] = "Material IN Date"
-#         ws['H1'] = "Material In Quantity"
-
-
-#         # Rows can also be appended
-#         for each in page_items:
-#             # # # # # #print(each.on_transit_transaction_header.transaction_date)
-            
-#             mat_in_date= each.on_transit_transaction_header.transaction_in_date if each.on_transit_transaction_header.transaction_in_date != None else ""
-#             mat_in_quantity = str(each.recieved_quntity) if float(each.recieved_quntity)!= 0.00 else ""
-#             ws.append([
-#             each.on_transit_transaction_header.transaction_number,
-#             each.item.name, 
-#             each.on_transit_transaction_header.source_store.name,
-#             each.on_transit_transaction_header.destination_store.name,
-#             str(each.on_transit_transaction_header.transaction_date),
-#             str(each.quantity),
-#             str(mat_in_date),
-#             mat_in_quantity ])
-#         # return JsonResponse({})
-#         # Save the file
-#         wb.save(settings.MEDIA_ROOT + '/reports/' + tmpname)
-#         os.chmod(settings.MEDIA_ROOT + '/reports/' + tmpname, 0o777)
-#         return JsonResponse({
-#             'code': 200,
-#             'filename': settings.MEDIA_URL + 'reports/' + tmpname,
-#             'name':  tmpname
-#         })
-#     elif file_type == "csv":
-#         directory_path = settings.MEDIA_ROOT + '/reports/'
-#         path = Path(directory_path)
-#         path.mkdir(parents=True, exist_ok=True)
-
-#         # Clean up any existing CSV files in the directory
-#         for f in os.listdir(settings.MEDIA_ROOT + '/reports/'):
-#             if not f.endswith(".csv"):
-#                 continue
-#             os.remove(os.path.join(settings.MEDIA_ROOT + '/reports/', f))
-
-#         tmpname = "Stock Transfer Report" + ".csv"
-
-#         with open(os.path.join(directory_path, tmpname), 'w', newline='') as csvfile:
-#             writer = csv.writer(csvfile)
-#             writer.writerow(["Transaction number", 
-#             "Item","Source", 
-#             "Destination", 
-#             "Material Out Date",
-#             "Material Out Quantity",
-#             "Material In Date",
-#             "Material In Quantity"])
-#             for each in page_items:
-                
-#                 mat_in_date= each.on_transit_transaction_header.transaction_in_date if each.on_transit_transaction_header.transaction_in_date != None else ""
-#                 mat_in_quantity = str(each.recieved_quntity) if float(each.recieved_quntity)!= 0.00 else ""
-#                 writer.writerow(
-#                     [
-#                         each.on_transit_transaction_header.transaction_number,
-#                         each.item.name, 
-#                         each.on_transit_transaction_header.source_store.name,
-#                         each.on_transit_transaction_header.destination_store.name,
-#                         str(each.on_transit_transaction_header.transaction_date), 
-#                         str(each.quantity),
-#                         str(mat_in_date),
-#                         mat_in_quantity
-#                     ])
-
-#         os.chmod(settings.MEDIA_ROOT + '/reports/' + tmpname, 0o777)
-#         return JsonResponse({
-#             'code': 200,
-#             'filename': settings.MEDIA_URL + 'reports/' + tmpname,
-#             'name': tmpname
-#         })
-
-#     elif file_type == "pdf":
-#         # # # # # #print("3395")
-#         # Create a new PDF document with smaller margins
-#         pdf = FPDF(orientation='P', unit='mm', format='A3')  # Adjust unit and format if needed
-#         pdf.set_left_margin(5)
-#         pdf.set_top_margin(5)
-
-#         pdf.add_page()
-#         pdf.set_font("Arial", size=9)
-
-#         # Add a header row with bold text
-#         pdf.set_font("Arial", size=9, style='B')  # Set font style to bold
-#         pdf.cell(9, 10, txt="S.No.", border=1, align='C')  # Add S.No. column
-#         pdf.cell(50, 10, txt="Item", border=1, align='C')
-#         pdf.cell(50, 10, txt="Source", border=1, align='C')
-#         pdf.cell(50, 10, txt="Destination", border=1, align='C')
-#         pdf.cell(30, 10, txt="Material out Date", border=1, align='C')
-#         pdf.cell(30, 10, txt="Material Out", border=1, align='C')
-#         pdf.cell(30, 10, txt="Material In date ", border=1, align='C')
-#         pdf.cell(20, 10, txt="Material In", border=1, align='C')
-#         pdf.set_font("Arial", size=9)  # Reset font style to normal
-#         pdf.ln(10)  # Move to the next line
-
-#         # Cell height (adjust as needed)
-#         cell_height = 10
-
-#         # Add data rows
-#         counter = 1  # Counter for serial numbers
-#         for each in page_items:
-#             mat_in_date= each.on_transit_transaction_header.transaction_in_date if each.on_transit_transaction_header.transaction_in_date != None else ""
-#             mat_in_quantity = str(each.recieved_quntity) if float(each.recieved_quntity)!= 0.00 else ""
-#             pdf.cell(9, 10, txt=str(counter), border=1, align='C')  # Add S.No. for each row
-#             pdf.cell(50, 10, txt=each.item.name, border=1)
-#             pdf.cell(50, 10, txt=each.on_transit_transaction_header.source_store.name, border=1)
-#             pdf.cell(50, 10, txt=each.on_transit_transaction_header.destination_store.name, border=1)
-#             pdf.cell(30, 10, txt=str(each.on_transit_transaction_header.transaction_date), border=1)
-#             pdf.cell(30, 10, txt=str(each.quantity), border=1)
-#             pdf.cell(30, 10, txt=str(mat_in_date), border=1)
-#             # Right align price for each data row
-#             pdf.cell(20, 10, txt= mat_in_quantity, border=1)
-#             pdf.ln(10)
-#             counter += 1  # Increment counter for next row
-
-#         # Save the PDF file
-#         directory_path = settings.MEDIA_ROOT + '/reports/'
-#         path = Path(directory_path)
-#         path.mkdir(parents=True, exist_ok=True)
-#         tmpname = "Stock_Transfer_Report.pdf"
-#         pdf.output(os.path.join(directory_path, tmpname))
-#         os.chmod(os.path.join(directory_path, tmpname), 0o777)
-#         # # # # # #print("3439")
-#         return JsonResponse({
-#             'code': 200,
-#             'filename': settings.MEDIA_URL + 'reports/' + tmpname,
-#             'name': tmpname
-#         })
 
 #material in 
 @api_view(['POST'])
@@ -9534,7 +9392,7 @@ def reportItemTrackingReport(request):
 
                     total_out += issued_ByJobOrder
                     total_out_by_job_order += utilised_by_jobOrder
-                print(store_transaction_detail.store_transaction_header.id)
+               
                 if  store_item_current.store_transaction.transaction_type.name == "GRN" or store_item_current.store_transaction.transaction_type.name == "GRNT" or store_item_current.store_transaction.transaction_type.name == "MIN" or store_item_current.store_transaction.transaction_type.name == "SP":
                     if store_item_current.store_transaction.transaction_type.name == "GRN" or store_item_current.store_transaction.transaction_type.name == "MIN" or store_item_current.store_transaction.transaction_type.name == "SP":
                         reciept_ByGRN = store_transaction_detail.quantity
