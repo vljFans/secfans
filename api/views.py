@@ -149,7 +149,7 @@ def data_revertive_from_transaction(storeTrId, itemId, storeId, quantity, retriv
 
         # Log the result of the update
         if updated_count == 0:
-            raise ValueError('No data found for the given criteria.')
+            raise ValueError(f'No data found for the given criteria.of item id : of {itemId} and store id: {storeId}')
 
     except Exception as e:
         raise ValueError(f"An error occurred: {e}")
@@ -5200,7 +5200,6 @@ def storeTransactionAdd(request):
     return JsonResponse(context)
 
 
-
 def jobOrderStoreTranasctionRetriveVendor(storeTranscationOld):
     #data deducted from vendor store
     invoice_no = storeTranscationOld.invoice_challan
@@ -5215,8 +5214,9 @@ def jobOrderStoreTranasctionRetriveVendor(storeTranscationOld):
         store_transaction_MisT_head.save()
         store_transaction_details = models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = store_transaction_MisT_head.id)
         for store_transaction_detail in store_transaction_details:
-            data_revertive_from_transaction(store_transaction_MisT_head.id, store_transaction_detail.item_id,store_transaction_detail.store_id,store_transaction_detail.quantity,'in')
+            
             store_items = models.Store_Item.objects.filter(item_id = store_transaction_detail.item_id, store_id = store_transaction_detail.store_id).first() 
+            
             store_items.closing_qty += Decimal(store_transaction_detail.quantity)
             store_items.on_hand_qty += Decimal(store_transaction_detail.quantity)
             store_items.updated_at = datetime.now()
@@ -5225,6 +5225,12 @@ def jobOrderStoreTranasctionRetriveVendor(storeTranscationOld):
            
             if store_item_current.exists():
                 store_item_current = store_item_current.first()
+                storeCuritemlast = models.Store_Item_Current.objects.filter(
+                               item_id = store_transaction_detail.item_id, store_id = store_transaction_detail.store_id,status=1, deleted=0).order_by('transaction_date','created_at')
+                storeCuritemlast = storeCuritemlast.last()
+                
+                if storeCuritemlast.store_transaction_id != store_transaction_MisT_head.id:
+                    data_revertive_from_transaction(store_transaction_MisT_head.id, store_transaction_detail.item_id,store_transaction_detail.store_id,store_transaction_detail.quantity,'in')
                 store_item_current.on_hand_qty += Decimal(store_transaction_detail.quantity)
                 store_item_current.closing_qty += Decimal(store_transaction_detail.quantity)
                 store_item_current.status = 0
@@ -5246,11 +5252,9 @@ def jobOrderStoreTranasctionRetriveInHouse(storeTranscationOld):
     storeTransactionDets = models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = storeTranscationOld.id)
 
     for storeTransactionDet in storeTransactionDets:
-        data_revertive_from_transaction(storeTranscationOld.id,
-                                        storeTransactionDet.item_id,
-                                        storeTransactionDet.store_id,
-                                        storeTransactionDet.quantity,'out')
+        
         store_items = models.Store_Item.objects.filter(item_id = storeTransactionDet.item_id, store_id = storeTransactionDet.store_id).first() 
+        
         store_items.closing_qty -= Decimal(storeTransactionDet.quantity)
         store_items.on_hand_qty -= Decimal(storeTransactionDet.quantity)
         store_items.updated_at = datetime.now()
@@ -5258,6 +5262,14 @@ def jobOrderStoreTranasctionRetriveInHouse(storeTranscationOld):
         store_item_current = models.Store_Item_Current.objects.filter(store_transaction_id = storeTranscationOld.id,status=1, deleted=0)
         if store_item_current.exists():
             store_item_current = store_item_current.first()
+            storeCuritemlast = models.Store_Item_Current.objects.filter(
+                               item_id = storeTransactionDet.item_id, store_id = storeTransactionDet.store_id, status=1, deleted=0).order_by('transaction_date','created_at')
+            storeCuritemlast = storeCuritemlast.last()
+            if storeCuritemlast.store_transaction_id != storeTranscationOld.id:
+                data_revertive_from_transaction(storeTranscationOld.id,
+                                            storeTransactionDet.item_id,
+                                            storeTransactionDet.store_id,
+                                            storeTransactionDet.quantity,'out')
             store_item_current.on_hand_qty -= Decimal(storeTransactionDet.quantity)
             store_item_current.closing_qty -= Decimal(storeTransactionDet.quantity)
             store_item_current.status = 0
@@ -5328,10 +5340,18 @@ def storeTransactionEdit(request):
                         storeItem.closing_qty -= transact.quantity
                         storeItem.updated_at = datetime.now()
                         storeItem.save()
-                    data_revertive_from_transaction(storeTranasctionHeaderOld.id,transact.item_id,transact.store_id,transact.quantity,'out')
+                    
                     storeItemCurrent = models.Store_Item_Current.objects.filter(store_transaction_id = storeTranasctionHeaderOld.id ,transaction_date = storeTranasctionHeaderOld.transaction_date,store_id=transact.store_id,item_id = transact.item_id , status=1, deleted=0)
+
                     if storeItemCurrent.exists():
                         storeItemCurrent = storeItemCurrent.first()
+                        storeCuritemlast = models.Store_Item_Current.objects.filter(
+                               store_id=transact.store_id,item_id = transact.item_id,status=1, deleted=0).order_by('transaction_date','created_at')
+                        storeCuritemlast = storeCuritemlast.last()
+                    
+                        if storeCuritemlast.store_transaction_id != storeTranasctionHeaderOld.id:
+                                data_revertive_from_transaction(storeTranasctionHeaderOld.id,transact.item_id,transact.store_id,transact.quantity,'out')
+
                         storeItemCurrent.on_hand_qty -= Decimal(transact.quantity)
                         storeItemCurrent.closing_qty -= Decimal(transact.quantity)
                         storeItemCurrent.status = 0
@@ -5864,7 +5884,7 @@ def storeTransactionEdit(request):
         }) 
 
     except Exception as e :
-        #print(f" error is {e}")
+        print(f" error is {e}")
         context.update({
             'status': 591.1,
             'message': "internal error",
@@ -5896,10 +5916,17 @@ def storeTransactionDelete(request):
                         purchaseOrderDetail.updated_at = datetime.now()
                         purchaseOrderDetail.save()
                 for storeTransactionDetail in storeTransaction.store_transaction_detail_set.all():
-                    data_revertive_from_transaction(storeTranasctionHeaderOld.id, storeTransactionDetail.item_id, storeTransactionDetail.store_id, storeTransactionDetail.quantity, 'out')
+                    
                     store_item_current = models.Store_Item_Current.objects.filter(store_transaction_id = storeTranasctionHeaderOld.id,status=1, deleted=0)
                     if store_item_current.exists():
                         store_item_current = store_item_current.first()
+                        storeCuritemlast = models.Store_Item_Current.objects.filter(
+                               store_id=storeTransactionDetail.store_id,item_id = storeTransactionDetail.item_id,status=1, deleted=0).order_by('transaction_date','created_at')
+                        storeCuritemlast = storeCuritemlast.last()
+                    
+                        if storeCuritemlast.store_transaction_id != storeTranasctionHeaderOld.id:
+                          data_revertive_from_transaction(storeTranasctionHeaderOld.id, storeTransactionDetail.item_id, storeTransactionDetail.store_id, storeTransactionDetail.quantity, 'out')
+
                         store_item_current.on_hand_qty -= Decimal(storeTransactionDetail.quantity)
                         store_item_current.closing_qty -= Decimal(storeTransactionDetail.quantity)
                         store_item_current.status = 0
@@ -5922,10 +5949,16 @@ def storeTransactionDelete(request):
                     storeItem = models.Store_Item.objects.filter(item_id=storeTransactionDetail.item_id,
                                                                  store_id=storeTransactionDetail.store_id).first()
                     
-                    data_revertive_from_transaction(storeTranasctionHeaderOld.id, storeTransactionDetail.item_id, storeTransactionDetail.store_id, storeTransactionDetail.quantity, 'out')
+                   
                     store_item_current = models.Store_Item_Current.objects.filter(store_transaction_id = storeTranasctionHeaderOld.id,status=1, deleted=0)
                     if store_item_current.exists():
                         store_item_current = store_item_current.first()
+                        storeCuritemlast = models.Store_Item_Current.objects.filter(
+                               store_id=storeTransactionDetail.store_id,item_id = storeTransactionDetail.item_id,status=1, deleted=0).order_by('transaction_date','created_at')
+                        storeCuritemlast = storeCuritemlast.last()
+                    
+                        if storeCuritemlast.store_transaction_id != storeTranasctionHeaderOld.id:
+                            data_revertive_from_transaction(storeTranasctionHeaderOld.id, storeTransactionDetail.item_id, storeTransactionDetail.store_id, storeTransactionDetail.quantity, 'out')
                         store_item_current.on_hand_qty -= Decimal(storeTransactionDetail.quantity)
                         store_item_current.closing_qty -= Decimal(storeTransactionDetail.quantity)
                         store_item_current.status = 0
@@ -8205,8 +8238,15 @@ def materialOutDetailsDelete(request):
               # item added to  source store
             for index in materialOutDetails:
                 # # # # # #print(index['item_id'])
-                data_revertive_from_transaction(storeTransaction.id,index['item_id'],store_id,(index['quantity']),'in')
+                
+                
                 storeItemCurrent =  models.Store_Item_Current.objects.filter(store_transaction_id = storeTransaction.id ).first()
+                storeCuritemlast = models.Store_Item_Current.objects.filter(
+                               item_id=index['item_id'], store_id=store_id,status=1, deleted=0).order_by('transaction_date','created_at')
+                storeCuritemlast = storeCuritemlast.last()
+            
+                if storeCuritemlast.store_transaction_id != storeTransaction.id:
+                    data_revertive_from_transaction(storeTransaction.id,index['item_id'],store_id,(index['quantity']),'in')
                 storeItemCurrent.on_hand_qty += Decimal(index['quantity'])
                 storeItemCurrent.closing_qty += Decimal(index['quantity'])
                 storeItemCurrent.updated_at = datetime.now()
