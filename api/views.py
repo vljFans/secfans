@@ -9181,7 +9181,7 @@ def purchaseBillDetailsExport(request):
 def fgRawDetailsExport(request):
     context = {}
     try:
-        page_items = models.Store_Transaction_Detail.objects.filter(store_transaction_header__tally_sync=0,status=1,deleted=0)
+        page_items = models.Store_Transaction_Detail.objects.filter(store_transaction_header__tally_sync=0,status=1,deleted=0,  store_transaction_header__status=1, store_transaction_header__deleted=0)
         page_items = page_items.filter(store_id =request.POST['store_id']) 
         page_items_exist = page_items.exists()
     
@@ -9192,7 +9192,7 @@ def fgRawDetailsExport(request):
                 'message': 'Tally report of all transactions already generated. No transactions left.'
             })
         with transaction.atomic():
-            filtered_data = models.Store_Transaction_Detail.objects.filter(store_transaction_header__tally_sync=0,status=1,deleted=0)
+            filtered_data = models.Store_Transaction_Detail.objects.filter(store_transaction_header__tally_sync=0,status=1,deleted=0, store_transaction_header__status=1, store_transaction_header__deleted=0)
             filtered_data = filtered_data.filter(store_id =request.POST['store_id'] )
             # Create directory if not exists
             directory_path = settings.MEDIA_ROOT + '/fg_raw_tansition_tally/'

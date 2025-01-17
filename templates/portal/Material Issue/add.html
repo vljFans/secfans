@@ -913,16 +913,17 @@
                         'Authorization': getCookieValue("accessToken")
                     },
                     success: function (response) {
-                        console.log(item_id);
-                        console.log(response)
+                        // console.log(item_id);
+                        // console.log(response)
                         
                         if (response.status == 200) {      
-                            if(response.actual_quantity == 0 || response.on_hand_qty_res ==0 ) {
+                            if(response.actual_quantity == 0 || response.actual_quantity_On_that_date ==0 ) {
+                                // console.log('inside 921')
                                 parenttHtml.remove()
                                 
                             }
                             else{
-
+                                // console.log('inside 926')
                                 actual_quantity_element.val(+response.actual_quantity);
                                 actual_quantity_on_that_date.val(+response.actual_quantity_On_that_date)
                                 quantity_sent_element.attr('max',+response.actual_quantity)
