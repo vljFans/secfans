@@ -764,11 +764,22 @@
     function getFormData(form) {
         var formData = new FormData(form[0]);
         var object = {};
+
         formData.forEach((value, key) => {
-            object[key] = value;
+            // If the key already exists, convert it to an array or append to the existing array
+            if (object[key]) {
+                if (!Array.isArray(object[key])) {
+                    object[key] = [object[key]]; // Convert single value to array
+                }
+                object[key].push(value); // Append new value
+            } else {
+                object[key] = value; // Set initial value
+            }
         });
-        return JSON.stringify(object);
+
+        return JSON.stringify(object); // Convert to JSON string if needed
     }
+
 
     $(document).ready(function () {
         form = $('#create_form');

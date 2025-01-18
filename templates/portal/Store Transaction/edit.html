@@ -181,7 +181,7 @@
                                         </div>
                                         <div class="col-md-1 mb-3">
                                             <label>Rate <span class="required-indicator">*</span></label>
-                                            <input type="text" onkeyup="checkMaxMin(this)" value="{{storeTransactionDetail.rate}}" readonly
+                                            <input type="text" onkeyup="checkMaxMin(this)" value="{{storeTransactionDetail.rate}}" 
                                                 onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                                 name="rate" min="0.01" class="form-control rate"
                                                 placeholder="0.00" required>
@@ -346,11 +346,22 @@
     function getFormData(form) {
         var formData = new FormData(form[0]);
         var object = {};
+
         formData.forEach((value, key) => {
-            object[key] = value;
+            // If the key already exists, convert it to an array or append to the existing array
+            if (object[key]) {
+                if (!Array.isArray(object[key])) {
+                    object[key] = [object[key]]; // Convert single value to array
+                }
+                object[key].push(value); // Append new value
+            } else {
+                object[key] = value; // Set initial value
+            }
         });
-        return JSON.stringify(object);
+
+        return JSON.stringify(object); // Convert to JSON string if needed
     }
+
 
     $(document).ready(function () {
         let form = $('#create_form');
@@ -1161,6 +1172,10 @@
         let form = $('#create_form');
         
         let currentFormData = getFormData(form);
+        console.log("current data",currentFormData);
+        console.log("initial data",initialFormData);
+        
+        
             
         if (initialFormData === currentFormData) {
             alert('please update something.');

@@ -5281,7 +5281,8 @@ def jobOrderStoreTranasctionRetriveInHouse(storeTranscationOld):
 @permission_classes([IsAuthenticated])
 def storeTransactionEdit(request):
     context = {}
-    # # #print(request.POST)
+    # print(request.POST)
+   
     check1 = 0
     test =""
     check2 = 0
