@@ -63,6 +63,11 @@ class CustomPaginator:
 #         num_part=Cast(Substr('transaction_number', 13, 5), IntegerField())
 #     ).aggregate(max_value=Max('num_part'))['max_value'] or 0) ).zfill(5)
 
+def ai_digit_6():
+    return str((models.Purchase_Bill.objects.filter(status=1, deleted=0).annotate(
+        num_part=Cast(Substr('transaction_number', Length('transaction_number') - 4,5), IntegerField())
+    ).aggregate(max_value=Max('num_part'))['max_value'] or 0) + 1).zfill(5)
+
 def ai_digit_5():
     return str((models.Store_Transaction.objects.filter(status=1, deleted=0).annotate(
         num_part=Cast(Substr('transaction_number', Length('transaction_number') - 4,5), IntegerField())
@@ -7742,7 +7747,7 @@ def addGrnDetailisInsTransaction(request):
                         if (request.POST.get('job_order_header_id',None) and request.POST['job_order_header_id']!=""):
                             # # # # # #print('5251')
                             job_order_details= models.Job_Order_Detail.objects.filter(item_id=request.POST.getlist('item_id')[index], 
-                                                job_order_header_id=request.POST['job_order_header_id']).first()
+                                                job_order_header_id=request.POST['job_order_header_id'],direction='incoming').first()
                             # # # # # #print(job_order_details.quantity_result)
                             job_order_details.quantity_result += Decimal(request.POST.getlist('rej_quantity')[index] )
                             job_order_details.updated_at = datetime.now()
@@ -8741,13 +8746,21 @@ def purchaseBillDetailsAdd(request):
     # #print(request.POST)
    
     # exit()
+    purchasebillInvoiceExist =  models.Purchase_Bill.objects.filter(invoice_no=request.POST['invoice'],status = 1, deleted=0).exists()
+
+    if purchasebillInvoiceExist:
+        context.update({
+            'status': 544,
+            'message': "Invoice number already exists"
+        })
+        return JsonResponse(context)
     try:
         with transaction.atomic():
-            purchase_bill_head_count = models.Purchase_Bill.objects.all().count()
+           
             purcahse_bill_header = models.Purchase_Bill()
             # # # # # #print("5283")
             purcahse_bill_header.transaction_number = env("PURCHASE_BILL_TRANSACTION_SEQ").replace(
-            "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(purchase_bill_head_count + 1).zfill(5))
+            "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", ai_digit_6())
             purcahse_bill_header.transaction_date = request.POST['issue_date']
  
             purcahse_bill_header.vendor_id = request.POST['vendor']
@@ -8863,6 +8876,14 @@ def purchaseBillDetailsAdd(request):
 def purchaseBillDetailsEdit(request):
     context={}
     # # # # # #print(request.POST)
+    purchasebillInvoiceExist =  models.Purchase_Bill.objects.filter(invoice_no=request.POST['invoice'],status = 1, deleted=0).exclude(pk=request.POST['headerPk'])
+    purchasebillInvoiceExist = purchasebillInvoiceExist.exists
+    if purchasebillInvoiceExist:
+        context.update({
+            'status': 545,
+            'message': "Invoice number already exists"
+        })
+        return JsonResponse(context)
     try:
         with transaction.atomic():
 
