@@ -339,6 +339,7 @@
     var sum = 0
     var gst_options_text =``
     var gst_items = []
+    var form , initialFormData
     function renderTotalAmountWithGst(){
         let total_amount_with_gst=0;
         $('.amount_gst').each(function(){
@@ -474,9 +475,48 @@
        
     }
 
+    function getFormData(form) {
+        var formData = new FormData(form[0]);
+        var object = {};
+
+        formData.forEach((value, key) => {
+            // If the key already exists, convert it to an array or append to the existing array
+            if (object[key]) {
+                if (!Array.isArray(object[key])) {
+                    object[key] = [object[key]]; // Convert single value to array
+                }
+                object[key].push(value); // Append new value
+            } else {
+                object[key] = value; // Set initial value
+            }
+        });
+
+        return JSON.stringify(object); // Convert to JSON string if needed
+    }
+
+    
+    $(document).ready(function () {
+        let form = $('#create_form');
+        initialFormData = getFormData(form);
+        if("{{storeTransaction.purchase_order_header_id}}"=="None"){
+            $(".item_id").each(function() {
+                item_options_used_pk.push($(this).val())
+            })
+        }
+    });
+
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
+
+        let form = $('#create_form');
+        
+        let currentFormData = getFormData(form);
+           
+        if (initialFormData === currentFormData) {
+            alert('please update something.');
+            return false; // Stop form submission
+        }
         // // console.log("426");
         $('.submit-btn').text('Submitting...');
         $('.submit-btn').prop('disabled', true);
