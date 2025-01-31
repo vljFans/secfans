@@ -16,6 +16,7 @@ from django.contrib.auth.hashers import make_password, check_password
 from datetime import datetime, timedelta,timezone,date
 from django.utils.timezone import now
 from openpyxl import Workbook, load_workbook
+from openpyxl.styles import numbers
 from django.db import transaction
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
@@ -9240,83 +9241,221 @@ def purchaseBillDetailsExport(request):
     return JsonResponse(context)
 
 @api_view(['POST'])
+# def fgRawDetailsExport(request):
+#     context = {}
+#     try:
+#         page_items = models.Store_Transaction_Detail.objects.filter(store_transaction_header__tally_sync=0,status=1,deleted=0,  store_transaction_header__status=1, store_transaction_header__deleted=0)
+#         page_items = page_items.filter(store_id =request.POST['store_id']) 
+#         page_items_exist = page_items.exists()
+    
+#         # If no page items exist, return a response indicating no transactions left
+#         if not page_items_exist:
+#             return JsonResponse({
+#                 'status': 404,
+#                 'message': 'Tally report of all transactions already generated. No transactions left.'
+#             })
+#         with transaction.atomic():
+#             filtered_data = models.Store_Transaction_Detail.objects.filter(store_transaction_header__tally_sync=0,status=1,deleted=0, store_transaction_header__status=1, store_transaction_header__deleted=0)
+#             filtered_data = filtered_data.filter(store_id =request.POST['store_id'] )
+#             # Create directory if not exists
+#             directory_path = settings.MEDIA_ROOT + '/fg_raw_tansition_tally/'
+#             path = Path(directory_path)
+#             path.mkdir(parents=True, exist_ok=True)
+
+#             # Create a new Excel file
+#             tmpname = "fgRawreport_" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".xlsx"
+#             wb = Workbook()
+#             ws = wb.active
+
+#         # Add headers
+#             # ws['A1'] = "Vch No"
+#             # ws['B1'] = "Date"
+#             # ws['C1'] = "Name of Item"
+#             # ws['D1'] = "Unit"
+#             # ws['E1'] = "Location"
+#             # ws['F1'] = "HSN Code"
+#             # ws['G1'] = "IGSt Rate"
+#             # ws['H1'] = "CGST Rate"
+#             # ws['I1'] = "SGST Rate"
+#             # ws['J1'] = "Cess Rate"
+#             # ws['K1'] = "Quantity"
+#             # ws['L1'] = "Unit"
+#             # ws['M1'] = "Rate"
+#             # ws['N1'] = "Amount"
+#             # ws['O1'] = "Remarks"
+#             headers = [
+#                 ("Vch No", "General"),
+#                 ("Date", "Date"),
+#                 ("Name of Item", "Text"),
+#                 ("Unit", "Text"),
+#                 ("Location", "General"),
+#                 ("HSN Code", "Text"),
+#                 ("IGSt Rate", "Text"),
+#                 ("CGST Rate", "Text"),
+#                 ("SGST Rate", "Text"),
+#                 ("Cess Rate", "Text"),
+#                 ("Quantity", "Number"),
+#                 ("Unit", "Number"),
+#                 ("Rate", "Number"),
+#                 ("Amount", "Number"),
+#                 ("Remarks", "General")
+#             ]    
+#             for col_idx, (header, fmt) in enumerate(headers, start=1):
+#                 cell = ws.cell(row=1, column=col_idx, value=header)
+#                 if fmt == "Date":
+#                     ws.column_dimensions[cell.column_letter].number_format = "DD-MM-YYYY"
+#                 elif fmt == "Text":
+#                     ws.column_dimensions[cell.column_letter].number_format = "@"
+#                 elif fmt == "Number":
+#                     ws.column_dimensions[cell.column_letter].number_format = "0.00"
+#                 # General format is default, so no need to set explicitly
+
+        
+
+#             # Append data rows
+#             for each in filtered_data:
+#                 # #print(each)
+#                 rate = each.rate if each.rate else each.item.price
+#                 ws.append([
+#                     each.store_transaction_header.transaction_number,
+#                     each.store_transaction_header.transaction_date.strftime("%d-%m-%Y"), 
+#                     each.item.name,
+#                     each.item.uom.name,
+#                     each.store.name,
+#                     each.item.hsn_code,
+#                     each.item.item_type.gst_percentage,
+#                     ((each.item.item_type.gst_percentage)/Decimal(2.0)),
+#                     ((each.item.item_type.gst_percentage)/Decimal(2.0)),
+#                     '0.00',
+#                     each.quantity,
+#                     each.item.uom.name,
+#                     rate,
+#                     (each.quantity * rate),
+#                     ''
+#                 ])
+#             #print(8058)
+#             # Save the file
+#             file_path = os.path.join(directory_path, tmpname)
+            
+#         # Save the file to the server
+#             wb.save(file_path)
+
+#             # os.chmod(settings.MEDIA_ROOT + '/purchase_transition_tally/' + tmpname, 0o777)
+
+#             os.chmod(file_path, 0o777)
+
+#             # Update page items
+#             for page_item in page_items:
+#                 storeTranasctionHeader = models.Store_Transaction.objects.get(pk=page_item.store_transaction_header_id)
+#                 storeTranasctionHeader.tally_sync = 1
+#                 storeTranasctionHeader.updated_at = datetime.now()
+#                 storeTranasctionHeader.save()
+
+#             filename = settings.MEDIA_URL + 'fg_raw_tansition_tally/' + tmpname
+
+#             context.update({
+#                 'status': 200,
+#                 'message': 'File generated successfully in server Media :' + filename,
+#                 'file_url': filename
+#             })
+#         transaction
+#     except Exception as e:
+#         #print(f'error{e}')
+#         context.update({
+#             'status': 546.1,
+#             'message': "Something went wrong. Please try again."
+#         })
+#         transaction.rollback()
+#     return JsonResponse(context)
 def fgRawDetailsExport(request):
     context = {}
     try:
-        page_items = models.Store_Transaction_Detail.objects.filter(store_transaction_header__tally_sync=0,status=1,deleted=0,  store_transaction_header__status=1, store_transaction_header__deleted=0)
-        page_items = page_items.filter(store_id =request.POST['store_id']) 
-        page_items_exist = page_items.exists()
-    
-        # If no page items exist, return a response indicating no transactions left
-        if not page_items_exist:
+        page_items = models.Store_Transaction_Detail.objects.filter(
+            store_transaction_header__tally_sync=0, status=1, deleted=0,
+            store_transaction_header__status=1, store_transaction_header__deleted=0
+        ).filter(store_id=request.POST['store_id'])
+
+        if not page_items.exists():
             return JsonResponse({
                 'status': 404,
                 'message': 'Tally report of all transactions already generated. No transactions left.'
             })
+
         with transaction.atomic():
-            filtered_data = models.Store_Transaction_Detail.objects.filter(store_transaction_header__tally_sync=0,status=1,deleted=0, store_transaction_header__status=1, store_transaction_header__deleted=0)
-            filtered_data = filtered_data.filter(store_id =request.POST['store_id'] )
+            filtered_data = models.Store_Transaction_Detail.objects.filter(
+                store_transaction_header__tally_sync=0, status=1, deleted=0,
+                store_transaction_header__status=1, store_transaction_header__deleted=0
+            ).filter(store_id=request.POST['store_id'])
+
             # Create directory if not exists
             directory_path = settings.MEDIA_ROOT + '/fg_raw_tansition_tally/'
-            path = Path(directory_path)
-            path.mkdir(parents=True, exist_ok=True)
+            Path(directory_path).mkdir(parents=True, exist_ok=True)
 
             # Create a new Excel file
             tmpname = "fgRawreport_" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".xlsx"
             wb = Workbook()
             ws = wb.active
 
-        # Add headers
-            ws['A1'] = "Vch No"
-            ws['B1'] = "Date"
-            ws['C1'] = "Name of Item"
-            ws['D1'] = "Unit"
-            ws['E1'] = "Location"
-            ws['F1'] = "HSN Code"
-            ws['G1'] = "IGSt Rate"
-            ws['H1'] = "CGST Rate"
-            ws['I1'] = "SGST Rate"
-            ws['J1'] = "Cess Rate"
-            ws['K1'] = "Quantity"
-            ws['L1'] = "Unit"
-            ws['M1'] = "Rate"
-            ws['N1'] = "Amount"
-            ws['O1'] = "Remarks"
-            
+            # Add headers
+            headers = [
+                ("Vch No", "General"),
+                ("Date", "Date"),
+                ("Name of Item", "Text"),
+                ("Unit", "Text"),
+                ("Location", "General"),
+                ("HSN Code", "Text"),
+                ("IGSt Rate", "Text"),
+                ("CGST Rate", "Text"),
+                ("SGST Rate", "Text"),
+                ("Cess Rate", "Text"),
+                ("Quantity", "Number"),
+                ("Unit", "General"),
+                ("Rate", "Number"),
+                ("Amount", "Number"),
+                ("Remarks", "General")
+            ]
 
-
-        
+            for col_idx, (header, fmt) in enumerate(headers, start=1):
+                cell = ws.cell(row=1, column=col_idx, value=header)
 
             # Append data rows
+            row_index = 2
             for each in filtered_data:
-                # #print(each)
                 rate = each.rate if each.rate else each.item.price
-                ws.append([
+                data_row = [
                     each.store_transaction_header.transaction_number,
-                    each.store_transaction_header.transaction_date.strftime("%d-%m-%Y"), 
+                    each.store_transaction_header.transaction_date,
                     each.item.name,
                     each.item.uom.name,
                     each.store.name,
                     each.item.hsn_code,
                     each.item.item_type.gst_percentage,
-                    ((each.item.item_type.gst_percentage)/Decimal(2.0)),
-                    ((each.item.item_type.gst_percentage)/Decimal(2.0)),
+                    each.item.item_type.gst_percentage / Decimal(2.0),
+                    each.item.item_type.gst_percentage / Decimal(2.0),
                     '0.00',
                     each.quantity,
                     each.item.uom.name,
                     rate,
                     (each.quantity * rate),
                     ''
-                ])
-            #print(8058)
+                ]
+
+                for col_idx, value in enumerate(data_row, start=1):
+                    cell = ws.cell(row=row_index, column=col_idx, value=value)
+                    
+                    # Apply formatting
+                    if headers[col_idx - 1][1] == "Date":
+                        cell.number_format = "DD-MM-YYYY"
+                    elif headers[col_idx - 1][1] == "Text":
+                        cell.number_format = "@"
+                    elif headers[col_idx - 1][1] == "Number":
+                        cell.number_format = "0.00"
+
+                row_index += 1
+
             # Save the file
             file_path = os.path.join(directory_path, tmpname)
-            
-        # Save the file to the server
             wb.save(file_path)
-
-            # os.chmod(settings.MEDIA_ROOT + '/purchase_transition_tally/' + tmpname, 0o777)
-
             os.chmod(file_path, 0o777)
 
             # Update page items
@@ -9330,19 +9469,17 @@ def fgRawDetailsExport(request):
 
             context.update({
                 'status': 200,
-                'message': 'File generated successfully in server Media :' + filename,
+                'message': 'File generated successfully in server Media: ' + filename,
                 'file_url': filename
             })
-        transaction
     except Exception as e:
-        #print(f'error{e}')
         context.update({
             'status': 546.1,
             'message': "Something went wrong. Please try again."
         })
         transaction.rollback()
-    return JsonResponse(context)
 
+    return JsonResponse(context)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -10645,24 +10782,31 @@ def extractDataFromXlsx(request):
                     mapping[cell_value] = cell.column-1
                 if all(value is not None for value in mapping.values()):
                     break
+            
             if row_number-1 :
                 sheet.delete_rows(1, row_number - 1)
             if sheet.max_row > 0:
                 sheet.delete_rows(sheet.max_row)
             i=2
             total_rows = sheet.max_row
+           
             while i<=total_rows:
                 header_row=sheet[i]
+                print(header_row[mapping["gross total"]].value)
                 if header_row[mapping["voucher type"]].value.lower() == 'sales':
                     try:
                         with transaction.atomic():
                             i+=1  
+                            
                             invoice_header=None
+                            
                             invoice_no = header_row[mapping["voucher no."]].value
+                           
                             if x := models.Invoice.objects.filter(invoice_no=invoice_no).first():
                                 invoice_header = x
                             else:
                                 invoice_header = models.Invoice()
+                                
                                 if customers := models.Customer.objects.filter(name=header_row[mapping["particulars"]].value):
                                     invoice_header.customer = customers[0]
                                 invoice_header.date = (header_row[mapping["date"]].value).date()
@@ -10677,7 +10821,8 @@ def extractDataFromXlsx(request):
                                 invoice_header.sgst = Decimal(x) if (x := header_row[mapping["sgst @ 9%"]].value) else 0          
                                 invoice_header.round_off = Decimal(x) if (x := header_row[mapping["round off (+/-)"]].value) else 0          
                                 invoice_header.igst_sales = Decimal(x) if (x := header_row[mapping["igst sales@ 18%"]].value) else 0          
-                                invoice_header.igst = Decimal(x) if (x := header_row[mapping["igst 18%"]].value) else 0          
+                                invoice_header.igst = Decimal(x) if (x := header_row[mapping["igst 18%"]].value) else 0 
+                                print(10682)         
                                 invoice_header.rent = Decimal(x) if (x := header_row[mapping["rent"]].value) else 0          
                                 invoice_header.export_sales = Decimal(x) if (x := header_row[mapping["export sales"]].value) else 0          
                                 invoice_header.save()
@@ -10707,8 +10852,9 @@ def extractDataFromXlsx(request):
                             'message': "Invoice added succesfully"
                         })
                         
-                    except Exception:
+                    except Exception as e:
                         # i+=1
+                        print(e)
                         flag = 1
                         context.update({
                             'status': 544,
@@ -10735,7 +10881,8 @@ def extractDataFromXlsx(request):
             'message': "File has not been uploaded"
         })
     if flag == 0 :
-        message = invoice_store_migration(request.POST['store_id'],request.COOKIES.get('userId', None))
+        # message = invoice_store_migration(request.POST['store_id'],request.COOKIES.get('userId', None))
+        message ="all complete"
         context.update({
             'status': 200,
             'message': "Process Completed" +  ((", " + context['message']) if context  else "") + " and " + message 
