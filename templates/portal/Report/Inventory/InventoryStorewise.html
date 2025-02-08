@@ -186,64 +186,7 @@
 
     });
 
-    // $(document).ready(function () {
-    //     $.ajax({
-    //         url: "{% url 'api:reportInventoryStorewise' %}?find_all=1",
-    //         type: 'GET',
-    //         data: ({}),
-    //         headers: {
-    //             'Authorization': getCookieValue("accessToken")
-    //         },
-    //         success: function (response) {
-    //             if (response.status == 200) {
-    //                 var table_html = ``;
-    //                 $.each(response.page_items, function (storeName, storeData) {
-    //                     table_html += `
-    //                         <h5 style="padding: 20px;">${storeName}</h5>
-    //                         <table class="table">
-    //                         <thead>
-    //                             <tr>
-    //                                 <th>#</th>
-    //                                 <th>Item Category</th>
-    //                                 <th>Item</th>
-    //                                 <th>On Hand Quantity</th>
-    //                                 <th>value</th>
-    //                             </tr>
-    //                         </thead>
-    //                         <tbody>
-    //                     `;
-
-    //                     $.each(storeData, function (index, transaction) {
-    //                         table_html += `
-    //                             <tr>
-    //                             <td>${++index}</td>
-    //                             <td>${transaction.item_category}</td>
-    //                             <td>${transaction.item}</td>
-    //                             <td>${+transaction.on_hand_qty}</td>
-    //                             <td>${transaction.value}</td>
-    //                             </tr>
-    //                         `;
-    //                     });
-
-    //                     table_html += `
-    //                     </tbody>
-    //                     </table>
-    //                     `;
-    //                 });
-    //                 $('.table-responsive').html(table_html);
-    //             } else {
-    //                 alert(response.message);
-    //             }
-    //         },
-    //         error: function (error) {
-    //             $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
-    //         }
-    //     });
-    //     pdfDownload()
-    //     xlsxDownload()
-    //     csvDownload()
-
-    // });
+   
 
     $(document).on('submit', '#create_form', function (e) {
         e.preventDefault();
@@ -255,7 +198,7 @@
             evalScripts: true,
             contentType: false,
             processData: false,
-            url: "{% url 'api:reportInventoryStorewise' %}",
+            url: "{% url 'api:reportInventoryStore' %}",
             data: formData,
             headers: {
                 'Authorization': getCookieValue("accessToken")
