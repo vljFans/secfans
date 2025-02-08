@@ -1039,7 +1039,7 @@ def jobOrderAdd(request):
         # print(id)
         jobOrder = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=id)
         jobOrderlast = models.Job_Order.objects.filter(manufacturing_type=jobOrder.manufacturing_type).last()
-        jobOrderCount_match = re.search(r'SEC/(?:TPM|SLF)/(\d{3})/', jobOrderlast.order_number)  # Assuming order_number is the field name
+        jobOrderCount_match = re.search(r'SEC/(?:TPM|SLF)/(\d+)/', jobOrderlast.order_number)  # Assuming order_number is the field name
         jobOrderCount = int(jobOrderCount_match.group(1)) if jobOrderCount_match else 0
         vendorShort = 'SLF' if jobOrder.manufacturing_type == 'Self' else 'TPM'
         jobOrderNumber =  env("JOB_ORDER_NUMBER_SEQ").replace("${VENDOR_SHORT}", vendorShort).replace(
