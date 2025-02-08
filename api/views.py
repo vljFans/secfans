@@ -33,7 +33,7 @@ from fractions import Fraction
 import pandas as pd
 from django.contrib.auth.models import Permission
 import re
-from django.http import HttpResponse
+from rest_framework.views import APIView
 
 import traceback
 
@@ -67,7 +67,7 @@ class CustomPaginator:
 def ai_digit_6():
     return str((models.Purchase_Bill.objects.filter(status=1, deleted=0).annotate(
         num_part=Cast(Substr('transaction_number', Length('transaction_number') - 4,5), IntegerField())
-    ).aggregate(max_value=Max('num_part'))['max_value'] or 0) + 1).zfill(5)
+    ).aggregate(max_value=Max('num_part'))['max_value'] or 0) + 1).zfill(6)
 
 def ai_digit_5():
     return str((models.Store_Transaction.objects.filter(status=1, deleted=0).annotate(
@@ -165,6 +165,7 @@ def data_revertive_from_transaction(storeTrId, itemId, storeId, quantity, retriv
 @permission_classes([IsAuthenticated])
 def loginUser(request):
     context = {}
+    print(request.POST)
     try:
         user = models.User.objects.get(pk=request.user.id)
         if user is not None:
@@ -754,7 +755,7 @@ def vendorList(request):
             purchase_order_count = models.Purchase_Order.objects.filter(
                 vendor_id=vendor[0]['pk']).count()
             vendor[0]['next_purchase_order_number'] = env("PURCHASE_ORDER_NUMBER_SEQ").replace("${VENDOR_SHORT}", ''.join(word[0] for word in vendor[0]['name'].split())).replace(
-                "${AI_DIGIT_3}", str(purchase_order_count + 1).zfill(3)).replace("${FINANCE_YEAR}", datetime.today().strftime('%y') + "-" + (datetime(datetime.today().year + 1, 1, 1).strftime('%y')))
+                "${AI_DIGIT_3}", str(purchase_order_count + 1).zfill(10)).replace("${FINANCE_YEAR}", datetime.today().strftime('%y') + "-" + (datetime(datetime.today().year + 1, 1, 1).strftime('%y')))
         context.update({
             'status': 200,
             'message': "Vendor Fetched Successfully.",
@@ -4588,6 +4589,7 @@ def storeTransactionList(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def storeTransactionAdd(request):
+    
     context = {}
     check1 = 0
     test =""
@@ -4765,7 +4767,7 @@ def storeTransactionAdd(request):
                 grnTransactionheader.transaction_type = models.Transaction_Type.objects.get(name = 'GRNI')
                 grnTransactionheader.invoice_challan = request.POST['invoice_challan']
                 grnTransactionheader.transaction_number = env("GRN_TRANSACTION_INSPECTION_SEQ").replace(
-                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(5))
+                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(100))
                 # # # # # #print("3143")
                 if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) != 2):
                     grnTransactionheader.purchase_order_header_id = request.POST[
@@ -5193,7 +5195,7 @@ def storeTransactionAdd(request):
             'message': "Store Transaction Created Successfully."
         })
     except Exception as e:
-        #print(f"error is {e}")
+        print(f"error is {e}")
         # tb = traceback.format_exc() 
         # exc_type, exc_value, exc_tb = e.__traceback__.tb_frame.f_globals['__builtins__']["sys"].exc_info()
         # line_number = exc_tb.tb_lineno
@@ -5439,7 +5441,7 @@ def storeTransactionEdit(request):
                 grnTransactionheader.invoice_challan = request.POST['invoice_challan']
                 grnTransactionheader.old_store_transaction_id = int(request.POST['id'])
                 grnTransactionheader.transaction_number = env("GRN_TRANSACTION_INSPECTION_SEQ").replace(
-                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(5))
+                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(100))
                 if (request.POST.get('job_order_header_id',None) and int(request.POST['with_purchase_job_order']) == 2): # it is job order reciept
                     grnTransactionheader.job_order_id =  request.POST[
                         'job_order_header_id']
@@ -6151,7 +6153,7 @@ def jobOrderNo(request):
     jobOrderCount = int(jobOrderCount_match.group(1)) if jobOrderCount_match else 0
     vendorShort = 'SLF' if manufacturing_type == 'Self' else 'TPM'
     jobOrderNumber =  env("JOB_ORDER_NUMBER_SEQ").replace("${VENDOR_SHORT}", vendorShort).replace(
-                "${AI_DIGIT_3}", str(jobOrderCount + 1).zfill(3)).replace("${FINANCE_YEAR}", datetime.today().strftime('%y') + "-" + (datetime(datetime.today().year + 1, 1, 1).strftime('%y')))
+                "${AI_DIGIT_3}", str(jobOrderCount + 1)).replace("${FINANCE_YEAR}", datetime.today().strftime('%y') + "-" + (datetime(datetime.today().year + 1, 1, 1).strftime('%y')))
     # # # # #print(jobOrderNumber)
     context.update({
         'status':200,
@@ -6205,7 +6207,7 @@ def jobOrderAdd(request):
                 outgoingIncommingratioHead.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
                     "${CURRENT_YEAR}", datetime.today().strftime('%Y')
                 ).replace(
-                    "${AI_DIGIT_5}",str(outgoingIncommingratioHeadCount + 1).zfill(5)
+                    "${AI_DIGIT_5}",str(outgoingIncommingratioHeadCount + 1).zfill(7)
                 )
                 outgoingIncommingratioHead.transaction_date = request.POST['order_date']
                 if 'vendor_id' in request.POST:
@@ -8102,7 +8104,7 @@ def materialOutDetailsAdd(request):
             on_transit_transaction_header =  models.On_Transit_Transaction()
             on_transit_transaction_header.transaction_number =  env("MAT_TRANSFER_OUT_SEQ").replace(
                             "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace(
-                            "${AI_DIGIT_5}", str(on_transit_transaction_count + 1).zfill(5))           
+                            "${AI_DIGIT_5}", str(on_transit_transaction_count + 1).zfill(6))           
             on_transit_transaction_header.transaction_date =request.POST['issue_date']          
             on_transit_transaction_header.source_store_id = request.POST['sourceStore']
             on_transit_transaction_header.destination_store_id = request.POST['desStore']
@@ -8325,7 +8327,8 @@ def materialOutDetailsEdit(request):
 @permission_classes([IsAuthenticated])
 def materialInDetailsAdd(request):
     context = {}
-    # # # # # #print(request.POST)
+    print(request.POST)
+    
     try:
         # pass
         #print(8734)
@@ -8396,7 +8399,7 @@ def materialInDetailsAdd(request):
                 # change in storeItemCurrent min
                 # Fetch the last transaction_date less than the given_date
                 given_date = request.POST['issue_date']
-                
+               
                
                 # Check for the last record on the given_date
                 record = models.Store_Item_Current.objects.filter(transaction_date=given_date, item_id=request.POST.getlist('item_id')[index], store_id=request.POST['destination_store_id'],status=1, deleted=0).last()
@@ -8440,6 +8443,7 @@ def materialInDetailsAdd(request):
                 store_item_instance.item_id = request.POST.getlist('item_id')[index]
                 store_item_instance.store_id = request.POST['destination_store_id']
 
+                
                 # Save the instance to the database
                 store_item_instance.save()
                 
@@ -10084,22 +10088,168 @@ def reportInventorySummary(request):
 
 #     return JsonResponse(context)
 
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
-def reportInventoryStorewise(request):
-    context = {}
-    data = {}
-    store_items = []
-    try:
-        # Fetch parameters
-        item_cat_id = request.POST.get('item_cat_id', None)
-        store_type = request.POST.get('store_type', None)
-        total_material_issue = Decimal('0.00')
-        total_material_receipt = Decimal('0.00')
-        blocked_quantity = Decimal('0.00')
-        vendor_id = request.POST.get('vendor_id',None)
-        # Handle GET request
-        if request.method == 'GET':
+# @api_view(['GET', 'POST'])
+# @permission_classes([IsAuthenticated])
+# def reportInventoryStorewise(request):
+#     context = {}
+#     data = {}
+#     store_items = []
+#     try:
+#         # Fetch parameters
+#         item_cat_id = request.POST.get('item_cat_id', None)
+#         store_type = request.POST.get('store_type', None)
+#         total_material_issue = Decimal('0.00')
+#         total_material_receipt = Decimal('0.00')
+#         blocked_quantity = Decimal('0.00')
+#         vendor_id = request.POST.get('vendor_id',None)
+#         # Handle GET request
+#         if request.method == 'GET':
+#             store_items = list(
+#                 models.Store_Item.objects.filter(status=1, deleted=0)
+#                 .values(
+#                     'pk', 'on_hand_qty', 'item__item_type__item_category__name',
+#                     'item__price', 'store__name', 'item__name'
+#                 )
+#             )
+#         else:
+#             # Handle POST request
+#             if store_type == 'inHouse':
+#                 store_items = models.Store_Item.objects.filter(
+#                     item__item_type__item_category_id=item_cat_id,
+#                     store__vendor__isnull=True
+#                 )
+#             else:
+#                 if vendor_id is not None and (vendor_id != "" and vendor_id !="           ") :
+                    
+#                     store_items = models.Store_Item.objects.filter(store__vendor_id = vendor_id)
+
+#                 else:
+#                     store_items = models.Store_Item.objects.filter(
+#                     store__vendor__isnull=False
+#                 )
+#                 store_items = store_items.filter(
+#                     item__item_type__item_category_id=item_cat_id,
+                    
+#                 )
+       
+#             store_items = list(
+#                 store_items.values(
+#                     'pk', 'on_hand_qty', 'item__item_type__item_category__name',
+#                     'item__price', 'store__name', 'item__name', 'item_id'
+#                 )
+#             )
+           
+#         # Check if no items were found
+#         if not store_items:
+#             context.update({
+#                 'status': 200,
+#                 'message': "No items found.",
+#             })
+#             return JsonResponse(context)
+
+#         # Process store items
+#         for store_item in store_items:
+#             # #print(8896)
+#             total_material_issue = Decimal('0.00')
+#             total_material_receipt = Decimal('0.00')
+#             blocked_quantity = Decimal('0.00')
+#             store_name = store_item['store__name']
+#             if store_name not in data:
+#                 data[store_name] = []
+
+#             if store_type == 'inHouse':
+#                 # In-house store processing
+#                 data[store_name].append({
+#                     'pk': store_item['pk'],
+#                     'on_hand_qty': store_item['on_hand_qty'],
+#                     'item': store_item['item__name'],
+#                     'item_category': store_item['item__item_type__item_category__name'],
+#                     'value': round((float(store_item['on_hand_qty']) * float(store_item['item__price'])),2),
+#                 })
+#             else:
+#                 # Vendor store processing
+#                 # #print(total_material_issue)
+#                 if models.Job_Order_Detail.objects.filter(
+#                     item_id=store_item['item_id'], job_order_header__job_status=1,job_order_header__vendor__store__name = store_item['store__name']
+#                 ).exists():
+#                     jobOrderDetails = models.Job_Order_Detail.objects.filter(
+#                         item_id=store_item['item_id'], job_order_header__job_status=1,job_order_header__vendor__store__name = store_item['store__name']
+#                     )
+
+#                     for jobdet in jobOrderDetails:
+#                         # Update material issue and receipt totals
+#                         total_material_issue = Decimal('0.00')
+#                         total_material_receipt = Decimal('0.00')
+#                         blocked_quantity = Decimal('0.00')
+                        
+#                         total_material_issue += (
+#                             (Decimal(jobdet.quantity - jobdet.required_quantity) )
+#                             if jobdet.job_order_header.material_issue > 1 and jobdet.direction == 'outgoing'
+#                             else Decimal('0.00')
+#                         )
+#                         blocked_quantity = (
+#                             (Decimal(jobdet.quantity - jobdet.required_quantity) - (Decimal(jobdet.quantity - jobdet.quantity_result)))
+#                             if jobdet.job_order_header.material_issue > 1 and jobdet.direction == 'outgoing'
+#                             else Decimal('0.00')
+#                         )
+#                         total_material_receipt += jobdet.quantity_result if jobdet.job_order_header.material_issue > 1 and jobdet.direction == 'incoming' else Decimal('0.00')
+
+                        
+#                 # # #print(total_material_issue,total_material_receipt)
+#                 # Append vendor data
+#                 data[store_name].append({
+#                     'pk': store_item['pk'],
+#                     'on_hand_qty': store_item['on_hand_qty'],
+#                     'issue_Quantity': round(float(total_material_issue),2),
+#                     'Wip_manufacture_Quantity' : round(float(total_material_receipt),2),
+#                     'Wip_issued_Quantity' : round(float(blocked_quantity),2),
+#                     'actual_onhand': round((float(store_item['on_hand_qty']) - float(blocked_quantity + total_material_receipt )),2),
+#                     'item': store_item['item__name'],
+#                     'item_category': store_item['item__item_type__item_category__name'],
+#                     'value': round((float(store_item['on_hand_qty']) * float(store_item['item__price'])),2),
+#                 })
+#         # # #print(data)
+
+#         # Update context with data
+#         context.update({
+#             'status': 200,
+#             'message': "Items fetched successfully.",
+#             'page_items': data,
+#         })
+
+#     except Exception as e:
+#         # Log the exception for debugging purposes
+#         #print(f"Error: {e}")
+
+#         # Return internal server error
+#         context.update({
+
+#             'status': 500,
+#             'message': "Internal Server Error",
+#         })
+
+#     return JsonResponse(context)
+
+# class based view
+
+class ReportInventoryStorewiseView(APIView):
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'post']
+
+    def get(self, request):
+        context = {}
+        data = {}
+        store_items = []
+        try:
+            # Fetch parameters
+            item_cat_id = request.GET.get('item_cat_id', None)
+            store_type = request.GET.get('store_type', None)
+            total_material_issue = Decimal('0.00')
+            total_material_receipt = Decimal('0.00')
+            blocked_quantity = Decimal('0.00')
+            vendor_id = request.GET.get('vendor_id', None)
+
+            # Handle GET request
             store_items = list(
                 models.Store_Item.objects.filter(status=1, deleted=0)
                 .values(
@@ -10107,7 +10257,57 @@ def reportInventoryStorewise(request):
                     'item__price', 'store__name', 'item__name'
                 )
             )
-        else:
+            
+            # Check if no items were found
+            if not store_items:
+                context.update({
+                    'status': 200,
+                    'message': "No items found.",
+                })
+                return JsonResponse(context)
+
+            # Process store items for GET request
+            for store_item in store_items:
+                store_name = store_item['store__name']
+                if store_name not in data:
+                    data[store_name] = []
+
+                data[store_name].append({
+                    'pk': store_item['pk'],
+                    'on_hand_qty': store_item['on_hand_qty'],
+                    'item': store_item['item__name'],
+                    'item_category': store_item['item__item_type__item_category__name'],
+                    'value': round((float(store_item['on_hand_qty']) * float(store_item['item__price'])), 2),
+                })
+
+            # Update context with data
+            context.update({
+                'status': 200,
+                'message': "Items fetched successfully.",
+                'page_items': data,
+            })
+
+        except Exception as e:
+            context.update({
+                'status': 500,
+                'message': "Internal Server Error",
+            })
+
+        return JsonResponse(context)
+
+    def post(self, request):
+        context = {}
+        data = {}
+        store_items = []
+        try:
+            # Fetch parameters
+            item_cat_id = request.data.get('item_cat_id', None)
+            store_type = request.data.get('store_type', None)
+            total_material_issue = Decimal('0.00')
+            total_material_receipt = Decimal('0.00')
+            blocked_quantity = Decimal('0.00')
+            vendor_id = request.data.get('vendor_id', None)
+
             # Handle POST request
             if store_type == 'inHouse':
                 store_items = models.Store_Item.objects.filter(
@@ -10115,116 +10315,103 @@ def reportInventoryStorewise(request):
                     store__vendor__isnull=True
                 )
             else:
-                if vendor_id is not None and (vendor_id != "" and vendor_id !="           ") :
-                    
-                    store_items = models.Store_Item.objects.filter(store__vendor_id = vendor_id)
-
+                if vendor_id is not None and (vendor_id != "" and vendor_id != "           "):
+                    store_items = models.Store_Item.objects.filter(store__vendor_id=vendor_id)
                 else:
-                    store_items = models.Store_Item.objects.filter(
-                    store__vendor__isnull=False
-                )
+                    store_items = models.Store_Item.objects.filter(store__vendor__isnull=False)
                 store_items = store_items.filter(
                     item__item_type__item_category_id=item_cat_id,
-                    
                 )
-       
+
             store_items = list(
                 store_items.values(
                     'pk', 'on_hand_qty', 'item__item_type__item_category__name',
                     'item__price', 'store__name', 'item__name', 'item_id'
                 )
             )
-           
-        # Check if no items were found
-        if not store_items:
+
+            # Check if no items were found
+            if not store_items:
+                context.update({
+                    'status': 200,
+                    'message': "No items found.",
+                })
+                return JsonResponse(context)
+
+            # Process store items for POST request
+            for store_item in store_items:
+                total_material_issue = Decimal('0.00')
+                total_material_receipt = Decimal('0.00')
+                blocked_quantity = Decimal('0.00')
+                store_name = store_item['store__name']
+                if store_name not in data:
+                    data[store_name] = []
+
+                if store_type == 'inHouse':
+                    # In-house store processing
+                    data[store_name].append({
+                        'pk': store_item['pk'],
+                        'on_hand_qty': store_item['on_hand_qty'],
+                        'item': store_item['item__name'],
+                        'item_category': store_item['item__item_type__item_category__name'],
+                        'value': round((float(store_item['on_hand_qty']) * float(store_item['item__price'])), 2),
+                    })
+                else:
+                    # Vendor store processing
+                    if models.Job_Order_Detail.objects.filter(
+                        item_id=store_item['item_id'], job_order_header__job_status=1,
+                        job_order_header__vendor__store__name=store_item['store__name']
+                    ).exists():
+                        jobOrderDetails = models.Job_Order_Detail.objects.filter(
+                            item_id=store_item['item_id'], job_order_header__job_status=1,
+                            job_order_header__vendor__store__name=store_item['store__name']
+                        )
+
+                        for jobdet in jobOrderDetails:
+                            # Update material issue and receipt totals
+                            total_material_issue = Decimal('0.00')
+                            total_material_receipt = Decimal('0.00')
+                            blocked_quantity = Decimal('0.00')
+
+                            total_material_issue += (
+                                (Decimal(jobdet.quantity - jobdet.required_quantity))
+                                if jobdet.job_order_header.material_issue > 1 and jobdet.direction == 'outgoing'
+                                else Decimal('0.00')
+                            )
+                            blocked_quantity = (
+                                (Decimal(jobdet.quantity - jobdet.required_quantity) - (Decimal(jobdet.quantity - jobdet.quantity_result)))
+                                if jobdet.job_order_header.material_issue > 1 and jobdet.direction == 'outgoing'
+                                else Decimal('0.00')
+                            )
+                            total_material_receipt += jobdet.quantity_result if jobdet.job_order_header.material_issue > 1 and jobdet.direction == 'incoming' else Decimal('0.00')
+
+                    # Append vendor data
+                    data[store_name].append({
+                        'pk': store_item['pk'],
+                        'on_hand_qty': store_item['on_hand_qty'],
+                        'issue_Quantity': round(float(total_material_issue), 2),
+                        'Wip_manufacture_Quantity': round(float(total_material_receipt), 2),
+                        'Wip_issued_Quantity': round(float(blocked_quantity), 2),
+                        'actual_onhand': round((float(store_item['on_hand_qty']) - float(blocked_quantity + total_material_receipt)), 2),
+                        'item': store_item['item__name'],
+                        'item_category': store_item['item__item_type__item_category__name'],
+                        'value': round((float(store_item['on_hand_qty']) * float(store_item['item__price'])), 2),
+                    })
+
+            # Update context with data
             context.update({
                 'status': 200,
-                'message': "No items found.",
+                'message': "Items fetched successfully.",
+                'page_items': data,
             })
-            return JsonResponse(context)
 
-        # Process store items
-        for store_item in store_items:
-            # #print(8896)
-            total_material_issue = Decimal('0.00')
-            total_material_receipt = Decimal('0.00')
-            blocked_quantity = Decimal('0.00')
-            store_name = store_item['store__name']
-            if store_name not in data:
-                data[store_name] = []
+        except Exception as e:
+            context.update({
+                'status': 500,
+                'message': "Internal Server Error",
+            })
 
-            if store_type == 'inHouse':
-                # In-house store processing
-                data[store_name].append({
-                    'pk': store_item['pk'],
-                    'on_hand_qty': store_item['on_hand_qty'],
-                    'item': store_item['item__name'],
-                    'item_category': store_item['item__item_type__item_category__name'],
-                    'value': round((float(store_item['on_hand_qty']) * float(store_item['item__price'])),2),
-                })
-            else:
-                # Vendor store processing
-                # #print(total_material_issue)
-                if models.Job_Order_Detail.objects.filter(
-                    item_id=store_item['item_id'], job_order_header__job_status=1,job_order_header__vendor__store__name = store_item['store__name']
-                ).exists():
-                    jobOrderDetails = models.Job_Order_Detail.objects.filter(
-                        item_id=store_item['item_id'], job_order_header__job_status=1,job_order_header__vendor__store__name = store_item['store__name']
-                    )
-
-                    for jobdet in jobOrderDetails:
-                        # Update material issue and receipt totals
-                        total_material_issue = Decimal('0.00')
-                        total_material_receipt = Decimal('0.00')
-                        blocked_quantity = Decimal('0.00')
-                        
-                        total_material_issue += (
-                            (Decimal(jobdet.quantity - jobdet.required_quantity) )
-                            if jobdet.job_order_header.material_issue > 1 and jobdet.direction == 'outgoing'
-                            else Decimal('0.00')
-                        )
-                        blocked_quantity = (
-                            (Decimal(jobdet.quantity - jobdet.required_quantity) - (Decimal(jobdet.quantity - jobdet.quantity_result)))
-                            if jobdet.job_order_header.material_issue > 1 and jobdet.direction == 'outgoing'
-                            else Decimal('0.00')
-                        )
-                        total_material_receipt += jobdet.quantity_result if jobdet.job_order_header.material_issue > 1 and jobdet.direction == 'incoming' else Decimal('0.00')
-
-                        
-                # # #print(total_material_issue,total_material_receipt)
-                # Append vendor data
-                data[store_name].append({
-                    'pk': store_item['pk'],
-                    'on_hand_qty': store_item['on_hand_qty'],
-                    'issue_Quantity': round(float(total_material_issue),2),
-                    'Wip_manufacture_Quantity' : round(float(total_material_receipt),2),
-                    'Wip_issued_Quantity' : round(float(blocked_quantity),2),
-                    'actual_onhand': round((float(store_item['on_hand_qty']) - float(blocked_quantity + total_material_receipt )),2),
-                    'item': store_item['item__name'],
-                    'item_category': store_item['item__item_type__item_category__name'],
-                    'value': round((float(store_item['on_hand_qty']) * float(store_item['item__price'])),2),
-                })
-        # # #print(data)
-
-        # Update context with data
-        context.update({
-            'status': 200,
-            'message': "Items fetched successfully.",
-            'page_items': data,
-        })
-
-    except Exception as e:
-        # Log the exception for debugging purposes
-        #print(f"Error: {e}")
-
-        # Return internal server error
-        context.update({
-
-            'status': 500,
-            'message': "Internal Server Error",
-        })
-
-    return JsonResponse(context)
+        return JsonResponse(context)
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])

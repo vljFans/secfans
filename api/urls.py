@@ -176,7 +176,9 @@ urlpatterns = [
 
     path('item-tracking-report', views.reportItemTrackingReport, name='reportItemTrackingReport'),
     path('report-inventory-summary', views.reportInventorySummary, name='reportInventorySummary'),
-    path('report-inventory-storewise', views.reportInventoryStorewise, name='reportInventoryStorewise'),
+    # path('report-inventory-storewise', views.reportInventoryStorewise, name='reportInventoryStorewise'),
+    path('report-inventory-storewise', views.ReportInventoryStorewiseView.as_view(), name='reportInventoryStore'),
+
     path('report-stock-transfer', views.reportStockTransfer, name='reportStockTransfer'),
     path('report-purchase-order-by-vendor', views.reportPurchaseOrderByVendor, name='reportPurchaseOrderByVendor'),
     path('report-purchase-order-by-item', views.reportPurchaseOrderByItem, name='reportPurchaseOrderByItem'),
