@@ -231,6 +231,15 @@
         </li>
         <!-- purchase bill  ---developed by Saswata -->
         {% endif %}
+
+        {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
+        <li hidden
+          class="{% if request.path == '/material-sales-list' %}open active{% endif %}">
+          <a href="{% url 'superuser:materialSalesList' %}"><i data-feather="file-text"></i>
+            <span>Material Sales</span>
+          </a>
+        </li>
+        {% endif %}
         
         <!-- Tracking Report -->
 

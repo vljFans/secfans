@@ -151,10 +151,14 @@
                                 <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
                                 {% endif %}
                                 {% if request.user.is_superuser == 1 or 'change_store_transaction'|get_session_permission:request is not None   %}
-                                <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
+                                <a hidden href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>  
+                                
+                                ${element.vendor__name  ? `` : `<a id="delete-btn" data-id="${element.pk}" data-name="${element.transaction_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>`}
+                                
                                 {% endif %}
                                 </td>
                             </tr>`;
+
                     }
                     // pagination_text = ``;
                     // if (response.total_pages > 1) {
@@ -187,20 +191,21 @@
         getMaterialIssuedList(keyword)
     })
 
+    
     $(document).on('click', '#delete-btn', function () {
         id = $(this).attr('data-id');
         name = $(this).attr('data-name');
         if (window.confirm('Are you sure to delete ' + name + '?')) {
             $.ajax({
                 type: "POST",
-                url: "{% url 'api:storeTransactionDelete' %}",
+                url: "{% url 'api:materialIssueDelete' %}",
                 data: ({ id: id }),
                 headers: {
                     'Authorization': getCookieValue("accessToken"),
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialIssueList' %}");
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:itemList' %}");
                     } else {
                         alert(response.message);
                     }
@@ -214,5 +219,6 @@
             });
         }
     });
+
 </script>
 {% endblock %}

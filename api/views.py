@@ -3779,7 +3779,7 @@ def storeItemList(request):
     itemId = request.GET.get('itemId', None)
     if id is not None and id != "":
         storeItem = list(models.Store_Item.objects.filter(pk=id)[:1].values(
-            'pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty'))
+            'pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','item_id'))
         context.update({
             'status': 200,
             'message': "Store Item Fetched Successfully.",
@@ -3820,7 +3820,7 @@ def storeItemList(request):
         
         else:
             storeItem = list(models.Store_Item.objects.filter(store_id = storeId ).values(
-            'pk', 'store__name','item_id','item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','item__price'))
+            'pk', 'store__name','item_id','item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','item__price','store_id'))
             context.update({
                 'status': 200,
                 'message': "Store Fetched Successfully.",
@@ -3838,7 +3838,7 @@ def storeItemList(request):
             )
         else:
             storeItems = list(models.Store_Item.objects.filter(status=1, deleted=0).values(
-                'pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty'))
+                'pk', 'store__name', 'item__name', 'opening_qty', 'on_hand_qty', 'closing_qty','item_id'))
         if find_all is not None and int(find_all) == 1:
             context.update({
                 'status': 200,
@@ -5605,7 +5605,7 @@ def storeTransactionEdit(request):
                                 request.POST.getlist('item_quantity')[index]
                             )
                         if(store_item_instance.on_hand_qty<0):
-                            raise ValueError(f"onhand quantity can not be negative")
+                            raise ValueError(f"onhand quantity can not be negative {elem} and {request.POST.getlist('store_id')[index]} {store_item_instance.opening_qty} {given_date}")
                         # Set other fields for the new transaction
                         store_item_instance.store_transaction_id = storeTransactionHeader.id
                         store_item_instance.transaction_date = given_date
@@ -7448,6 +7448,113 @@ def materialIssueEdit(request):
         })
         transaction.rollback()
     return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def materialIssueDelete(request):
+    # this paet is only applicable for self 
+    context = {}
+    userId = request.COOKIES.get('userId', None)
+    materialIssue = models.Store_Transaction.objects.get(pk=request.POST['id'])
+    materiIssueCount = models.Store_Transaction.objects.filter(job_order=materialIssue.job_order,transaction_type__name='MIS',status=1, deleted=0).count()
+    if materiIssueCount < 2:
+        materialIssueGrnHas = models.Store_Transaction.objects.filter(job_order=materialIssue.job_order,transaction_type__name='GRN',status=1, deleted=0)
+        if materialIssueGrnHas.exists():
+            context.update({
+                'status': 597,
+                'message': "You can't delete this material issue because job_order has a GRN associated with"
+            })
+            return JsonResponse(context)
+    try:
+        with transaction.atomic():
+            materialIssue = models.Store_Transaction.objects.get(pk=request.POST['id'])
+            materialIssueDetails = models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = request.POST['id'])
+            
+
+            for detail in materialIssueDetails:
+                print(materialIssue.job_order_id)
+                jobOrderDetails = models.Job_Order_Detail.objects.filter(item_id= detail.item_id,job_order_header_id = materialIssue.job_order_id ,direction='outgoing')
+                print(7479)
+                if jobOrderDetails.exists():
+                    
+                    jobOrderDetails = models.Job_Order_Detail.objects.get(item_id= detail.item_id,job_order_header_id = materialIssue.job_order_id , direction='outgoing')
+                    jobOrderDetails.required_quantity += Decimal(detail.quantity)
+                    jobOrderDetails.updated_at 
+                    jobOrderDetails.save()
+                
+                store_item_update = models.Store_Item.objects.filter(store_id = detail.store.id , item_id= detail.item_id)
+                if store_item_update.exists():
+                    store_item_update = models.Store_Item.objects.get(store_id = detail.store.id , item_id= detail.item_id)
+                    store_item_update.on_hand_qty += Decimal(detail.quantity)
+                    store_item_update.closing_qty += Decimal(detail.quantity)
+                    store_item_update.updated_at = datetime.now()
+                    store_item_update.save()
+
+                    store_item_current = models.Store_Item_Current.objects.filter(store_transaction_id = request.POST['id'],status=1, deleted=0)
+           
+                    if store_item_current.exists():
+                        store_item_current = store_item_current.first()
+                        storeCuritemlast = models.Store_Item_Current.objects.filter(
+                                    store_id = detail.store.id , item_id= detail.item_id,status=1, deleted=0).order_by('transaction_date','created_at')
+                        storeCuritemlast = storeCuritemlast.last()
+                        
+                        if storeCuritemlast.store_transaction_id != request.POST['id']:
+                            data_revertive_from_transaction(request.POST['id'], detail.item_id,detail.store_id,detail.quantity,'in')
+                        store_item_current.on_hand_qty += Decimal(detail.quantity)
+                        store_item_current.closing_qty += Decimal(detail.quantity)
+                        store_item_current.status = 0
+                        store_item_current.deleted = 1
+                        store_item_current.updated_at = datetime.now()
+                        store_item_current.save()
+
+            materialIssue.status = 0
+            materialIssue.deleted = 1
+            materialIssue.updated_at = datetime.now()
+            materialIssue.save()
+
+            jobOrderDetails = models.Job_Order_Detail.objects.filter(
+                job_order_header_id=materialIssue.job_order_id, status=1, deleted=0,
+                direction='outgoing', 
+                quantity=F('required_quantity')
+            )
+            jobOrderHead = models.Job_Order.objects.get(pk= materialIssue.job_order_id,status=1, deleted=0)
+            if jobOrderDetails.exists():  
+                jobOrderDetails = models.Job_Order_Detail.objects.get(
+                job_order_header_id=materialIssue.job_order_id, status=1, deleted=0,
+                direction='incoming')
+                jobOrderDetails.required_quantity = jobOrderDetails.quantity
+                jobOrderDetails.updated_at = datetime.now()
+                jobOrderDetails.save()
+                jobOrderHead.job_status = 0
+                jobOrderHead.material_issue = 0
+                jobOrderHead.updated_at = datetime.now()
+                jobOrderHead.save()
+            else: 
+                jobOrderHead.job_status = 2
+                jobOrderHead.material_issue = 2
+                jobOrderHead.updated_at = datetime.now()
+                jobOrderHead.save()
+            
+
+
+            
+            user_log_details_add(userId,'Material Issue Delete')
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Material Issue Deleted Successfully."
+        })
+
+    except Exception as e:
+        context.update({
+            'status': 597,
+            'message': f"Something Went Wrong. Please Try Again.{e}"
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
 
 #for grn inspection--- developed by saswata
 
