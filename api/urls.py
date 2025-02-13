@@ -137,6 +137,7 @@ urlpatterns = [
     path('get-actual-quantity', views.getActualQuantity, name='getActualQuantity'),
     path('material-issue-add', views.materialIssueAdd, name='materialIssueAdd'),
     path('material-issue-edit', views.materialIssueEdit, name='materialIssueEdit'),
+     path('material-issue-delete', views.materialIssueDelete, name='materialIssueDelete'),
     path('material-issue-details', views.materialIssueDetails, name='materialIssueDetails'),
 
     # path grn inspection ---developed by saswata

@@ -1771,3 +1771,41 @@ def storeItemCurrentMigrate(request):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "store ItemCurrent Tracking",'url': reverse('superuser:storeItemTrackingList')}, {'name': "Migration"}]
     })
     return render(request, 'portal/Store Item/stockMigration.html', context)
+
+
+@login_required
+def materialSalesList(request):
+    context.update({
+        'page_title': "Material Sales List",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Sales ", 'url': reverse('superuser:materialIssueList')}, {'name': "List"}]
+    })
+    return render(request, 'portal/Item Sales/list.html', context)
+
+
+@login_required
+def  materialSalesAdd(request):
+    context.update({
+        'page_title': " Material Sales Add",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Material Sales ", 'url': reverse('superuser:materialIssueList')}, {'name': "Add"}]
+    })
+    return render(request, 'portal/Item Sales/add.html', context)
+
+
+@login_required
+def  materialSalesEdit(request,id):
+    materialSales = models.Store_Transaction.objects.prefetch_related('store_transaction_detail_set').get(pk=id)
+    
+    context.update({
+        'materialSales': materialSales,
+       
+        'page_title': "Material Sales Edit",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},{'name': "Material Sales", 'url': reverse('superuser:materialIssueList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Item Sales/edit.html', context)
+
+
+@login_required
+def materialSalesView(request,id):
+    context = returnMaterialListView(id,2)
+
+    return render(request, 'portal/Material Issue/view.html', context)

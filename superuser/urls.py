@@ -181,6 +181,11 @@ urlpatterns = [
     
     path('store-item-current-migrate',views.storeItemCurrentMigrate, name='storeItemCurrentMigrate'),
 
-     path('finished-good-bill-to-tally',views.fgMigrationTallyReport, name='fgMigrationTallyReport'),
+    path('finished-good-bill-to-tally',views.fgMigrationTallyReport, name='fgMigrationTallyReport'),
+
+    path('material-sales-list',views.materialSalesList, name='materialSalesList'),
+    path('material-sales-add',views.materialSalesAdd, name='materialSalesAdd'),
+    path('material-sales-edit/<int:id>',views.materialSalesEdit, name='materialSalesEdit'),
+    path('material-sales-view/<int:id>',views.materialSalesView, name='materialSalesView'),
 
 ]

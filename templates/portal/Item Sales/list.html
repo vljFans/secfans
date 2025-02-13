@@ -1,0 +1,343 @@
+{% extends 'portal/base.html' %}
+{% load template_func %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<div class="wrapper">
+    <!--================================-->
+    <!-- Breadcrumb Start -->
+    <!--================================-->
+    <div class="pageheader pd-t-25 pd-b-35">
+        <div class="d-flex justify-content-between">
+            <div class="clearfix">
+                <div class="pd-t-5 pd-b-5">
+                    <h1 class="pd-0 mg-0 tx-20 tx-dark">{{parent_page_title}} {{page_title}}</h1>
+                </div>
+                <div class="breadcrumb pd-0 mg-0">
+                    {% for breadcrumb in breadcrumbs %}
+                    {% if forloop.counter != breadcrumbs|length %}
+                    <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                    {% else %}
+                    <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!--/ Breadcrumb End -->
+    <!--================================-->
+    <!-- Search box Start -->
+    <div>
+        <label for="search">
+            <p style="font-size: 14px;">
+                Search :
+            </p>
+        </label>
+        <input type="text" id="search" name="search" style="width: 180px; height: 30px;" value="{{request.GET.keyword}}"
+            placeholder="" />
+    </div>
+    <div class="col-md-6">
+        <div class="float-end d-flex justify-content-end" style="padding-top: 10px;">
+            <button type="button" file_type="pdf" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">PDF</button>
+            <button type="button" file_type="xlsx" class="mr-3 btn btn-info btn-sm generate_and_download" style="padding: 4.8px 12.8px 4.8px 12.8px;">Excel</button>
+        </div>
+    </div>
+    <!--/ Search box End -->
+    <!--================================-->
+    <!-- Form Element Start -->
+    <!--================================-->
+    <div class="row row-xs clearfix">
+        <div class="col-md-12 col-lg-12">
+            {% if messages %}
+            {% for message in messages %}
+            {% if forloop.counter == messages|length %}
+            <div class="{{ message.tags }} success-msg-txt" style="height: 30px; text-align: center;">{{ message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            <div class="error-msg-txt" style="height: 30px; text-align: center;"></div>
+            <div class="card mg-b-30">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-header-title tx-13 mb-0">{{parent_page_title}} {{page_title}}</h6>
+                        </div>
+                        <div class="text-right">
+                            <div class="d-flex">
+                                {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
+                                <a href="{% url 'superuser:materialSalesAdd' %}" class="mr-3"><i class="fa fa-plus"></i></a>
+                                {% endif %}
+                                <a href="" class="mr-3"><i class="ti-reload"></i></a>
+                                <!-- <div class="dropdown" data-toggle="dropdown">
+                                    <a href=""><i class="ti-more-alt"></i></a>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        <a href="" class="dropdown-item"><i data-feather="info"
+                                                class="wd-16 mr-2"></i>View Details</a>
+                                        <a href="" class="dropdown-item"><i data-feather="share"
+                                                class="wd-16 mr-2"></i>Share</a>
+                                        <a href="" class="dropdown-item"><i data-feather="download"
+                                                class="wd-16 mr-2"></i>Download</a>
+                                        <a href="" class="dropdown-item"><i data-feather="copy"
+                                                class="wd-16 mr-2"></i>Copy to</a>
+                                        <a href="" class="dropdown-item"><i data-feather="folder"
+                                                class="wd-16 mr-2"></i>Move to</a>
+                                        <a href="" class="dropdown-item"><i data-feather="edit"
+                                                class="wd-16 mr-2"></i>Rename</a>
+                                        <a href="" class="dropdown-item"><i data-feather="trash"
+                                                class="wd-16 mr-2"></i>Delete</a>
+                                    </div>
+                                </div> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body pd-0">
+                    <p><span style="color: black;"> WIP:</span> <span> partialy material issued</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: green;"> WIP:</span> <span> fully material issued</span></p>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Job Order Number</th>
+                                    <th>Job Order Date</th>
+                                    <th>Manufacturing type</th>
+                                    <th>Manufacture Material Type</th>
+                                    <th>Estimated Time</th>
+                                    <th>Job Description</th>
+                                    <th>Job Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+                            </tbody>
+                        </table>
+                    </div>
+                    <nav>
+                        <ul id="pagination" class="pagination justify-content-center">
+                        </ul>
+                    </nav>
+                  
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Form Element End -->
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+<script>
+    keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
+    function getJobOrderList(keyword) {
+        $.ajax({
+            type: "GET",
+            url: "{% url 'api:jobOrderList' %}?keyword=" + keyword,
+            data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                $('.error-msg-txt').text("");
+                if (response.status == 200) {
+                    edit_url = "{% url 'superuser:jobOrderEdit' 1 %}";
+                    view_url = "{% url 'superuser:jobOrderView' 1 %}";
+                    copy_url = "{% url 'superuser:jobOrderAdd'  %}?id=";
+                    print_url = "{% url 'superuser:jobOrderPrint' 1 %}";
+                    page_items = response.page_items;
+                    tbody_text = ``;
+                    for (let index = 0; index < page_items.length; index++) {
+                        const element = page_items[index];
+                        tbody_buttom_text =``
+                        // console.log((element.manufacturing_material_type == 'FG' ? 'true' : 'false'));
+                        if(element.material_issue > 1 && element.material_reciept < 1){
+                            // console.log(223);
+                            
+                            tbody_buttom_text = `<td>
+                                {% if request.user.is_superuser == 1 or 'change_job_order'|get_session_permission:request is not None %}
+                                <a href="#" onclick="return alert('cannot edit  as material already get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-pencil"></i> </a>    
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'delete_job_order'|get_session_permission:request is not None %}
+                                <a href="#" onclick="return alert('cannot  delete as material already  get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-trash"></i> </a>
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
+                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
+                                <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
+                                {% endif %}
+                                 ${element.manufacturing_type == 'Self' ? `{% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
+                                    <a href="javascript:void(0);" class="table-action mg-r-10" 
+                                        onclick="{ loadMaterialInData(${ element.pk }) }"> 
+                                        <i class="fa fa-stop"></i>
+                                        </a>
+                                    {% endif %}` : ''}
+                                {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
+                                <a href="${print_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-print"></i> </a>
+                                {% endif %}
+                                </td>`
+                        }
+                        
+                        if(element.material_reciept == 1 || element.job_status == 2){
+                            tbody_buttom_text = `<td>
+                                {% if request.user.is_superuser == 1 or 'change_job_order'|get_session_permission:request is not None %}
+                                <a href="#" onclick="return alert('cannot edit  as material already get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-pencil"></i> </a>    
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'delete_job_order'|get_session_permission:request is not None %}
+                                <a href="#" onclick="return alert('cannot  delete as material already  get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-trash"></i> </a>
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
+                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
+                                <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
+                                <a href="${print_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-print"></i> </a>
+                                {% endif %}
+                                </td>`
+                        }
+                        if(element.material_issue < 2 ){
+                            // console.log('153');
+                            tbody_buttom_text = `<td>
+                                    {% if request.user.is_superuser == 1 or 'change_job_order'|get_session_permission:request is not None %}
+                                    <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
+                                    {% endif %}
+                                    {% if request.user.is_superuser == 1 or 'delete_job_order'|get_session_permission:request is not None %}
+                                    <a id="delete-btn" data-id="${element.pk}" data-name="${element.order_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
+                                    {% endif %}
+                                    {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
+                                    <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
+                                    {% endif %}
+                                    {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
+                                    <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
+                                    {% endif %} 
+                                    {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
+                                    <a href="${print_url.replace('1', element.pk)}" class="table-action mg-r-10" target="_blank"> <i class="fa fa-print"></i> </a>
+                                    {% endif %}
+                                    </td>`
+                        }
+                        
+                        tbody_text += `<tr>
+                                <td>${((response.total_pages - 1) * response.per_page) +  index + 1}</td>
+                                <td>${element.order_number}</td>
+                                <td>${element.order_date}</td>
+                                <td>${element.manufacturing_type} manufacturing</td>
+                                <td>${ element.manufacturing_material_type == 'SFG' ? 'Semi finish Goods': ( element.manufacturing_material_type == 'FG' ?'Finished Goods'  : 'NA') }</td>
+                                <td>${element.estimated_time_day}</td>
+                                <td>${element.notes}</td> 
+                                 <td style="color: ${element.job_status == 0 ? 'blue' : ((element.job_status == 1 && element.material_issue ==3) ? 'green' : (element.job_status == 1 && (element.material_issue ==1 || element.material_issue ==2)) ? 'black':'red')}; ">
+                                    ${element.job_status == 0 ? 'Open' : ((element.job_status == 1 && element.material_issue ==3) ? 'WIP' : (element.job_status == 1 && (element.material_issue ==1 || element.material_issue ==2)) ? 'WIP':'Closed')}
+                                </td>`+ tbody_buttom_text+`</tr>`;
+                    }
+                    // pagination_text = ``;
+                    // if (response.total_pages > 1) {
+                    //     pagination_text += `<li class="page-item disabled"><a class="page-link" href="?page=1"><span class="fa fa-arrow-left"></span></a></li>`;
+                    //     for (let page = 1; page < response.total_pages; page++) {
+                    //         pagination_text += `<li class="page-item ${page == response.current_page ? 'active' : ''}"><a class="page-link" href="?page=${page}">${page}</a></li>`;
+                    //     }
+                    //     pagination_text += `<li class="page-item"><a class="page-link" href="?page=${response.total_pages}"><span class="fa fa-arrow-right"></span></a></li>`;
+                    // }
+                    pagination_text = generatePaginationLinks(response.current_page, response.total_pages, response.button_to_show, keyword);
+                    $('#table-body').html(tbody_text);
+                    $('#pagination').html(pagination_text);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+
+    }
+
+
+
+    
+
+    $(document).ready(function () {
+        getJobOrderList(keyword)
+        $('.selectpicker').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });
+        
+    });
+
+    
+    $(document).on('click','#close',function(){
+        $('#materialInModal').modal('hide');
+        locationAfterMessageStore( '', "{% url 'superuser:jobOrderList' %}");
+    })
+
+    $(document).on('keyup', '#search', function () {
+        keyword = $(this).val();
+        getJobOrderList(keyword)
+    })
+
+   
+
+    $(document).on('click', '#delete-btn', function () {
+        id = $(this).attr('data-id');
+        name = $(this).attr('data-name');
+        if (window.confirm('Are you sure to delete ' + name + '?')) {
+            $.ajax({
+                type: "POST",
+                url: "{% url 'api:jobOrderDelete' %}",
+                data: ({ id: id }),
+                headers: {
+                    'Authorization': getCookieValue("accessToken"),
+                },
+                success: function (response) {
+                    if (response.status == 200) {
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:jobOrderList' %}");
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function (error) {
+                    $('.success-msg-txt').text("");
+                    $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
+                    $('.error-msg-txt').addClass('text-danger');
+                    $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                }
+            });
+        }
+    });
+
+</script>
+{% endblock %}

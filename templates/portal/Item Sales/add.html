@@ -1,0 +1,600 @@
+{% extends 'portal/base.html' %}
+{% load static %}
+{% load template_func %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<!-- main wrapper div content -->
+<div class="wrapper">
+
+    <!--================================-->
+    <!-- Breadcrumb Start -->
+    <!--================================-->
+    <div class="pageheader pd-t-25 pd-b-35">
+        <div class="d-flex justify-content-between">
+            <div class="clearfix">
+                <div class="pd-t-5 pd-b-5">
+                    <h1 class="pd-0 mg-0 tx-20 tx-dark">{{parent_page_title}} {{page_title}}</h1>
+                </div>
+                <div class="breadcrumb pd-0 mg-0">
+                    {% for breadcrumb in breadcrumbs %}
+                    {% if forloop.counter != breadcrumbs|length %}
+                    <a class="breadcrumb-item" href="{{breadcrumb.url}}">{{breadcrumb.name}}</a>
+                    {% else %}
+                    <span class="breadcrumb-item active">{{breadcrumb.name}}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row row-xs clearfix">
+        <div class="col-md-12 col-lg-12">
+            {% if messages %}
+            {% for message in messages %}
+            {% if forloop.counter == messages|length %}
+            <div class="{{ message.tags }} success-msg-txt" style="height: 30px; text-align: center;">{{ message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            <div class="card mg-b-30">
+                <!-- upper header of form -->
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-header-title tx-13 mb-0">{{parent_page_title}} {{page_title}}</h6>
+                        </div>
+                        <div class="text-right">
+                            <div class="d-flex">
+                                <a href="{% url 'superuser:materialIssueList' %}" class="mr-3"><i
+                                        class="fa fa-step-backward"></i></a>
+                                <a href="" class="mr-3"><i class="ti-reload"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- end upper header -->
+                <!-- main form  -->
+                <div class="card-body">
+                    <form id="create_form" class="needs-validation" novalidate enctype="multipart/form-data">
+                        <div class="form-row">
+                            
+
+                            <div class="col-md-3 mb-3">
+                                <label>Store Type<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="store_type" name="store_type" required>
+                                        <option></option>
+                                        <option value="InHouse">Inhouse Store</option>
+                                        <option value="Vendor">Vendor Store</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <label>Store<span class="required-indicator">*</span></label>
+                                <div class="input-group">
+                                    <select class="custom-select selectpicker" id="store_id" name="store_id" required>
+                                        <option value="">Choose...</option>
+                                    </select>
+                                </div>
+                            </div>                            
+
+                            
+
+                            <div class="col-md-2 mb-3">
+                                <label>Issue Date <span class="required-indicator">*</span></label>
+                                <input type="date" name="issue_date" id = "issue_date" class="form-control issue_date" placeholder="Order Date"
+                                required>
+                            </div>
+
+                        
+
+                            <div class="col-md-12 table_form" id="table_form">
+                                
+                            </div>
+                            
+
+                        </div>
+                        {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
+                        <div id="submit" hidden>
+                            <button class="btn btn-success submit-btn" type="submit">Submit</button>
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+                <!-- end main form -->
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- end main wrapper div -->
+
+{% endblock %}
+
+{% block js %}
+<!-- script -->
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+<script>
+    var item_options_text = ``;
+    var item_options_used_pk = [];
+
+    $('.selectpicker').select2({
+        placeholder: '',
+        templateResult: function(option) {
+            if(option.element && (option.element).hasAttribute('hidden')){
+                return null;
+            }
+            return option.text;
+        }
+    });
+
+ 
+
+    $('#store_type').select2({
+        placeholder: "Select store type"
+    });
+
+    $('#store_id').select2({
+        placeholder: "Select store"
+    });
+
+    function renderItemDropdown(){
+        $('.item_id').each(function(){
+            let selected_item_id=$(this).val()
+            $(this).children("option").each(function(index, element){
+                if($(this).val()!==selected_item_id && item_options_used_pk.includes($(this).val()) ){
+                    $(this).prop("hidden",true)
+                }
+                else{
+                    $(this).prop("hidden",false)
+                }
+            })
+        })
+    }
+
+    
+    function update_item_options_used_pk(){
+        item_options_used_pk=[]
+        $('.item_id').each(function(){
+            item_options_used_pk.push($(this).val())
+        }); 
+    }
+
+    function callback(){
+        var callbacks = $.Callbacks();
+        callbacks.add(update_item_options_used_pk);
+        callbacks.fire();
+        callbacks.add(renderItemDropdown);
+        callbacks.fire();
+        
+        $('.item_id').select2({
+            placeholder: '',
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        $("#issue_date").val(new Date().toISOString().slice(0, 10))
+      
+      
+        
+    });
+    
+    $(document).on('change','#store_type' , function(){
+        $("#table_form").empty();
+        
+     
+        let store_type=$(this).val()
+        $(".actual_quantity").val('')
+        $('.actual_quantity_on_that_date').val('')
+        $.ajax({
+            url: "{% url 'api:storeList' %}?store_type="+ encodeURIComponent(store_type),
+            type: 'GET',
+            data: ({
+            }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    let store_options_text = `<option value="">Choose store</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        store_options_text += `<option value="${response.page_items[index].pk}">${response.page_items[index].name}</option>`;
+                    }
+                    $('#store_id').html(store_options_text);
+                    $('#store_id').select2({
+                        placeholder: "Select store"
+                    });
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    })
+
+    $(document).on('change','#store_id' , function(){
+        $("#table_form").empty();
+        let storeId = $(this).val()
+        item_options_text = ``;
+        item_options_used_pk = [];
+        $.ajax({
+            url: "{% url 'api:storeItemList' %}?storeId="+storeId,
+            type: 'GET',
+            data: ({
+            }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    // itemsData=response.page_items
+                    console.log('263');
+                    
+                    item_options_text += `<option value="">Choose item</option>`;
+                    for (let index = 0; index < response.page_items.length; index++) {
+                        item_options_text += `<option value="${response.page_items[index].item_id}">${response.page_items[index].item__name} (${response.page_items[index].store_id})</option>`;
+                    }
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            complete:function(){
+                var text_inp = `<div class="form-row content_parent">
+                                    <div class="col-md-3 mb-3">
+                                        <label>Item<span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker item_id" name="item_id" required>
+                                                ${item_options_text}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
+                                        <label>Actual quantity <span class="required-indicator">*</span></label>
+                                        <input type="text" 
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="actual_quantity" min="0.01" class="form-control actual_quantity"
+                                            placeholder="0" readonly>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>Quantity On That date <span class="required-indicator">*</span></label>
+                                        <input type="text" 
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="actual_quantity_on_that_date" min="0.01" class="form-control actual_quantity_on_that_date"
+                                            placeholder="0" readonly>
+                                    </div>
+
+                                    <div class="col-md-1 mb-3">
+                                        <label>Rate <span class="required-indicator">*</span></label>
+                                        <input type="text" 
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="rate" min="0.01" class="form-control rate"
+                                            placeholder="0" readonly>
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
+                                        <label>Quantity Sent <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="quantity_sent" min="0" class="form-control quantity_sent"
+                                            placeholder="0" required>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                            <label>Amount <span class="required-indicator">*</span></label>
+                                            <input type="text" 
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="amount" min="0.01" class="form-control amount"
+                                                placeholder="0" readonly>
+                                    </div>
+
+                                    <div class="col-md-1 btn-group mb-4 text-center">
+                                        <button type="button" class="btn add_btn m-1">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>`
+
+            $('#table_form').append(text_inp);
+            $('.item_id').select2({
+                placeholder: "Select Item",
+                templateResult: function(option) {
+                    if(option.element && (option.element).hasAttribute('hidden')){
+                        return null;
+                    }
+                    return option.text;
+                }
+            });
+            },
+            error: function (error) {
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    
+        
+      
+        
+        
+    })
+
+    $(document).on('change', '#issue_date', function() {
+        // Perform the desired actions when the issue date changes
+        console.log("Issue Date changed to:", $(this).val());
+
+        // Example: Clear a related table or perform an update
+        $("#table_form").empty();
+
+       
+        callback();
+
+        // Check if a specific condition is met
+        if ($('#job_order_id').val() !== "") {
+            fill_up_actual_quantity();
+        }
+    });
+
+
+   
+    $(document).on('change','.item_id',function(){
+        let selected_item_pk=$(this).val()
+        //// console.log(selected_item_pk);
+        let store_id =  $('select#store_id option:selected').val()
+        let actual_quantity = $(this).closest('.content_parent').find('.actual_quantity')
+        let actual_quantity_on_that_date = $(this).closest('.content_parent').find('.actual_quantity_on_that_date')
+        let quantity_sent = $(this).closest('.content_parent').find('.quantity_sent')
+        let rate =  $(this).closest('.content_parent').find('.rate')
+        let transaction_date = $('#issue_date').val()
+        // // console.log(quantity_sents.html());
+        $.ajax({
+            url: "{% url 'api:getActualQuantity' %}?",
+            type: 'GET',
+            data: ({
+                'item_id':selected_item_pk,
+                'store_id':store_id,
+                'transaction_date':transaction_date
+
+            }),
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    actual_quantity.val(+response.actual_quantity)
+                    actual_quantity_on_that_date.val(+response.actual_quantity_On_that_date)
+                    quantity_sent.attr('max',+response.actual_quantity)
+
+                    
+                    rate.val(response.item_price)
+                } 
+                else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                        $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                    }
+        });
+        
+        $('.item_id').select2({
+            placeholder: "Select Item",
+            templateResult: function(option) {
+                if(option.element && (option.element).hasAttribute('hidden')){
+                    return null;
+                }
+                return option.text;
+            }
+        });
+
+        callback()
+    });
+
+    $(document).on('click','.add_btn',function(){
+            var text_inp = `<div class="form-row content_parent">
+                                    <div class="col-md-3 mb-3">
+                                        <label>Item<span class="required-indicator">*</span></label>
+                                        <div class="input-group">
+                                            <select class="custom-select selectpicker item_id" name="item_id" required>
+                                                ${item_options_text}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
+                                        <label>Actual quantity <span class="required-indicator">*</span></label>
+                                        <input type="text" 
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="actual_quantity" min="0.01" class="form-control actual_quantity"
+                                            placeholder="0" readonly>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>Quantity On That date <span class="required-indicator">*</span></label>
+                                        <input type="text" 
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="actual_quantity_on_that_date" min="0.01" class="form-control actual_quantity_on_that_date"
+                                            placeholder="0" readonly>
+                                    </div>
+
+                                    <div class="col-md-1 mb-3">
+                                        <label>Rate <span class="required-indicator">*</span></label>
+                                        <input type="text" 
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="rate" min="0.01" class="form-control rate"
+                                            placeholder="0" readonly>
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
+                                        <label>Quantity Sent <span class="required-indicator">*</span></label>
+                                        <input type="text" onkeyup="checkMaxMin(this)"
+                                            onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                            name="quantity_sent" min="0" class="form-control quantity_sent"
+                                            placeholder="0" required>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                            <label>Amount <span class="required-indicator">*</span></label>
+                                            <input type="text" 
+                                                onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
+                                                name="amount" min="0.01" class="form-control amount"
+                                                placeholder="0" readonly>
+                                    </div>
+
+                                    <div class="col-md-1 btn-group mb-4 text-center">
+                                        <button type="button" class="btn remove_btn m-1">
+                                            <i class="fa fa-minus"></i>
+                                        </button>
+                                    </div>
+                                </div>`
+
+            $('#table_form').append(text_inp);
+            $('.item_id').select2({
+                placeholder: "Select Item",
+                templateResult: function(option) {
+                    if(option.element && (option.element).hasAttribute('hidden')){
+                        return null;
+                    }
+                    return option.text;
+                }
+            });
+            renderTotalAmount()          
+            callback()         
+        });
+
+    $(document).on('click', '.remove_btn', function () {
+        $(this).parents().closest('.content_parent').remove();
+        renderTotalAmount()
+        callback()
+    });
+
+ 
+    function fill_up_actual_quantity(){
+        let store_id=$("#store_id").val()
+        $("#table_form").children(".content_parent").each(function(){
+            let actual_quantity_element=$(this).find(".actual_quantity")
+            let quantity_sent_element = $(this).find('.quantity_sent')
+            let transaction_date = $('#issue_date').val() 
+            let item_id=$(this).find(".item_id").val()
+            let parenttHtml = $(this).find(".item_id").parent().closest('.content_parent') 
+            let actual_quantity_on_that_date = $(this).closest('.content_parent').find('.actual_quantity_on_that_date')
+
+            
+            if(item_id && store_id){
+                $.ajax({
+                    url: "{% url 'api:getActualQuantity' %}?",
+                    type: 'GET',
+                    data: ({
+                        'item_id':item_id,
+                        'store_id':store_id,
+                        'transaction_date' : transaction_date
+                    }),
+                    headers: {
+                        'Authorization': getCookieValue("accessToken")
+                    },
+                    success: function (response) {
+                        // console.log(item_id);
+                        // console.log(response)
+                        
+                        if (response.status == 200) {      
+                            if(response.actual_quantity == 0 || response.actual_quantity_On_that_date ==0 ) {
+                                // console.log('inside 921')
+                                parenttHtml.remove()
+                                
+                            }
+                            else{
+                                // console.log('inside 926')
+                                actual_quantity_element.val(+response.actual_quantity);
+                                actual_quantity_on_that_date.val(+response.actual_quantity_On_that_date)
+                                quantity_sent_element.attr('max',+response.actual_quantity)
+                            }    
+
+                        } 
+                        else {
+                            alert(response.message);
+                        }
+                    },
+                    complete:function(){
+                        if ($("#table_form").children().length == 0) {
+                    
+                            $('#submit').attr('hidden','true') 
+                            $('#tAmount').attr('hidden','true')
+                            $('#tAmount').val('')
+                        }
+                    },
+                    error: function (error) {
+                        $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+                    }
+                });
+            }
+        })
+        
+    }
+
+    function checkMaxMin(element) {
+        if ($(element).val() == "") {
+            $(element).val($(element).attr('min'));
+        } else {
+            if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
+                $(element).val($(element).attr('max'));
+            }
+            if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
+                $(element).val($(element).attr('min'));
+            }
+        }
+        
+        if(parseFloat($(element).val())>parseFloat($(element).closest('.content_parent').find('.required_quantity').val())){
+            alert('Sent quantity is more than required job quantity')
+            $(element).val("")
+        }
+        if(parseFloat($(element).val())>parseFloat($(element).closest('.content_parent').find('.actual_quantity_on_that_date').val())){
+            alert('Sent quantity is more than required on that date in hand quantity')
+            $(element).val("")
+        }
+    }
+    
+    $(document).on('change keyup','.quantity_sent ',function(){
+        // // console.log("hi");
+        let sum = 0 
+        let amount , rate , quantitysent
+        quantitysent = parseFloat($(this).val())
+        rate = parseFloat($(this).closest('.content_parent').find('.rate').val())
+        amount = rate * quantitysent
+        $(this).closest('.content_parent').find('.amount').val(amount)
+        renderTotalAmount()
+    })
+   
+
+</script>
+
+{% endblock js %}
