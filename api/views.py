@@ -7454,6 +7454,7 @@ def materialIssueEdit(request):
 @permission_classes([IsAuthenticated])
 def materialIssueDelete(request):
     # this paet is only applicable for self 
+    
     context = {}
     userId = request.COOKIES.get('userId', None)
     materialIssue = models.Store_Transaction.objects.get(pk=request.POST['id'])
@@ -7473,9 +7474,9 @@ def materialIssueDelete(request):
             
 
             for detail in materialIssueDetails:
-                print(materialIssue.job_order_id)
+               
                 jobOrderDetails = models.Job_Order_Detail.objects.filter(item_id= detail.item_id,job_order_header_id = materialIssue.job_order_id ,direction='outgoing')
-                print(7479)
+              
                 if jobOrderDetails.exists():
                     
                     jobOrderDetails = models.Job_Order_Detail.objects.get(item_id= detail.item_id,job_order_header_id = materialIssue.job_order_id , direction='outgoing')
@@ -7498,9 +7499,11 @@ def materialIssueDelete(request):
                         storeCuritemlast = models.Store_Item_Current.objects.filter(
                                     store_id = detail.store.id , item_id= detail.item_id,status=1, deleted=0).order_by('transaction_date','created_at')
                         storeCuritemlast = storeCuritemlast.last()
-                        
-                        if storeCuritemlast.store_transaction_id != request.POST['id']:
+                        print((storeCuritemlast.store_transaction_id) == int(request.POST['id']))
+                        if storeCuritemlast.store_transaction_id != int(request.POST['id']):
+                            print(7503)
                             data_revertive_from_transaction(request.POST['id'], detail.item_id,detail.store_id,detail.quantity,'in')
+                        print(7505)
                         store_item_current.on_hand_qty += Decimal(detail.quantity)
                         store_item_current.closing_qty += Decimal(detail.quantity)
                         store_item_current.status = 0

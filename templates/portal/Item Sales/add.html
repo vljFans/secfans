@@ -266,7 +266,7 @@
                     
                     item_options_text += `<option value="">Choose item</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
-                        item_options_text += `<option value="${response.page_items[index].item_id}">${response.page_items[index].item__name} (${response.page_items[index].store_id})</option>`;
+                        item_options_text += `<option value="${response.page_items[index].item_id}">${response.page_items[index].item__name} </option>`;
                     }
                 } 
                 else {
@@ -352,19 +352,13 @@
     })
 
     $(document).on('change', '#issue_date', function() {
-        // Perform the desired actions when the issue date changes
-        console.log("Issue Date changed to:", $(this).val());
+       
 
-        // Example: Clear a related table or perform an update
-        $("#table_form").empty();
 
        
         callback();
 
-        // Check if a specific condition is met
-        if ($('#job_order_id').val() !== "") {
-            fill_up_actual_quantity();
-        }
+        
     });
 
 
@@ -585,13 +579,13 @@
     
     $(document).on('change keyup','.quantity_sent ',function(){
         // // console.log("hi");
-        let sum = 0 
-        let amount , rate , quantitysent
-        quantitysent = parseFloat($(this).val())
-        rate = parseFloat($(this).closest('.content_parent').find('.rate').val())
-        amount = rate * quantitysent
-        $(this).closest('.content_parent').find('.amount').val(amount)
-        renderTotalAmount()
+        // let sum = 0 
+        // let amount , rate , quantitysent
+        // quantitysent = parseFloat($(this).val())
+        // rate = parseFloat($(this).closest('.content_parent').find('.rate').val())
+        // amount = rate * quantitysent
+        // $(this).closest('.content_parent').find('.amount').val(amount)
+        // renderTotalAmount()
     })
    
 
