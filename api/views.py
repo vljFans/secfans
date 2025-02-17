@@ -11464,7 +11464,7 @@ def storeTransactionSalesAdd(request):
 def storeTransactionSalesDelete(request):
     context = {}
     userId = request.COOKIES.get('userId', None)
-    print(request.POST['id'])
+    
     try:
         with transaction.atomic():
             storeTransactionHeader = models.Store_Transaction.objects.get(pk = request.POST['id'])
@@ -11481,7 +11481,7 @@ def storeTransactionSalesDelete(request):
                     store_item_update.updated_at = datetime.now()
                     store_item_update.save()
 
-                    print(11483)
+                   
                     store_item_current = models.Store_Item_Current.objects.filter(store_transaction_id = request.POST['id'],status=1, deleted=0)
            
                     if store_item_current.exists():
