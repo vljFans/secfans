@@ -97,20 +97,15 @@
                     </div>
                 </div>
                 <div class="card-body pd-0">
-                    <p><span style="color: black;"> WIP:</span> <span> partialy material issued</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: green;"> WIP:</span> <span> fully material issued</span></p>
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Job Order Number</th>
-                                    <th>Job Order Date</th>
-                                    <th>Manufacturing type</th>
-                                    <th>Manufacture Material Type</th>
-                                    <th>Estimated Time</th>
-                                    <th>Job Description</th>
-                                    <th>Job Status</th>
-                                    <th>Action</th>
+                                    <th>Transaction Number</th>
+                                    <th>Transaction Date</th>
+                                    <th>Total Amount</th>
+                                   
                                 </tr>
                             </thead>
                             <tbody id="table-body">
@@ -157,10 +152,10 @@
 </script>
 <script>
     keyword = new URLSearchParams(window.location.search).get('keyword') != null ? new URLSearchParams(window.location.search).get('keyword') : ''
-    function getJobOrderList(keyword) {
+    function getmaterialSalesList(keyword) {
         $.ajax({
             type: "GET",
-            url: "{% url 'api:jobOrderList' %}?keyword=" + keyword,
+            url: "{% url 'api:storeTransactionList' %}?transaction_type=MIV & keyword=" + keyword,
             data: ({ current_page: new URLSearchParams(window.location.search).get('page') == null ? 1 : new URLSearchParams(window.location.search).get('page') }),
             headers: {
                 'Authorization': getCookieValue("accessToken")
@@ -168,104 +163,31 @@
             success: function (response) {
                 $('.error-msg-txt').text("");
                 if (response.status == 200) {
-                    edit_url = "{% url 'superuser:jobOrderEdit' 1 %}";
-                    view_url = "{% url 'superuser:jobOrderView' 1 %}";
-                    copy_url = "{% url 'superuser:jobOrderAdd'  %}?id=";
-                    print_url = "{% url 'superuser:jobOrderPrint' 1 %}";
+                    
+                    view_url = "{% url 'superuser:materialSalesView' 1 %}";
+                   
+                    
                     page_items = response.page_items;
                     tbody_text = ``;
                     for (let index = 0; index < page_items.length; index++) {
                         const element = page_items[index];
                         tbody_buttom_text =``
-                        // console.log((element.manufacturing_material_type == 'FG' ? 'true' : 'false'));
-                        if(element.material_issue > 1 && element.material_reciept < 1){
-                            // console.log(223);
-                            
-                            tbody_buttom_text = `<td>
-                                {% if request.user.is_superuser == 1 or 'change_job_order'|get_session_permission:request is not None %}
-                                <a href="#" onclick="return alert('cannot edit  as material already get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-pencil"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'delete_job_order'|get_session_permission:request is not None %}
-                                <a href="#" onclick="return alert('cannot  delete as material already  get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-trash"></i> </a>
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
-                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
-                                <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
-                                {% endif %}
-                                 ${element.manufacturing_type == 'Self' ? `{% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
-                                    <a href="javascript:void(0);" class="table-action mg-r-10" 
-                                        onclick="{ loadMaterialInData(${ element.pk }) }"> 
-                                        <i class="fa fa-stop"></i>
-                                        </a>
-                                    {% endif %}` : ''}
-                                {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
-                                <a href="${print_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-print"></i> </a>
-                                {% endif %}
-                                </td>`
-                        }
-                        
-                        if(element.material_reciept == 1 || element.job_status == 2){
-                            tbody_buttom_text = `<td>
-                                {% if request.user.is_superuser == 1 or 'change_job_order'|get_session_permission:request is not None %}
-                                <a href="#" onclick="return alert('cannot edit  as material already get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-pencil"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'delete_job_order'|get_session_permission:request is not None %}
-                                <a href="#" onclick="return alert('cannot  delete as material already  get issued on this job order')" class="table-action mg-r-10 "> <i class="fa fa-trash"></i> </a>
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
-                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
-                                <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
-                                {% endif %}
-                                {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
-                                <a href="${print_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-print"></i> </a>
-                                {% endif %}
-                                </td>`
-                        }
-                        if(element.material_issue < 2 ){
-                            // console.log('153');
-                            tbody_buttom_text = `<td>
-                                    {% if request.user.is_superuser == 1 or 'change_job_order'|get_session_permission:request is not None %}
-                                    <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
-                                    {% endif %}
-                                    {% if request.user.is_superuser == 1 or 'delete_job_order'|get_session_permission:request is not None %}
-                                    <a id="delete-btn" data-id="${element.pk}" data-name="${element.order_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
-                                    {% endif %}
-                                    {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
-                                    <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
-                                    {% endif %}
-                                    {% if request.user.is_superuser == 1 or 'add_job_order'|get_session_permission:request is not None %}
-                                    <a href="${copy_url + element.pk}" class="table-action mg-r-10"> <i class="fa fa-copy"></i> </a>
-                                    {% endif %} 
-                                    {% if request.user.is_superuser == 1 or 'view_job_order'|get_session_permission:request is not None %}
-                                    <a href="${print_url.replace('1', element.pk)}" class="table-action mg-r-10" target="_blank"> <i class="fa fa-print"></i> </a>
-                                    {% endif %}
-                                    </td>`
-                        }
-                        
                         tbody_text += `<tr>
                                 <td>${((response.total_pages - 1) * response.per_page) +  index + 1}</td>
-                                <td>${element.order_number}</td>
-                                <td>${element.order_date}</td>
-                                <td>${element.manufacturing_type} manufacturing</td>
-                                <td>${ element.manufacturing_material_type == 'SFG' ? 'Semi finish Goods': ( element.manufacturing_material_type == 'FG' ?'Finished Goods'  : 'NA') }</td>
-                                <td>${element.estimated_time_day}</td>
-                                <td>${element.notes}</td> 
-                                 <td style="color: ${element.job_status == 0 ? 'blue' : ((element.job_status == 1 && element.material_issue ==3) ? 'green' : (element.job_status == 1 && (element.material_issue ==1 || element.material_issue ==2)) ? 'black':'red')}; ">
-                                    ${element.job_status == 0 ? 'Open' : ((element.job_status == 1 && element.material_issue ==3) ? 'WIP' : (element.job_status == 1 && (element.material_issue ==1 || element.material_issue ==2)) ? 'WIP':'Closed')}
-                                </td>`+ tbody_buttom_text+`</tr>`;
+                                <td>${element.transaction_number}</td>
+                                <td>${element.transaction_date}</td>
+                                <td>${element.total_amount} </td>
+                                <td>
+                                {% if request.user.is_superuser == 1 or 'change_item'|get_session_permission:request is not None %}
+                                <a href="${view_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-eye"></i> </a>    
+                                {% endif %}
+                                {% if request.user.is_superuser == 1 or 'delete_item'|get_session_permission:request is not None %}
+                                <a id="delete-btn" data-id="${element.pk}" data-name="${element.transaction_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>
+                                {% endif %}
+                                </td>
+                                </tr>`
                     }
-                    // pagination_text = ``;
-                    // if (response.total_pages > 1) {
-                    //     pagination_text += `<li class="page-item disabled"><a class="page-link" href="?page=1"><span class="fa fa-arrow-left"></span></a></li>`;
-                    //     for (let page = 1; page < response.total_pages; page++) {
-                    //         pagination_text += `<li class="page-item ${page == response.current_page ? 'active' : ''}"><a class="page-link" href="?page=${page}">${page}</a></li>`;
-                    //     }
-                    //     pagination_text += `<li class="page-item"><a class="page-link" href="?page=${response.total_pages}"><span class="fa fa-arrow-right"></span></a></li>`;
-                    // }
+                   
                     pagination_text = generatePaginationLinks(response.current_page, response.total_pages, response.button_to_show, keyword);
                     $('#table-body').html(tbody_text);
                     $('#pagination').html(pagination_text);
@@ -281,11 +203,10 @@
     }
 
 
-
     
 
     $(document).ready(function () {
-        getJobOrderList(keyword)
+        getmaterialSalesList(keyword)
         $('.selectpicker').select2({
             placeholder: '',
             templateResult: function(option) {
@@ -299,14 +220,11 @@
     });
 
     
-    $(document).on('click','#close',function(){
-        $('#materialInModal').modal('hide');
-        locationAfterMessageStore( '', "{% url 'superuser:jobOrderList' %}");
-    })
+    
 
     $(document).on('keyup', '#search', function () {
-        keyword = $(this).val();
-        getJobOrderList(keyword)
+        
+        getmaterialSalesList(keyword)
     })
 
    
@@ -317,14 +235,14 @@
         if (window.confirm('Are you sure to delete ' + name + '?')) {
             $.ajax({
                 type: "POST",
-                url: "{% url 'api:jobOrderDelete' %}",
+                url: "{% url 'api:storeTransactionSalesDelete' %}",
                 data: ({ id: id }),
                 headers: {
                     'Authorization': getCookieValue("accessToken"),
                 },
                 success: function (response) {
                     if (response.status == 200) {
-                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:jobOrderList' %}");
+                        locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialSalesList' %}");
                     } else {
                         alert(response.message);
                     }
