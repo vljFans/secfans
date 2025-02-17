@@ -160,7 +160,19 @@ def data_revertive_from_transaction(storeTrId, itemId, storeId, quantity, retriv
     except Exception as e:
         raise ValueError(f"An error occurred: {e}")
 
+def  check_minimal_sent_quantity_exisit(given_date,elem_id,elem_store,elem_quantity,storeTransactionId):
+    if storeTransactionId is None:
+        # Check if any record exists with closing_qty < given_number
+        exists = models.Store_Item_Current.objects.filter(
+            transaction_date__gt=given_date,
+            item_id=elem_id,
+            store_id=elem_store,
+            closing_qty__lt=elem_quantity
+        ).exists()
 
+        if exists:
+            return True
+        return False
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def loginUser(request):
@@ -2728,6 +2740,7 @@ def storeList(request):
     find_all = request.GET.get('find_all', None)
     store_type=request.GET.get('store_type', None)
     keyword = request.GET.get('keyword', None)
+    store_type_good = request.GET.get('store_type_good', None)
     
     if id is not None and id != "":
         store = list(models.Store.objects.filter(logical_grn_store=0).filter(pk=id)[:1].values(
@@ -2775,7 +2788,15 @@ def storeList(request):
                     'page_items': stores,
                 })
                 return JsonResponse(context)
-
+        if store_type_good is not None and store_type_good !="":
+            stores = list(models.Store.objects.filter(logical_grn_store=0).filter(status=1, deleted=0,store_type=store_type_good).values('pk', 'name', 'address', 'contact_name',
+                              'contact_no', 'contact_email', 'manager_name', 'pin', 'vendor_id', 'city__name', 'state__name', 'country__name'))
+            context.update({
+                'status': 200,
+                'message': "Stores Fetched Successfully.",
+                'page_items': stores,
+            })
+            return JsonResponse(context)
         per_page = int(env("PER_PAGE_DATA"))
         button_to_show = int(env("PER_PAGE_PAGINATION_BUTTON"))
         current_page = request.GET.get('current_page', 1)
@@ -7499,11 +7520,11 @@ def materialIssueDelete(request):
                         storeCuritemlast = models.Store_Item_Current.objects.filter(
                                     store_id = detail.store.id , item_id= detail.item_id,status=1, deleted=0).order_by('transaction_date','created_at')
                         storeCuritemlast = storeCuritemlast.last()
-                        print((storeCuritemlast.store_transaction_id) == int(request.POST['id']))
+                        
                         if storeCuritemlast.store_transaction_id != int(request.POST['id']):
-                            print(7503)
+                            
                             data_revertive_from_transaction(request.POST['id'], detail.item_id,detail.store_id,detail.quantity,'in')
-                        print(7505)
+                       
                         store_item_current.on_hand_qty += Decimal(detail.quantity)
                         store_item_current.closing_qty += Decimal(detail.quantity)
                         store_item_current.status = 0
@@ -11306,6 +11327,196 @@ def storeItemCurrentMigrate(request):
         context.update({
             'status': 500,
             'message': f"An error occurred: {str(e)}"
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def storeTransactionSalesAdd(request):
+    
+    context = {}
+    userId = request.COOKIES.get('userId', None)
+    try:
+        with transaction.atomic():
+            storeTransactionHeader = models.Store_Transaction()
+            storeTransactionHeader.creator_id = userId
+            # storeTransactionHeader.transaction_type = models.Transaction_Type.objects.get(name = 'GRN')
+            transaction_type = models.Transaction_Type.objects.get(name='MIV')
+            storeTransactionHeader.transaction_type = transaction_type
+            
+            storeTransactionHeader.transaction_number = env("STORE_TRANSACTION_NUMBER_SEQ").replace(
+                "${CURRENT_YEAR}", current_year).replace(
+                "${AI_DIGIT_5}", ai_digit_5()).replace(
+                "${transaction_type_id}", str(transaction_type.id).zfill(2))
+            storeTransactionHeader.transaction_date = request.POST['issue_date']
+            storeTransactionHeader.notes = request.POST['notes']
+            storeTransactionHeader.save()
+
+            # # #print('3549')
+            order_details = []
+            total_amounts = 0 
+            for index, elem in enumerate(request.POST.getlist('item_id')):
+                order_details.append(
+                        models.Store_Transaction_Detail(
+                            store_transaction_header_id=storeTransactionHeader.id,
+                            item_id=elem,
+                            store_id=request.POST['store_id'],
+                            quantity=request.POST.getlist('quantity_sent')[index],
+                            rate=request.POST.getlist('rate')[index],
+                            amount=request.POST.getlist('amount')[index],
+                        )
+                    )
+                
+                print()
+                total_amounts += float(request.POST.getlist(
+                            'amount')[index])
+                # # # # # #print('3569')
+                storeItem = models.Store_Item.objects.filter(
+                    item_id=elem, store_id=request.POST['store_id']).first()
+                # # #print(storeItem)
+                if storeItem is not None:
+                    storeItem.on_hand_qty -= Decimal(
+                        request.POST.getlist('quantity_sent')[index])
+                    # # #print(4501)
+                    storeItem.closing_qty -= Decimal(
+                        request.POST.getlist('quantity_sent')[index])  
+                    storeItem.updated_at = datetime.now()
+                    # # #print(storeItem.closing_qty)
+                    storeItem.save()
+                given_date =request.POST['issue_date']
+                    
+                checking = check_minimal_sent_quantity_exisit(given_date,elem,request.POST['store_id'],request.POST.getlist('quantity_sent')[index],None)    
+                
+                if checking:
+                    raise ValueError("cannot possible given quantity is lesser the other transction after the following date please check on item tracking")
+                
+                # Check for the last record on the given_date
+                record = models.Store_Item_Current.objects.filter(transaction_date=given_date,item_id=elem, store=request.POST['store_id'],status=1, deleted=0 ).last()
+
+                if not record:
+                    # If no record is found for the given_date, look for the last record before that date
+                    last_transaction_date = models.Store_Item_Current.objects.filter(
+                        transaction_date__lt=given_date ,item_id=elem, store_id=request.POST['store_id'],status=1, deleted=0
+                    ).aggregate(Max('transaction_date'))['transaction_date__max']
+
+                    
+
+                    if last_transaction_date:
+                        # Fetch the record for the last_transaction_date
+                        record = models.Store_Item_Current.objects.filter(
+                            transaction_date=last_transaction_date ,item_id=elem, store_id=request.POST['store_id'],status=1, deleted=0
+                        ).last()
+
+                # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
+                
+                
+                store_item_instance = models.Store_Item_Current()
+
+                if record:
+                    # Set values based on the last record found
+                    store_item_instance.opening_qty = record.closing_qty
+                    store_item_instance.on_hand_qty = record.closing_qty - Decimal(request.POST.getlist('quantity_sent')[index])
+                    store_item_instance.closing_qty = record.closing_qty -Decimal(request.POST.getlist('quantity_sent')[index])
+                
+                    if(store_item_instance.on_hand_qty<0):
+                        raise ValueError(f"out quantity is more than available quantity")
+                    # Set other fields for the new transaction
+                    store_item_instance.store_transaction_id = storeTransactionHeader.id
+                    store_item_instance.transaction_date = given_date
+                    store_item_instance.item_id = elem
+                    store_item_instance.store_id = request.POST['store_id']
+
+                    # Save the instance to the database
+                    store_item_instance.save()
+                    
+                else:
+                    message = "canot possible item found in this strore"
+                    raise ValueError(message)
+                store_item_curreEdit(request.POST['store_id'],elem,given_date,'mout', request.POST.getlist('quantity_sent')[index]) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
+                 
+            models.Store_Transaction_Detail.objects.bulk_create(order_details)       
+            storeTransactionHeader.total_amount = Decimal(total_amounts)
+            storeTransactionHeader.updated_at = datetime.now()
+            storeTransactionHeader.save()
+            
+            user_log_details_add(userId,'Store Transaction sales  Add')
+        transaction.commit()
+
+        context.update({
+            'status' : 200,
+            'message': 'material sales saved succesfully'
+        })
+
+    except Exception as e :
+        context.update({
+            'status' : 501,
+            'message': f'something went wrong{e}'
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def storeTransactionSalesDelete(request):
+    context = {}
+    userId = request.COOKIES.get('userId', None)
+    
+    try:
+        with transaction.atomic():
+            storeTransactionHeader = models.Store_Transaction.objects.get(pk = request.POST['id'])
+            
+            storeTransactionDetials = models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = request.POST['id']  )
+
+            for detail in storeTransactionDetials:
+                store_item_update = models.Store_Item.objects.filter(store_id = detail.store.id , item_id= detail.item_id)
+                
+                if store_item_update.exists():
+                    store_item_update = models.Store_Item.objects.get(store_id = detail.store.id , item_id= detail.item_id)
+                    store_item_update.on_hand_qty += Decimal(detail.quantity)
+                    store_item_update.closing_qty += Decimal(detail.quantity)
+                    store_item_update.updated_at = datetime.now()
+                    store_item_update.save()
+
+                   
+                    store_item_current = models.Store_Item_Current.objects.filter(store_transaction_id = request.POST['id'],status=1, deleted=0)
+           
+                    if store_item_current.exists():
+                        store_item_current = store_item_current.first()
+                        storeCuritemlast = models.Store_Item_Current.objects.filter(
+                                    store_id = detail.store.id , item_id= detail.item_id,status=1, deleted=0).order_by('transaction_date','created_at')
+                        storeCuritemlast = storeCuritemlast.last()
+                        
+                        if storeCuritemlast.store_transaction_id != int(request.POST['id']):
+                            
+                            data_revertive_from_transaction(request.POST['id'], detail.item_id,detail.store_id,detail.quantity,'in')
+                        
+                        store_item_current.on_hand_qty += Decimal(detail.quantity)
+                        store_item_current.closing_qty += Decimal(detail.quantity)
+                        store_item_current.status = 0
+                        store_item_current.deleted = 1
+                        store_item_current.updated_at = datetime.now()
+                        store_item_current.save()
+
+            storeTransactionHeader.status = 0
+            storeTransactionHeader.deleted = 1
+            storeTransactionHeader.updated_at = datetime.now()
+            storeTransactionHeader.save()
+            user_log_details_add(userId,'Store Transaction sales  Delete')
+        transaction.commit()
+
+        context.update({
+            'status' : 200,
+            'message': 'material sales Deleted succesfully'
+        })
+
+    except Exception as e :
+        context.update({
+            'status' : 502,
+            'message': f'something went wrong{e}'
         })
         transaction.rollback()
     return JsonResponse(context)

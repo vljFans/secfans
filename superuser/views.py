@@ -1806,6 +1806,12 @@ def  materialSalesEdit(request,id):
 
 @login_required
 def materialSalesView(request,id):
-    context = returnMaterialListView(id,2)
+    materialSales = models.Store_Transaction.objects.prefetch_related('store_transaction_detail_set').get(pk=id)
 
-    return render(request, 'portal/Material Issue/view.html', context)
+    context.update({
+        'materialSales': materialSales,
+       
+        'page_title': "Material Sales View",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},{'name': "Material Sales", 'url': reverse('superuser:materialIssueList')}, {'name': "Edit"}]
+    })
+    return render(request, 'portal/Item Sales/view.html', context)

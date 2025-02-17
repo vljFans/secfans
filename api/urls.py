@@ -194,4 +194,7 @@ urlpatterns = [
     path('store-item-current-migrate',views.storeItemCurrentMigrate, name='storeItemCurrentMigrate'),
 
     path('fg-raw-details-export', views.fgRawDetailsExport, name='fgRawDetailsExport'),
-]
+
+    path('store-transaction-sales-add', views.storeTransactionSalesAdd , name = 'storeTransactionSalesAdd'),
+    path('store-transaction-sales-delete', views.storeTransactionSalesDelete , name = 'storeTransactionSalesDelete')
+]   

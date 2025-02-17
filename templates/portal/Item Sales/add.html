@@ -69,8 +69,8 @@
                                 <div class="input-group">
                                     <select class="custom-select selectpicker" id="store_type" name="store_type" required>
                                         <option></option>
-                                        <option value="InHouse">Inhouse Store</option>
-                                        <option value="Vendor">Vendor Store</option>
+                                        <option value="r">Raw Material Good Store</option>  
+                                        <option value="f">Finished Good Store</option> 
                                     </select>
                                 </div>
                             </div>
@@ -98,6 +98,10 @@
                                 
                             </div>
                             
+                            <div class="col-md-12 mb-3">
+                                <label>Notes</label>
+                                <textarea name="notes" rows="5" class="form-control" placeholder="Note"></textarea>
+                            </div>
 
                         </div>
                         {% if request.user.is_superuser == 1 or 'add_store_transaction'|get_session_permission:request is not None %}
@@ -168,9 +172,13 @@
             let selected_item_id=$(this).val()
             $(this).children("option").each(function(index, element){
                 if($(this).val()!==selected_item_id && item_options_used_pk.includes($(this).val()) ){
+                    
+                    
                     $(this).prop("hidden",true)
                 }
                 else{
+                   
+                    
                     $(this).prop("hidden",false)
                 }
             })
@@ -181,11 +189,16 @@
     function update_item_options_used_pk(){
         item_options_used_pk=[]
         $('.item_id').each(function(){
+
+           
+            
             item_options_used_pk.push($(this).val())
         }); 
     }
 
     function callback(){
+      
+        
         var callbacks = $.Callbacks();
         callbacks.add(update_item_options_used_pk);
         callbacks.fire();
@@ -205,20 +218,16 @@
 
     $(document).ready(function () {
         $("#issue_date").val(new Date().toISOString().slice(0, 10))
-      
-      
         
     });
     
     $(document).on('change','#store_type' , function(){
         $("#table_form").empty();
-        
-     
         let store_type=$(this).val()
         $(".actual_quantity").val('')
         $('.actual_quantity_on_that_date').val('')
         $.ajax({
-            url: "{% url 'api:storeList' %}?store_type="+ encodeURIComponent(store_type),
+            url: "{% url 'api:storeList' %}?store_type_good="+ encodeURIComponent(store_type),
             type: 'GET',
             data: ({
             }),
@@ -262,7 +271,6 @@
             success: function (response) {
                 if (response.status == 200) {
                     // itemsData=response.page_items
-                    console.log('263');
                     
                     item_options_text += `<option value="">Choose item</option>`;
                     for (let index = 0; index < response.page_items.length; index++) {
@@ -300,11 +308,11 @@
                                     </div>
 
                                     <div class="col-md-1 mb-3">
-                                        <label>Rate <span class="required-indicator">*</span></label>
+                                        <label>Rates <span class="required-indicator">*</span></label>
                                         <input type="text" 
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="rate" min="0.01" class="form-control rate"
-                                            placeholder="0" readonly>
+                                            placeholder="0" >
                                     </div>
 
                                     <div class="col-md-2 mb-3">
@@ -339,31 +347,43 @@
                     return option.text;
                 }
             });
+            submit_btn_toggel()
             },
             error: function (error) {
                 $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
             }
         });
-    
-        
-      
-        
-        
+        callback();
     })
 
-    $(document).on('change', '#issue_date', function() {
-       
-
-
-       
-        callback();
-
+    $(document).on('change', '#issue_date', function() {  
         
+        if ($("#table_form").children().length != 0) { 
+            $('.quantity_sent').val('') 
+            $('.amount').val('')
+        }
+        fill_up_actual_quantity()
+        callback();
+        submit_btn_toggel()
     });
 
-
+    function submit_btn_toggel(){
+        
+        
+        if ($("#table_form").children().length == 0) {
+                    
+            $('#submit').attr('hidden','true') 
+        }
+        else{
+            $('#submit').removeAttr('hidden')
+        }
+        
+    }
    
+ 
+
     $(document).on('change','.item_id',function(){
+       
         let selected_item_pk=$(this).val()
         //// console.log(selected_item_pk);
         let store_id =  $('select#store_id option:selected').val()
@@ -371,8 +391,11 @@
         let actual_quantity_on_that_date = $(this).closest('.content_parent').find('.actual_quantity_on_that_date')
         let quantity_sent = $(this).closest('.content_parent').find('.quantity_sent')
         let rate =  $(this).closest('.content_parent').find('.rate')
+        
         let transaction_date = $('#issue_date').val()
-        // // console.log(quantity_sents.html());
+        // // console.log(quantity_sents.html())
+        quantity_sent.val('')
+        $(this).closest('.content_parent').find('.amount').val('')
         $.ajax({
             url: "{% url 'api:getActualQuantity' %}?",
             type: 'GET',
@@ -414,6 +437,7 @@
         });
 
         callback()
+        submit_btn_toggel()
     });
 
     $(document).on('click','.add_btn',function(){
@@ -447,7 +471,7 @@
                                         <input type="text" 
                                             onkeypress="return (event.charCode >=45 && event.charCode <= 46) || (event.charCode >= 48 && event.charCode <= 57)"
                                             name="rate" min="0.01" class="form-control rate"
-                                            placeholder="0" readonly>
+                                            placeholder="0" >
                                     </div>
 
                                     <div class="col-md-2 mb-3">
@@ -482,27 +506,28 @@
                     return option.text;
                 }
             });
-            renderTotalAmount()          
+            // renderTotalAmount()          
             callback()         
         });
 
     $(document).on('click', '.remove_btn', function () {
         $(this).parents().closest('.content_parent').remove();
-        renderTotalAmount()
+        // renderTotalAmount()
         callback()
     });
 
- 
     function fill_up_actual_quantity(){
         let store_id=$("#store_id").val()
         $("#table_form").children(".content_parent").each(function(){
             let actual_quantity_element=$(this).find(".actual_quantity")
             let quantity_sent_element = $(this).find('.quantity_sent')
             let transaction_date = $('#issue_date').val() 
+            
+            
             let item_id=$(this).find(".item_id").val()
             let parenttHtml = $(this).find(".item_id").parent().closest('.content_parent') 
             let actual_quantity_on_that_date = $(this).closest('.content_parent').find('.actual_quantity_on_that_date')
-
+            
             
             if(item_id && store_id){
                 $.ajax({
@@ -520,15 +545,17 @@
                         // console.log(item_id);
                         // console.log(response)
                         
-                        if (response.status == 200) {      
+                        if (response.status == 200) { 
+                            actual_quantity_element.val(+response.actual_quantity);     
                             if(response.actual_quantity == 0 || response.actual_quantity_On_that_date ==0 ) {
-                                // console.log('inside 921')
-                                parenttHtml.remove()
+                                
+                                actual_quantity_on_that_date.val(0)
+                                quantity_sent_element.attr('max',+response.actual_quantity)
                                 
                             }
                             else{
-                                // console.log('inside 926')
-                                actual_quantity_element.val(+response.actual_quantity);
+                                
+                               
                                 actual_quantity_on_that_date.val(+response.actual_quantity_On_that_date)
                                 quantity_sent_element.attr('max',+response.actual_quantity)
                             }    
@@ -539,12 +566,12 @@
                         }
                     },
                     complete:function(){
-                        if ($("#table_form").children().length == 0) {
+                        // if ($("#table_form").children().length == 0) {
                     
-                            $('#submit').attr('hidden','true') 
-                            $('#tAmount').attr('hidden','true')
-                            $('#tAmount').val('')
-                        }
+                        //     $('#submit').attr('hidden','true') 
+                        //     $('#tAmount').attr('hidden','true')
+                        //     $('#tAmount').val('')
+                        // }
                     },
                     error: function (error) {
                         $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
@@ -556,39 +583,87 @@
     }
 
     function checkMaxMin(element) {
-        if ($(element).val() == "") {
+    if ($(element).val() == "") {
+        $(element).val($(element).attr('min'));
+    } else {
+        if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
+            $(element).val($(element).attr('max'));
+        }
+        if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
             $(element).val($(element).attr('min'));
-        } else {
-            if (parseFloat($(element).attr('max')) < parseFloat($(element).val())) {
-                $(element).val($(element).attr('max'));
-            }
-            if (parseFloat($(element).attr('min')) > parseFloat($(element).val())) {
-                $(element).val($(element).attr('min'));
-            }
-        }
-        
-        if(parseFloat($(element).val())>parseFloat($(element).closest('.content_parent').find('.required_quantity').val())){
-            alert('Sent quantity is more than required job quantity')
-            $(element).val("")
-        }
-        if(parseFloat($(element).val())>parseFloat($(element).closest('.content_parent').find('.actual_quantity_on_that_date').val())){
-            alert('Sent quantity is more than required on that date in hand quantity')
-            $(element).val("")
         }
     }
+
     
+
+    let enteredValue = parseFloat($(element).val());
+    let actualQuantity = parseFloat($(element).closest('.content_parent').find('.actual_quantity_on_that_date').val());
+
+    if (enteredValue > actualQuantity) {
+        let amountField = $(element).closest('.content_parent').find('.amount');
+        amountField.val(0); // Set a default numeric value instead of an empty string
+        alert('Sent quantity is more than required on that date in hand quantity');
+        $(element).val(""); // Clear the input field
+
+        value = amountField.val();
+        amountField.val('')
+        console.log(value, 'hello');
+    }
+}
+
     $(document).on('change keyup','.quantity_sent ',function(){
         // // console.log("hi");
-        // let sum = 0 
-        // let amount , rate , quantitysent
-        // quantitysent = parseFloat($(this).val())
-        // rate = parseFloat($(this).closest('.content_parent').find('.rate').val())
-        // amount = rate * quantitysent
-        // $(this).closest('.content_parent').find('.amount').val(amount)
+        let sum = 0 
+        let amount , rate , quantitysent
+        if($(this).val() !== ''){
+            quantitysent = parseFloat($(this).val())
+            rate = parseFloat($(this).closest('.content_parent').find('.rate').val())
+            amount = rate * quantitysent
+            $(this).closest('.content_parent').find('.amount').val(amount)
+        }
+        
+       
         // renderTotalAmount()
     })
    
 
+    $(document).on('submit', '#create_form', function (e) {
+        e.preventDefault();
+        $('.submit-btn').text('Submitting...');
+        $('.submit-btn').prop('disabled', true);
+        var formData = new FormData(create_form);
+        $.ajax({
+            type: "POST",
+            evalScripts: true,
+            contentType: false,
+            processData: false,
+            url: "{% url 'api:storeTransactionSalesAdd' %}",
+            data: formData,
+            headers: {
+                'Authorization': getCookieValue("accessToken")
+            },
+            success: function (response) {
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', false);
+                if (response.status == 200) {
+                    locationAfterMessageStore(response.message, 'success', "{% url 'superuser:materialSalesList' %}");
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                $('.submit-btn').text('Submitting...');
+                $('.submit-btn').prop('disabled', false);
+                // locationAfterMessageStore(error.responseJSON.detail, 'error');
+                $('.success-msg-txt').text("");
+                $('.error-msg-txt').removeClass('text-secondary').removeClass('text-info').removeClass('text-success').removeClass('text-warning').removeClass('text-danger');
+                $('.error-msg-txt').addClass('text-danger');
+                $('.error-msg-txt').text(error.responseJSON != null ? error.responseJSON.detail : error.statusText);
+            }
+        });
+    });
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
 </script>
 
 {% endblock js %}
