@@ -5461,8 +5461,10 @@ def storeTransactionEdit(request):
                 grnTransactionheader.transaction_type = models.Transaction_Type.objects.get(name = 'GRNI')
                 grnTransactionheader.invoice_challan = request.POST['invoice_challan']
                 grnTransactionheader.old_store_transaction_id = int(request.POST['id'])
+                
                 grnTransactionheader.transaction_number = env("GRN_TRANSACTION_INSPECTION_SEQ").replace(
-                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(100))
+                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(6))
+               
                 if (request.POST.get('job_order_header_id',None) and int(request.POST['with_purchase_job_order']) == 2): # it is job order reciept
                     grnTransactionheader.job_order_id =  request.POST[
                         'job_order_header_id']
@@ -5472,7 +5474,7 @@ def storeTransactionEdit(request):
                 grnTransactionheader.total_amount = request.POST['total_amount']
                 grnTransactionheader.notes = request.POST['notes']
                 grnTransactionheader.save()
-                
+               
                 order_details = []
                 total_amounts = 0 
                 material_reciept_all = 0
@@ -5498,6 +5500,7 @@ def storeTransactionEdit(request):
                                     'amount_with_gst')[index]
                             )
                         )
+          
                 models.Grn_Inspection_Transaction_Detail.objects.bulk_create(order_details)
                 grnTransactionheader.total_amount = total_amounts
                 grnTransactionheader.save()
@@ -5676,7 +5679,8 @@ def storeTransactionEdit(request):
                         purchaseOrderHeader.delivery_status = 2
                         purchaseOrderHeader.updated_at = datetime.now()
                         purchaseOrderHeader.save()  
-
+            
+            print(5682)
             # job order incoming 
             if (request.POST.get('job_order_header_id',None) and int(request.POST['with_purchase_job_order']) == 2): #it is a job order
                 jobOrderHeader = models.Job_Order.objects.get(pk = request.POST['job_order_header_id'] )  

@@ -721,7 +721,7 @@ class Store_Transaction(models.Model):
     transaction_type = models.ForeignKey(Transaction_Type, on_delete=models.CASCADE, blank=True, null=True)
     invoice_challan = models.CharField(max_length=25, blank=True, null=True)
     purchase_order_header = models.ForeignKey(Purchase_Order, on_delete=models.CASCADE, blank=True, null=True)
-    transaction_number = models.CharField(max_length=25, blank=True, null=True)
+    transaction_number = models.CharField(max_length=35, blank=True, null=True)
     transaction_date = models.DateField(blank=True, null=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     vehicle = models.CharField(max_length=25, blank=True, null=True)
