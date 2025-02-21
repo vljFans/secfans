@@ -173,6 +173,86 @@ def  check_minimal_sent_quantity_exisit(given_date,elem_id,elem_store,elem_quant
         if exists:
             return True
         return False
+
+
+def jobOrderStoreTranasctionRetriveVendor(storeTranscationOld):
+    #data deducted from vendor store
+    invoice_no = storeTranscationOld.invoice_challan
+    store_transaction_MisT_head = models.Store_Transaction.objects.filter(invoice_challan=invoice_no ,transaction_type__name = 'MIST',deleted= 0, status=1)
+    
+    # Check if any records exist
+    if store_transaction_MisT_head.exists():
+        store_transaction_MisT_head = store_transaction_MisT_head.first()
+        store_transaction_MisT_head.status = 0 
+        store_transaction_MisT_head.invoice_challan =''
+        store_transaction_MisT_head.updated_at = datetime.now()
+        store_transaction_MisT_head.save()
+        store_transaction_details = models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = store_transaction_MisT_head.id)
+        for store_transaction_detail in store_transaction_details:
+            
+            store_items = models.Store_Item.objects.filter(item_id = store_transaction_detail.item_id, store_id = store_transaction_detail.store_id).first() 
+            
+            store_items.closing_qty += Decimal(store_transaction_detail.quantity)
+            store_items.on_hand_qty += Decimal(store_transaction_detail.quantity)
+            store_items.updated_at = datetime.now()
+            store_items.save()
+            store_item_current = models.Store_Item_Current.objects.filter(store_transaction_id = store_transaction_MisT_head.id,status=1, deleted=0)
+           
+            if store_item_current.exists():
+                store_item_current = store_item_current.first()
+                storeCuritemlast = models.Store_Item_Current.objects.filter(
+                               item_id = store_transaction_detail.item_id, store_id = store_transaction_detail.store_id,status=1, deleted=0).order_by('transaction_date','created_at')
+                storeCuritemlast = storeCuritemlast.last()
+                
+                if storeCuritemlast.store_transaction_id != store_transaction_MisT_head.id:
+                    data_revertive_from_transaction(store_transaction_MisT_head.id, store_transaction_detail.item_id,store_transaction_detail.store_id,store_transaction_detail.quantity,'in')
+                store_item_current.on_hand_qty += Decimal(store_transaction_detail.quantity)
+                store_item_current.closing_qty += Decimal(store_transaction_detail.quantity)
+                store_item_current.status = 0
+                store_item_current.updated_at = datetime.now()
+                store_item_current.save()
+        
+            joborderDet = models.Job_Order_Detail.objects.filter(job_order_header_id = storeTranscationOld.job_order.id, item_id = store_transaction_detail.item_id)
+            if joborderDet.exists():
+                joborderDet = joborderDet.first()
+                joborderDet.quantity_result += Decimal(store_transaction_detail.quantity)
+                joborderDet.updated_at = datetime.now()
+                joborderDet.save()
+
+    else:
+        raise ValueError('No transaction present in vendor store')
+
+def jobOrderStoreTranasctionRetriveInHouse(storeTranscationOld):
+    #print('inside jobOrderStoreTranasctionRetriveInHouse')
+    storeTransactionDets = models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = storeTranscationOld.id)
+
+    for storeTransactionDet in storeTransactionDets:
+        
+        store_items = models.Store_Item.objects.filter(item_id = storeTransactionDet.item_id, store_id = storeTransactionDet.store_id).first() 
+        
+        store_items.closing_qty -= Decimal(storeTransactionDet.quantity)
+        store_items.on_hand_qty -= Decimal(storeTransactionDet.quantity)
+        store_items.updated_at = datetime.now()
+        store_items.save()
+        store_item_current = models.Store_Item_Current.objects.filter(store_transaction_id = storeTranscationOld.id,status=1, deleted=0)
+        if store_item_current.exists():
+            store_item_current = store_item_current.first()
+            storeCuritemlast = models.Store_Item_Current.objects.filter(
+                               item_id = storeTransactionDet.item_id, store_id = storeTransactionDet.store_id, status=1, deleted=0).order_by('transaction_date','created_at')
+            storeCuritemlast = storeCuritemlast.last()
+            if storeCuritemlast.store_transaction_id != storeTranscationOld.id:
+                data_revertive_from_transaction(storeTranscationOld.id,
+                                            storeTransactionDet.item_id,
+                                            storeTransactionDet.store_id,
+                                            storeTransactionDet.quantity,'out')
+            store_item_current.on_hand_qty -= Decimal(storeTransactionDet.quantity)
+            store_item_current.closing_qty -= Decimal(storeTransactionDet.quantity)
+            store_item_current.status = 0
+            store_item_current.updated_at = datetime.now()
+            store_item_current.save()
+
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def loginUser(request):
@@ -5229,81 +5309,6 @@ def storeTransactionAdd(request):
     return JsonResponse(context)
 
 
-def jobOrderStoreTranasctionRetriveVendor(storeTranscationOld):
-    #data deducted from vendor store
-    invoice_no = storeTranscationOld.invoice_challan
-    store_transaction_MisT_head = models.Store_Transaction.objects.filter(invoice_challan=invoice_no ,transaction_type__name = 'MIST',deleted= 0, status=1)
-    
-    # Check if any records exist
-    if store_transaction_MisT_head.exists():
-        store_transaction_MisT_head = store_transaction_MisT_head.first()
-        store_transaction_MisT_head.status = 0 
-        store_transaction_MisT_head.invoice_challan =''
-        store_transaction_MisT_head.updated_at = datetime.now()
-        store_transaction_MisT_head.save()
-        store_transaction_details = models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = store_transaction_MisT_head.id)
-        for store_transaction_detail in store_transaction_details:
-            
-            store_items = models.Store_Item.objects.filter(item_id = store_transaction_detail.item_id, store_id = store_transaction_detail.store_id).first() 
-            
-            store_items.closing_qty += Decimal(store_transaction_detail.quantity)
-            store_items.on_hand_qty += Decimal(store_transaction_detail.quantity)
-            store_items.updated_at = datetime.now()
-            store_items.save()
-            store_item_current = models.Store_Item_Current.objects.filter(store_transaction_id = store_transaction_MisT_head.id,status=1, deleted=0)
-           
-            if store_item_current.exists():
-                store_item_current = store_item_current.first()
-                storeCuritemlast = models.Store_Item_Current.objects.filter(
-                               item_id = store_transaction_detail.item_id, store_id = store_transaction_detail.store_id,status=1, deleted=0).order_by('transaction_date','created_at')
-                storeCuritemlast = storeCuritemlast.last()
-                
-                if storeCuritemlast.store_transaction_id != store_transaction_MisT_head.id:
-                    data_revertive_from_transaction(store_transaction_MisT_head.id, store_transaction_detail.item_id,store_transaction_detail.store_id,store_transaction_detail.quantity,'in')
-                store_item_current.on_hand_qty += Decimal(store_transaction_detail.quantity)
-                store_item_current.closing_qty += Decimal(store_transaction_detail.quantity)
-                store_item_current.status = 0
-                store_item_current.updated_at = datetime.now()
-                store_item_current.save()
-        
-            joborderDet = models.Job_Order_Detail.objects.filter(job_order_header_id = storeTranscationOld.job_order.id, item_id = store_transaction_detail.item_id)
-            if joborderDet.exists():
-                joborderDet = joborderDet.first()
-                joborderDet.quantity_result += Decimal(store_transaction_detail.quantity)
-                joborderDet.updated_at = datetime.now()
-                joborderDet.save()
-
-    else:
-        raise ValueError('No transaction present in vendor store')
-
-def jobOrderStoreTranasctionRetriveInHouse(storeTranscationOld):
-    #print('inside jobOrderStoreTranasctionRetriveInHouse')
-    storeTransactionDets = models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = storeTranscationOld.id)
-
-    for storeTransactionDet in storeTransactionDets:
-        
-        store_items = models.Store_Item.objects.filter(item_id = storeTransactionDet.item_id, store_id = storeTransactionDet.store_id).first() 
-        
-        store_items.closing_qty -= Decimal(storeTransactionDet.quantity)
-        store_items.on_hand_qty -= Decimal(storeTransactionDet.quantity)
-        store_items.updated_at = datetime.now()
-        store_items.save()
-        store_item_current = models.Store_Item_Current.objects.filter(store_transaction_id = storeTranscationOld.id,status=1, deleted=0)
-        if store_item_current.exists():
-            store_item_current = store_item_current.first()
-            storeCuritemlast = models.Store_Item_Current.objects.filter(
-                               item_id = storeTransactionDet.item_id, store_id = storeTransactionDet.store_id, status=1, deleted=0).order_by('transaction_date','created_at')
-            storeCuritemlast = storeCuritemlast.last()
-            if storeCuritemlast.store_transaction_id != storeTranscationOld.id:
-                data_revertive_from_transaction(storeTranscationOld.id,
-                                            storeTransactionDet.item_id,
-                                            storeTransactionDet.store_id,
-                                            storeTransactionDet.quantity,'out')
-            store_item_current.on_hand_qty -= Decimal(storeTransactionDet.quantity)
-            store_item_current.closing_qty -= Decimal(storeTransactionDet.quantity)
-            store_item_current.status = 0
-            store_item_current.updated_at = datetime.now()
-            store_item_current.save()
 
 
 @api_view(['POST'])
@@ -6400,6 +6405,93 @@ def jobOrderTimeComplete(pk):
     jobOrderHeader.updated_at = datetime.now()
     jobOrderHeader.save()
 
+# def joborderInhouseBack(storeTranasctionold):
+#     storeTransactionDetails = models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = storeTranasctionold.id)
+#     jobOrderHeader = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=storeTranasctionold.id)
+#     for detail in storeTransactionDetails:
+#         jobOrderDetEdit = models.Job_Order_Detail.objects.filter(job_order_header_id=storeTranasctionold.job_order_id,item_id = detail.item_id, direction='incoming').first()
+#         jobOrderDetEdit.quantity_result = Decimal(jobOrderDetEdit.quantity_result) + Decimal(detail.quantity)
+#         jobOrderDetEdit.updated_at = datetime.now()
+#         jobOrderDetEdit.save()
+
+#         resultant_quantity_result =  models.Job_Order_Detail.objects.filter(job_order_header_id= id,direction='outgoing')
+                
+#         for det in resultant_quantity_result:
+#             boMHeadDetailsExist = models.Bill_Of_Material_Detail.objects.filter(item_id = det.item_id, bill_of_material_header_id = jobOrderHeader.bom_type_head_id).exists()
+#             if boMHeadDetailsExist:
+#                 bomDetailsFirst = models.Bill_Of_Material_Detail.objects.filter(item_id= det.item_id , bill_of_material_header_id =jobOrderHeader.bom_type_head).first()
+#                 BomQuantity  = float(bomDetailsFirst.quantity)
+#             resultant_quantity_result_first = models.Job_Order_Detail.objects.filter(item_id = det.item_id, job_order_header_id= storeTranasctionold.id,direction='outgoing').first()
+#             resultant_quantity_result_first.quantity_result = 0.0  if not boMHeadDetailsExist else (resultant_quantity_result_first.quantity_result + Decimal(BomQuantity* Decimal(detail.quantity)))
+            
+#             resultant_quantity_result_first.updated_at = datetime.now()
+#             resultant_quantity_result_first.save()
+
+
+def joborderInhouseBack(storeTranasctionold):
+    # Fetch all store transaction details at once
+    store_transaction_details = models.Store_Transaction_Detail.objects.filter(
+        store_transaction_header_id=storeTranasctionold.id
+    )
+    
+    # Fetch job order header with related details
+    job_order_header = models.Job_Order.objects.prefetch_related('job_order_detail_set').get(pk=storeTranasctionold.job_order_id)
+
+    # Fetch all relevant Job_Order_Detail entries in bulk
+    job_order_details = models.Job_Order_Detail.objects.filter(
+        job_order_header_id=storeTranasctionold.job_order_id,
+        item_id__in=[detail.item_id for detail in store_transaction_details]
+    )
+   
+    # Create a mapping for quick lookup
+    job_order_details_map = {
+        (detail.item_id, detail.direction): detail for detail in job_order_details
+    }
+
+    # Update quantity_result for incoming items
+    updated_job_order_details = []
+    for detail in store_transaction_details:
+        key = (detail.item_id, 'incoming')
+        if key in job_order_details_map:
+            job_order_det_edit = job_order_details_map[key]
+            job_order_det_edit.quantity_result += Decimal(detail.quantity)
+            job_order_det_edit.updated_at = datetime.now()
+            updated_job_order_details.append(job_order_det_edit)
+
+    # Bulk update incoming job order details
+    if updated_job_order_details:
+        models.Job_Order_Detail.objects.bulk_update(updated_job_order_details, ['quantity_result', 'updated_at'])
+
+    # Fetch all outgoing job order details in bulk
+    outgoing_job_order_details = models.Job_Order_Detail.objects.filter(
+        job_order_header_id=storeTranasctionold.job_order_id,
+        direction='outgoing'
+    )
+
+    # Fetch all relevant Bill_Of_Material_Detail entries in bulk
+    bill_of_material_details = models.Bill_Of_Material_Detail.objects.filter(
+        bill_of_material_header_id=job_order_header.bom_type_head_id,
+        item_id__in=[det.item_id for det in outgoing_job_order_details]
+    )
+
+    # Create a mapping for BOM details
+    bom_details_map = {bom.item_id: bom.quantity for bom in bill_of_material_details}
+
+    # Update outgoing job order details
+    updated_outgoing_details = []
+    for det in outgoing_job_order_details:
+        if det.item_id in bom_details_map:
+            bom_quantity = float(bom_details_map[det.item_id])
+            det.quantity_result += Decimal(bom_quantity) * Decimal(detail.quantity)
+        else:
+            det.quantity_result = 0.0
+        det.updated_at = datetime.now()
+        updated_outgoing_details.append(det)
+
+    # Bulk update outgoing job order details
+    if updated_outgoing_details:
+        models.Job_Order_Detail.objects.bulk_update(updated_outgoing_details, ['quantity_result', 'updated_at'])
+   
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def selfJobOrderReciept(request):
@@ -6578,7 +6670,56 @@ def selfJobOrderReciept(request):
         })
         transaction.rollback()    
     return JsonResponse(context)    
-   
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def selfJobOrderRecieptDel(request):
+    context = {}
+    
+    id = request.POST['id']
+    userId = request.COOKIES.get('userId', None)
+    try:
+        with transaction.atomic():
+            storeTranasctionHeaderOld = models.Store_Transaction.objects.get(pk = id)
+
+        
+            jobOrderStoreTranasctionRetriveInHouse(storeTranasctionHeaderOld)
+                
+            jobOrderHeader = models.Job_Order.objects.get(pk = storeTranasctionHeaderOld.job_order.id)
+
+            joborderInhouseBack(storeTranasctionHeaderOld)
+            all_material_recieved =  models.Job_Order_Detail.objects.filter(
+                                        job_order_header_id=storeTranasctionHeaderOld.job_order.id,
+                                        direction='incoming',
+                                        quantity_result=0.00
+                                    ).exists()
+            
+            if not all_material_recieved:
+                jobOrderHeader.material_reciept = 0
+                jobOrderHeader.actual_time_take = ''
+                jobOrderHeader.job_status = 1
+                jobOrderHeader.updated_at = datetime.now()
+                jobOrderHeader.save()
+
+            storeTranasctionHeaderOld.status=0
+            storeTranasctionHeaderOld.deleted = 1
+            storeTranasctionHeaderOld.save()
+        transaction.commit()
+        user_log_details_add(userId,'store transaction for self job deleted sucessfully')
+        context.update({
+            'status': 200,
+            'message': 'store transaction for self job deleted sucessfully'
+        })
+    except Exception as e:
+        print(f'issue: {e}')
+        context.update({
+            'status': 593,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()    
+    return JsonResponse(context)    
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

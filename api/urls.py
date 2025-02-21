@@ -131,13 +131,14 @@ urlpatterns = [
     path('job-order-delete', views.jobOrderDelete, name='jobOrderDelete'),
     path('job-order-details', views.jobOrderDetails, name='jobOrderDetails'),
     path('job-order-no', views.jobOrderNo, name='jobOrderNo'),
-     path('self-job-order-reciept', views.selfJobOrderReciept, name='selfJobOrderReciept'),
+    path('self-job-order-reciept', views.selfJobOrderReciept, name='selfJobOrderReciept'),
+    path('self-job-order-reciept-del', views.selfJobOrderRecieptDel, name='selfJobOrderRecieptDel'),
 
     # path('material-issue-details', views.materialIssueDetails, name='materialIssueDetails'),
     path('get-actual-quantity', views.getActualQuantity, name='getActualQuantity'),
     path('material-issue-add', views.materialIssueAdd, name='materialIssueAdd'),
     path('material-issue-edit', views.materialIssueEdit, name='materialIssueEdit'),
-     path('material-issue-delete', views.materialIssueDelete, name='materialIssueDelete'),
+    path('material-issue-delete', views.materialIssueDelete, name='materialIssueDelete'),
     path('material-issue-details', views.materialIssueDetails, name='materialIssueDetails'),
 
     # path grn inspection ---developed by saswata
