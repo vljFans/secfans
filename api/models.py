@@ -629,7 +629,7 @@ class Job_Order_Detail(models.Model):
     deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=now)
     updated_at = models.DateTimeField(default=now)
-    direction = models.CharField(max_length=20, choices=DIRECTION_CHOICES, default='outgoing')
+    direction = models.CharField(max_length=20, choices=DIRECTION_CHOICES, default='outgoing') 
 
     def __str__(self):
         return self.job_order_header.order_number
@@ -764,7 +764,7 @@ class Store_Transaction_Detail(models.Model):
     amount_with_gst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
-    direction = models.CharField(max_length=255, null=True)
+    direction = models.CharField(max_length=255, null=True) #incomming
     created_at = models.DateTimeField(default=now)
     updated_at = models.DateTimeField(default=now)
 
@@ -1124,6 +1124,7 @@ class Store_Item_Current(models.Model):
     quantity_Transfer =  models.CharField(max_length=100, blank=True, null=True)
     store_transaction =  models.ForeignKey(Store_Transaction, on_delete=models.CASCADE, blank=True, null=True)
     transaction_date = models.DateField(blank=True, null=True)
+    blocked_qty = models.DecimalField(max_digits=15, decimal_places=5, default=0)
     status = models.SmallIntegerField(default=1)
     deleted = models.BooleanField(default=0)
     created_at = models.DateTimeField(default=now)

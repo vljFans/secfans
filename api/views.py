@@ -251,6 +251,211 @@ def jobOrderStoreTranasctionRetriveInHouse(storeTranscationOld):
             store_item_current.updated_at = datetime.now()
             store_item_current.save()
 
+def store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity):
+    # #print(4221)
+    # Fetch the last transaction_date less than the given_date
+    given_date = transaction_date
+
+    # Check for the last record on the given_date
+    record =  models.Store_Item_Current.objects.filter(transaction_date__gt=given_date,store_id=store_id,item_id=item_id,status=1, deleted=0)
+
+    if record:
+        if transact_type == 'min':
+            models.Store_Item_Current.objects.filter(
+                transaction_date__gt=given_date, 
+                store_id=store_id, 
+                item_id=item_id,
+                status= 1,
+                deleted = 0
+            ).update(
+                opening_qty=F('opening_qty') + Decimal(quantity),
+                closing_qty=F('closing_qty') + Decimal(quantity),
+                on_hand_qty=F('on_hand_qty') + Decimal(quantity),
+                updated_at=now()
+            )
+        if transact_type == 'mout':
+           
+            models.Store_Item_Current.objects.filter(
+                transaction_date__gt=given_date, 
+                store_id=store_id, 
+                item_id=item_id,
+                status= 1,
+                deleted = 0
+            ).update(
+                opening_qty=F('opening_qty') - Decimal(quantity),
+                closing_qty=F('closing_qty') - Decimal(quantity),
+                on_hand_qty=F('on_hand_qty') - Decimal(quantity),
+                updated_at=now()
+            )
+  
+def store_item_curreEdit_block_qty(store_id, item_id, transaction_date,transact_type,quantity,storeTrId):
+    print(4221)
+    try:
+        if storeTrId == None: 
+            print(294)
+            given_date = transaction_date
+
+            # Check for the last record on the given_date
+            record =  models.Store_Item_Current.objects.filter(transaction_date__gt=given_date,store_id=store_id,item_id=item_id,status=1, deleted=0)
+
+            if record:
+                if transact_type == 'min':
+                    models.Store_Item_Current.objects.filter(
+                        transaction_date__gt=given_date, 
+                        store_id=store_id, 
+                        item_id=item_id,
+                        status= 1,
+                        deleted = 0
+                    ).update(
+                        blocked_qty=F('blocked_qty') + Decimal(quantity),
+                       
+                        updated_at=now()
+                    )
+                if transact_type == 'mout':
+                
+                    models.Store_Item_Current.objects.filter(
+                        transaction_date__gt=given_date, 
+                        store_id=store_id, 
+                        item_id=item_id,
+                        status= 1,
+                        deleted = 0
+                    ).update(
+                        blocked_qty=F('blocked_qty') - Decimal(quantity),
+                        updated_at=now()
+                    )
+        else:
+            
+            itemId = item_id
+            storeId = store_id
+            retrivaltype = transact_type
+            subquery_transaction_date = models.Store_Item_Current.objects.filter(
+            store_transaction_id=storeTrId, status=1, deleted=0
+        ).values('transaction_date')[:1]
+
+            subquery_created_at = models.Store_Item_Current.objects.filter(
+                store_transaction_id=storeTrId, status=1, deleted=0
+            ).values('created_at')[:1]
+
+
+            # Determine the adjustment factor based on retrieval type
+            adjustment = Decimal(quantity) if retrivaltype == 'min' else -(Decimal(quantity))
+
+            # Filter and update matching records in bulk
+            updated_count = models.Store_Item_Current.objects.filter(
+                item_id=itemId,
+                store_id=storeId,
+                status=1,
+                deleted=0,
+            ).filter(
+                Q(
+                    Q(
+                        transaction_date=Subquery(subquery_transaction_date),
+                        created_at__gt=Subquery(subquery_created_at)
+                    ) |
+                    Q(transaction_date__gt=Subquery(subquery_transaction_date))
+                )
+            ).update(
+                blocked_qty=F('blocked_qty') + adjustment,
+            
+                updated_at=datetime.now()
+            )
+
+            # Log the result of the update
+            if updated_count == 0:
+                raise ValueError(f'No data found for the given criteria.of item id : of {itemId} and store id: {storeId}')
+
+    except Exception as e:
+        raise ValueError(f'issued when try to change blocked quantity{e}')
+    
+def add_incoming_grnt_to_other_materialIssue(quantity,item_id,store_id,materialgrnt):
+    try:
+        anotherMaterialGrnt = models.Store_Transaction.objects.filter(transaction_type__name='GRNT',job_order_id =materialgrnt.job_order_id ,status=1 ,deleted=0).exclude(pk=materialgrnt.id)
+        if anotherMaterialGrnt.exists():
+            anotherMaterialGrnt = anotherMaterialGrnt.first()
+            storeTranasctionDet =models.Store_Transaction_Detail()
+            storeTranasctionDet.item_id = item_id
+            storeTranasctionDet.store_id = store_id
+            storeTranasctionDet.store_transaction_header_id = anotherMaterialGrnt.id
+            storeTranasctionDet.quantity = quantity
+            storeTranasctionDet.direction = 'incomming'
+            storeTranasctionDet.save()
+
+            if models.Store_Item.objects.filter(store_id=store_id, item_id=item_id).exists():
+                store_item=models.Store_Item.objects.get(store_id=store_id, item_id=item_id)
+                store_item.on_hand_qty+=Decimal(quantity)
+                store_item.closing_qty+= Decimal(quantity)
+                store_item.updated_at = datetime.now()
+                store_item.save()
+            # If the item does not exist in vendor store so new store item is being created
+            else:
+                store_item=models.Store_Item()
+                store_item.store_id=store_id
+                store_item.item_id=item_id
+                store_item.opening_qty = Decimal(quantity)
+                store_item.on_hand_qty = Decimal(quantity)
+                store_item.closing_qty = Decimal(quantity)
+                store_item.save()
+            
+
+            # change in storeItemCurrent min
+            # Fetch the last transaction_date less than the given_date
+            given_date =materialgrnt.transaction_date
+            
+            # Check for the last record on the given_date
+            record = models.Store_Item_Current.objects.filter(transaction_date=given_date,store_id=store_id, item_id=item_id,status=1, deleted=0).last()
+
+            if not record:
+                # If no record is found for the given_date, look for the last record before that date
+                last_transaction_date = models.Store_Item_Current.objects.filter(
+                    transaction_date__lt=given_date,store_id=store_id, item_id=item_id,status=1, deleted=0
+                ).aggregate(Max('transaction_date'))['transaction_date__max']
+
+                
+
+                if last_transaction_date:
+                    # Fetch the record for the last_transaction_date
+                    record = models.Store_Item_Current.objects.filter(
+                        transaction_date=last_transaction_date,store_id=store_id, item_id=item_id,status=1, deleted=0
+                    ).last()
+
+            # Initialize a new instance of Store_Item_Current (Avoid shadowing the model name)
+            
+            
+            store_item_instance = models.Store_Item_Current()
+
+            if record:
+                # Set values based on the last record found
+                store_item_instance.opening_qty = record.closing_qty
+                store_item_instance.on_hand_qty = record.closing_qty + Decimal(quantity)
+                store_item_instance.closing_qty = record.closing_qty + Decimal(quantity)
+                store_item_instance.blocked_qty = record.blocked_qty + Decimal(quantity)
+            else:
+                # Set values based on the current transaction if no prior record exists
+                store_item_instance.opening_qty = Decimal(
+                    0.00
+                )
+                store_item_instance.on_hand_qty = Decimal(quantity)
+                store_item_instance.closing_qty = Decimal(quantity)
+                store_item_instance.blocked_qty =Decimal(quantity)
+                
+            if(store_item_instance.on_hand_qty<0):
+                raise ValueError(f"onhand quantity is less than 0")
+            # Set other fields for the new transaction
+            store_item_instance.store_transaction_id = anotherMaterialGrnt.id
+            store_item_instance.transaction_date = given_date
+            store_item_instance.item_id = item_id
+            store_item_instance.store_id = store_id
+
+            # Save the instance to the database
+            store_item_instance.save()
+            
+            store_item_curreEdit(store_id,item_id,given_date,'min', quantity) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
+            print(453)
+            store_item_curreEdit_block_qty(store_id,item_id,given_date,'min',quantity,None)
+        else:
+            raise ValueError(f"no other Grnt material issue found check database")
+    except Exception as e:
+        raise ValueError(f'issued when try to add incoming grant to other material issue{e}')
 
 
 @api_view(['POST'])
@@ -4583,43 +4788,6 @@ def storeItemImport(request):
 #             'name': tmpname
 #         })
 
-def store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity):
-    # #print(4221)
-    # Fetch the last transaction_date less than the given_date
-    given_date = transaction_date
-
-    # Check for the last record on the given_date
-    record =  models.Store_Item_Current.objects.filter(transaction_date__gt=given_date,store_id=store_id,item_id=item_id,status=1, deleted=0)
-
-    if record:
-        if transact_type == 'min':
-            models.Store_Item_Current.objects.filter(
-                transaction_date__gt=given_date, 
-                store_id=store_id, 
-                item_id=item_id,
-                status= 1,
-                deleted = 0
-            ).update(
-                opening_qty=F('opening_qty') + Decimal(quantity),
-                closing_qty=F('closing_qty') + Decimal(quantity),
-                on_hand_qty=F('on_hand_qty') + Decimal(quantity),
-                updated_at=now()
-            )
-        if transact_type == 'mout':
-           
-            models.Store_Item_Current.objects.filter(
-                transaction_date__gt=given_date, 
-                store_id=store_id, 
-                item_id=item_id,
-                status= 1,
-                deleted = 0
-            ).update(
-                opening_qty=F('opening_qty') - Decimal(quantity),
-                closing_qty=F('closing_qty') - Decimal(quantity),
-                on_hand_qty=F('on_hand_qty') - Decimal(quantity),
-                updated_at=now()
-            )
-  
 
 
 
@@ -7137,12 +7305,19 @@ def materialIssueAdd(request):
             'message': "Job Order/Issue Date/Store has not been provided."
         })
         return JsonResponse(context)
-
+    tpmNos = 'tpm_1'
     try:
         with transaction.atomic():
             job_order_income_detalis = list(models.Job_Order_Detail.objects.filter(job_order_header_id = request.POST['job_order_id'] , direction = 'incoming' ))
             #vendor store exist  for third party stock add 
             # # # # #print(5620)
+            storeTranasctionTpmcount = models.Store_Transaction.objects.filter(transaction_type__name = 'MIS').order_by('pk','created_at')
+            if storeTranasctionTpmcount:
+                storeTranasctionTpmcount = storeTranasctionTpmcount.last()
+                tpmNo = storeTranasctionTpmcount.tpm_no if storeTranasctionTpmcount.tpm_no else 'tpm_0'
+                counts = int(tpmNo.split("_")[-1]) +1
+                tpmNos ='tpm_' + str(counts)
+            
             if request.POST['vendor_id'] :
                 venStoreExist = models.Store.objects.filter(vendor_id =request.POST['vendor_id']).exists()
                 if((len(job_order_income_detalis) > 0) and (venStoreExist is False)):
@@ -7173,6 +7348,7 @@ def materialIssueAdd(request):
             storeTransactionHeader.transaction_date=request.POST['issue_date']
             storeTransactionHeader.job_order_id = request.POST['job_order_id']
             storeTransactionHeader.total_amount = request.POST['total_amount']
+            storeTransactionHeader.tpm_no = tpmNos
             storeTransactionHeader.creator_id = userId
             if request.POST['vehicle']!="" and request.POST.get('vehicle',None):
                 storeTransactionHeader.vehicle = request.POST['vehicle']
@@ -7205,7 +7381,7 @@ def materialIssueAdd(request):
                 
                 storeTransactionHeaderIn.transaction_date=request.POST['issue_date']
                 storeTransactionHeaderIn.job_order_id = request.POST['job_order_id']
-                
+                storeTransactionHeaderIn.tpm_no = tpmNos
                 storeTransactionHeaderIn.save()
 
                 store_transaction_details = []
@@ -7293,11 +7469,13 @@ def materialIssueAdd(request):
                             store_item_instance.opening_qty = record.closing_qty
                             store_item_instance.on_hand_qty = record.closing_qty + Decimal(thirdPartyInQuantity)
                             store_item_instance.closing_qty = record.closing_qty + Decimal(thirdPartyInQuantity)
+                            store_item_instance.blocked_qty = record.blocked_qty + Decimal(thirdPartyInQuantity)
                         else:
                             # Set values based on the current transaction if no prior record exists
                             store_item_instance.opening_qty = Decimal(0.00)
                             store_item_instance.on_hand_qty = Decimal(thirdPartyInQuantity)
                             store_item_instance.closing_qty = Decimal(thirdPartyInQuantity)
+                            store_item_instance.blocked_qty = Decimal(thirdPartyInQuantity)
                         if(store_item_instance.on_hand_qty<0):
                              raise ValueError(f"ohnand quantity is less than 0")
                         # Set other fields for the new transaction
@@ -7308,9 +7486,8 @@ def materialIssueAdd(request):
 
                         # Save the instance to the database
                         store_item_instance.save()
-                        
                         store_item_curreEdit(vendor_store.id,itemInThrdParty,given_date,'min', thirdPartyInQuantity) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
-                        print(itemInThrdParty,vendor_store.name,thirdPartyInQuantity)
+                        store_item_curreEdit_block_qty(vendor_store.id,itemInThrdParty,given_date,'min', thirdPartyInQuantity,None)
                         incomeMaterialInsertPossible= True
                    
                  #material issue issued for job order
@@ -7426,6 +7603,9 @@ def materialIssueAdd(request):
                         store_item_instance.closing_qty = record.closing_qty + Decimal(
                            request.POST.getlist('quantity_sent')[index]
                         )
+                        store_item_instance.blocked_qty = record.blocked_qty + Decimal(
+                           request.POST.getlist('quantity_sent')[index]
+                        )
                     else:
                         # Set values based on the current transaction if no prior record exists
                         store_item_instance.opening_qty = Decimal(
@@ -7437,6 +7617,10 @@ def materialIssueAdd(request):
                         store_item_instance.closing_qty = Decimal(
                             request.POST.getlist('quantity_sent')[index]
                         )
+                        store_item_instance.blocked_qty = Decimal(
+                            request.POST.getlist('quantity_sent')[index]
+                        )
+                        
                     if(store_item_instance.on_hand_qty<0):
                         raise ValueError(f"onhand quantity is less than 0")
                     # Set other fields for the new transaction
@@ -7449,7 +7633,8 @@ def materialIssueAdd(request):
                     store_item_instance.save()
                     
                     store_item_curreEdit(vendor_store.id,elem,given_date,'min', request.POST.getlist('quantity_sent')[index]) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
-
+                    
+                    store_item_curreEdit_block_qty(vendor_store.id,elem,given_date,'min', request.POST.getlist('quantity_sent')[index],None)
                 # # # # #print(5811)    
                 # In house store items being reduced
                 # # # # # #print(models.Store.objects.filter(id=request.POST['store_id']).exists())
@@ -7624,8 +7809,24 @@ def materialIssueDelete(request):
     
     context = {}
     userId = request.COOKIES.get('userId', None)
+    boolTrue = False
     materialIssue = models.Store_Transaction.objects.get(pk=request.POST['id'])
     materiIssueCount = models.Store_Transaction.objects.filter(job_order=materialIssue.job_order,transaction_type__name='MIS',status=1, deleted=0).count()
+    materialRecievedGrntHasIncom = False
+    
+    if materialIssue.vendor :
+        materialRecievedGrnT = models.Store_Transaction.objects.get(tpm_no= materialIssue.tpm_no , transaction_type__name ='GRNT')
+        materialRecievedGrnTDet = models.Store_Transaction_Detail.objects.filter(direction='incomming' ,store_transaction_header_id = materialRecievedGrnT.id)
+        jobOrderIncomDet = models.Job_Order_Detail.objects.filter(direction='incoming').first()
+        boolTrue = True if (jobOrderIncomDet.quantity_result !=  jobOrderIncomDet.quantity) else False
+        materialRecievedGrntHasIncom = True if (materialRecievedGrnTDet.exists()) else False
+        if (materialRecievedGrnTDet.exists()) and( boolTrue == True):
+
+            context.update({
+                    'status': 597,
+                    'message': "material already utilised and deliverd paritally"
+                })
+            return JsonResponse(context)        
     if materiIssueCount < 2:
         materialIssueGrnHas = models.Store_Transaction.objects.filter(job_order=materialIssue.job_order,transaction_type__name='GRN',status=1, deleted=0)
         if materialIssueGrnHas.exists():
@@ -7638,7 +7839,43 @@ def materialIssueDelete(request):
         with transaction.atomic():
             materialIssue = models.Store_Transaction.objects.get(pk=request.POST['id'])
             materialIssueDetails = models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = request.POST['id'])
+            if materialIssue.vendor :
+                materialRecievedGrnT = models.Store_Transaction.objects.get(tpm_no= materialIssue.tpm_no , transaction_type__name ='GRNT')
+                materialRecievedGrnTDet = models.Store_Transaction_Detail.objects.filter(store_transaction_header_id = materialRecievedGrnT.id)
+                for detail in materialRecievedGrnTDet:
+                    store_item_update = models.Store_Item.objects.filter(store_id = detail.store.id , item_id= detail.item_id)
+                    if store_item_update.exists():
+                        store_item_update = models.Store_Item.objects.get(store_id = detail.store.id , item_id= detail.item_id)
+                        store_item_update.on_hand_qty -= Decimal(detail.quantity)
+                        store_item_update.closing_qty -= Decimal(detail.quantity)
+                        store_item_update.updated_at = datetime.now()
+                        store_item_update.save()
+
+                        store_item_current = models.Store_Item_Current.objects.filter(store_transaction_id = materialRecievedGrnT.id,status=1, deleted=0)
             
+                        if store_item_current.exists():
+                            store_item_current = store_item_current.first()
+                            storeCuritemlast = models.Store_Item_Current.objects.filter(
+                                        store_id = detail.store.id , item_id= detail.item_id,status=1, deleted=0).order_by('transaction_date','created_at')
+                            storeCuritemlast = storeCuritemlast.last()
+                            
+                            if storeCuritemlast.store_transaction_id != int( materialRecievedGrnT.id):
+                                
+                                data_revertive_from_transaction( materialRecievedGrnT.id, detail.item_id,detail.store_id,detail.quantity,'out')
+                                store_item_curreEdit_block_qty(detail.store_id, detail.item_id, materialRecievedGrnT.transaction_date,'out',detail.quantity, materialRecievedGrnT.id)
+                            store_item_current.on_hand_qty -= Decimal(detail.quantity)
+                            store_item_current.closing_qty -= Decimal(detail.quantity)
+                            store_item_current.status = 0
+                            store_item_current.deleted = 1
+                            store_item_current.updated_at = datetime.now()
+                            store_item_current.save()
+                            if detail.direction  and detail.direction == 'incomming':
+                                add_incoming_grnt_to_other_materialIssue(detail.quantity,detail.item_id,detail.store_id,materialRecievedGrnT)
+
+                materialRecievedGrnT.status =0
+                materialRecievedGrnT.deleted = 1
+                materialRecievedGrnT.update_at = datetime.now()
+                materialRecievedGrnT.save()
 
             for detail in materialIssueDetails:
                
