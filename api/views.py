@@ -289,10 +289,10 @@ def store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quant
             )
   
 def store_item_curreEdit_block_qty(store_id, item_id, transaction_date,transact_type,quantity,storeTrId):
-    print(4221)
+    
     try:
         if storeTrId == None: 
-            print(294)
+           
             given_date = transaction_date
 
             # Check for the last record on the given_date
@@ -428,7 +428,7 @@ def add_incoming_grnt_to_other_materialIssue(quantity,item_id,store_id,materialg
                 store_item_instance.opening_qty = record.closing_qty
                 store_item_instance.on_hand_qty = record.closing_qty + Decimal(quantity)
                 store_item_instance.closing_qty = record.closing_qty + Decimal(quantity)
-                store_item_instance.blocked_qty = record.blocked_qty + Decimal(quantity)
+                # store_item_instance.blocked_qty = record.blocked_qty + Decimal(quantity)
             else:
                 # Set values based on the current transaction if no prior record exists
                 store_item_instance.opening_qty = Decimal(
@@ -436,7 +436,7 @@ def add_incoming_grnt_to_other_materialIssue(quantity,item_id,store_id,materialg
                 )
                 store_item_instance.on_hand_qty = Decimal(quantity)
                 store_item_instance.closing_qty = Decimal(quantity)
-                store_item_instance.blocked_qty =Decimal(quantity)
+                # store_item_instance.blocked_qty =Decimal(quantity)
                 
             if(store_item_instance.on_hand_qty<0):
                 raise ValueError(f"onhand quantity is less than 0")
@@ -450,8 +450,8 @@ def add_incoming_grnt_to_other_materialIssue(quantity,item_id,store_id,materialg
             store_item_instance.save()
             
             store_item_curreEdit(store_id,item_id,given_date,'min', quantity) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
-            print(453)
-            store_item_curreEdit_block_qty(store_id,item_id,given_date,'min',quantity,None)
+            
+            # store_item_curreEdit_block_qty(store_id,item_id,given_date,'min',quantity,None)
         else:
             raise ValueError(f"no other Grnt material issue found check database")
     except Exception as e:
@@ -7469,13 +7469,13 @@ def materialIssueAdd(request):
                             store_item_instance.opening_qty = record.closing_qty
                             store_item_instance.on_hand_qty = record.closing_qty + Decimal(thirdPartyInQuantity)
                             store_item_instance.closing_qty = record.closing_qty + Decimal(thirdPartyInQuantity)
-                            store_item_instance.blocked_qty = record.blocked_qty + Decimal(thirdPartyInQuantity)
+                            # store_item_instance.blocked_qty = record.blocked_qty + Decimal(thirdPartyInQuantity)
                         else:
                             # Set values based on the current transaction if no prior record exists
                             store_item_instance.opening_qty = Decimal(0.00)
                             store_item_instance.on_hand_qty = Decimal(thirdPartyInQuantity)
                             store_item_instance.closing_qty = Decimal(thirdPartyInQuantity)
-                            store_item_instance.blocked_qty = Decimal(thirdPartyInQuantity)
+                            # store_item_instance.blocked_qty = Decimal(thirdPartyInQuantity)
                         if(store_item_instance.on_hand_qty<0):
                              raise ValueError(f"ohnand quantity is less than 0")
                         # Set other fields for the new transaction
@@ -7487,7 +7487,7 @@ def materialIssueAdd(request):
                         # Save the instance to the database
                         store_item_instance.save()
                         store_item_curreEdit(vendor_store.id,itemInThrdParty,given_date,'min', thirdPartyInQuantity) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
-                        store_item_curreEdit_block_qty(vendor_store.id,itemInThrdParty,given_date,'min', thirdPartyInQuantity,None)
+                        # store_item_curreEdit_block_qty(vendor_store.id,itemInThrdParty,given_date,'min', thirdPartyInQuantity,None)
                         incomeMaterialInsertPossible= True
                    
                  #material issue issued for job order
@@ -7603,9 +7603,9 @@ def materialIssueAdd(request):
                         store_item_instance.closing_qty = record.closing_qty + Decimal(
                            request.POST.getlist('quantity_sent')[index]
                         )
-                        store_item_instance.blocked_qty = record.blocked_qty + Decimal(
-                           request.POST.getlist('quantity_sent')[index]
-                        )
+                        # store_item_instance.blocked_qty = record.blocked_qty + Decimal(
+                        #    request.POST.getlist('quantity_sent')[index]
+                        # )
                     else:
                         # Set values based on the current transaction if no prior record exists
                         store_item_instance.opening_qty = Decimal(
@@ -7617,9 +7617,9 @@ def materialIssueAdd(request):
                         store_item_instance.closing_qty = Decimal(
                             request.POST.getlist('quantity_sent')[index]
                         )
-                        store_item_instance.blocked_qty = Decimal(
-                            request.POST.getlist('quantity_sent')[index]
-                        )
+                        # # store_item_instance.blocked_qty = Decimal(
+                        #     request.POST.getlist('quantity_sent')[index]
+                        # )
                         
                     if(store_item_instance.on_hand_qty<0):
                         raise ValueError(f"onhand quantity is less than 0")
@@ -7634,7 +7634,7 @@ def materialIssueAdd(request):
                     
                     store_item_curreEdit(vendor_store.id,elem,given_date,'min', request.POST.getlist('quantity_sent')[index]) #store_item_curreEdit(store_id, item_id, transaction_date,transact_type,quantity)
                     
-                    store_item_curreEdit_block_qty(vendor_store.id,elem,given_date,'min', request.POST.getlist('quantity_sent')[index],None)
+                    # store_item_curreEdit_block_qty(vendor_store.id,elem,given_date,'min', request.POST.getlist('quantity_sent')[index],None)
                 # # # # #print(5811)    
                 # In house store items being reduced
                 # # # # # #print(models.Store.objects.filter(id=request.POST['store_id']).exists())
@@ -7848,6 +7848,7 @@ def materialIssueDelete(request):
                         store_item_update = models.Store_Item.objects.get(store_id = detail.store.id , item_id= detail.item_id)
                         store_item_update.on_hand_qty -= Decimal(detail.quantity)
                         store_item_update.closing_qty -= Decimal(detail.quantity)
+                        # store_item_update.blocked_qty -= Decimal(detail.quantity)
                         store_item_update.updated_at = datetime.now()
                         store_item_update.save()
 
@@ -7862,7 +7863,7 @@ def materialIssueDelete(request):
                             if storeCuritemlast.store_transaction_id != int( materialRecievedGrnT.id):
                                 
                                 data_revertive_from_transaction( materialRecievedGrnT.id, detail.item_id,detail.store_id,detail.quantity,'out')
-                                store_item_curreEdit_block_qty(detail.store_id, detail.item_id, materialRecievedGrnT.transaction_date,'out',detail.quantity, materialRecievedGrnT.id)
+                                # store_item_curreEdit_block_qty(detail.store_id, detail.item_id, materialRecievedGrnT.transaction_date,'out',detail.quantity, materialRecievedGrnT.id)
                             store_item_current.on_hand_qty -= Decimal(detail.quantity)
                             store_item_current.closing_qty -= Decimal(detail.quantity)
                             store_item_current.status = 0
@@ -7942,9 +7943,6 @@ def materialIssueDelete(request):
                 jobOrderHead.material_issue = 2
                 jobOrderHead.updated_at = datetime.now()
                 jobOrderHead.save()
-            
-
-
             
             user_log_details_add(userId,'Material Issue Delete')
         transaction.commit()
