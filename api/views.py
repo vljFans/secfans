@@ -7234,7 +7234,8 @@ def materialIssueAdd(request):
                                 store=vendor_store,
                                 quantity=Decimal(thirdPartyInQuantity),
                                 rate = float(job_order_income_detalis[index].item.price),
-                                amount =thirdPartyInQuantity * float(job_order_income_detalis[index].item.price)
+                                amount =thirdPartyInQuantity * float(job_order_income_detalis[index].item.price),
+                                direction='incomming'
                             )
                         )
 
@@ -7318,7 +7319,7 @@ def materialIssueAdd(request):
                         models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
                         models.Store_Item.objects.bulk_create(store_items_add)
                     else :
-                        raise ValueError('error comes on 7082')
+                        raise ValueError('error comes on 7082 in inserting incoming material virtual to vendor stock')
             
 
             #job satatus change
@@ -9523,132 +9524,7 @@ def purchaseBillDetailsExport(request):
     return JsonResponse(context)
 
 @api_view(['POST'])
-# def fgRawDetailsExport(request):
-#     context = {}
-#     try:
-#         page_items = models.Store_Transaction_Detail.objects.filter(store_transaction_header__tally_sync=0,status=1,deleted=0,  store_transaction_header__status=1, store_transaction_header__deleted=0)
-#         page_items = page_items.filter(store_id =request.POST['store_id']) 
-#         page_items_exist = page_items.exists()
-    
-#         # If no page items exist, return a response indicating no transactions left
-#         if not page_items_exist:
-#             return JsonResponse({
-#                 'status': 404,
-#                 'message': 'Tally report of all transactions already generated. No transactions left.'
-#             })
-#         with transaction.atomic():
-#             filtered_data = models.Store_Transaction_Detail.objects.filter(store_transaction_header__tally_sync=0,status=1,deleted=0, store_transaction_header__status=1, store_transaction_header__deleted=0)
-#             filtered_data = filtered_data.filter(store_id =request.POST['store_id'] )
-#             # Create directory if not exists
-#             directory_path = settings.MEDIA_ROOT + '/fg_raw_tansition_tally/'
-#             path = Path(directory_path)
-#             path.mkdir(parents=True, exist_ok=True)
-
-#             # Create a new Excel file
-#             tmpname = "fgRawreport_" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".xlsx"
-#             wb = Workbook()
-#             ws = wb.active
-
-#         # Add headers
-#             # ws['A1'] = "Vch No"
-#             # ws['B1'] = "Date"
-#             # ws['C1'] = "Name of Item"
-#             # ws['D1'] = "Unit"
-#             # ws['E1'] = "Location"
-#             # ws['F1'] = "HSN Code"
-#             # ws['G1'] = "IGSt Rate"
-#             # ws['H1'] = "CGST Rate"
-#             # ws['I1'] = "SGST Rate"
-#             # ws['J1'] = "Cess Rate"
-#             # ws['K1'] = "Quantity"
-#             # ws['L1'] = "Unit"
-#             # ws['M1'] = "Rate"
-#             # ws['N1'] = "Amount"
-#             # ws['O1'] = "Remarks"
-#             headers = [
-#                 ("Vch No", "General"),
-#                 ("Date", "Date"),
-#                 ("Name of Item", "Text"),
-#                 ("Unit", "Text"),
-#                 ("Location", "General"),
-#                 ("HSN Code", "Text"),
-#                 ("IGSt Rate", "Text"),
-#                 ("CGST Rate", "Text"),
-#                 ("SGST Rate", "Text"),
-#                 ("Cess Rate", "Text"),
-#                 ("Quantity", "Number"),
-#                 ("Unit", "Number"),
-#                 ("Rate", "Number"),
-#                 ("Amount", "Number"),
-#                 ("Remarks", "General")
-#             ]    
-#             for col_idx, (header, fmt) in enumerate(headers, start=1):
-#                 cell = ws.cell(row=1, column=col_idx, value=header)
-#                 if fmt == "Date":
-#                     ws.column_dimensions[cell.column_letter].number_format = "DD-MM-YYYY"
-#                 elif fmt == "Text":
-#                     ws.column_dimensions[cell.column_letter].number_format = "@"
-#                 elif fmt == "Number":
-#                     ws.column_dimensions[cell.column_letter].number_format = "0.00"
-#                 # General format is default, so no need to set explicitly
-
-        
-
-#             # Append data rows
-#             for each in filtered_data:
-#                 # #print(each)
-#                 rate = each.rate if each.rate else each.item.price
-#                 ws.append([
-#                     each.store_transaction_header.transaction_number,
-#                     each.store_transaction_header.transaction_date.strftime("%d-%m-%Y"), 
-#                     each.item.name,
-#                     each.item.uom.name,
-#                     each.store.name,
-#                     each.item.hsn_code,
-#                     each.item.item_type.gst_percentage,
-#                     ((each.item.item_type.gst_percentage)/Decimal(2.0)),
-#                     ((each.item.item_type.gst_percentage)/Decimal(2.0)),
-#                     '0.00',
-#                     each.quantity,
-#                     each.item.uom.name,
-#                     rate,
-#                     (each.quantity * rate),
-#                     ''
-#                 ])
-#             #print(8058)
-#             # Save the file
-#             file_path = os.path.join(directory_path, tmpname)
-            
-#         # Save the file to the server
-#             wb.save(file_path)
-
-#             # os.chmod(settings.MEDIA_ROOT + '/purchase_transition_tally/' + tmpname, 0o777)
-
-#             os.chmod(file_path, 0o777)
-
-#             # Update page items
-#             for page_item in page_items:
-#                 storeTranasctionHeader = models.Store_Transaction.objects.get(pk=page_item.store_transaction_header_id)
-#                 storeTranasctionHeader.tally_sync = 1
-#                 storeTranasctionHeader.updated_at = datetime.now()
-#                 storeTranasctionHeader.save()
-
-#             filename = settings.MEDIA_URL + 'fg_raw_tansition_tally/' + tmpname
-
-#             context.update({
-#                 'status': 200,
-#                 'message': 'File generated successfully in server Media :' + filename,
-#                 'file_url': filename
-#             })
-#         transaction
-#     except Exception as e:
-#         #print(f'error{e}')
-#         context.update({
-#             'status': 546.1,
-#             'message': "Something went wrong. Please try again."
-#         })
-#         transaction.rollback()
-#     return JsonResponse(context)
+@permission_classes([IsAuthenticated])
 def fgRawDetailsExport(request):
     context = {}
     try:
@@ -9656,7 +9532,8 @@ def fgRawDetailsExport(request):
             store_transaction_header__tally_sync=0, status=1, deleted=0,
             store_transaction_header__status=1, store_transaction_header__deleted=0
         ).filter(store_id=request.POST['store_id'])
-
+        page_items = page_items.filter(Q(store_transaction_header__transaction_type__name = "GRN") | Q(store_transaction_header__transaction_type__name = "SP" ) | Q(store_transaction_header__transaction_type__name = "MIN" ) )
+        
         if not page_items.exists():
             return JsonResponse({
                 'status': 404,
@@ -9669,6 +9546,7 @@ def fgRawDetailsExport(request):
                 store_transaction_header__status=1, store_transaction_header__deleted=0
             ).filter(store_id=request.POST['store_id'])
 
+            filtered_data = filtered_data.filter(Q(store_transaction_header__transaction_type__name = "GRN") | Q(store_transaction_header__transaction_type__name = "SP" ) | Q(store_transaction_header__transaction_type__name = "MIN" ) )
             # Create directory if not exists
             directory_path = settings.MEDIA_ROOT + '/fg_raw_tansition_tally/'
             Path(directory_path).mkdir(parents=True, exist_ok=True)
