@@ -197,5 +197,8 @@ urlpatterns = [
     path('fg-raw-details-export', views.fgRawDetailsExport, name='fgRawDetailsExport'),
 
     path('store-transaction-sales-add', views.storeTransactionSalesAdd , name = 'storeTransactionSalesAdd'),
-    path('store-transaction-sales-delete', views.storeTransactionSalesDelete , name = 'storeTransactionSalesDelete')
+    path('store-transaction-sales-delete', views.storeTransactionSalesDelete , name = 'storeTransactionSalesDelete'),
+
+    path('repote-closting-stock-datewise', views.reportClosingStockdateWise , name = 'reportClosingStockdateWise')
+
 ]   

@@ -1815,3 +1815,12 @@ def materialSalesView(request,id):
         'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')},{'name': "Material Sales", 'url': reverse('superuser:materialIssueList')}, {'name': "Edit"}]
     })
     return render(request, 'portal/Item Sales/view.html', context)
+
+
+@login_required
+def closingStockReport(request):
+    context.update({
+        'page_title': "Closing Stock Date Wise",
+        'breadcrumbs': [{'name': "Dashboard", 'url': reverse('superuser:dashboard')}, {'name': "Closing Stock dateWis",'url': reverse('superuser:closingStockReport')}]
+    })
+    return render(request, 'portal/Report/closingStockTracking.html', context)

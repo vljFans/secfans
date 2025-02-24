@@ -176,6 +176,7 @@ urlpatterns = [
     path('report-active-vendor-Reciept-materialIssue', views.reportActiveVendorIssueReciept, name='reportActiveVendorIssueReciept'),
     path('report-production', views.reportProduction, name='reportProduction'),
     path('report-production-transaction-view/<int:id>', views.reportProductionView, name='reportProductionView'),
+    path('report-closing-stock',views.closingStockReport, name='closingStockReport'),
 
     path('invoice-store-transaction-maigration',views.invoiceStoreTransactionMaigration, name='invoiceStoreTransactionMaigration'),
     
@@ -187,5 +188,6 @@ urlpatterns = [
     path('material-sales-add',views.materialSalesAdd, name='materialSalesAdd'),
     path('material-sales-edit/<int:id>',views.materialSalesEdit, name='materialSalesEdit'),
     path('material-sales-view/<int:id>',views.materialSalesView, name='materialSalesView'),
+   
 
 ]
