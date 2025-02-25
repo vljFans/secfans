@@ -5041,7 +5041,7 @@ def storeTransactionAdd(request):
                 grnTransactionheader.transaction_type = models.Transaction_Type.objects.get(name = 'GRNI')
                 grnTransactionheader.invoice_challan = request.POST['invoice_challan']
                 grnTransactionheader.transaction_number = env("GRN_TRANSACTION_INSPECTION_SEQ").replace(
-                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(100))
+                    "${CURRENT_YEAR}", datetime.today().strftime('%Y')).replace("${AI_DIGIT_5}", str(grn_inspection_transaction_count + 1).zfill(6))
                 # # # # # #print("3143")
                 if (request.POST.get('purchase_job_order_header_id',None) and int(request.POST['with_purchase_job_order']) != 2):
                     grnTransactionheader.purchase_order_header_id = request.POST[
@@ -5480,9 +5480,6 @@ def storeTransactionAdd(request):
         })
         transaction.rollback()
     return JsonResponse(context)
-
-
-
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -8051,6 +8048,7 @@ def getGrnInspectionTransactionDetail(request):
     try:
         # Getting grn inspection transaction details whose inspection is not done
         if int(request.GET.get('ins_done'))==0:
+            print(8051)
             grn_Ins_Det = list(models.Grn_Inspection_Transaction_Detail.objects.filter(
                     grn_inspection_transaction_header_id = int(request.GET.get('insId')), ins_done = 0
                 ).values(
@@ -8063,6 +8061,7 @@ def getGrnInspectionTransactionDetail(request):
                     'grn_inspection_transaction_header__job_order_id',
                     'grn_inspection_transaction_header__job_order__order_number',
                     'grn_inspection_transaction_header__invoice_challan',
+                    'grn_inspection_transaction_header__transaction_date',
                     'item_id',
                     'item__name',
                     'store_id',
@@ -8086,6 +8085,7 @@ def getGrnInspectionTransactionDetail(request):
                 'grn_inspection_transaction_header__job_order_id',
                 'grn_inspection_transaction_header__job_order__order_number',
                 'grn_inspection_transaction_header__invoice_challan',
+                'grn_inspection_transaction_header__transaction_date',
                 'item_id',
                 'item__name',
                 'store_id',
@@ -8101,7 +8101,8 @@ def getGrnInspectionTransactionDetail(request):
             'status':200,
             'page_items': grn_Ins_Det
         }
-    except:
+    except Exception as e:
+        print(e)
         context ={
         'status':598,
         'message':'server error1'
@@ -8450,6 +8451,8 @@ def materialReturnAdd(request):
                         total_amount += float(request.POST.getlist('reject_quantity')[i])
                 material_return.total_amount = total_amount
                 material_return.save()
+
+                grn_inspection_transaction_header.ins_completed= 2
                 models.Store_Transaction_Detail.objects.bulk_create(store_transaction_details)
             userId = request.COOKIES.get('userId', None)
             user_log_details_add(userId,'Material Return Add')
@@ -8466,6 +8469,39 @@ def materialReturnAdd(request):
         })
         transaction.rollback()
     return JsonResponse(context)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def materialReturnDelete(request):
+    context = {}
+    try:
+        with transaction.atomic():
+            storeTransaction = models.Store_Transaction.objects.get(pk=request.POST['id'])
+            grnInspection = models.Grn_Inspection_Transaction.objects.get(pk = storeTransaction.grn_inspection_id)
+            storeTransaction.status= 0
+            storeTransaction.deleted =1 
+            storeTransaction.updated_at = datetime.now()
+            storeTransaction.save()
+            grnInspection.ins_completed = 1
+            grnInspection.updated_at = datetime.now()
+            grnInspection.save()
+
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Material Return Delete')
+
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Material Return Created Successfully."
+        })
+    except Exception as e:
+        context.update({
+            'status': 533,
+            'message': f"Something Went Wrong. Please Try Again.{e}"
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
 
 # on transit transaction ---deveoped by saswata
 
@@ -8761,7 +8797,7 @@ def materialOutDetailsDelete(request):
         materialOut = models.On_Transit_Transaction.objects.get(pk=request.POST['id'])
         materialOutDetails = list(models.On_Transit_Transaction_Details.objects.filter(on_transit_transaction_header_id = request.POST['id']).values('pk','item_id','quantity'))
         store_id = materialOut.source_store_id
-        storeTransaction = models.Store_Transaction.objects.get(reference_id =request.POST['id'],transaction_type_id= 6 )
+        storeTransaction = models.Store_Transaction.objects.get(reference_id =request.POST['id'],transaction_type__name= 'MOUT' , status=1,deleted=0)
         
         with transaction.atomic():
               # item added to  source store
@@ -8792,7 +8828,9 @@ def materialOutDetailsDelete(request):
                 storeItem.save()
             
             materialOut.delete()
-            storeTransaction.delete()
+            storeTransaction.status=0
+            storeTransaction.deleted=1
+            storeTransaction.save()
             
             userId = request.COOKIES.get('userId', None)
             user_log_details_add(userId,'Material Out Delete')
@@ -8987,6 +9025,73 @@ def materialInDetailsAdd(request):
         transaction.rollback()
 
     return JsonResponse(context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def materialInDetailsDelete(request):
+    context = {}
+    # # # # # #print(request.POST)
+    try:
+        materialIn = models.On_Transit_Transaction.objects.get(pk=request.POST['id'])
+        print(request.POST['id'])
+        materialInDetails = list(models.On_Transit_Transaction_Details.objects.filter(on_transit_transaction_header_id = request.POST['id']).values('pk','item_id','quantity'))
+        store_id = materialIn.destination_store
+        print(9040)
+        storeTransaction = models.Store_Transaction.objects.get(reference_id =request.POST['id'],transaction_type__name='MIN', status=1, deleted=0 )
+        
+        with transaction.atomic():
+              # item added to  source store
+            for index in materialInDetails:
+                # # # # # #print(index['item_id'])
+                
+                
+                storeItemCurrent =  models.Store_Item_Current.objects.filter(store_transaction_id = storeTransaction.id ).first()
+                storeCuritemlast = models.Store_Item_Current.objects.filter(
+                               item_id=index['item_id'], store_id=store_id,status=1, deleted=0).order_by('transaction_date','created_at')
+                storeCuritemlast = storeCuritemlast.last()
+            
+                if storeCuritemlast.store_transaction_id != storeTransaction.id:
+                    data_revertive_from_transaction(storeTransaction.id,index['item_id'],store_id,(index['quantity']),'out')
+                storeItemCurrent.on_hand_qty -= Decimal(index['quantity'])
+                storeItemCurrent.closing_qty -= Decimal(index['quantity'])
+                storeItemCurrent.updated_at = datetime.now()
+                storeItemCurrent.status = 0
+                storeItemCurrent.deleted = 1
+                storeItemCurrent.save()
+                storeItem = models.Store_Item.objects.filter(
+                    item_id=index['item_id'], store_id=store_id).first()
+
+                storeItem.on_hand_qty -= Decimal(index['quantity'])
+                storeItem.closing_qty -= Decimal(index['quantity'])
+                storeItem.updated_at = datetime.now()
+                
+                storeItem.save()
+            
+            storeTransaction.status=0
+            storeTransaction.deleted=1
+            storeTransaction.save()
+            materialIn.flag = 0
+            materialIn.transaction_in_date = None
+            materialIn.updated_at = datetime.now()
+            materialIn.save()
+            userId = request.COOKIES.get('userId', None)
+            user_log_details_add(userId,'Material Out Delete')
+        transaction.commit()
+        context.update({
+            'status': 200,
+            'message': "Material IN transaction Deleted Sucessfully"
+        })
+
+    except Exception as e:
+        print(e)
+        context.update({
+            'status': 537,
+            'message': "Something Went Wrong. Please Try Again."
+        })
+        transaction.rollback()
+    return JsonResponse(context)
+
 
 
 # physical Inspection on Store Items --- developed by saswata
@@ -10069,108 +10174,6 @@ def reportItemTrackingReport(request):
     return JsonResponse(context)
 
 
-# @api_view(['GET','POST'])
-# @permission_classes([IsAuthenticated])
-# def reportInventorySummary(request):
-#     context = {}
-#     # # # # # #print(request.POST)
-#     from_date = request.POST.get('from_date', None)
-#     to_date = request.POST.get('to_date', None)
-#     store_id = request.POST.get('store_id', None)
-#     data =[]
-#     on_transit_details =[]
-#     total_stockOut = 0.00
-#     total_stockIn = 0.00
-#     total_order = 0.00
-     
-#     try:
-#         if request.method == 'GET':
-#             # # # # # #print('4277')
-#             store_Item = models.Store_Transaction_Detail.objects.filter(status=1,
-#             deleted=0
-#             ).filter(Q(store_transaction_header__transaction_type__name='MIS') | Q(store_transaction_header__transaction_type__name='GRN')).order_by('store_transaction_header__transaction_date')
-#         else:
-#             store_Item = models.Store_Item.objects.filter(store_id=store_id)
-#         for each in store_Item:
-           
-#             store_transactions_MIS = models.Store_Transaction_Detail.objects.filter(store_id=store_id , item_id = each.item_id,store_transaction_header__transaction_type__name = 'MIS').filter(store_transaction_header__transaction_date__range =(from_date,to_date)).order_by('item_id')
-#             store_transactions_GRN = models.Store_Transaction_Detail.objects.filter(store_id=store_id , item_id = each.item_id,store_transaction_header__transaction_type__name = 'GRN').filter(store_transaction_header__transaction_date__range =(from_date,to_date)).order_by('item_id')
-#            # stock out
-#             if store_transactions_MIS :
-#                 for store_transaction in store_transactions_MIS:
-#                     total_stockOut += float(store_transaction.quantity)
-#                     orderQuantity = models.Job_Order_Detail.objects.filter(item_id = each.item_id ,direction='outgoing' , job_order_header_id = store_transaction.store_transaction_header.job_order_id).first()
-#                     # # # # #print(7416)
-#                     data.append({
-#                                 'item':each.item.name,
-#                                 'item_category': each.item.item_type.item_category.name,
-#                                 'quantity_order':str(orderQuantity.quantity) if orderQuantity.quantity else '---',
-#                                 'date': store_transaction.store_transaction_header.transaction_date,
-#                                 'transaction_number': store_transaction.store_transaction_header.transaction_number,
-#                                 'vendor':  store_transaction.store_transaction_header.vendor.name,
-#                                 'previous_onHand_Quantity': float(each.on_hand_qty) + float(store_transaction.quantity) ,
-#                                 'uom': each.item.uom.name,
-#                                 'stock_in' : '---',
-#                                 'stock_in_upto': '---',
-#                                 'stock_out' : store_transaction.quantity,
-#                                 'stock_out_upto': total_stockOut,
-#                                 'onHand_quantity' : each.on_hand_qty
-#                             })
-#                     # # # # #print(data)
-#             #stock in
-#             if store_transactions_GRN :
-#                 for store_transaction in store_transactions_GRN:
-#                     total_stockIn += float(store_transaction.quantity)
-#                     #for purchase Job order
-#                     if store_transaction.store_transaction_header.job_order_id:
-#                         orderQuantity = models.Job_Order_Detail.objects.filter(item_id = each.item_id ,direction='incoming' , job_order_header_id = store_transaction.store_transaction_header.job_order_id).first()
-#                         data.append({
-#                                 'item':each.item.name,
-#                                 'item_category': each.item.item_type.item_category.name,
-#                                 'quantity_order':str(orderQuantity.quantity) if orderQuantity.quantity else '---',
-#                                 'date': store_transaction.store_transaction_header.transaction_date,
-#                                 'transaction_number': store_transaction.store_transaction_header.transaction_number,
-#                                 'vendor':  store_transaction.store_transaction_header.vendor.name,
-#                                 'previous_onHand_Quantity': float(each.on_hand_qty) + float(store_transaction.quantity) ,
-#                                 'uom': each.item.uom.name,
-#                                 'stock_in' : store_transaction.quantity,
-#                                 'stock_in_upto': total_stockIn,
-#                                 'stock_out' : '---',
-#                                 'stock_out_upto': '---',
-#                                 'onHand_quantity' : each.on_hand_qty
-#                             })
-#                     else:
-#                         orderQuantity = models.Purchase_Order_Detail.object.filter(item_id = each.item_id , purchase_order_header_id = store_transaction.store_transaction_header.purchase_order_header_id).first()
-#                         data.append({
-#                                 'item':each.item.name,
-#                                 'item_category': each.item.item_type.item_category.name,
-#                                 'quantity_order':str(orderQuantity.quantity) if orderQuantity.quantity else '---',
-#                                 'date': store_transaction.store_transaction_header.transaction_date,
-#                                 'transaction_number': store_transaction.store_transaction_header.transaction_number,
-#                                 'vendor':  store_transaction.store_transaction_header.vendor.name,
-#                                 'previous_onHand_Quantity': float(each.on_hand_qty) + float(store_transaction.quantity) ,
-#                                 'uom': each.item.uom.name,
-#                                 'stock_in' : '---',
-#                                 'stock_in_upto': '---',
-#                                 'stock_out' : store_transaction.quantity,
-#                                 'stock_out_upto': total_stockOut,
-#                                 'onHand_quantity' : each.on_hand_qty
-#                             })
-#         # # # # #print(data)
-#         sorted_data = sorted(data, key=lambda x: (x['item'], x['date']))               
-#         context.update({
-#             'status': 200,
-#             'message': "Inventory Report Summary  fetch Successfully.",
-#             'page_items': sorted_data,
-#         })
-
-#     except Exception:
-#         context.update({
-#             'status': 538.1,
-#             'message': "Internal Server Error",
-#         })
-#     return JsonResponse(context)
-
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def reportInventorySummary(request):
@@ -10290,342 +10293,6 @@ def reportInventorySummary(request):
 
     return JsonResponse(context)
 
-
-
-# @api_view(['GET', 'POST'])
-# @permission_classes([IsAuthenticated])
-# def reportInventorySummary(request):
-#     context = {}
-#     from_date = request.POST.get('from_date')
-#     to_date = request.POST.get('to_date')
-#     store_id = request.POST.get('store_id')
-#     vendor_id = request.POST.get('vendor_id', None)
-
-#     try:
-#         # Determine the base queryset based on the request method
-#         if request.method == 'GET':
-#             store_items = models.Store_Transaction_Detail.objects.filter(
-#                 status=1,
-#                 deleted=0
-#             ).filter(
-#                 Q(store_transaction_header__transaction_type__name__in=['MIS', 'GRN'])
-#             ).select_related(
-#                 'store_transaction_header',
-#                 'item__item_type__item_category',
-#                 'item__uom',
-#                 'store_transaction_header__vendor'
-#             ).order_by('store_transaction_header__transaction_date')
-#         else:
-#             store_items = models.Store_Item.objects.filter(store_id=store_id).prefetch_related(
-#                 Prefetch(
-#                     queryset=models.Store_Transaction_Detail.objects.filter(
-#                         store_transaction_header__status=1,
-#                         store_transaction_header__deleted=0,
-#                         store_transaction_header__transaction_date__range=(from_date, to_date),
-#                         store_transaction_header__transaction_type__name__in=['MIS', 'GRN']
-#                     ).select_related('store_transaction_header', 'item')
-#                 )
-#             )
-
-#         # Precompute stock in and stock out using aggregation
-#         aggregated_data = models.Store_Transaction_Detail.objects.filter(
-#             store_id=store_id,
-#             store_transaction_header__transaction_date__range=(from_date, to_date),
-#             store_transaction_header__status=1,
-#             store_transaction_header__deleted=0,
-#         ).values(
-#             'item_id',
-#             'store_transaction_header__transaction_type__name'
-#         ).annotate(
-#             total_quantity=Sum('quantity')
-#         )
-
-#         # Prepare a dictionary for quick lookups
-#         stock_data = {}
-#         for entry in aggregated_data:
-#             item_id = entry['item_id']
-#             transaction_type = entry['store_transaction_header__transaction_type__name']
-#             if item_id not in stock_data:
-#                 stock_data[item_id] = {'MIS': 0, 'GRN': 0}
-#             stock_data[item_id][transaction_type] += entry['total_quantity']
-
-#         # Prepare the final data
-#         data = []
-#         for each in store_items:
-#             item_id = each.item_id
-#             item_stock = stock_data.get(item_id, {'MIS': 0, 'GRN': 0})
-#             total_stockOut = item_stock['MIS']
-#             total_stockIn = item_stock['GRN']
-
-#             # Add stock out data
-#             if total_stockOut > 0:
-#                 data.append({
-#                     'item': each.item.name,
-#                     'item_category': each.item.item_type.item_category.name,
-#                     'quantity_order': '---',  # Assuming orderQuantity logic is removed for optimization
-#                     'date': each.store_transaction_header.transaction_date,
-#                     'transaction_number': each.store_transaction_header.transaction_number,
-#                     'vendor': each.store_transaction_header.vendor.name if each.store_transaction_header.vendor_id else 'self',
-#                     'previous_onHand_Quantity': float(each.on_hand_qty) + float(total_stockOut),
-#                     'uom': each.item.uom.name,
-#                     'stock_in': '---',
-#                     'stock_in_upto': '---',
-#                     'stock_out': total_stockOut,
-#                     'stock_out_upto': total_stockOut,
-#                     'onHand_quantity': each.on_hand_qty,
-#                 })
-
-#             # Add stock in data
-#             if total_stockIn > 0:
-#                 data.append({
-#                     'item': each.item.name,
-#                     'item_category': each.item.item_type.item_category.name,
-#                     'quantity_order': '---',  # Assuming orderQuantity logic is removed for optimization
-#                     'date': each.store_transaction_header.transaction_date,
-#                     'transaction_number': each.store_transaction_header.transaction_number,
-#                     'vendor': each.store_transaction_header.vendor.name if each.store_transaction_header.vendor_id else 'self',
-#                     'previous_onHand_Quantity': float(each.on_hand_qty) - float(total_stockIn),
-#                     'uom': each.item.uom.name,
-#                     'stock_in': total_stockIn,
-#                     'stock_in_upto': total_stockIn,
-#                     'stock_out': '---',
-#                     'stock_out_upto': '---',
-#                     'onHand_quantity': each.on_hand_qty,
-#                 })
-
-#         # Sort and prepare final context response
-#         sorted_data = sorted(data, key=lambda x: (x['item'], x['date']))
-#         context.update({
-#             'status': 200,
-#             'message': "Inventory Report Summary fetched successfully.",
-#             'page_items': sorted_data,
-#         })
-
-#     except Exception as e:
-#         context.update({
-#             'status': 500,
-#             'message': f"Internal Server Error: {str(e)}",
-#         })
-
-#     return JsonResponse(context)
-
-
-# @api_view(['GET','POST'])
-# @permission_classes([IsAuthenticated])
-# def reportInventoryStorewise(request):
-#     context = {}
-#     # #print(request.POST)
-#     item_cat_id = request.POST.get('item_cat_id', None)
-#     store_type = request.POST.get('store_type', None)
-#     data ={}
-#     store_item =[]
-#     try:
-#         if request.method == 'GET':
-#             store_item = list(models.Store_Item.objects.filter(status=1 , deleted = 0 ).values('pk','on_hand_qty','item__item_type__item_category__name','item__price','store__name','item__name'))
-#         else:
-#             if store_type == 'inHouse':
-#                 store_item = models.Store_Item.objects.filter(item__item_type__item_category_id=item_cat_id ,store__vendor__isnull=True)
-#             else :
-#                 store_item = models.Store_Item.objects.filter(item__item_type__item_category_id=item_cat_id ,store__vendor__isnull=False)
-#             store_item = list(store_item.values('pk','on_hand_qty','item__item_type__item_category__name','item__price','store__name','item__name','item_id'))    
-#         if(len(store_item) == 0):
-#             context.update({
-#                 'status': 200,
-#                 'message': "no item found  ",
-#             })
-#             return JsonResponse(context)
-#         total_material_issue = 0.00
-#         total_material_reciept = 0.00
-
-#         for index in range(0,len(store_item)):
-#             if store_item[index]['store__name'] not in data:
-#                 data[store_item[index]['store__name']] =[]
-#             if store_type == 'inHouse':
-#                 data[store_item[index]['store__name']].append({
-#                     'pk':store_item[index]['pk'],
-#                     'on_hand_qty' : store_item[index]['on_hand_qty'],
-#                     'item': store_item[index]['item__name'],
-#                     'item_category' : store_item[index]['item__item_type__item_category__name'],
-#                     'value' : float(store_item[index]['on_hand_qty']) * float(store_item[index]['item__price']),
-#                 })
-#             else:
-#                 # #print(8618)
-#                 if models.Job_Order_Detail.objects.filter(item_id = store_item[index]['item_id'],job_order_header__job_status =1).exists() :
-#                     jobOrderDetails = models.Job_Order_Detail.objects.filter(item_id = store_item[index]['item_id'],job_order_header__job_status =1)
-#                     for jobdet in jobOrderDetails:
-#                         # #print(8622)
-#                         total_material_issue += float(jobdet.quantity - jobdet.required_quantity) if (jobdet.job_order_header.material_issue == 2 and jobdet.required_quantity > 0) else 0.00
-#                         # #print(jobdet.quantity_result if (jobdet.job_order_header.material_issue > 1 and jobdet.quantity_result > 0) else 0.00  )
-
-#                         total_material_receipt += float(jobdet.quantity_result) if (jobdet.job_order_header.material_issue > 1 and jobdet.quantity_result > 0) else 0.00
-#                         # #print(8626)
-#                 data[store_item[index]['store__name']].append({
-#                     'pk':store_item[index]['pk'],
-#                     'on_hand_qty' : store_item[index]['on_hand_qty'],
-#                     'issue_Quantity': total_material_issue,
-#                     'reciept_left': total_material_receipt,
-#                     'used_quantity' : total_material_issue + total_material_receipt,
-#                     'actual_onhand' : float(store_item[index]['on_hand_qty']) - float(total_material_issue + total_material_receipt),
-#                     'item': store_item[index]['item__name'],
-#                     'item_category' : store_item[index]['item__item_type__item_category__name'],
-#                     'value' : float(store_item[index]['on_hand_qty']) * float(store_item[index]['item__price']),
-#                 })
-        
-#         context.update({
-#             'status': 200,
-#             'message': "Items Fetched Successfully.",
-#             'page_items': data,
-#         })
-
-#     except Exception:
-#         context.update({
-#             'status': 592.1,
-#             'message': "Internal Server Error",
-#         })
-
-#     return JsonResponse(context)
-
-# @api_view(['GET', 'POST'])
-# @permission_classes([IsAuthenticated])
-# def reportInventoryStorewise(request):
-#     context = {}
-#     data = {}
-#     store_items = []
-#     try:
-#         # Fetch parameters
-#         item_cat_id = request.POST.get('item_cat_id', None)
-#         store_type = request.POST.get('store_type', None)
-#         total_material_issue = Decimal('0.00')
-#         total_material_receipt = Decimal('0.00')
-#         blocked_quantity = Decimal('0.00')
-#         vendor_id = request.POST.get('vendor_id',None)
-#         # Handle GET request
-#         if request.method == 'GET':
-#             store_items = list(
-#                 models.Store_Item.objects.filter(status=1, deleted=0)
-#                 .values(
-#                     'pk', 'on_hand_qty', 'item__item_type__item_category__name',
-#                     'item__price', 'store__name', 'item__name'
-#                 )
-#             )
-#         else:
-#             # Handle POST request
-#             if store_type == 'inHouse':
-#                 store_items = models.Store_Item.objects.filter(
-#                     item__item_type__item_category_id=item_cat_id,
-#                     store__vendor__isnull=True
-#                 )
-#             else:
-#                 if vendor_id is not None and (vendor_id != "" and vendor_id !="           ") :
-                    
-#                     store_items = models.Store_Item.objects.filter(store__vendor_id = vendor_id)
-
-#                 else:
-#                     store_items = models.Store_Item.objects.filter(
-#                     store__vendor__isnull=False
-#                 )
-#                 store_items = store_items.filter(
-#                     item__item_type__item_category_id=item_cat_id,
-                    
-#                 )
-       
-#             store_items = list(
-#                 store_items.values(
-#                     'pk', 'on_hand_qty', 'item__item_type__item_category__name',
-#                     'item__price', 'store__name', 'item__name', 'item_id'
-#                 )
-#             )
-           
-#         # Check if no items were found
-#         if not store_items:
-#             context.update({
-#                 'status': 200,
-#                 'message': "No items found.",
-#             })
-#             return JsonResponse(context)
-
-#         # Process store items
-#         for store_item in store_items:
-#             # #print(8896)
-#             total_material_issue = Decimal('0.00')
-#             total_material_receipt = Decimal('0.00')
-#             blocked_quantity = Decimal('0.00')
-#             store_name = store_item['store__name']
-#             if store_name not in data:
-#                 data[store_name] = []
-
-#             if store_type == 'inHouse':
-#                 # In-house store processing
-#                 data[store_name].append({
-#                     'pk': store_item['pk'],
-#                     'on_hand_qty': store_item['on_hand_qty'],
-#                     'item': store_item['item__name'],
-#                     'item_category': store_item['item__item_type__item_category__name'],
-#                     'value': round((float(store_item['on_hand_qty']) * float(store_item['item__price'])),2),
-#                 })
-#             else:
-#                 # Vendor store processing
-#                 # #print(total_material_issue)
-#                 if models.Job_Order_Detail.objects.filter(
-#                     item_id=store_item['item_id'], job_order_header__job_status=1,job_order_header__vendor__store__name = store_item['store__name']
-#                 ).exists():
-#                     jobOrderDetails = models.Job_Order_Detail.objects.filter(
-#                         item_id=store_item['item_id'], job_order_header__job_status=1,job_order_header__vendor__store__name = store_item['store__name']
-#                     )
-
-#                     for jobdet in jobOrderDetails:
-#                         # Update material issue and receipt totals
-#                         total_material_issue = Decimal('0.00')
-#                         total_material_receipt = Decimal('0.00')
-#                         blocked_quantity = Decimal('0.00')
-                        
-#                         total_material_issue += (
-#                             (Decimal(jobdet.quantity - jobdet.required_quantity) )
-#                             if jobdet.job_order_header.material_issue > 1 and jobdet.direction == 'outgoing'
-#                             else Decimal('0.00')
-#                         )
-#                         blocked_quantity = (
-#                             (Decimal(jobdet.quantity - jobdet.required_quantity) - (Decimal(jobdet.quantity - jobdet.quantity_result)))
-#                             if jobdet.job_order_header.material_issue > 1 and jobdet.direction == 'outgoing'
-#                             else Decimal('0.00')
-#                         )
-#                         total_material_receipt += jobdet.quantity_result if jobdet.job_order_header.material_issue > 1 and jobdet.direction == 'incoming' else Decimal('0.00')
-
-                        
-#                 # # #print(total_material_issue,total_material_receipt)
-#                 # Append vendor data
-#                 data[store_name].append({
-#                     'pk': store_item['pk'],
-#                     'on_hand_qty': store_item['on_hand_qty'],
-#                     'issue_Quantity': round(float(total_material_issue),2),
-#                     'Wip_manufacture_Quantity' : round(float(total_material_receipt),2),
-#                     'Wip_issued_Quantity' : round(float(blocked_quantity),2),
-#                     'actual_onhand': round((float(store_item['on_hand_qty']) - float(blocked_quantity + total_material_receipt )),2),
-#                     'item': store_item['item__name'],
-#                     'item_category': store_item['item__item_type__item_category__name'],
-#                     'value': round((float(store_item['on_hand_qty']) * float(store_item['item__price'])),2),
-#                 })
-#         # # #print(data)
-
-#         # Update context with data
-#         context.update({
-#             'status': 200,
-#             'message': "Items fetched successfully.",
-#             'page_items': data,
-#         })
-
-#     except Exception as e:
-#         # Log the exception for debugging purposes
-#         #print(f"Error: {e}")
-
-#         # Return internal server error
-#         context.update({
-
-#             'status': 500,
-#             'message': "Internal Server Error",
-#         })
-
-#     return JsonResponse(context)
 
 # class based view
 
@@ -11323,6 +10990,7 @@ def invoice_store_migration(store_id,user_id):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def extractDataFromXlsx(request):
     context = {}    
     storeItem = models.Store_Item.objects.filter(store_id=request.POST['store_id']).first()
@@ -11535,6 +11203,7 @@ def handle_transaction_detail(detail, transact_type_name):
         store_item_curreEdit(detail.store.id, detail.item.id, detail.store_transaction_header.transaction_date, 'mout', detail.quantity)
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def storeItemCurrentMigrate(request):
     context = {}
     #print("processing ....")
@@ -11594,8 +11263,6 @@ def storeItemCurrentMigrate(request):
         })
         transaction.rollback()
     return JsonResponse(context)
-
-
 
 
 @api_view(['POST'])

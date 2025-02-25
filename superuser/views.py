@@ -1317,7 +1317,7 @@ def materialReturnAdd(request):
     job_orders= models.Job_Order.objects.filter(
         id__in=list(models.Store_Transaction.objects.filter(transaction_type__name="MIS").values_list('job_order', flat=True))
     )
-    grn_inspections=models.Grn_Inspection_Transaction.objects.exclude(ins_done=0,ins_completed=0)
+    grn_inspections=models.Grn_Inspection_Transaction.objects.filter(ins_done=1,ins_completed=1)
     context.update({
         'job_orders': job_orders,
         'grn_inspections':grn_inspections,

@@ -255,6 +255,7 @@
                        $('#vendor_name').val(response.page_items[0].grn_inspection_transaction_header__vendor__name)
                        $('.vendor_id').val(response.page_items[0].grn_inspection_transaction_header__vendor_id)
                        $('.invoice_challan').val(response.page_items[0].grn_inspection_transaction_header__invoice_challan)
+                       $('.issue_date').val(response.page_items[0].grn_inspection_transaction_header__transaction_date)
                        
                        //if job order
                        if(response.page_items[0].grn_inspection_transaction_header__job_order_id != null){

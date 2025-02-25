@@ -147,6 +147,7 @@ urlpatterns = [
     path('grn-inspection-head-list', views.grnInspectionHeaderList, name='grnInspectionHeaderList'), 
 
     path('material-return-add', views.materialReturnAdd, name='materialReturnAdd'),
+    path('material-return-delete', views.materialReturnDelete, name='materialReturnDelete'),
 
     # path on transit transaction ---developed by saswata
 
@@ -162,6 +163,7 @@ urlpatterns = [
 
     # material in
     path('material-in-details-add', views.materialInDetailsAdd, name='materialInDetailsAdd'),
+    path('material-in-details-delete', views.materialInDetailsDelete, name='materialInDetailsDelete'),
     # path('grn-inspection-list-Add', views.addGrnDetailisInsTransaction, name='addGrnDetailisInsTransaction'),
     # path('grn-inspection-head-list', views.grnInspectionHeaderList, name='grnInspectionHeaderList'),
 

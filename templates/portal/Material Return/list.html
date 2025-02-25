@@ -150,6 +150,9 @@
                                 {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
                                 <a href="${print_url.replace('1', element.pk)}" class="table-action mg-r-10" target="_blank"> <i class="fa fa-print"></i> </a>    
                                 {% endif %}
+                                {% if request.user.is_superuser == 1 or 'change_store_transaction'|get_session_permission:request is not None   %}
+                                <a hidden id="delete-btn" data-id="${element.pk}" data-name="${element.transaction_number}" href="javascript:void(0)" class="table-action mg-r-10"> <i class="fa fa-trash"></i> </a>    
+                                {% endif %}
                                 <!--
                                 {% if request.user.is_superuser == 1 or 'change_store_transaction'|get_session_permission:request is not None   %}
                                 <a href="${edit_url.replace('1', element.pk)}" class="table-action mg-r-10"> <i class="fa fa-pencil"></i> </a>    
@@ -195,7 +198,7 @@
         if (window.confirm('Are you sure to delete ' + name + '?')) {
             $.ajax({
                 type: "POST",
-                url: "{% url 'api:storeTransactionDelete' %}",
+                url: "{% url 'api:materialReturnDelete' %}",
                 data: ({ id: id }),
                 headers: {
                     'Authorization': getCookieValue("accessToken"),
@@ -216,5 +219,6 @@
             });
         }
     });
+
 </script>
 {% endblock %}
