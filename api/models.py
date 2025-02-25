@@ -670,7 +670,7 @@ class Grn_Inspection_Transaction(models.Model):
     transaction_number = models.CharField(max_length=25, blank=True, null=True)
     transaction_date = models.DateField(blank=True, null=True)
     ins_done = models.SmallIntegerField(default=0, blank=True, null=True)
-    ins_completed = models.SmallIntegerField(default=0, blank=True, null=True)
+    ins_completed = models.SmallIntegerField(default=0, blank=True, null=True) # 1 for inspection complete 2 for return complete
     notes = models.TextField(blank=True, null=True)
     is_logical_grn_store = models.SmallIntegerField(default=0, blank=True, null=True)
     status = models.SmallIntegerField(default=1)
