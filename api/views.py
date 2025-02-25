@@ -13,7 +13,7 @@ from django.core import serializers
 from django.http import JsonResponse
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.hashers import make_password, check_password
-from datetime import datetime, timedelta,timezone,date
+from datetime import datetime, date, timedelta, timezone
 from django.utils.timezone import now
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import numbers
@@ -34,6 +34,7 @@ import pandas as pd
 from django.contrib.auth.models import Permission
 import re
 from rest_framework.views import APIView
+
 
 import traceback
 
@@ -4944,8 +4945,10 @@ def storeTransactionAdd(request):
                     if jobOrderDetails[index].direction == 'outgoing' and float(jobOrderDetails[index].quantity_result) != 0:
                         boMHeadDetailsExist = models.Bill_Of_Material_Detail.objects.filter(item_id =jobOrderDetails[index].item_id, bill_of_material_header_id = jobOrderHeader.bom_type_head_id).exists()
                         if boMHeadDetailsExist:
-                            bomDetailsFirst = models.Bill_Of_Material_Detail.objects.filter(item_id= jobOrderDetails[index].item_id , bill_of_material_header_id =jobOrderHeader.bom_type_head).first()
+                            bomDetailsFirst = models.Bill_Of_Material_Detail.objects.filter(item_id= jobOrderDetails[index].item_id , bill_of_material_header_id =jobOrderHeader.bom_type_head_id).first()
                             BomQuantity  = float(bomDetailsFirst.quantity)
+                    
+                           
                         storeTransactionDetail.append(
                             models.Store_Transaction_Detail(
                                 store_transaction_header_id=storeTransactionVhead.id,
@@ -4967,10 +4970,12 @@ def storeTransactionAdd(request):
                             jobOrderDetails[index].quantity_result) if not boMHeadDetailsExist else Decimal(BomQuantity*incoming_item_quantity)
                         storeItem.updated_at = datetime.now()
                         storeItem.save()
+                        
                         resultant_quantity_result =  models.Job_Order_Detail.objects.filter(item_id = jobOrderDetails[index].item_id,job_order_header_id=request.POST['purchase_job_order_header_id']).first()
+                        
                         resultant_quantity_result.quantity_result = 0.0  if not boMHeadDetailsExist else (resultant_quantity_result.quantity_result - Decimal(BomQuantity*incoming_item_quantity))
                         resultant_quantity_result.save()
-                        # #print(4423)
+                        
                         # change in storeItemCurrent
                         # Fetch the last transaction_date less than the given_date if mout
                         given_date = request.POST['transaction_date']
@@ -7888,7 +7893,8 @@ def materialIssueDelete(request):
                     jobOrderDetails.required_quantity += Decimal(detail.quantity)
                     jobOrderDetails.updated_at 
                     jobOrderDetails.save()
-                
+                    if jobOrderDetails.required_quantity > jobOrderDetails.quantity_result:
+                        raise ValueError('cannot deleted as raw material already utilised and manufacture materil recieved')
                 store_item_update = models.Store_Item.objects.filter(store_id = detail.store.id , item_id= detail.item_id)
                 if store_item_update.exists():
                     store_item_update = models.Store_Item.objects.get(store_id = detail.store.id , item_id= detail.item_id)
@@ -11780,3 +11786,59 @@ def storeTransactionSalesDelete(request):
     return JsonResponse(context)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def reportClosingStockdateWise(request):
+    context = {}
+    data = []
+    try:
+        store_id = request.POST['store_id']
+        current_date = request.POST['date']
+        is_today = current_date == date.today().isoformat()
+
+        store_items = models.Store_Item.objects.filter(store_id=store_id).select_related('item', 'store')
+
+        if not is_today:
+            item_ids = store_items.values_list('item_id', flat=True)  # Fetch all item IDs at once
+            store_item_current_qs = models.Store_Item_Current.objects.filter(
+                item_id__in=item_ids, store_id=store_id, status=1, deleted=0, transaction_date__lte=current_date
+            ).order_by('-transaction_date', '-created_at')  # Get latest record efficiently
+
+            store_item_current_map = {sic.item_id: sic for sic in store_item_current_qs}  # Map latest records
+
+            for store_item in store_items:
+                store_item_current = store_item_current_map.get(store_item.item_id)  # Get latest record
+                if store_item_current:
+                    data.append({
+                        'item_name': store_item.item.name,
+                        'store': store_item.store.name,
+                        'opening_qty': store_item_current.opening_qty,
+                        'closing_qty': store_item_current.closing_qty,
+                        'rate': store_item.item.price,
+                        'value': store_item.item.price * store_item_current.closing_qty,
+                        'last_store_update_date': store_item_current.transaction_date
+                    })
+        else:
+            data = [
+                {
+                    'item_name': store_item.item.name,
+                    'store': store_item.store.name,
+                    'opening_qty': store_item.opening_qty,
+                    'closing_qty': store_item.closing_qty,
+                    'rate': store_item.item.price,
+                    'value': store_item.item.price * store_item.closing_qty,
+                    'last_store_update_date': current_date
+                }
+                for store_item in store_items
+            ]
+
+        context.update({
+            'status': 200,
+            'page_items': data
+        })
+    except Exception as e:
+        context.update({
+            'status': 540,
+            'message': f"Something went wrong, please try again! {e}",
+        })
+    return JsonResponse(context)
