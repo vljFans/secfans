@@ -27,7 +27,7 @@ import math
 import environ
 import csv
 from fpdf import FPDF
-from django.db.models import Avg, Count, Min, Sum , Case, When, DecimalField, Q, F, IntegerField, Max, Func, Subquery
+from django.db.models import Avg, Count, Min, Sum , Case, When, DecimalField, Q, F, IntegerField, Max, Func, Subquery,OuterRef
 from django.db.models.functions import Substr, Cast, StrIndex, Length
 from fractions import Fraction
 import pandas as pd
@@ -11566,15 +11566,34 @@ def reportClosingStockdateWise(request):
         store_items = models.Store_Item.objects.filter(store_id=store_id).select_related('item', 'store')
 
         if not is_today:
-            item_ids = store_items.values_list('item_id', flat=True)  # Fetch all item IDs at once
-            store_item_current_qs = models.Store_Item_Current.objects.filter(
-                item_id__in=item_ids, store_id=store_id, status=1, deleted=0, transaction_date__lte=current_date
-            ).order_by('-transaction_date', '-created_at')  # Get latest record efficiently
+            item_ids = store_items.values_list('item_id', flat=True)
 
-            store_item_current_map = {sic.item_id: sic for sic in store_item_current_qs}  # Map latest records
+            latest_dates = models.Store_Item_Current.objects.filter(
+                item_id=OuterRef('item_id'),
+                store_id=store_id,
+                status=1,
+                deleted=0,
+                transaction_date__lte=current_date
+            ).values('item_id').annotate(
+                latest_transaction_date=Max('transaction_date')
+            ).values('latest_transaction_date')
+
+            latest_sic_qs = models.Store_Item_Current.objects.filter(
+                item_id=OuterRef('item_id'),
+                store_id=store_id,
+                transaction_date=Subquery(latest_dates),
+                status=1,
+                deleted=0
+            )
+
+            store_item_current_qs = models.Store_Item_Current.objects.filter(
+                id__in=Subquery(latest_sic_qs.values('id'))
+            )
+
+            store_item_current_map = {sic.item_id: sic for sic in store_item_current_qs}
 
             for store_item in store_items:
-                store_item_current = store_item_current_map.get(store_item.item_id)  # Get latest record
+                store_item_current = store_item_current_map.get(store_item.item_id)
                 if store_item_current:
                     data.append({
                         'item_name': store_item.item.name,
