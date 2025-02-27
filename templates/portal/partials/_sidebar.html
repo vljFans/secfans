@@ -271,7 +271,7 @@
                         
                         {% if request.user.is_superuser == 1 or 'view_item'|get_session_permission:request is not None %}
                         <li class="{% if request.path == '/report-inventory-summary' %} active {% endif %}">
-                            <a href="{% url 'superuser:reportInventorySummary' %}">Inventory Summary</a>
+                            <a hidden href="{% url 'superuser:reportInventorySummary' %}">Inventory Summary</a>
                         </li>
                         {% endif %}
 
