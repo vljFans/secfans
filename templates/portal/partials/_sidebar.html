@@ -226,7 +226,7 @@
 
         <!-- physical Inspection for store item -->
         <li class="{% if request.path == '/physical-inspection-list' %}open active{% endif %}">
-          <a href="{% url 'superuser:physicalInspectionList' %}"><i data-feather="eye"></i>
+          <a hidden href="{% url 'superuser:physicalInspectionList' %}"><i data-feather="eye"></i>
             <span>Physical Verification</span></a>
         </li>
         <!-- purchase bill  ---developed by Saswata -->
@@ -271,7 +271,7 @@
                         
                         {% if request.user.is_superuser == 1 or 'view_item'|get_session_permission:request is not None %}
                         <li class="{% if request.path == '/report-inventory-summary' %} active {% endif %}">
-                            <a href="{% url 'superuser:reportInventorySummary' %}">Inventory Summary</a>
+                            <a hidden href="{% url 'superuser:reportInventorySummary' %}">Inventory Summary</a>
                         </li>
                         {% endif %}
 
@@ -318,12 +318,12 @@
                 {% endif %}
                 {% if request.user.is_superuser == 1 or 'view_item_stock_report'|get_session_permission:request is not None %}
                 <li class="{% if request.path == '/report-active-purchase-materialIssue' %}active{% endif %}">
-                    <a href="{% url 'superuser:reportActivePurchaseMaterialIssue' %}">Purchase and MateialIssue</a>
+                    <a hidden href="{% url 'superuser:reportActivePurchaseMaterialIssue' %}">Purchase and MateialIssue</a>
                 </li>
                 {% endif %}
                 {% if request.user.is_superuser == 1 or 'view_store'|get_session_permission:request is not None %}
                 <li class="{% if request.path == '/report-active-vendor-Reciept-materialIssue' %}active{% endif %}">
-                    <a href="{% url 'superuser:reportActiveVendorIssueReciept' %}">Vendor JobOrder Issue and Reciept</a>
+                    <a  href="{% url 'superuser:reportActiveVendorIssueReciept' %}">Vendor JobOrder Issue and Reciept</a>
                 </li>
                 {% endif %}
                 {% if request.user.is_superuser == 1 or 'view_store_transaction'|get_session_permission:request is not None %}
@@ -333,7 +333,7 @@
                 {% endif %}
                 {% if request.user.is_superuser == 1 or 'view_store_transaction,view_store_item'|get_session_permission:request is not None %}
                 <li class="{% if request.path == '/report-closing-stock' %}active{% endif %}">
-                    <a hidden href="{% url 'superuser:closingStockReport' %}">Closing stock Date Wise </a>
+                    <a  href="{% url 'superuser:closingStockReport' %}">Closing stock Date Wise </a>
                 </li>
                 {% endif %}
             </ul>

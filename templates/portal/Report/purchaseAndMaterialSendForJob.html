@@ -341,6 +341,9 @@
                 }
                 else {
                     alert(response.message);
+                    $('.table-responsive tbody').html(tbody_html);
+                    $('.submit-btn').text('Submit');
+                    $('.submit-btn').prop('disabled', false);
                 }
             },
             error: function (error) {
